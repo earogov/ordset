@@ -1,0 +1,5 @@
+package ordset
+
+trait OrdsetDomain {
+
+}
