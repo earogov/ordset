@@ -9,7 +9,8 @@ scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-language:higherKinds",
   "-deprecation",
-  "-explaintypes")
+  "-explaintypes",
+  "-opt:l:method")
   //"-Xlog-implicits"
 
 libraryDependencies ++= Seq(

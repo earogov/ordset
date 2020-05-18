@@ -1,5 +1,0 @@
-package ordset
-
-trait OrdsetDomain {
-
-}

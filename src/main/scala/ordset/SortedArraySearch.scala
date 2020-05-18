@@ -11,14 +11,14 @@ object SortedArraySearch {
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  def binSearchClosestNotGreater[@sp(spNum) T](
-      element: T,
-      array: ArraySeq[T]
+  def binSearchClosestNotGreater[@sp(spNum) E](
+      element: E,
+      array: ArraySeq[E]
   )(
       start: Int = 0,
       end: Int = array.length - 1
   )(
-      implicit order: Order[T]): Int = {
+      implicit order: Order[E]): Int = {
 
     requireValidIndexes(start, end, array.length)
     uncheckedBinSearchClosestNotGreater(element, order, array, start, end)
@@ -26,14 +26,14 @@ object SortedArraySearch {
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  def binSearchClosestNotLess[@sp(spNum) T](
-      element: T,
-      array: ArraySeq[T]
+  def binSearchClosestNotLess[@sp(spNum) E](
+      element: E,
+      array: ArraySeq[E]
   )(
       start: Int = 0,
       end: Int = array.length - 1
   )(
-      implicit order: Order[T]): Int = {
+      implicit order: Order[E]): Int = {
 
     requireValidIndexes(start, end, array.length)
     uncheckedBinSearchClosestNotLess(element, order, array, start, end)
@@ -41,14 +41,14 @@ object SortedArraySearch {
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  def linSearchClosestNotGreater[@sp(spNum) T](
-      element: T,
-      array: ArraySeq[T]
+  def linSearchClosestNotGreater[@sp(spNum) E](
+      element: E,
+      array: ArraySeq[E]
   )(
       start: Int = 0,
       end: Int = array.length - 1
   )(
-      implicit order: Order[T]): Int = {
+      implicit order: Order[E]): Int = {
 
     requireValidIndexes(start, end, array.length)
     uncheckedLinSearchClosestNotGreater(element, order, array, start, end)
@@ -56,14 +56,14 @@ object SortedArraySearch {
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  def linSearchClosestNotLess[@sp(spNum) T](
-      element: T,
-      array: ArraySeq[T]
+  def linSearchClosestNotLess[@sp(spNum) E](
+      element: E,
+      array: ArraySeq[E]
   )(
       start: Int = 0,
       end: Int = array.length - 1
   )(
-      implicit order: Order[T]): Int = {
+      implicit order: Order[E]): Int = {
 
     requireValidIndexes(start, end, array.length)
     uncheckedLinSearchClosestNotLess(element, order, array, start, end)
@@ -71,14 +71,14 @@ object SortedArraySearch {
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  def optimisticBinSearchClosestNotGreater[@sp(spNum) T](
-      element: T,
-      array: ArraySeq[T]
+  def optimisticBinSearchClosestNotGreater[@sp(spNum) E](
+      element: E,
+      array: ArraySeq[E]
   )(
       start: Int = 0,
       end: Int = array.length - 1
   )(
-      implicit order: Order[T]): Int = {
+      implicit order: Order[E]): Int = {
 
     @inline
     def seqSteps(length: Int): Int = (Integer.SIZE - Integer. numberOfLeadingZeros(length)) >>> 1
@@ -97,14 +97,14 @@ object SortedArraySearch {
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  def optimisticBinSearchClosestNotLess[@sp(spNum) T](
-      element: T,
-      array: ArraySeq[T]
+  def optimisticBinSearchClosestNotLess[@sp(spNum) E](
+      element: E,
+      array: ArraySeq[E]
   )(
       start: Int = 0,
       end: Int = array.length - 1
   )(
-      implicit order: Order[T]): Int = {
+      implicit order: Order[E]): Int = {
 
     @inline
     def seqSteps(length: Int): Int = (Integer.SIZE - Integer. numberOfLeadingZeros(length)) >>> 1
@@ -122,12 +122,12 @@ object SortedArraySearch {
   }
 
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  private def uncheckedBinSearchClosestNotGreater[@sp(spNum) T](
-      element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+  private def uncheckedBinSearchClosestNotGreater[@sp(spNum) E](
+      element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
     @tailrec
     @throws(classOf[ArrayIndexOutOfBoundsException])
-    def loop (element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+    def loop (element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
       val len = end - start
       if (len == 1)
         if (order.compare(array(start), element) > 0) NotFound
@@ -149,12 +149,12 @@ object SortedArraySearch {
   }
 
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  private def uncheckedBinSearchClosestNotLess[@sp(spNum) T](
-      element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+  private def uncheckedBinSearchClosestNotLess[@sp(spNum) E](
+      element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
     @tailrec
     @throws(classOf[ArrayIndexOutOfBoundsException])
-    def loop (element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+    def loop (element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
       val len = end - start
       if (len == 1)
         if (order.compare(array(end), element) < 0) NotFound
@@ -176,12 +176,12 @@ object SortedArraySearch {
   }
 
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  private def uncheckedLinSearchClosestNotGreater[@sp(spNum) T](
-      element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+  private def uncheckedLinSearchClosestNotGreater[@sp(spNum) E](
+      element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
     @tailrec
     @throws(classOf[ArrayIndexOutOfBoundsException])
-    def loop(element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+    def loop(element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
       val cmp = order.compare(array(start), element)
       if (cmp > 0) start - 1
       else if (cmp == 0 || start == end ) start
@@ -195,12 +195,12 @@ object SortedArraySearch {
   }
 
   @throws(classOf[ArrayIndexOutOfBoundsException])
-  private def uncheckedLinSearchClosestNotLess[@sp(spNum) T](
-      element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+  private def uncheckedLinSearchClosestNotLess[@sp(spNum) E](
+      element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
     @tailrec
     @throws(classOf[ArrayIndexOutOfBoundsException])
-    def loop(element: T, order: Order[T], array: ArraySeq[T], start: Int, end: Int): Int = {
+    def loop(element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
       val cmp = order.compare(array(start), element)
       if (cmp >= 0) start
       else if (start == end) NotFound

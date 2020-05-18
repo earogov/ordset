@@ -3,9 +3,9 @@ package ordset
 import scala.{specialized => sp}
 import scala.Specializable.{AllNumeric => spNum}
 
-sealed trait Bound[@sp(spNum) +T] {
+sealed trait Bound[@sp(spNum) +E] {
 
-  def value: T
+  def value: E
 
   def isUpper: Boolean
 
@@ -15,61 +15,66 @@ sealed trait Bound[@sp(spNum) +T] {
 
   def isExclusive: Boolean = !isInclusive
 
-  def flip: Bound[T]
+  def flip: Bound[E]
 
   def offset: Int
 }
 
 object Bound {
 
-  case class Upper[+T](override val value: T, override val isInclusive: Boolean) extends Bound[T] {
+  def apply[E](element: E): Bound[E] = Upper(element, isInclusive = true)
+
+  case class Upper[+E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
 
     override def isUpper: Boolean = true
 
     override def isLower: Boolean = false
 
-    override def flip: Bound[T] = Lower(value, !isInclusive)
+    override def flip: Bound[E] = Lower(value, !isInclusive)
 
-    def flipUpper: Lower[T] = Lower(value, !isInclusive)
+    def flipUpper: Lower[E] = Lower(value, !isInclusive)
 
     override def offset: Int = if (isInclusive) 0 else -1
 
     override def toString: String = s"x ${if (isInclusive) "<=" else "<"} $value"
   }
 
-  case class Lower[+T](override val value: T, override val isInclusive: Boolean) extends  Bound[T] {
+  case class Lower[+E](override val value: E, override val isInclusive: Boolean) extends  Bound[E] {
 
     override def isUpper: Boolean = false
 
     override def isLower: Boolean = true
 
-    override def flip: Bound[T] = Upper(value, !isInclusive)
+    override def flip: Bound[E] = Upper(value, !isInclusive)
 
-    def flipLower: Upper[T] = Upper(value, !isInclusive)
+    def flipLower: Upper[E] = Upper(value, !isInclusive)
 
     override def offset: Int = if (isInclusive) 0 else 1
 
     override def toString: String = s"x ${if (isInclusive) ">=" else ">"} $value"
   }
 
-  implicit def toRightUnbounded[T](bound: Lower[T]): Interval.RightUnbounded[T] = Interval.RightUnbounded(bound)
+  implicit def toRightUnbounded[E](bound: Lower[E]): Interval.RightUnbounded[E] = Interval.RightUnbounded(bound)
 
-  implicit def toLeftUnbounded[T](bound: Upper[T]): Interval.LeftUnbounded[T] = Interval.LeftUnbounded(bound)
+  implicit def toLeftUnbounded[E](bound: Upper[E]): Interval.LeftUnbounded[E] = Interval.LeftUnbounded(bound)
 
-  implicit def defaultAscOrder[T](implicit ord: Order[T]): Order[Bound[T]] = new DefaultAscOrder[T]()(ord)
+  implicit def defaultAscOrder[E](implicit ord: Order[E]): Order[Bound[E]] = new DefaultAscOrder[E]()(ord)
 
-  implicit def defaultHash[T](implicit hash: Hash[T]): Hash[Bound[T]] = new DefaultHash[T]()(hash)
+  implicit def defaultHash[E](implicit hash: Hash[E]): Hash[Bound[E]] = new DefaultHash[E]()(hash)
 
-  class DefaultAscOrder[T](implicit ord: Order[T]) extends Order[Bound[T]] {
-    override def compare(x: Bound[T], y: Bound[T]): Int = {
+  class DefaultAscOrder[E](implicit ord: Order[E]) extends Order[Bound[E]] {
+
+    override def compare(x: Bound[E], y: Bound[E]): Int = {
       val cmp = ord.compare(x.value, y.value)
       if (cmp != 0) cmp
       else IntAscOrder.compare(x.offset, y.offset)
     }
   }
 
-  class DefaultHash[T](implicit hash: Hash[T]) extends Hash[Bound[T]] {
-    override def hash(x: Bound[T]): Int = 41 * (hash.hash(x.value) + 41 * x.offset)
-    override def eqv(x: Bound[T], y: Bound[T]): Boolean = hash.eqv(x.value, y.value) && x.offset == y.offset
+  class DefaultHash[E](implicit hashE: Hash[E]) extends Hash[Bound[E]] {
+    import util.Hash._
+
+    override def hash(x: Bound[E]): Int = product2Hash(hashE.hash(x.value), x.offset.##)
+    override def eqv(x: Bound[E], y: Bound[E]): Boolean = hashE.eqv(x.value, y.value) && x.offset == y.offset
   }
 }

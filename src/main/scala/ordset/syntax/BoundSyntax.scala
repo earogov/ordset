@@ -7,15 +7,15 @@ import scala.{specialized => sp}
 
 object BoundSyntax {
 
-  implicit class ToBound[@sp(spNum) T](value: T) {
+  implicit class ToBound[@sp(spNum) E](value: E) {
 
-    def `)[`: Bound.Upper[T] = Bound.Upper(value, isInclusive = false)
-    def `](`: Bound.Upper[T] = Bound.Upper(value, isInclusive = true)
+    def `)[`: Bound.Upper[E] = Bound.Upper(value, isInclusive = false)
+    def `](`: Bound.Upper[E] = Bound.Upper(value, isInclusive = true)
 
-    def `)`: Bound.Upper[T] = Bound.Upper(value, isInclusive = false)
-    def `]`: Bound.Upper[T] = Bound.Upper(value, isInclusive = true)
+    def `)`: Bound.Upper[E] = Bound.Upper(value, isInclusive = false)
+    def `]`: Bound.Upper[E] = Bound.Upper(value, isInclusive = true)
 
-    def `(`: Bound.Lower[T] = Bound.Lower(value, isInclusive = false)
-    def `[`: Bound.Lower[T] = Bound.Lower(value, isInclusive = true)
+    def `(`: Bound.Lower[E] = Bound.Lower(value, isInclusive = false)
+    def `[`: Bound.Lower[E] = Bound.Lower(value, isInclusive = true)
   }
 }
