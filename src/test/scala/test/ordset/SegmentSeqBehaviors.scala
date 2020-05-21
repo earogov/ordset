@@ -7,7 +7,7 @@ trait SegmentSeqBehaviors[E, V] { this: AnyFunSpec =>
   import ordset._
   import scala.annotation.tailrec
 
-  def supportMovePrevAndNextForSegments(
+  def segmentsSupportMovePrevAndNext(
       descr: String, segment: Segment[E, V], expected: Seq[IntervalMapping[E, V]]): Unit = {
 
     it(s"should move to the next segment if there is one for $descr") {
@@ -43,7 +43,7 @@ trait SegmentSeqBehaviors[E, V] { this: AnyFunSpec =>
     }
   }
 
-  def supportMoveToForSegments(
+  def segmentsSupportMoveToBound(
       descr: String, seg: Segment[E, V], moveSeq: Seq[(Bound[E], IntervalMapping[E, V])]): Unit = {
 
     it(s"should move to the specified bound for $descr") {
@@ -56,6 +56,42 @@ trait SegmentSeqBehaviors[E, V] { this: AnyFunSpec =>
         case _ => // end
       }
       loop(seg, moveSeq)
+    }
+  }
+
+  def segmentsSupportMoveToFirstAndLast(
+    descr: String, seq: SegmentSeq[E, V], firstExp: IntervalMapping[E, V], lastExp: IntervalMapping[E, V]): Unit = {
+
+    it(s"should move to the first and last segments for $descr") {
+      @tailrec
+      def loop(seg: Segment[E, V]): Unit = {
+        assert(seg.moveToFirst.intervalMapping == firstExp)
+        assert(seg.moveToLast.intervalMapping == lastExp)
+        seg match {
+          case n: Segment.WithNext[E, V] => loop(n.moveNext)
+          case _ => // end
+        }
+      }
+      loop(seq.firstSegment)
+    }
+  }
+
+  def segmentsHaveNextAndPrevIndicators(
+      descr: String, seq: SegmentSeq[E, V]): Unit = {
+
+    it(s"should have valid next and previous indicators for $descr") {
+      @tailrec
+      def loop(seg: Segment[E, V]): Unit = {
+        if (seg.isInstanceOf[Segment.WithNext[E, V]]) assert(seg.hasNext)
+        else assert(!seg.hasNext)
+        if (seg.isInstanceOf[Segment.WithPrev[E, V]]) assert(seg.hasPrev)
+        else assert(!seg.hasPrev)
+        seg match {
+          case n: Segment.WithNext[E, V] => loop(n.moveNext)
+          case _ => //end
+        }
+      }
+      loop(seq.firstSegment)
     }
   }
 }
