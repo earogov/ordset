@@ -18,7 +18,7 @@ import scala.Specializable.{AllNumeric => spNum}
   */
 trait SegmentSeq[@sp(spNum) E,  @sp(Boolean) W] {
 
-  val order: Order[Bound[E]]
+  implicit val domain: Domain[E]
 
   /** @return true if sequence is empty i.e. contains no elements. */
   def isEmpty: Boolean
@@ -32,9 +32,9 @@ trait SegmentSeq[@sp(spNum) E,  @sp(Boolean) W] {
   /** @return true if sequence contains `element`. */
   def contains(element: E): Boolean
 
-  def firstSegment: Segment[E, W]
+  def firstSegment: Segment.First[E, W]
 
-  def lastSegment: Segment[E, W]
+  def lastSegment: Segment.Last[E, W]
 
   /** @return segment containing `bound`. */
   def getSegment(bound: Bound[E]): Segment[E, W]

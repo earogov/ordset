@@ -35,6 +35,7 @@ trait SegmentSeqBehaviors[E, V] { this: AnyFunSpec =>
           }
         case _ => fail("Invalid test case: expected sequence must be non empty.")
       }
+      @tailrec
       def last(seg: Segment[E, V]): Segment[E, V] = seg match {
         case s: Segment.WithNext[E, V] => last(s.moveNext)
         case l @ _ => l
@@ -76,20 +77,50 @@ trait SegmentSeqBehaviors[E, V] { this: AnyFunSpec =>
     }
   }
 
-  def segmentsHaveNextAndPrevIndicators(
-      descr: String, seq: SegmentSeq[E, V]): Unit = {
+  def segmentsHaveNextAndPrevIndicators(descr: String, seq: SegmentSeq[E, V]): Unit = {
 
-    it(s"should have valid next and previous indicators for $descr") {
+    it(s"should have valid navigation indicators (`hasNext`, `hasPrev`, `isFirst`, ...) for $descr") {
       @tailrec
-      def loop(seg: Segment[E, V]): Unit = {
-        if (seg.isInstanceOf[Segment.WithNext[E, V]]) assert(seg.hasNext)
-        else assert(!seg.hasNext)
-        if (seg.isInstanceOf[Segment.WithPrev[E, V]]) assert(seg.hasPrev)
-        else assert(!seg.hasPrev)
-        seg match {
-          case n: Segment.WithNext[E, V] => loop(n.moveNext)
-          case _ => //end
-        }
+      def loop(seg: Segment[E, V]): Unit = seg match {
+        case n: Segment.Inner[E, V] =>
+          assert(seg.isInner)
+          assert(seg.hasNext)
+          assert(seg.hasPrev)
+          assert(!seg.isInitial)
+          assert(!seg.isTerminal)
+          assert(!seg.isFirst)
+          assert(!seg.isLast)
+          assert(!seg.isSingle)
+          loop(n.moveNext)
+        case n: Segment.Initial[E, V] =>
+          assert(seg.isInitial)
+          assert(seg.hasNext)
+          assert(seg.isFirst)
+          assert(!seg.isSingle)
+          assert(!seg.isInner)
+          assert(!seg.isLast)
+          assert(!seg.hasPrev)
+          assert(!seg.isTerminal)
+          loop(n.moveNext)
+        case _: Segment.Terminal[E, V] =>
+          assert(seg.isTerminal)
+          assert(seg.isLast)
+          assert(seg.hasPrev)
+          assert(!seg.isSingle)
+          assert(!seg.isInner)
+          assert(!seg.isFirst)
+          assert(!seg.hasNext)
+          assert(!seg.isInitial)
+        case _: Segment.Single[E, V] =>
+          assert(seg.isSingle)
+          assert(seg.isFirst)
+          assert(seg.isLast)
+          assert(!seg.isInitial)
+          assert(!seg.isTerminal)
+          assert(!seg.hasNext)
+          assert(!seg.hasPrev)
+          assert(!seg.isInner)
+        case _ => sys.error("Unexpected case")
       }
       loop(seq.firstSegment)
     }

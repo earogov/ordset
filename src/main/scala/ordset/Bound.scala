@@ -1,5 +1,7 @@
 package ordset
 
+import ordset.util.SingleValue
+
 import scala.{specialized => sp}
 import scala.Specializable.{AllNumeric => spNum}
 
@@ -23,6 +25,17 @@ sealed trait Bound[@sp(spNum) +E] {
 object Bound {
 
   def apply[E](element: E): Bound[E] = Upper(element, isInclusive = true)
+
+  implicit def toRightUnbounded[E](bound: Lower[E]): Interval.RightUnbounded[E] = Interval.RightUnbounded(bound)
+
+  implicit def toLeftUnbounded[E](bound: Upper[E]): Interval.LeftUnbounded[E] = Interval.LeftUnbounded(bound)
+
+  implicit def defaultAscOrder[E](implicit elemOrd: AscOrder[E]): AscOrder[Bound[E]] = new DefaultOrder(elemOrd)
+
+  implicit def defaultDescOrder[E](implicit elemOrd: DescOrder[E]): DescOrder[Bound[E]] = new DefaultOrder(elemOrd)
+
+  implicit def defaultHash[E](implicit hash: Hash[E]): Hash[Bound[E]] = new DefaultHash[E]()(hash)
+
 
   case class Upper[+E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
 
@@ -54,20 +67,18 @@ object Bound {
     override def toString: String = s"x ${if (isInclusive) ">=" else ">"} $value"
   }
 
-  implicit def toRightUnbounded[E](bound: Lower[E]): Interval.RightUnbounded[E] = Interval.RightUnbounded(bound)
-
-  implicit def toLeftUnbounded[E](bound: Upper[E]): Interval.LeftUnbounded[E] = Interval.LeftUnbounded(bound)
-
-  implicit def defaultAscOrder[E](implicit ord: Order[E]): Order[Bound[E]] = new DefaultAscOrder[E]()(ord)
-
-  implicit def defaultHash[E](implicit hash: Hash[E]): Hash[Bound[E]] = new DefaultHash[E]()(hash)
-
-  class DefaultAscOrder[E](implicit ord: Order[E]) extends Order[Bound[E]] {
+  class DefaultOrder[E, Dir <: OrderDir](
+      val elementOrd: OrderWithDir[E, Dir]
+  )(
+      implicit
+      val intOrd: OrderWithDir[Int, Dir],
+      override protected val dirValue: SingleValue[Dir]
+  ) extends OrderWithDir.Abstract[Bound[E], Dir] {
 
     override def compare(x: Bound[E], y: Bound[E]): Int = {
-      val cmp = ord.compare(x.value, y.value)
+      val cmp = elementOrd.compare(x.value, y.value)
       if (cmp != 0) cmp
-      else IntAscOrder.compare(x.offset, y.offset)
+      else intOrd.compare(x.offset, y.offset)
     }
   }
 

@@ -1,156 +1,224 @@
 package ordset
 
-import scala.{specialized => sp}
-import scala.Specializable.{AllNumeric => spNum}
+import ordset.util.SingleValue
 
-sealed trait Segment[@sp(spNum) E, @sp(Boolean) +V] {
+/**
+  * Segment is equivalent to interval with some value assigned to it.
+  * The main feature of segments is that they cover ordered universal set without gaps and overlapping.
+  * So we can move from given segment to the next, previous, first or last.
+  * Segments have next hierarchy (subclass -> superclass):
+  *
+  *                    Single
+  *                 ↙        ↘
+  *            First           Last
+  *          ↗      ↘      ↙      ↘
+  *     Initial      Segment       Terminal
+  *          ↘      ↗     ↖       ↗
+  *           WithNext      WithPrev
+  *                 ↖      ↗
+  *                   Inner
+  *
+  * For details see description of corresponding traits.
+  *
+  * @tparam E - type of element in ordered set
+  * @tparam V - type of value assigned to interval
+  *
+  * @note Definition of segment (traits) has forward/backward symmetry: if we have `moveNext` for example there is
+  *       also `movePrev` method. But its implementation may be optimized for moving forward, as it's assumed that
+  *       this is the basic use case of segments.
+  */
+sealed trait Segment[E, +V] extends SegmentLike[E, V] {
   import Segment._
 
-  def value: V
+  def forwardLazyList: LazyList[Segment[E, V]] = this match {
+    case n: WithNext[E, V] => LazyList.cons(this, n.moveNext.forwardLazyList)
+    case _                 => LazyList.empty
+  }
 
-  def moveTo(bound: Bound[E]): Segment[E, V]
-
-  def lazyList: LazyList[Segment[E, V]] = this match {
-    case n: WithNext[E, V] => LazyList.cons(this, n.moveNext.lazyList)
+  def backwardLazyList: LazyList[Segment[E, V]] = this match {
+    case n: WithPrev[E, V] => LazyList.cons(this, n.movePrev.backwardLazyList)
     case _                 => LazyList.empty
   }
 
   def intervalMapping: IntervalMapping[E, V] = this match {
-    case i: Inner[E, V]    => IntervalMapping.bounded(i.movePrev.upperBound.flipUpper, i.upperBound, value)
-    case p: WithPrev[E, V] => IntervalMapping.rightUnbounded(p.movePrev.upperBound.flipUpper, value)
+    case i: Inner[E, V]    => IntervalMapping.bounded(i.lowerBound, i.upperBound, value)
+    case p: WithPrev[E, V] => IntervalMapping.rightUnbounded(p.lowerBound, value)
     case n: WithNext[E, V] => IntervalMapping.leftUnbounded(n.upperBound, value)
     case _                 => IntervalMapping.unbounded(value)
-  }
-
-  def intervalMappingLazyList: LazyList[IntervalMapping[E, V]] = this match {
-    case n: WithNext[E, V] => LazyList.cons(n.intervalMapping, n.moveNext.intervalMappingLazyList)
-    case _                 => LazyList(intervalMapping)
   }
 }
 
 object Segment {
 
-  def first[E, V](
-      value: V,
-      upperBound: Bound.Upper[E],
-      mvTo: Bound[E] => Segment[E, V],
-      mvNext: () => WithPrev[E, V]
-  ): WithNext[E, V] = WithNextImpl(value, upperBound, mvTo, mvNext)
+  implicit def upperBoundAscOrder[E](implicit boundOrd: AscOrder[Bound[E]]): AscOrder[Segment[E, Nothing]] =
+    new UpperBoundOrder(boundOrd)
 
-  def last[E, V](
-      value: V,
-      mvTo: Bound[E] => Segment[E, V],
-      mvPrev: () => WithNext[E, V]
-  ): WithPrev[E, V] = WithPrevImpl(value, mvTo, mvPrev)
+  implicit def upperBoundDescOrder[E](implicit boundOrd: DescOrder[Bound[E]]): DescOrder[Segment[E, Nothing]] =
+    new UpperBoundOrder(boundOrd)
 
-  def inner[E, V](
-      value: V,
-      upperBound: Bound.Upper[E],
-      mvTo: Bound[E] => Segment[E, V],
-      mvPrev: () => WithNext[E, V],
-      mvNext: () => WithPrev[E, V]
-  ): Inner[E, V] = InnerImpl(value, upperBound, mvTo, mvPrev, mvNext)
+  def lowerBoundAscOrder[E](implicit boundOrd: AscOrder[Bound[E]]): AscOrder[Segment[E, Nothing]] =
+    new LowerBoundOrder(boundOrd)
 
-  def single[E, V](value: V): Single[E, V] = SingleImpl(value)
+  def lowerBoundDescOrder[E](implicit boundOrd: DescOrder[Bound[E]]): DescOrder[Segment[E, Nothing]] =
+    new LowerBoundOrder(boundOrd)
 
-  implicit def defaultHash[E, V](implicit hash: Hash[IntervalMapping[E, V]]): Hash[Segment[E, V]] =
-    new DefaultHash()(hash)
+  implicit def upperBoundHash[E, V](implicit hash: Hash[Bound[E]]): Hash[Segment[E, V]] =
+    new UpperBoundHash()(hash)
 
-  trait WithNext[E, +V] extends Segment[E, V] with HasNext[E, V] {
+  implicit def lowerBoundHash[E, V](implicit hash: Hash[Bound[E]]): Hash[Segment[E, V]] =
+    new LowerBoundHash()(hash)
 
-    override def lazyList: LazyList[Segment[E, V]] = LazyList.cons(this, moveNext.lazyList)
+  /** Segment which has next segment. */
+  trait WithNext[E, +V] extends Segment[E, V] {
 
-    override def intervalMapping: IntervalMapping[E, V] = this match {
-      case p: WithPrev[E, V] => IntervalMapping.bounded(p.movePrev.upperBound.flipUpper, upperBound, value)
-      case _                 => IntervalMapping.leftUnbounded(upperBound, value)
-    }
-
-    override def intervalMappingLazyList: LazyList[IntervalMapping[E, V]] =
-      LazyList.cons(intervalMapping, moveNext.intervalMappingLazyList)
-  }
-
-  trait WithPrev[E, +V] extends Segment[E, V] with HasPrev[E, V] {
-
-    override def intervalMapping: IntervalMapping[E, V] = this match {
-      case n: WithNext[E, V] => IntervalMapping.bounded(movePrev.upperBound.flipUpper, n.upperBound, value)
-      case _                 => IntervalMapping.rightUnbounded(movePrev.upperBound.flipUpper, value)
-    }
-  }
-
-  trait Inner[E, +V] extends WithNext[E, V] with WithPrev[E, V] {
-
-    override def lazyList: LazyList[Segment[E, V]] = LazyList.cons(this, moveNext.lazyList)
-
-    override def intervalMapping: IntervalMapping[E, V] =
-      IntervalMapping.bounded(movePrev.upperBound.flipUpper, upperBound, value)
-
-    override def intervalMappingLazyList: LazyList[IntervalMapping[E, V]] =
-      LazyList.cons(intervalMapping, moveNext.intervalMappingLazyList)
-  }
-
-  trait Single[E, +V] extends Segment[E, V]
-
-  trait HasNext[E, +V] {
+    override def hasNext: Boolean = true
 
     def upperBound: Bound.Upper[E]
 
     def moveNext: WithPrev[E, V]
+
+    override def forwardLazyList: LazyList[Segment[E, V]] = LazyList.cons(this, moveNext.forwardLazyList)
+
+    override def intervalMapping: IntervalMapping[E, V] = this match {
+      case p: WithPrev[E, V] => IntervalMapping.bounded(p.lowerBound, upperBound, value)
+      case _                 => IntervalMapping.leftUnbounded(upperBound, value)
+    }
   }
 
-  trait HasPrev[E, +V] {
+  /** Segment which has previous segment. */
+  trait WithPrev[E, +V] extends Segment[E, V] {
+
+    override def hasPrev: Boolean = true
+
+    def lowerBound: Bound.Lower[E]
 
     def movePrev: WithNext[E, V]
+
+    override def backwardLazyList: LazyList[Segment[E, V]] = LazyList.cons(this, movePrev.backwardLazyList)
+
+    override def intervalMapping: IntervalMapping[E, V] = this match {
+      case n: WithNext[E, V] => IntervalMapping.bounded(lowerBound, n.upperBound, value)
+      case _                 => IntervalMapping.rightUnbounded(lowerBound, value)
+    }
   }
 
-  class DefaultHash[E, V](implicit hashIM: Hash[IntervalMapping[E, V]]) extends Hash[Segment[E, V]] {
-    import util.Hash._
-    // TODO: `hash` and `eqv` should use `upperBound` and `Value` to optimize performance.
-    override def hash(x: Segment[E, V]): Int = product1Hash(hashIM.hash(x.intervalMapping))
-    override def eqv(x: Segment[E, V], y: Segment[E, V]): Boolean = hashIM.eqv(x.intervalMapping, y.intervalMapping)
+  /** Segment which has both next and previous segments. */
+  trait Inner[E, +V] extends WithNext[E, V] with WithPrev[E, V] {
+
+    override def isInner: Boolean = true
+
+    override def intervalMapping: IntervalMapping[E, V] = IntervalMapping.bounded(lowerBound, upperBound, value)
   }
 
-  private case class WithNextImpl[E, +V] (
-      override val value: V,
-      override val upperBound: Bound.Upper[E],
-      mvTo: Bound[E] => Segment[E, V],
-      mvNext: () => WithPrev[E, V]
-  ) extends WithNext[E, V] {
+  /**
+    * First segment of sequence.
+    * It may be `Single` (the only segment in sequence) or `Initial` (first segment with next).
+    */
+  trait First[E, +V] extends Segment[E, V] {
 
-    override def moveTo(bound: Bound[E]): Segment[E, V] = mvTo(bound)
+    override def isFirst: Boolean = true
 
-    override def moveNext: WithPrev[E, V] = mvNext()
+    override def moveToFirst: First[E, V] = this
   }
 
-  private case class WithPrevImpl[E, +V] (
-      override val value: V,
-      mvTo: Bound[E] => Segment[E, V],
-      mvPrev: () => WithNext[E, V]
-  ) extends WithPrev[E, V] {
+  /**
+    * Last segment of sequence.
+    * It may be `Single` (the only segment in sequence) or `Terminal` (last segment with previous).
+    */
+  trait Last[E, +V] extends Segment[E, V] {
 
-    override def moveTo(bound: Bound[E]): Segment[E, V] = mvTo(bound)
+    override def isLast: Boolean = true
 
-    override def movePrev: WithNext[E, V] = mvPrev()
+    override def moveToLast: Last[E, V] = this
   }
 
-  private case class InnerImpl[E, +V] (
-      override val value: V,
-      override val upperBound: Bound.Upper[E],
-      mvTo: Bound[E] => Segment[E, V],
-      mvPrev: () => WithNext[E, V],
-      mvNext: () => WithPrev[E, V]
-  ) extends Inner[E, V] {
+  /**
+    * The only segment in sequence. Sequence in that case either empty or universal.
+    */
+  trait Single[E, +V] extends First[E, V] with Last[E, V] {
 
-    override def moveTo(bound: Bound[E]): Segment[E, V] = mvTo(bound)
-
-    override def movePrev: WithNext[E, V] = mvPrev()
-
-    override def moveNext: WithPrev[E, V] = mvNext()
-  }
-
-  private case class SingleImpl[E, +V] (
-      override val value: V
-  ) extends Single[E, V] {
+    override def isSingle: Boolean = true
 
     override def moveTo(bound: Bound[E]): Segment[E, V] = this
   }
+
+  /**
+    * First segment of sequence which has next segment. Given segment can't be `Single`.
+    * Sequence in that case isn't empty or universal.
+    */
+  trait Initial[E, +V] extends WithNext[E, V] with First[E, V] {
+
+    override def isInitial: Boolean = true
+  }
+
+  /**
+    * Last segment of sequence which has previous segment. Given segment can't be `Single`.
+    * Sequence in that case isn't empty or universal.
+    */
+  trait Terminal[E, +V] extends WithPrev[E, V] with Last[E, V] {
+
+    override def isTerminal: Boolean = true
+  }
+
+  class UpperBoundOrder[E, Dir <: OrderDir](
+      val boundOrd: OrderWithDir[Bound[E], Dir]
+  )(
+      implicit override protected val dirValue: SingleValue[Dir]
+  ) extends OrderWithDir.Abstract[Segment[E, Nothing], Dir] {
+
+    override def compare(x: Segment[E, Nothing], y: Segment[E, Nothing]): Int = (x, y) match {
+      case (xn: WithNext[E, Nothing], yn: WithNext[E, Nothing]) => boundOrd.compare(xn.upperBound, yn.upperBound)
+      case (_, _: WithNext[E, Nothing]) => sign
+      case (_: WithNext[E, Nothing], _) => invertedSign
+      case _ => 0
+    }
+  }
+
+  class LowerBoundOrder[E, Dir <: OrderDir](
+      val boundOrd: OrderWithDir[Bound[E], Dir]
+  )(
+      implicit override protected val dirValue: SingleValue[Dir]
+  ) extends OrderWithDir.Abstract[Segment[E, Nothing], Dir] {
+
+    override def compare(x: Segment[E, Nothing], y: Segment[E, Nothing]): Int = (x, y) match {
+      case (xp: WithPrev[E, Nothing], yp: WithPrev[E, Nothing]) => boundOrd.compare(xp.lowerBound, yp.lowerBound)
+      case (_, _: WithPrev[E, Nothing]) => invertedSign
+      case (_: WithPrev[E, Nothing], _) => sign
+      case _ => 0
+    }
+  }
+
+  class UpperBoundHash[E, V](implicit hashB: Hash[Bound[E]]) extends Hash[Segment[E, V]] {
+    import util.Hash._
+
+    override def hash(x: Segment[E, V]): Int = x match {
+      case xn: WithNext[E, V] => product1Hash(hashB.hash(xn.upperBound))
+      case _ => singleHash
+    }
+
+    override def eqv(x: Segment[E, V], y: Segment[E, V]): Boolean = (x, y) match {
+      case (xn: WithNext[E, V], yn: WithNext[E, V]) => hashB.eqv(xn.upperBound, yn.upperBound)
+      case (_, _: WithNext[E, V]) => false
+      case (_: WithNext[E, V], _) => false
+      case _ => true
+    }
+  }
+
+  class LowerBoundHash[E, V](implicit hashB: Hash[Bound[E]]) extends Hash[Segment[E, V]] {
+    import util.Hash._
+
+    override def hash(x: Segment[E, V]): Int = x match {
+      case xn: WithPrev[E, V] => product1Hash(hashB.hash(xn.lowerBound))
+      case _ => singleHash
+    }
+
+    override def eqv(x: Segment[E, V], y: Segment[E, V]): Boolean = (x, y) match {
+      case (xn: WithPrev[E, V], yn: WithPrev[E, V]) => hashB.eqv(xn.lowerBound, yn.lowerBound)
+      case (_, _: WithPrev[E, V]) => false
+      case (_: WithPrev[E, V], _) => false
+      case _ => true
+    }
+  }
+
+  private val singleHash = util.Hash.product1Hash(0xE91A02B5)
 }
