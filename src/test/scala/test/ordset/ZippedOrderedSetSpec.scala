@@ -27,8 +27,23 @@ with SegmentSeqBehaviors[Int, Boolean] {
 
   override val multiBoundedCase: Option[ordset.SegmentSeq[Int, Boolean]] = Some(
     ZippedOrderedSet.union(
+      // a:
+      //     in             out                in                   out                  in                 out
+      // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
+      //
+      // b:
+      //         out               in               out              in                    out                 in
+      // X-----------------5)[5------------12](12-------20)[20----------------30](30---------------------60)[60---X
+      //
+      // a union b:
+      //     in        out      in       in         in               in         in        in          out      in
+      // X--------0](0-----5)[5----10)[10--12](12-------20)[20---------------30)|(30-------------40)[40--60)[60---X
+      //
+      // a union b (reduced):
+      //     in        out                                        in                                  out      in
+      // X--------0](0-----5)[5------------------------------------------------------------------40)[40--60)[60---X
       new ArrayOrderedSet[Int](Array(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq, complement = true),
-      new ArrayOrderedSet[Int](Array(5`)[`, 12`](`, 15`)[`, 18`](`, 60`)[`).toImmutableArraySeq, complement = false)
+      new ArrayOrderedSet[Int](Array(5`)[`, 12`](`, 20`)[`, 30`](`, 60`)[`).toImmutableArraySeq, complement = false)
     )
   )
 

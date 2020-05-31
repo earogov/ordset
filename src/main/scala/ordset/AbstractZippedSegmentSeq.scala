@@ -212,7 +212,10 @@ abstract class AbstractZippedSegmentSeq[E, W] extends SegmentSeq[E, W] { seq =>
 
     override def moveToLast: Segment[E, W] = lastSegment
 
-    override def moveTo(bound: Bound[E]): Segment[E, W] = makeSegment(left.moveTo(bound), right.moveTo(bound))
+    override def moveTo(bound: Bound[E]): Segment[E, W] = makeSegment(left.moveTo(bound), right.moveTo(bound)) match {
+      case n: SegmentWithNext => mergeNext(n)
+      case s => s
+    }
   }
 
   /**
@@ -249,7 +252,7 @@ abstract class AbstractZippedSegmentSeq[E, W] extends SegmentSeq[E, W] { seq =>
     def lowerBackward: Segment[E, W]
     def lowerForward: Segment.WithPrev[E, W]
 
-    override def lowerBound: Bound.Lower[E] = lowerForward.lowerBound
+    override lazy val lowerBound: Bound.Lower[E] = mergePrev(this).lowerForward.lowerBound
 
     override def movePrev: Segment.WithNext[E, W] = stepPrev(mergePrev(this))
   }
@@ -279,8 +282,8 @@ abstract class AbstractZippedSegmentSeq[E, W] extends SegmentSeq[E, W] { seq =>
     override def left: Segment[E, W] = upperBackward
     override def right: Segment[E, W] = lowerForward
 
-    override def lowerBackward: Segment[E, W] = lowerForward
-    override def upperForward: Segment[E, W] = upperBackward
+    override def lowerBackward: Segment[E, W] = upperBackward
+    override def upperForward: Segment[E, W] = lowerForward
   }
 
   protected sealed case class InnerSegment2(
