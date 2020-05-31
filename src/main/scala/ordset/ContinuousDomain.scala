@@ -8,10 +8,5 @@ object ContinuousDomain {
 
   private case class DomainImpl[E](
       override final val elementOrd: AscOrder[E]
-  ) extends ContinuousDomain[E] {
-
-    implicit override final val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd)
-
-    implicit override final val segmentOrd: AscOrder[Segment[E, Nothing]] = Segment.upperBoundAscOrder(boundOrd)
-  }
+  ) extends ContinuousDomain[E]
 }

@@ -15,6 +15,8 @@ package object ordset {
   type Hash[A] = cats.kernel.Hash[A]
   type Discrete[A] = cats.collections.Discrete[A]
 
+  val booleanEq: Eq[Boolean] = cats.kernel.instances.boolean.catsKernelStdOrderForBoolean
+
   type SetSegment[E] = Segment[E, Boolean]
   type SetSegmentWithPrev[E] = Segment.WithPrev[E, Boolean]
   type SetSegmentWithNext[E] = Segment.WithNext[E, Boolean]

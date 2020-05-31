@@ -4,7 +4,7 @@ trait Domain[E] {
 
   implicit val elementOrd: AscOrder[E]
 
-  implicit val boundOrd: AscOrder[Bound[E]]
+  implicit val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder
 
-  implicit val segmentOrd: AscOrder[Segment[E, Nothing]]
+  implicit val segmentOrd: Segment.UpperBoundAscOrder[E] = Segment.upperBoundAscOrder
 }

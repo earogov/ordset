@@ -46,20 +46,28 @@ sealed trait Segment[E, +V] extends SegmentLike[E, V] {
     case n: WithNext[E, V] => IntervalMapping.leftUnbounded(n.upperBound, value)
     case _                 => IntervalMapping.unbounded(value)
   }
+
+  override def toString: String = intervalMapping.toString
 }
 
 object Segment {
 
-  implicit def upperBoundAscOrder[E](implicit boundOrd: AscOrder[Bound[E]]): AscOrder[Segment[E, Nothing]] =
+  type UpperBoundAscOrder[E] = UpperBoundOrder[E, AscDir]
+  type UpperBoundDescOrder[E] = UpperBoundOrder[E, DescDir]
+
+  type LowerBoundAscOrder[E] = LowerBoundOrder[E, AscDir]
+  type LowerBoundDescOrder[E] = LowerBoundOrder[E, DescDir]
+
+  implicit def upperBoundAscOrder[E](implicit boundOrd: AscOrder[Bound[E]]): UpperBoundAscOrder[E] =
     new UpperBoundOrder(boundOrd)
 
-  implicit def upperBoundDescOrder[E](implicit boundOrd: DescOrder[Bound[E]]): DescOrder[Segment[E, Nothing]] =
+  implicit def upperBoundDescOrder[E](implicit boundOrd: DescOrder[Bound[E]]): UpperBoundDescOrder[E]  =
     new UpperBoundOrder(boundOrd)
 
-  def lowerBoundAscOrder[E](implicit boundOrd: AscOrder[Bound[E]]): AscOrder[Segment[E, Nothing]] =
+  def lowerBoundAscOrder[E](implicit boundOrd: AscOrder[Bound[E]]): LowerBoundAscOrder[E] =
     new LowerBoundOrder(boundOrd)
 
-  def lowerBoundDescOrder[E](implicit boundOrd: DescOrder[Bound[E]]): DescOrder[Segment[E, Nothing]] =
+  def lowerBoundDescOrder[E](implicit boundOrd: DescOrder[Bound[E]]): LowerBoundDescOrder[E] =
     new LowerBoundOrder(boundOrd)
 
   implicit def upperBoundHash[E, V](implicit hash: Hash[Bound[E]]): Hash[Segment[E, V]] =
