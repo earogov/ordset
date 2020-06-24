@@ -3,9 +3,9 @@ package ordset
 import scala.{specialized => sp}
 import scala.Specializable.{AllNumeric => spNum}
 
-trait SegmentLike[@sp(spNum) E, @sp(Boolean) +V] {
+trait SegmentLike[@sp(spNum) E, +D <: Domain[E], @sp(Boolean) +V] {
 
-  def domain: Domain[E]
+  def domain: D
 
   def value: V
 
@@ -25,9 +25,9 @@ trait SegmentLike[@sp(spNum) E, @sp(Boolean) +V] {
 
   def isTerminal: Boolean = false
 
-  def moveToFirst: Segment[E, V]
+  def moveToFirst: Segment[E, D, V]
 
-  def moveToLast: Segment[E, V]
+  def moveToLast: Segment[E, D, V]
 
-  def moveTo(bound: Bound[E]): Segment[E, V]
+  def moveTo(bound: Bound[E]): Segment[E, D, V]
 }

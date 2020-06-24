@@ -16,9 +16,9 @@ import scala.Specializable.{AllNumeric => spNum}
   * To define ordered map to some type `V` (`E` -> `V`) we assume `W` = `Option[V]`. Where `None` corresponds to
   * segments that don't belong to set.
   */
-trait SegmentSeq[@sp(spNum) E,  @sp(Boolean) W] {
+trait SegmentSeq[@sp(spNum) E, D <: Domain[E]  @sp(Boolean), W] {
 
-  implicit val domain: Domain[E]
+  implicit val domain: D
 
   /** @return true if sequence is empty i.e. contains no elements. */
   def isEmpty: Boolean
@@ -32,13 +32,13 @@ trait SegmentSeq[@sp(spNum) E,  @sp(Boolean) W] {
   /** @return true if sequence contains `element`. */
   def contains(element: E): Boolean
 
-  def firstSegment: Segment.First[E, W]
+  def firstSegment: Segment.First[E, D, W]
 
-  def lastSegment: Segment.Last[E, W]
+  def lastSegment: Segment.Last[E, D, W]
 
   /** @return segment containing `bound`. */
-  def getSegment(bound: Bound[E]): Segment[E, W]
+  def getSegment(bound: Bound[E]): Segment[E, D, W]
 
   /** @return segment containing `element`. */
-  def getSegment(element: E): Segment[E, W]
+  def getSegment(element: E): Segment[E, D, W]
 }

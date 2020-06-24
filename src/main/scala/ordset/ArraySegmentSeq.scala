@@ -1,6 +1,6 @@
 package ordset
 
-abstract class ArraySegmentSeq[E, W] extends AbstractSegmentSeq[E, W] {
+abstract class ArraySegmentSeq[E, D <: Domain[E], W] extends AbstractSegmentSeq[E, D, W] {
   import SortedArraySearch._
   import domain._
 
