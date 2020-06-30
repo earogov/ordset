@@ -10,7 +10,7 @@ import ordset.util.SingleValue
   *
   *                    Single
   *                 ↙        ↘
-  *            First           Last
+  *            First         Last
   *          ↗      ↘      ↙      ↘
   *     Initial      Segment       Terminal
   *          ↘      ↗     ↖       ↗
@@ -74,7 +74,7 @@ object Segment {
     new LowerBoundHash()(hash)
 
   /** Segment which has next segment. */
-  trait WithNext[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait WithNext[E, +D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def hasNext: Boolean = true
 
@@ -91,7 +91,7 @@ object Segment {
   }
 
   /** Segment which has previous segment. */
-  trait WithPrev[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait WithPrev[E, +D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def hasPrev: Boolean = true
 
@@ -108,7 +108,7 @@ object Segment {
   }
 
   /** Segment which has both next and previous segments. */
-  trait Inner[E, D <: Domain[E], +V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
+  trait Inner[E, +D <: Domain[E], +V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
 
     override def isInner: Boolean = true
 
@@ -119,7 +119,7 @@ object Segment {
     * First segment of sequence.
     * It may be `Single` (the only segment in sequence) or `Initial` (first segment with next).
     */
-  trait First[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait First[E, +D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def isFirst: Boolean = true
 
@@ -130,7 +130,7 @@ object Segment {
     * Last segment of sequence.
     * It may be `Single` (the only segment in sequence) or `Terminal` (last segment with previous).
     */
-  trait Last[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait Last[E, +D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def isLast: Boolean = true
 
@@ -140,7 +140,7 @@ object Segment {
   /**
     * The only segment in sequence. Sequence in that case either empty or universal.
     */
-  trait Single[E, D <: Domain[E], +V] extends First[E, D, V] with Last[E, D, V] {
+  trait Single[E, +D <: Domain[E], +V] extends First[E, D, V] with Last[E, D, V] {
 
     override def isSingle: Boolean = true
 
@@ -151,7 +151,7 @@ object Segment {
     * First segment of sequence which has next segment. Given segment can't be `Single`.
     * Sequence in that case isn't empty or universal.
     */
-  trait Initial[E, D <: Domain[E], +V] extends WithNext[E, D, V] with First[E, D, V] {
+  trait Initial[E, +D <: Domain[E], +V] extends WithNext[E, D, V] with First[E, D, V] {
 
     override def isInitial: Boolean = true
   }
@@ -160,7 +160,7 @@ object Segment {
     * Last segment of sequence which has previous segment. Given segment can't be `Single`.
     * Sequence in that case isn't empty or universal.
     */
-  trait Terminal[E, D <: Domain[E], +V] extends WithPrev[E, D, V] with Last[E, D, V] {
+  trait Terminal[E, +D <: Domain[E], +V] extends WithPrev[E, D, V] with Last[E, D, V] {
 
     override def isTerminal: Boolean = true
   }

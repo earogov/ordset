@@ -17,9 +17,9 @@ class ArrayOrderedSetSpec extends AnyFunSpec
   import test.syntax.ArraySyntax._
 
   type Domain = ContinuousDomain[Int]
-  type SegmentSeq = SetSegmentSeq[Int, ContinuousDomain[Int]]
+  type SegmentSeq = SetSegmentSeq[Int, Domain]
 
-  implicit val domain: ContinuousDomain[Int] = ContinuousDomain()
+  implicit val domain: Domain = ContinuousDomain()
 
   override val emptyCase: Option[SegmentSeq] = Some(
     new ArrayOrderedSet[Int, Domain](ArraySeq.empty, complement = false)

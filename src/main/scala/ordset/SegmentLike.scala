@@ -25,9 +25,9 @@ trait SegmentLike[@sp(spNum) E, +D <: Domain[E], @sp(Boolean) +V] {
 
   def isTerminal: Boolean = false
 
-  def moveToFirst: Segment[E, D, V]
+  def moveToFirst: Segment.First[E, D, V]
 
-  def moveToLast: Segment[E, D, V]
+  def moveToLast: Segment.Last[E, D, V]
 
   def moveTo(bound: Bound[E]): Segment[E, D, V]
 }
