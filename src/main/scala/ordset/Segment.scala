@@ -189,9 +189,9 @@ object Segment {
       case (xp: WithPrev[E, _, _], yp: WithPrev[E, _, _]) =>
         x.domain.boundOrd.compare(xp.lowerBound, yp.lowerBound)
       case (_, _: WithPrev[E, _, _]) =>
-        invertedSign
-      case (_: WithPrev[E, _, _], _) =>
         sign
+      case (_: WithPrev[E, _, _], _) =>
+        invertedSign
       case _ => 0
     }
   }

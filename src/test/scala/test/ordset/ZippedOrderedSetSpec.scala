@@ -98,32 +98,32 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
 
   describe("Zipped ordered set as a segment sequence") {
 
-//    it should behave like segmentsSupportMovePrevAndNext(
-//      "empty set",
-//      emptyCase.get.firstSegment,
-//      (false forAll x) :: Nil
-//    )
-//
-//    it should behave like segmentsSupportMovePrevAndNext(
-//      "universal set",
-//      universalCase.get.firstSegment,
-//      (true forAll x) :: Nil
-//    )
-//
-//    it should behave like segmentsSupportMovePrevAndNext(
-//      "multi bounded set",
-//      multiBoundedCase.get.firstSegment,
-//      (true  forAll x <= 0) ::
-//      (false forAll x >  0  & x <  5 ) ::
-//      (true  forAll x >= 5  & x <  7 ) ::
-//      (false forAll x >= 7  & x <= 20) ::
-//      (true  forAll x >  20 & x <  25) ::
-//      (false forAll x >= 25 & x <= 35) ::
-//      (true  forAll x >  35 & x <  40) ::
-//      (false forAll x >= 40 & x <  60) ::
-//      (true  forAll x >= 60) ::
-//      Nil
-//    )
+    it should behave like segmentsSupportMovePrevAndNext(
+      "empty set",
+      emptyCase.get,
+      (false forAll x) :: Nil
+    )
+
+    it should behave like segmentsSupportMovePrevAndNext(
+      "universal set",
+      universalCase.get,
+      (true forAll x) :: Nil
+    )
+
+    it should behave like segmentsSupportMovePrevAndNext(
+      "multi bounded set",
+      multiBoundedCase.get,
+      (true  forAll x <= 0) ::
+      (false forAll x >  0  & x <  5 ) ::
+      (true  forAll x >= 5  & x <  7 ) ::
+      (false forAll x >= 7  & x <= 20) ::
+      (true  forAll x >  20 & x <  25) ::
+      (false forAll x >= 25 & x <= 35) ::
+      (true  forAll x >  35 & x <  40) ::
+      (false forAll x >= 40 & x <  60) ::
+      (true  forAll x >= 60) ::
+      Nil
+    )
 
     it should behave like segmentsSupportMoveToBound(
       "empty set",

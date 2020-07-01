@@ -47,19 +47,19 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMovePrevAndNext(
       "empty set",
-      emptyCase.get.firstSegment,
+      emptyCase.get,
       (false forAll x) :: Nil
     )
 
     it should behave like segmentsSupportMovePrevAndNext(
       "universal set",
-      universalCase.get.firstSegment,
+      universalCase.get,
       (true forAll x) :: Nil
     )
 
     it should behave like segmentsSupportMovePrevAndNext(
       "single bounded set",
-      singleBoundedCase.get.firstSegment,
+      singleBoundedCase.get,
       (true forAll x <=  0) ::
       (false forAll x > 0) ::
       Nil
@@ -67,7 +67,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMovePrevAndNext(
       "multi bounded set",
-      multiBoundedCase.get.firstSegment,
+      multiBoundedCase.get,
       (false forAll x <  0) ::
       (true  forAll x >= 0  & x < 10) ::
       (false forAll x >= 10 & x < 20) ::
@@ -79,7 +79,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMovePrevAndNext(
       "set with degenerate interval",
-      degenerateCase.get.firstSegment,
+      degenerateCase.get,
       (false forAll x <  0) ::
       (true  forAll x >= 0  & x <= 0) ::
       (false forAll x >  0  & x <  10) ::

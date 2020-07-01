@@ -9,7 +9,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
   import scala.annotation.tailrec
 
   def segmentsSupportMovePrevAndNext(
-      descr: String, segment: Segment[E, D, V], expected: Seq[IntervalMapping[E, V]]): Unit = {
+      descr: String, segmentSeq: SegmentSeq[E, D, V], expected: Seq[IntervalMapping[E, V]]): Unit = {
 
     it(s"should move to the next segment if there is one for $descr") {
       @tailrec
@@ -22,7 +22,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
           }
         case _ => fail("Invalid test case: expected sequence must be non empty.")
       }
-      loop(segment, expected)
+      loop(segmentSeq.firstSegment, expected)
     }
 
     it(s"should move to the previous segment if there is one for $descr") {
@@ -36,12 +36,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
           }
         case _ => fail("Invalid test case: expected sequence must be non empty.")
       }
-      @tailrec
-      def last(seg: Segment[E, D, V]): Segment[E, D, V] = seg match {
-        case s: Segment.WithNext[E, D, V] => last(s.moveNext)
-        case l @ _ => l
-      }
-      loop(last(segment), expected.reverse)
+      loop(segmentSeq.lastSegment, expected.reverse)
     }
   }
 
