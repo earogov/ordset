@@ -27,11 +27,4 @@ package object ordset {
   type SetSegmentSingle[E, D <: Domain[E]] = Segment.Single[E, D, Boolean]
   type SetSegmentSeq[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
   type SetIntervalMapping[E] = IntervalMapping[E, Boolean]
-
-  type BinaryChoice = BinaryChoice.Type
-  type FirstOfTwo = BinaryChoice.First.Type
-  type SecondOfTwo = BinaryChoice.Second.Type
-
-  val FistOfTwo: FirstOfTwo = BinaryChoice.First.Value
-  val SecondOfTwo: SecondOfTwo = BinaryChoice.Second.Value
 }
