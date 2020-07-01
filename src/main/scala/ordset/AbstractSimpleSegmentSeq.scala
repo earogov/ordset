@@ -25,7 +25,7 @@ package ordset
   * To define ordered map to some type `V` (`E` -> `V`) we assume `W` = `Option[V]`. Where `None` corresponds to
   * segments that don't belong to set.
   */
-abstract class AbstractSegmentSeq[E, D <: Domain[E],  W] extends SegmentSeq[E, D, W] { seq =>
+abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSeq[E, D, W] { seq =>
 
   /** @return true if sequence is empty i.e. contains no elements. */
   final override def isEmpty: Boolean = bounds.isEmpty && !complement

@@ -22,26 +22,105 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
   implicit val domain: Domain = ContinuousDomain()
 
   override val emptyCase: Option[SegmentSeq] = Some(
-    ZippedOrderedSet.intersection(
-      new ArrayOrderedSet[Int, Domain](
-        Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
-        complement = false
+    // f union c:
+    //                                              out
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // f = b intersection ~b:
+    //                                              out
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // ~b:
+    //     out             in                out                   in                  out                in
+    // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
+    //
+    // c = a intersection b:
+    //                                              out
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // b:
+    //     in             out                in                   out                  in                 out
+    // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
+    //
+    // a:
+    //                                              out
+    // X--------------------------------------------------------------------------------------------------------X
+    ZippedOrderedSet.union(
+      ZippedOrderedSet.intersection(
+        // b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+          complement = false
+        ),
+        // a
+        new ArrayOrderedSet[Int, Domain](
+          ArraySeq.empty,
+          complement = false
+        )
       ),
-      new ArrayOrderedSet[Int, Domain](
-        ArraySeq.empty,
-        complement = false
+      // f
+      ZippedOrderedSet.intersection(
+        // b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+          complement = false),
+        // ~b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+          complement = true
+        )
       )
     )
   )
 
   override val universalCase: Option[SegmentSeq] = Some(
-    ZippedOrderedSet.union(
-      new ArrayOrderedSet[Int, Domain](
-        Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
-        complement = false),
-      new ArrayOrderedSet[Int, Domain](
-        ArraySeq.empty,
-        complement = true
+    // f intersection c:
+    //                                              in
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // f = b union ~b:
+    //                                              in
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // ~b:
+    //     out             in                out                   in                  out                in
+    // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
+    //
+    // c = a union b:
+    //                                              in
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // b:
+    //     in             out                in                   out                  in                 out
+    // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
+    //
+    // a:
+    //                                              in
+    // X--------------------------------------------------------------------------------------------------------X
+    ZippedOrderedSet.intersection(
+      // c
+      ZippedOrderedSet.union(
+        // b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+          complement = false),
+        // a
+        new ArrayOrderedSet[Int, Domain](
+          ArraySeq.empty,
+          complement = true
+        )
+      ),
+      // f
+      ZippedOrderedSet.union(
+        // b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+          complement = false),
+        // ~b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+          complement = true
+        )
       )
     )
   )
@@ -49,7 +128,7 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
   override val singleBoundedCase: Option[SegmentSeq] = None
 
   override val multiBoundedCase: Option[SegmentSeq] = Some(
-    // c intersection d
+    // c intersection d:
     //      in       out     in             out               in            out             in       out     in
     // X--------0](0-----5)[5--7)[7--------------------20](20----25)[25--------------35](35----40)[40--60)[60---X
     //
@@ -57,7 +136,7 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     //              in                       out              in            out                    in
     // X-----------------------7)[7--------------------20](20----25)[25--------------35](35---------------------X
     //
-    // d = a union b (reduced):
+    // d = a union b (merged):
     //     in        out                                        in                                  out      in
     // X--------0](0-----5)[5------------------------------------------------------------------40)[40--60)[60---X
     //
@@ -159,11 +238,29 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
+      "empty set",
+      emptyCase.get,
+      false forAll x,
+      false forAll x
+    )
+
+    it should behave like segmentsSupportMoveToFirstAndLast(
+      "universal set",
+      universalCase.get,
+      true forAll x,
+      true forAll x
+    )
+
+    it should behave like segmentsSupportMoveToFirstAndLast(
       "multi bounded set",
       multiBoundedCase.get,
       true forAll x <= 0,
       true forAll x >= 60
     )
+
+    it should behave like segmentsHaveNextAndPrevIndicators("empty set", emptyCase.get)
+
+    it should behave like segmentsHaveNextAndPrevIndicators("universal set", universalCase.get)
 
     it should behave like segmentsHaveNextAndPrevIndicators("multi bounded set", multiBoundedCase.get)
   }

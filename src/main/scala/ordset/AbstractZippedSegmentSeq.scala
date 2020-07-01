@@ -2,6 +2,18 @@ package ordset
 
 abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends SegmentSeq[E, D, W] { seq =>
 
+  protected final type GenSegment = Segment[E, D, W]
+  protected final type FirstSegment = Segment.First[E, D, W]
+  protected final type LastSegment = Segment.Last[E, D, W]
+  protected final type InitialSegment = Segment.Initial[E, D, W]
+  protected final type TerminalSegment = Segment.Terminal[E, D, W]
+  protected final type InnerSegment = Segment.Inner[E, D, W]
+  protected final type SingleSegment = Segment.Single[E, D, W]
+  protected final type SegmentWithNext = Segment.WithNext[E, D, W]
+  protected final type SegmentWithPrev = Segment.WithPrev[E, D, W]
+
+  protected final type Zipper[S <: ZippedTuple] = (GenSegment, GenSegment) => S
+
   val valueEq: Eq[W]
 
   final override def firstSegment: Segment.First[E, D, W] = _firstSegment
@@ -15,18 +27,6 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends SegmentSeq
   /** @return segment containing `element`. */
   final override def getSegment(element: E): Segment[E, D, W] =
     searchFrontZipper(generalZipper, left.getSegment(element), right.getSegment(element))
-
-  protected final type GenSegment = Segment[E, D, W]
-  protected final type FirstSegment = Segment.First[E, D, W]
-  protected final type LastSegment = Segment.Last[E, D, W]
-  protected final type InitialSegment = Segment.Initial[E, D, W]
-  protected final type TerminalSegment = Segment.Terminal[E, D, W]
-  protected final type InnerSegment = Segment.Inner[E, D, W]
-  protected final type SingleSegment = Segment.Single[E, D, W]
-  protected final type SegmentWithNext = Segment.WithNext[E, D, W]
-  protected final type SegmentWithPrev = Segment.WithPrev[E, D, W]
-
-  protected final type Zipper[S <: ZippedTuple] = (GenSegment, GenSegment) => S
 
   protected val left: SegmentSeq[E, D, W]
 
