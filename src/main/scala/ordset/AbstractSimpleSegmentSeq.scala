@@ -39,8 +39,10 @@ abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSe
   /** @return true if sequence contains `element`. */
   final override def contains(element: E): Boolean = belongsToSet(searchSegmentFromBegin(Bound(element)))
 
+  /** @return first segment of sequence. */
   final override def firstSegment: Segment.First[E, D, W] = if (bounds.isEmpty) SingleSegment() else InitialSegment()
 
+  /** @return last segment of sequence. */
   final override def lastSegment: Segment.Last[E, D, W] = if (bounds.isEmpty) SingleSegment() else TerminalSegment()
 
   /** @return segment containing `bound`. */

@@ -143,13 +143,19 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     // X--------------------------------------------------------------------------------------------------------X
     ZippedOrderedSet.union(
       // b
-      new ArrayOrderedSet[Int, Domain](Array(0`](`).toImmutableArraySeq, complement = true),
+      new ArrayOrderedSet[Int, Domain](
+        Array(0`](`).toImmutableArraySeq,
+        complement = true),
       // c
       ZippedOrderedSet.union(
         // b
-        new ArrayOrderedSet[Int, Domain](Array(0`](`).toImmutableArraySeq, complement = true),
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`](`).toImmutableArraySeq,
+          complement = true),
         // a
-        new ArrayOrderedSet[Int, Domain](ArraySeq.empty, complement = false)
+        new ArrayOrderedSet[Int, Domain](
+          ArraySeq.empty,
+          complement = false)
       )
     )
   )
@@ -200,21 +206,58 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     )
   )
 
-  override val degenerateCase: Option[SegmentSeq] = None
+  override val degenerateCase: Option[SegmentSeq] = Some(
+    // c intersection d:
+    //     out   in        out                in         out         in        out               in
+    // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X
+    //
+    // d:
+    //                                              in
+    // X--------------------------------------------------------------------------------------------------------X
+    //
+    // c = a union b:
+    //     out   in        out                in         out         in        out               in
+    // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X
+    //
+    // b:
+    //     out   in                           out                                                in
+    // X--------0)|(0---------------------------------------------------------30](------------------------------X
+    //
+    // a:
+    //     out   in        out                in         out         in                          out
+    // X--------0)|(0--------------10)[10--------------20)|(20---------------30)[30-----------------------------X
+    ZippedOrderedSet.intersection(
+      // d
+      new ArrayOrderedSet[Int, Domain](
+        ArraySeq.empty,
+        complement = true),
+      // c
+      ZippedOrderedSet.union(
+        // b
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`)[`, 0`](`, 30`](`).toImmutableArraySeq,
+          complement = false),
+        // a
+        new ArrayOrderedSet[Int, Domain](
+          Array(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`).toImmutableArraySeq,
+          complement = false)
+      )
+    )
+  )
 
   describe("Zipped ordered set as a segment sequence") {
 
-//    it should behave like segmentsSupportMovePrevAndNext(
-//      "empty set",
-//      emptyCase.get,
-//      (false forAll x) :: Nil
-//    )
-//
-//    it should behave like segmentsSupportMovePrevAndNext(
-//      "universal set",
-//      universalCase.get,
-//      (true forAll x) :: Nil
-//    )
+    it should behave like segmentsSupportMovePrevAndNext(
+      "empty set",
+      emptyCase.get,
+      (false forAll x) :: Nil
+    )
+
+    it should behave like segmentsSupportMovePrevAndNext(
+      "universal set",
+      universalCase.get,
+      (true forAll x) :: Nil
+    )
 
     it should behave like segmentsSupportMovePrevAndNext(
       "single bounded set",
@@ -224,24 +267,38 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
       Nil
     )
 
-//    it should behave like segmentsSupportMovePrevAndNext(
-//      "multi bounded set",
-//      multiBoundedCase.get,
-//      (true  forAll x <= 0) ::
-//      (false forAll x >  0  & x <  5 ) ::
-//      (true  forAll x >= 5  & x <  7 ) ::
-//      (false forAll x >= 7  & x <= 20) ::
-//      (true  forAll x >  20 & x <  25) ::
-//      (false forAll x >= 25 & x <= 35) ::
-//      (true  forAll x >  35 & x <  40) ::
-//      (false forAll x >= 40 & x <  60) ::
-//      (true  forAll x >= 60) ::
-//      Nil
-//    )
+    it should behave like segmentsSupportMovePrevAndNext(
+      "multi bounded set",
+      multiBoundedCase.get,
+      (true  forAll x <= 0) ::
+      (false forAll x >  0  & x <  5 ) ::
+      (true  forAll x >= 5  & x <  7 ) ::
+      (false forAll x >= 7  & x <= 20) ::
+      (true  forAll x >  20 & x <  25) ::
+      (false forAll x >= 25 & x <= 35) ::
+      (true  forAll x >  35 & x <  40) ::
+      (false forAll x >= 40 & x <  60) ::
+      (true  forAll x >= 60) ::
+      Nil
+    )
+
+    it should behave like segmentsSupportMovePrevAndNext(
+      "set with degenerate interval",
+      degenerateCase.get,
+      (false forAll x <  0) ::
+      (true  forAll x >= 0  & x <= 0 ) ::
+      (false forAll x >  0  & x <  10) ::
+      (true  forAll x >= 10 & x <  20) ::
+      (false forAll x >= 20 & x <= 20) ::
+      (true  forAll x >  20 & x <  30) ::
+      (false forAll x >= 30 & x <= 30) ::
+      (true  forAll x >  30) ::
+      Nil
+    )
 
     it should behave like segmentsSupportMoveToBound(
       "empty set",
-      emptyCase.get.firstSegment,
+      emptyCase.get,
       ( 10`)`, false forAll x) ::
       ( 15`[`, false forAll x) ::
       (-10`)`, false forAll x) ::
@@ -251,7 +308,7 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
 
     it should behave like segmentsSupportMoveToBound(
       "universal set",
-      universalCase.get.firstSegment,
+      universalCase.get,
       ( 10`)`, true forAll x) ::
       ( 15`[`, true forAll x) ::
       (-10`)`, true forAll x) ::
@@ -261,7 +318,7 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
 
     it should behave like segmentsSupportMoveToBound(
       "single bounded set",
-      singleBoundedCase.get.firstSegment,
+      singleBoundedCase.get,
       ( 10`)`, false forAll x >  0) ::
       ( 15`[`, false forAll x >  0) ::
       (-10`)`, true  forAll x <= 0) ::
@@ -273,7 +330,7 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
 
     it should behave like segmentsSupportMoveToBound(
       "multi bounded set",
-       multiBoundedCase.get.firstSegment,
+       multiBoundedCase.get,
        ( 7`[`, false forAll x >= 7  & x <= 20) ::
        (30`)`, false forAll x >= 25 & x <= 35) ::
        ( 0`)`, true  forAll x <= 0) ::
@@ -282,6 +339,19 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
        (45`[`, false forAll x >= 40 & x <  60) ::
        ( 5`)`, false forAll x >  0  & x <  5 ) ::
        Nil
+    )
+
+    it should behave like segmentsSupportMoveToBound(
+      "set with degenerate interval",
+      degenerateCase.get,
+      (20`[`, false forAll x >= 20 & x <= 20) ::
+      (20`]`, false forAll x >= 20 & x <= 20) ::
+      (20`)`, true  forAll x >= 10 & x <  20) ::
+      (30`(`, true  forAll x >  30) ::
+      (40`)`, true  forAll x >  30) ::
+      (-1`[`, false forAll x <  0 ) ::
+      ( 0`]`, true  forAll x >= 0  & x <= 0 ) ::
+      Nil
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
@@ -312,6 +382,13 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
       true forAll x >= 60
     )
 
+    it should behave like segmentsSupportMoveToFirstAndLast(
+      "set with degenerate interval",
+      degenerateCase.get,
+      false forAll x <  0,
+      true forAll x > 30
+    )
+
     it should behave like segmentsHaveNextAndPrevIndicators("empty set", emptyCase.get)
 
     it should behave like segmentsHaveNextAndPrevIndicators("universal set", universalCase.get)
@@ -319,5 +396,7 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     it should behave like segmentsHaveNextAndPrevIndicators("single bounded set", singleBoundedCase.get)
 
     it should behave like segmentsHaveNextAndPrevIndicators("multi bounded set", multiBoundedCase.get)
+
+    it should behave like segmentsHaveNextAndPrevIndicators("set with degenerate interval", degenerateCase.get)
   }
 }

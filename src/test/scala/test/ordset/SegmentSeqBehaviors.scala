@@ -41,7 +41,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
   }
 
   def segmentsSupportMoveToBound(
-      descr: String, seg: Segment[E, D, V], moveSeq: Seq[(Bound[E], IntervalMapping[E, V])]): Unit = {
+      descr: String, segmentSeq: SegmentSeq[E, D, V], moveSeq: Seq[(Bound[E], IntervalMapping[E, V])]): Unit = {
 
     it(s"should move to the specified bound for $descr") {
       @tailrec
@@ -52,7 +52,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
           loop(next, xs)
         case _ => // end
       }
-      loop(seg, moveSeq)
+      loop(segmentSeq.firstSegment, moveSeq)
     }
   }
 

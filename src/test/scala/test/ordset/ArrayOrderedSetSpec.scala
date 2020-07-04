@@ -92,7 +92,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMoveToBound(
       "empty set",
-      emptyCase.get.firstSegment,
+      emptyCase.get,
       ( 10`)`, false forAll x) ::
       ( 15`[`, false forAll x) ::
       (-10`)`, false forAll x) ::
@@ -102,7 +102,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMoveToBound(
       "universal set",
-      universalCase.get.firstSegment,
+      universalCase.get,
       ( 10`)`, true forAll x) ::
       ( 15`[`, true forAll x) ::
       (-10`)`, true forAll x) ::
@@ -112,7 +112,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMoveToBound(
       "single bounded set",
-      singleBoundedCase.get.firstSegment,
+      singleBoundedCase.get,
       ( 10`)`, false forAll x >  0) ::
       ( 15`[`, false forAll x >  0) ::
       (-10`)`, true  forAll x <= 0) ::
@@ -124,7 +124,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMoveToBound(
       "multi bounded set",
-      multiBoundedCase.get.firstSegment,
+      multiBoundedCase.get,
       (10`)`, true  forAll x >= 0  & x < 10) ::
       (10`)`, true  forAll x >= 0  & x < 10) ::
       (30`[`, false forAll x >= 30 & x < 40) ::
@@ -138,7 +138,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMoveToBound(
       "set with degenerate interval",
-      degenerateCase.get.firstSegment,
+      degenerateCase.get,
       ( 0`]`, true  forAll x >= 0  & x <= 0) ::
       (20`(`, true  forAll x >  20 & x <  30) ::
       (-5`]`, false forAll x <  0) ::

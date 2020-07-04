@@ -15,17 +15,7 @@ class ZippedOrderedSet[E, D <: Domain[E]](
 
   override protected def invariant(value: Boolean): Boolean = invariantFn(value)
 
-  /** @return true if sequence is empty i.e. contains no elements. */
-  override def isEmpty: Boolean = _firstSegment.isSingle && !_firstSegment.value
-
-  /** @return true if sequence is universal i.e. contains all elements of domain. */
-  override def isUniversal: Boolean = _firstSegment.isSingle && _firstSegment.value
-
-  /** @return true if sequence contains `bound`. */
-  override def contains(bound: Bound[E]): Boolean = getSegmentValue(left.getSegment(bound), right.getSegment(bound))
-
-  /** @return true if sequence contains `element`. */
-  override def contains(element: E): Boolean = getSegmentValue(left.getSegment(element), right.getSegment(element))
+  override protected def belongsToSet(value: Boolean): Boolean = value
 }
 
 object ZippedOrderedSet {
