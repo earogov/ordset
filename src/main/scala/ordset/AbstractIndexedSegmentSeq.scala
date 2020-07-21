@@ -25,7 +25,7 @@ package ordset
   * To define ordered map to some type `V` (`E` -> `V`) we assume `W` = `Option[V]`. Where `None` corresponds to
   * segments that don't belong to set.
   */
-abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSeq[E, D, W] { seq =>
+abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
   /** @return true if sequence is empty i.e. contains no elements. */
   final override def isEmpty: Boolean = bounds.isEmpty && !complement
@@ -40,10 +40,10 @@ abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSe
   final override def contains(element: E): Boolean = belongsToSet(searchSegmentFromBegin(Bound(element)))
 
   /** @return first segment of sequence. */
-  final override def firstSegment: Segment.First[E, D, W] = if (bounds.isEmpty) SingleSegment() else InitialSegment()
+  final override def firstSegment: Segment.First[E, D, W] = if (bounds.isEmpty) IndexedSingleSegment() else IndexedInitialSegment()
 
   /** @return last segment of sequence. */
-  final override def lastSegment: Segment.Last[E, D, W] = if (bounds.isEmpty) SingleSegment() else TerminalSegment()
+  final override def lastSegment: Segment.Last[E, D, W] = if (bounds.isEmpty) IndexedSingleSegment() else IndexedTerminalSegment()
 
   /** @return segment containing `bound`. */
   final override def getSegment(bound: Bound[E]): Segment[E, D, W] = makeSegment(searchSegmentFromBegin(bound))
@@ -128,34 +128,34 @@ abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSe
     * @return segment with index `ind`.
     * @note preconditions: 1. 0 <= `ind` <= `bounds.length` (last index of segments).
     */
-  protected final def makeSegment(ind: Int): Segment[E, D, W] =
-    if      (bounds.isEmpty)          SingleSegment()
-    else if (ind <= 0)                InitialSegment()
-    else if (ind >= lastSegmentIndex) TerminalSegment()
-    else                              InnerSegment(ind)
+  protected final def makeSegment(ind: Int): GenSegment =
+    if      (bounds.isEmpty)          IndexedSingleSegment()
+    else if (ind <= 0)                IndexedInitialSegment()
+    else if (ind >= lastSegmentIndex) IndexedTerminalSegment()
+    else                              IndexedInnerSegment(ind)
 
   /**
     * @return segment (which has previous segment) with index `ind`.
     * @note preconditions: 1. `bounds` is non empty;
     *                      2. 1 <= `ind` <= `bounds.length` (last index of segments).
     */
-  protected final def makeSegmentWithPrev(ind: Int): Segment.WithPrev[E, D, W] =
-    if (ind >= lastSegmentIndex) TerminalSegment() else InnerSegment(ind)
+  protected final def makeSegmentWithPrev(ind: Int): SegmentWithPrev =
+    if (ind >= lastSegmentIndex) IndexedTerminalSegment() else IndexedInnerSegment(ind)
 
   /**
     * @return segment (which has next segment) with index `ind`.
     * @note preconditions: 1. `bounds` is non empty;
     *                      2. 0 <= `ind` < `bounds.length` (last index of segments).
     */
-  protected final def makeSegmentWithNext(ind: Int): Segment.WithNext[E, D, W] =
-    if (ind <= 0) InitialSegment() else InnerSegment(ind)
+  protected final def makeSegmentWithNext(ind: Int): SegmentWithNext =
+    if (ind <= 0) IndexedInitialSegment() else IndexedInnerSegment(ind)
 
   /**
     * Base trait for non single segments. It has either previous segment or next.
     * @note preconditions: 1. `bounds` is non empty;
     *                      2. 0 <= `ind` <= `bounds.length` (last index of segments).
     */
-  protected sealed trait SegmentBase extends SegmentLike[E, D, W] {
+  protected sealed trait IndexedSegmentBase extends SegmentLike[E, D, W] {
 
     protected val ind: Int
 
@@ -163,40 +163,40 @@ abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSe
 
     override def value: W = getSegmentValue(ind)
 
-    override def moveToFirst: Segment.First[E, D, W] = InitialSegment()
+    override def moveToFirst: FirstSegment = IndexedInitialSegment()
 
-    override def moveToLast: Segment.Last[E, D, W] = TerminalSegment()
+    override def moveToLast: LastSegment = IndexedTerminalSegment()
 
-    override def moveTo(bound: Bound[E]): Segment[E, D, W] = makeSegment(searchSegmentFromIndex(ind, bound))
+    override def moveTo(bound: Bound[E]): GenSegment = makeSegment(searchSegmentFromIndex(ind, bound))
   }
 
   /**
     * Segment which has next segment.
     * @note preconditions: 1. 0 <= `ind` < `bounds.length` (last index of segments).
     */
-  protected sealed trait SegmentWithNext extends SegmentBase with Segment.WithNext[E, D, W] {
+  protected sealed trait IndexedSegmentWithNext extends IndexedSegmentBase with SegmentWithNext {
 
     override def upperBound: Bound.Upper[E] = getUpperBound(ind)
 
-    override def moveNext: Segment.WithPrev[E, D, W] = makeSegmentWithPrev(ind + 1)
+    override def moveNext: SegmentWithPrev = makeSegmentWithPrev(ind + 1)
   }
 
   /**
     * Segment which has previous segment.
     * @note preconditions: 1. 1 <= `ind` <= `bounds.length` (last index of segments).
     */
-  protected sealed trait SegmentWithPrev extends SegmentBase with Segment.WithPrev[E, D, W] {
+  protected sealed trait IndexedSegmentWithPrev extends IndexedSegmentBase with SegmentWithPrev {
 
     override def lowerBound: Bound.Lower[E] = getLowerBound(ind)
 
-    override def movePrev: Segment.WithNext[E, D, W] = makeSegmentWithNext(ind - 1)
+    override def movePrev: SegmentWithNext = makeSegmentWithNext(ind - 1)
   }
 
   /**
     * Initial segment of sequence.
     * @note preconditions: 1. `bounds` is non empty;
     */
-  protected sealed case class InitialSegment() extends SegmentWithNext with Segment.Initial[E, D, W] {
+  protected sealed case class IndexedInitialSegment() extends IndexedSegmentWithNext with InitialSegment {
 
     override val ind: Int = 0
   }
@@ -205,7 +205,7 @@ abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSe
     * Terminal segment of sequence.
     * @note preconditions: 1. `bounds` is non empty;
     */
-  protected sealed case class TerminalSegment() extends SegmentWithPrev with Segment.Terminal[E, D, W] {
+  protected sealed case class IndexedTerminalSegment() extends IndexedSegmentWithPrev with TerminalSegment {
 
     override val ind: Int = lastSegmentIndex
   }
@@ -214,10 +214,10 @@ abstract class AbstractSimpleSegmentSeq[E, D <: Domain[E],  W] extends SegmentSe
     * Inner segment of sequence. It must have both previous and next segments.
     * @note preconditions: 1. 1 <= `ind` < `bounds.length` (last index of segments).
     */
-  protected sealed case class InnerSegment(override val ind: Int
-  ) extends SegmentWithPrev with SegmentWithNext with Segment.Inner[E, D, W]
+  protected sealed case class IndexedInnerSegment(override val ind: Int
+  ) extends IndexedSegmentWithPrev with IndexedSegmentWithNext with InnerSegment
 
-  protected sealed case class SingleSegment() extends Segment.Single[E, D, W] {
+  protected sealed case class IndexedSingleSegment() extends SingleSegment {
 
     override def domain: D = seq.domain
 
