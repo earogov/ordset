@@ -1,8 +1,9 @@
 package ordset.treap
 
+import ordset.Show
 import ordset.tag.TaggedRaw
 
-object TraverserVisit extends TaggedRaw[Int] {
+object TraverseVisit extends TaggedRaw[Int] {
 
   val Left: Type = fromRaw(0x00000001)
   val Right: Type = fromRaw(0x00000010)
@@ -24,4 +25,6 @@ object TraverserVisit extends TaggedRaw[Int] {
     case Both => "Both"
     case None => "None"
   }
+
+  implicit val visitShow: Show[TraverseVisit.Type] = Show.show(toString)
 }

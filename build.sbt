@@ -10,8 +10,9 @@ scalacOptions ++= Seq(
   "-language:higherKinds",
   "-deprecation",
   "-explaintypes",
-  "-opt:l:method")
-  //"-Xlog-implicits"
+  "-opt:l:method",
+  //"-Xprint:typer",
+  "-Xlog-implicits")
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.1.1" % "test",

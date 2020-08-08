@@ -1,8 +1,11 @@
 package test.ordset.treap
 
 import ordset.Order
+import ordset.treap.eval.NodeVisitStack
+import ordset.treap.reduce.CallTrace
+import ordset.treap.traverse.DepthFirst
+import ordset.treap.{Reduce, TraverseVisit, Treap}
 import org.scalatest.funspec.AnyFunSpec
-import ordset.treap.{Treap, reduce, traverse}
 
 class TreapSpec extends AnyFunSpec {
 
@@ -20,6 +23,9 @@ class TreapSpec extends AnyFunSpec {
 
   it("should reduce tree") {
 
+    import cats.instances.list._
+    import cats.instances.tuple._
+
     type Ord = ordset.Order[Int]
     implicit val Ord: Order[Int] = ordset.OrderWithDir.intAscOrderWithDir
 
@@ -32,7 +38,13 @@ class TreapSpec extends AnyFunSpec {
     val node3 = Treap.WithRightOnly[Int, Ord](leaf6, 7, 6)
     val treap = Treap.WithLeftRight[Int, Ord](node2, node3, 6, 9)
 
-    //treap.reduce(reduce.CallTrace.toConsole, traverse.DepthFirst.makeLeftFirst, ())
-    treap.reduce(reduce.CallTrace.toConsole, traverse.KeySearch(0), ())
+    Reduce(
+      treap,
+      NodeVisitStack.Context[Int, Order[Int]](TraverseVisit.None, Nil),
+      ()
+    )(
+      DepthFirst.nonEmpty(DepthFirst.leftFirstNavigate),
+      CallTrace.toConsole
+    )
   }
 }
