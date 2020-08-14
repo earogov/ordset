@@ -10,13 +10,13 @@ object Traverse {
 
   type GenericFunc[K, Ord <: Order[K], C] = Func[K, Ord, C, Any]
 
-  case class Output[K, Ord <: Order[K], C, +S](context: C, tree: Treap[K, Ord], step: S, stop: Boolean) {
+  case class Output[K, Ord <: Order[K], C, +S](tree: Treap[K, Ord], context: C, step: S, stop: Boolean) {
 
     def withContext(c: C): Output[K, Ord, C, S] =
-      Output(c, tree, step, stop)
+      Output(tree, c, step, stop)
 
     def eval(evalFunc: Eval.Func[K, Ord, C, S]): Output[K, Ord, C, S] =
-      Output(evalFunc(tree, context, step), tree, step, stop)
+      Output(tree, evalFunc(tree, context, step), step, stop)
   }
 
   implicit def toTraverseOps[K, Ord <: Order[K], C, S](

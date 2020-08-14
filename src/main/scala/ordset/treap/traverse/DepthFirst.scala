@@ -13,50 +13,52 @@ object DepthFirst {
   type NavigateFunc[K, Ord <: Order[K]] = Navigate.Func[K, Ord, Context[K, Ord], TraverseStep.Type]
 
   def withEmpty[K, Ord <: Order[K]](
-    navigate: NavigateFunc[K, Ord]
+    navigateFunc: NavigateFunc[K, Ord],
+    evalFunc: NodeVisitStack.EvalFunc[K, Ord]
   ): Traverse.DefaultFunc[K, Ord, Context[K, Ord]] = (tree, context) => {
-      val step = navigate(tree, context)
+      val step = navigateFunc(tree, context)
       val output: Output[K, Ord] = step match {
         case TraverseStep.Left => tree match {
-          case n: Treap.NodeWithLeft[K, Ord] => Traverse.Output(context, n.left, step, stop = false)
-          case _ => Traverse.Output(context, Treap.Empty(), step, stop = false)
+          case n: Treap.NodeWithLeft[K, Ord] => Traverse.Output(n.left, context, step, stop = false)
+          case _ => Traverse.Output(Treap.Empty(), context, step, stop = false)
         }
         case TraverseStep.Right => tree match {
-          case n: Treap.NodeWithRight[K, Ord] => Traverse.Output(context, n.right, step, stop = false)
-          case _ => Traverse.Output(context, Treap.Empty(), step, stop = false)
+          case n: Treap.NodeWithRight[K, Ord] => Traverse.Output(n.right, context, step, stop = false)
+          case _ => Traverse.Output(Treap.Empty(), context, step, stop = false)
         }
         case TraverseStep.Up => context.stack match {
-          case head :: _ => Traverse.Output(context, head._1, step, stop = false)
-          case _ => Traverse.Output(context, Treap.Empty(), TraverseStep.None, stop = true)
+          case head :: _ => Traverse.Output(head._1, context, step, stop = false)
+          case _ => Traverse.Output(Treap.Empty(), context, TraverseStep.None, stop = true)
         }
-        case TraverseStep.None => Traverse.Output(context, tree, TraverseStep.None, stop = true)
+        case TraverseStep.None => Traverse.Output(tree, context, TraverseStep.None, stop = true)
       }
-      output.eval(NodeVisitStack())
+      output.eval(evalFunc)
     }
 
   def nonEmpty[K, Ord <: Order[K]](
-    navigate: NavigateFunc[K, Ord]
+    navigateFunc: NavigateFunc[K, Ord],
+    evalFunc: NodeVisitStack.EvalFunc[K, Ord]
   ): Traverse.DefaultFunc[K, Ord, Context[K, Ord]] = (tree, context) => {
       @tailrec
       def traverse(tree: Treap[K, Ord], context: Context[K, Ord]): Output[K, Ord] = {
-        val step = navigate(tree, context)
+        val step = navigateFunc(tree, context)
         step match {
           case TraverseStep.Left => tree match {
-            case n: Treap.NodeWithLeft[K, Ord] => Traverse.Output(context, n.left, step, stop = false)
+            case n: Treap.NodeWithLeft[K, Ord] => Traverse.Output(n.left, context, step, stop = false)
             case _ => traverse(tree, context.leftVisitAdded())
           }
           case TraverseStep.Right => tree match {
-            case n: Treap.NodeWithRight[K, Ord] => Traverse.Output(context, n.right, step, stop = false)
+            case n: Treap.NodeWithRight[K, Ord] => Traverse.Output(n.right, context, step, stop = false)
             case _ => traverse(tree, context.rightVisitAdded())
           }
           case TraverseStep.Up => context.stack match {
-            case head :: _ => Traverse.Output(context, head._1, step, stop = false)
-            case _ => Traverse.Output(context, Treap.Empty(), TraverseStep.None, stop = true)
+            case head :: _ => Traverse.Output(head._1, context, step, stop = false)
+            case _ => Traverse.Output(Treap.Empty(), context, TraverseStep.None, stop = true)
           }
-          case TraverseStep.None => Traverse.Output(context, tree, TraverseStep.None, stop = true)
+          case TraverseStep.None => Traverse.Output(tree, context, TraverseStep.None, stop = true)
         }
       }
-      traverse(tree, context).eval(NodeVisitStack())
+      traverse(tree, context).eval(evalFunc)
     }
 
   def leftFirstNavigate[K, Ord <: Order[K]]: NavigateFunc[K, Ord] =

@@ -43,7 +43,10 @@ class TreapSpec extends AnyFunSpec {
       NodeVisitStack.Context[Int, Order[Int]](TraverseVisit.None, Nil),
       ()
     )(
-      DepthFirst.nonEmpty(DepthFirst.leftFirstNavigate),
+      DepthFirst.nonEmpty(
+        DepthFirst.leftFirstNavigate,
+        NodeVisitStack()
+      ),
       CallTrace.toConsole
     )
   }
