@@ -11,8 +11,9 @@ case class IntervalMapping[@sp(spNum) +E, @sp(Boolean) +V](
 
 object IntervalMapping {
 
-  def bounded[E, V](leftBound: Bound.Lower[E], rightBound: Bound.Upper[E], value: V): IntervalMapping[E, V] =
-    IntervalMapping(Interval.Bounded(leftBound, rightBound), value)
+  def empty[V](value: V): IntervalMapping[Nothing, V] = IntervalMapping(Interval.Empty, value)
+
+  def unbounded[V](value: V): IntervalMapping[Nothing, V] = IntervalMapping(Interval.Unbounded, value)
 
   def leftUnbounded[E, V](rightBound: Bound.Upper[E], value: V): IntervalMapping[E, V] =
     IntervalMapping(Interval.LeftUnbounded(rightBound), value)
@@ -20,7 +21,8 @@ object IntervalMapping {
   def rightUnbounded[E, V](leftBound: Bound.Lower[E], value: V): IntervalMapping[E, V] =
     IntervalMapping(Interval.RightUnbounded(leftBound), value)
 
-  def unbounded[V](value: V): IntervalMapping[Nothing, V] = IntervalMapping(Interval.Unbounded, value)
+  def bounded[E, V](leftBound: Bound.Lower[E], rightBound: Bound.Upper[E], value: V): IntervalMapping[E, V] =
+    IntervalMapping(Interval.Bounded(leftBound, rightBound), value)
 
   implicit def defaultHash[E, V](implicit hashI: Hash[Interval[E]], hashV: Hash[V]): Hash[IntervalMapping[E, V]] =
     new DefaultHash()(hashI, hashV)

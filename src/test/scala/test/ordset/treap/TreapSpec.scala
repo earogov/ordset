@@ -24,7 +24,6 @@ class TreapSpec extends AnyFunSpec {
   it("should reduce tree") {
 
     import cats.instances.list._
-    import cats.instances.tuple._
 
     type Ord = ordset.Order[Int]
     implicit val Ord: Order[Int] = ordset.OrderWithDir.intAscOrderWithDir
@@ -40,12 +39,12 @@ class TreapSpec extends AnyFunSpec {
 
     Reduce(
       treap,
-      NodeVisitStack.Context[Int, Order[Int]](TraverseVisit.None, Nil),
+      new NodeVisitStack.Context[Int, Order[Int]](TraverseVisit.None, Nil),
       ()
     )(
       DepthFirst.nonEmpty(
         DepthFirst.leftFirstNavigate,
-        NodeVisitStack()
+        NodeVisitStack.of(treap)
       ),
       CallTrace.toConsole
     )

@@ -1,5 +1,6 @@
 package ordset.syntax
 
+import ordset.Interval.RightUnbounded
 import ordset.{Bound, Interval, IntervalMapping}
 
 import scala.Specializable.{AllNumeric => spNum}
@@ -29,4 +30,10 @@ object SetBuilderNotation {
 
     def &(right: Bound.Upper[E]): Interval.Bounded[E] = Interval.Bounded(left, right)
   }
+
+  implicit def toLeftUnbounded[@sp(spNum) E](right: Bound.Upper[E]): Interval.LeftUnbounded[E] =
+    Interval.LeftUnbounded(right)
+
+  implicit def toRightUnbounded[@sp(spNum) E](left: Bound.Lower[E]): Interval.RightUnbounded[E] =
+    Interval.RightUnbounded(left)
 }

@@ -32,7 +32,7 @@ object Bound {
 
   implicit def defaultAscOrder[E](implicit elemOrd: AscOrder[E]): AscOrder[Bound[E]] = new DefaultOrder(elemOrd)
 
-  implicit def defaultDescOrder[E](implicit elemOrd: DescOrder[E]): DescOrder[Bound[E]] = new DefaultOrder(elemOrd)
+  def defaultDescOrder[E](implicit elemOrd: DescOrder[E]): DescOrder[Bound[E]] = new DefaultOrder(elemOrd)
 
   implicit def defaultHash[E](implicit hash: Hash[E]): Hash[Bound[E]] = new DefaultHash[E]()(hash)
 
@@ -52,7 +52,16 @@ object Bound {
     override def toString: String = s"x ${if (isInclusive) "<=" else "<"} $value"
   }
 
-  case class Lower[+E](override val value: E, override val isInclusive: Boolean) extends  Bound[E] {
+  object Upper {
+
+    def max[E](x: Upper[E], y: Upper[E])(implicit order: Order[Bound[E]]): Upper[E] =
+      order.max(x, y).asInstanceOf[Upper[E]]
+
+    def min[E](x: Upper[E], y: Upper[E])(implicit order: Order[Bound[E]]): Upper[E] =
+      order.min(x, y).asInstanceOf[Upper[E]]
+  }
+
+  case class Lower[+E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
 
     override def isUpper: Boolean = false
 
@@ -65,6 +74,15 @@ object Bound {
     override def offset: Int = if (isInclusive) 0 else 1
 
     override def toString: String = s"x ${if (isInclusive) ">=" else ">"} $value"
+  }
+
+  object Lower {
+
+    def max[E](x: Lower[E], y: Lower[E])(implicit order: Order[Bound[E]]): Lower[E] =
+      order.max(x, y).asInstanceOf[Lower[E]]
+
+    def min[E](x: Lower[E], y: Lower[E])(implicit order: Order[Bound[E]]): Lower[E] =
+      order.min(x, y).asInstanceOf[Lower[E]]
   }
 
   class DefaultOrder[E, Dir <: OrderDir](

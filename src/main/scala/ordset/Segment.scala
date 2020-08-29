@@ -8,7 +8,7 @@ import ordset.util.SingleValue
   * So we can move from given segment to the next, previous, first or last.
   * Segments have next hierarchy (subclass -> superclass):
   *
-  *                    Single
+  *                   Single
   *                 ↙        ↘
   *            First         Last
   *          ↗      ↘      ↙      ↘
@@ -16,7 +16,7 @@ import ordset.util.SingleValue
   *          ↘      ↗     ↖       ↗
   *           WithNext      WithPrev
   *                 ↖      ↗
-  *                   Inner
+  *                  Inner
   *
   * For details see description of corresponding traits.
   *
