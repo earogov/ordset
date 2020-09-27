@@ -1,26 +1,27 @@
 package test.ordset
 
-import ordset.ContinuousDomain
+import ordset.domain.Domain
 import org.scalatest.funspec.AnyFunSpec
 
 class ZippedOrderedSetSpec extends AnyFunSpec
-with SegmentSeqCases[Int, ContinuousDomain[Int], Boolean]
-with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
+  with SegmentSeqCases[Int, Domain[Int], Boolean]
+  with SegmentSeqBehaviors[Int, Domain[Int], Boolean] {
 
   import ordset._
   import scala.collection.immutable.ArraySeq
-  import OrderWithDir._
+  import instances.Int._
+  import instances.Boolean._
 
   import scala.language.postfixOps
   import ordset.syntax.SetBuilderNotation._
   import ordset.syntax.BoundSyntax._
   import test.syntax.ArraySyntax._
 
-  type Domain = ContinuousDomain[Int]
-  type SegmentSeq = SetSegmentSeq[Int, Domain]
+  type Dom = Domain[Int]
+  type SegmentSeq = SetSegmentSeq[Int, Dom]
 
-  implicit val domain: Domain = ContinuousDomain()
-
+  val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
+  
   override val emptyCase: Option[SegmentSeq] = Some(
     // f union c:
     //                                              out
@@ -48,12 +49,12 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     ZippedOrderedSet.union(
       ZippedOrderedSet.intersection(
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = false
         ),
         // a
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           ArraySeq.empty,
           complement = false
         )
@@ -61,11 +62,11 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
       // f
       ZippedOrderedSet.intersection(
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = false),
         // ~b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = true
         )
@@ -101,11 +102,11 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
       // c
       ZippedOrderedSet.union(
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = false),
         // a
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           ArraySeq.empty,
           complement = true
         )
@@ -113,11 +114,11 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
       // f
       ZippedOrderedSet.union(
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = false),
         // ~b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = true
         )
@@ -143,17 +144,17 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     // X--------------------------------------------------------------------------------------------------------X
     ZippedOrderedSet.union(
       // b
-      new ArrayOrderedSet[Int, Domain](
+      new ArrayOrderedSet[Int, Dom](
         Array(0`](`).toImmutableArraySeq,
         complement = true),
       // c
       ZippedOrderedSet.union(
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`).toImmutableArraySeq,
           complement = true),
         // a
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           ArraySeq.empty,
           complement = false)
       )
@@ -186,19 +187,19 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
     ZippedOrderedSet.intersection(
       // c
-      new ArrayOrderedSet[Int, Domain](
+      new ArrayOrderedSet[Int, Dom](
         Array(7`)[`, 20`](`, 25`)[`, 35`](`).toImmutableArraySeq,
         complement = true
       ),
       // d
       ZippedOrderedSet.union(
         // a
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
           complement = true
         ),
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(5`)[`, 12`](`, 20`)[`, 30`](`, 60`)[`).toImmutableArraySeq,
           complement = false
         )
@@ -228,17 +229,17 @@ with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
     // X--------0)|(0--------------10)[10--------------20)|(20---------------30)[30-----------------------------X
     ZippedOrderedSet.intersection(
       // d
-      new ArrayOrderedSet[Int, Domain](
+      new ArrayOrderedSet[Int, Dom](
         ArraySeq.empty,
         complement = true),
       // c
       ZippedOrderedSet.union(
         // b
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`)[`, 0`](`, 30`](`).toImmutableArraySeq,
           complement = false),
         // a
-        new ArrayOrderedSet[Int, Domain](
+        new ArrayOrderedSet[Int, Dom](
           Array(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`).toImmutableArraySeq,
           complement = false)
       )

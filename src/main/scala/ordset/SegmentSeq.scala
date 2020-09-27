@@ -1,9 +1,12 @@
 package ordset
 
+import ordset.domain.{Domain, DomainOps}
+
 import scala.{specialized => sp}
 import scala.Specializable.{AllNumeric => spNum}
 
-/** Representation of ordered sequence of elements with identifier of type `E`.
+/**
+  * Representation of ordered sequence of elements with identifier of type `E`.
   * It's encoded by a sequence of segments which covers universal set without gaps and overlapping.
   * `Boolean` value is assigned to each segment indicating whether it belongs to set:
   *
@@ -18,7 +21,7 @@ import scala.Specializable.{AllNumeric => spNum}
   */
 trait SegmentSeq[@sp(spNum) E, D <: Domain[E]  @sp(Boolean), W] {
 
-  implicit val domain: D
+  implicit val domainOps: DomainOps[E, D]
 
   /** @return true if sequence is empty i.e. contains no elements. */
   def isEmpty: Boolean

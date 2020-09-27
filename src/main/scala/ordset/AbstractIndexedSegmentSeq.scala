@@ -1,6 +1,9 @@
 package ordset
 
-/** Representation of ordered sequence of elements with identifier of type `E`.
+import ordset.domain.{Domain, DomainOps}
+
+/**
+  * Representation of ordered sequence of elements with identifier of type `E`.
   * It's encoded by a sequence of segments which covers universal set without gaps and overlapping.
   * `Boolean` value is assigned to each segment indicating whether it belongs to set:
   *
@@ -27,6 +30,8 @@ package ordset
   */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
+  import domainOps._
+
   /** @return true if sequence is empty i.e. contains no elements. */
   final override def isEmpty: Boolean = bounds.isEmpty && !complement
 
@@ -37,19 +42,24 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   final override def contains(bound: Bound[E]): Boolean = belongsToSet(searchSegmentFromBegin(bound))
 
   /** @return true if sequence contains `element`. */
-  final override def contains(element: E): Boolean = belongsToSet(searchSegmentFromBegin(Bound(element)))
+  final override def contains(element: E): Boolean =
+    belongsToSet(searchSegmentFromBegin(Bound.Upper.inclusive(element)))
 
   /** @return first segment of sequence. */
-  final override def firstSegment: Segment.First[E, D, W] = if (bounds.isEmpty) IndexedSingleSegment() else IndexedInitialSegment()
+  final override def firstSegment: Segment.First[E, D, W] =
+    if (bounds.isEmpty) IndexedSingleSegment() else IndexedInitialSegment()
 
   /** @return last segment of sequence. */
-  final override def lastSegment: Segment.Last[E, D, W] = if (bounds.isEmpty) IndexedSingleSegment() else IndexedTerminalSegment()
+  final override def lastSegment: Segment.Last[E, D, W] =
+    if (bounds.isEmpty) IndexedSingleSegment() else IndexedTerminalSegment()
 
   /** @return segment containing `bound`. */
-  final override def getSegment(bound: Bound[E]): Segment[E, D, W] = makeSegment(searchSegmentFromBegin(bound))
+  final override def getSegment(bound: Bound[E]): Segment[E, D, W] =
+    makeSegment(searchSegmentFromBegin(bound))
 
   /** @return segment containing `element`. */
-  final override def getSegment(element: E): Segment[E, D, W] = makeSegment(searchSegmentFromBegin(Bound(element)))
+  final override def getSegment(element: E): Segment[E, D, W] =
+    makeSegment(searchSegmentFromBegin(Bound.Upper.inclusive(element)))
 
   /** Sequence of upper bounds of segments. */
   protected val bounds: collection.Seq[Bound.Upper[E]]
@@ -89,17 +99,17 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     * @return interval that corresponds to the segment with index `ind`.
     * @note preconditions: 1. 0 <= `ind` <= `bounds.length` (last index of segments).
     */
-  protected final def getInterval(ind: Int): Interval[E] =
-    if      (bounds.isEmpty)       Interval.Unbounded
-    else if (ind <= 0)             Interval.LeftUnbounded(getUpperBound(0))
-    else if (ind >= bounds.length) Interval.RightUnbounded(getLowerBound(lastSegmentIndex))
-    else                           Interval.Bounded(getLowerBound(ind), getUpperBound(ind))
+  protected final def getInterval(ind: Int): Interval[E, D] =
+    if      (bounds.isEmpty)       interval.universal
+    else if (ind <= 0)             interval(getUpperBound(0))
+    else if (ind >= bounds.length) interval(getLowerBound(lastSegmentIndex))
+    else                           interval(getLowerBound(ind), getUpperBound(ind))
 
   /**
     * @return interval and value that correspond to the segment with index `ind`.
     * @note preconditions: 1. 0 <= `ind` <= `bounds.length` (last index of segments).
     */
-  protected final def getIntervalMapping(ind: Int): IntervalMapping[E, W] =
+  protected final def getIntervalMapping(ind: Int): IntervalMapping[E, D, W] =
     IntervalMapping(getInterval(ind), getSegmentValue(ind))
 
   /**
@@ -159,7 +169,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
     protected val ind: Int
 
-    override def domain: D = seq.domain
+    override def domainOps: DomainOps[E, D] = seq.domainOps
 
     override def value: W = getSegmentValue(ind)
 
@@ -219,7 +229,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
   protected sealed case class IndexedSingleSegment() extends SingleSegment {
 
-    override def domain: D = seq.domain
+    override def domainOps: DomainOps[E, D] = seq.domainOps
 
     override def value: W = getSegmentValue(0)
   }

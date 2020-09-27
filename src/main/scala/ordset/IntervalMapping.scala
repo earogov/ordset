@@ -1,38 +1,31 @@
 package ordset
 
-import scala.{specialized => sp}
-import scala.Specializable.{AllNumeric => spNum}
+import ordset.domain.Domain
 
-case class IntervalMapping[@sp(spNum) +E, @sp(Boolean) +V](
-    interval: Interval[E], value: V) {
+import scala.{specialized => sp}
+
+case class IntervalMapping[E, D <: Domain[E], @sp(Boolean) +V](
+    interval: Interval[E, D], value: V) {
 
   override def toString: String = s"$value forAll $interval"
 }
 
 object IntervalMapping {
 
-  def empty[V](value: V): IntervalMapping[Nothing, V] = IntervalMapping(Interval.Empty, value)
+  implicit def defaultHash[E, D <: Domain[E], V](
+    implicit intervalHash: Hash[Interval[E, D]], valueHash: Hash[V]): Hash[IntervalMapping[E, D, V]] =
+    new DefaultHash()(intervalHash, valueHash)
 
-  def unbounded[V](value: V): IntervalMapping[Nothing, V] = IntervalMapping(Interval.Unbounded, value)
+  class DefaultHash[E, D <: Domain[E], V]()(
+    implicit intervalHash: Hash[Interval[E, D]], valueHash: Hash[V]
+  ) extends Hash[IntervalMapping[E, D, V]] {
 
-  def leftUnbounded[E, V](rightBound: Bound.Upper[E], value: V): IntervalMapping[E, V] =
-    IntervalMapping(Interval.LeftUnbounded(rightBound), value)
-
-  def rightUnbounded[E, V](leftBound: Bound.Lower[E], value: V): IntervalMapping[E, V] =
-    IntervalMapping(Interval.RightUnbounded(leftBound), value)
-
-  def bounded[E, V](leftBound: Bound.Lower[E], rightBound: Bound.Upper[E], value: V): IntervalMapping[E, V] =
-    IntervalMapping(Interval.Bounded(leftBound, rightBound), value)
-
-  implicit def defaultHash[E, V](implicit hashI: Hash[Interval[E]], hashV: Hash[V]): Hash[IntervalMapping[E, V]] =
-    new DefaultHash()(hashI, hashV)
-
-  class DefaultHash[E, V](implicit hashI: Hash[Interval[E]], hashV: Hash[V]) extends Hash[IntervalMapping[E, V]] {
     import util.Hash._
 
-    override def hash(x: IntervalMapping[E, V]): Int = product2Hash(hashI.hash(x.interval), hashV.hash(x.value))
+    override def hash(x: IntervalMapping[E, D, V]): Int =
+      product2Hash(intervalHash.hash(x.interval), valueHash.hash(x.value))
 
-    override def eqv(x: IntervalMapping[E, V], y: IntervalMapping[E, V]): Boolean =
-      hashI.eqv(x.interval, y.interval) && hashV.eqv(x.value, y.value)
+    override def eqv(x: IntervalMapping[E, D, V], y: IntervalMapping[E, D, V]): Boolean =
+      intervalHash.eqv(x.interval, y.interval) && valueHash.eqv(x.value, y.value)
   }
 }

@@ -1,39 +1,53 @@
 package ordset.syntax
 
-import ordset.Interval.RightUnbounded
-import ordset.{Bound, Interval, IntervalMapping}
+import ordset.domain.{Domain, DomainOps}
+import ordset.{Interval, IntervalMapping}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
 object SetBuilderNotation {
 
-  object x {
+  trait BoundBuilder[@sp(spNum) E, D <: Domain[E]] extends Any {
 
-    def >[@sp(spNum) E](value: E): Bound.Lower[E] = Bound.Lower(value, isInclusive = false)
+    def domainOps: DomainOps[E, D]
 
-    def >=[@sp(spNum) E](value: E): Bound.Lower[E] = Bound.Lower(value, isInclusive = true)
+    def >(value: E): DomainBound.Lower[E, D] = DomainBound.Lower(domainOps, value, isInclusive = false)
 
-    def <[@sp(spNum) E](value: E): Bound.Upper[E] = Bound.Upper(value, isInclusive = false)
+    def >=(value: E): DomainBound.Lower[E, D] = DomainBound.Lower(domainOps, value, isInclusive = true)
 
-    def <=[@sp(spNum) E](value: E): Bound.Upper[E] = Bound.Upper(value, isInclusive = true)
+    def <(value: E): DomainBound.Upper[E, D] = DomainBound.Upper(domainOps, value, isInclusive = false)
+
+    def <=(value: E): DomainBound.Upper[E, D] = DomainBound.Upper(domainOps, value, isInclusive = true)
   }
 
-  implicit def xToUnbounded(value: x.type): Interval.Unbounded.type = Interval.Unbounded
+  object BoundBuilder {
 
-  implicit class ToIntervalMapping[@sp(Boolean) +V](val value: V) {
+    def apply[E, D <: Domain[E]](implicit domainOps: DomainOps[E, D]): BoundBuilder[E, D] =
+      new DefaultImpl[E, D](domainOps)
 
-    def forAll[@sp(spNum) E](interval: Interval[E]): IntervalMapping[E, V] = IntervalMapping(interval, value)
+    class DefaultImpl[E, D <: Domain[E]](override val domainOps: DomainOps[E, D]) extends BoundBuilder[E, D]
   }
 
-  implicit class ToBoundedInterval[@sp(spNum) E](val left: Bound.Lower[E]) {
+  implicit def boundBuilderToUniversal[E, D <: Domain[E]](builder: BoundBuilder[E, D]): Interval[E, D] =
+    builder.domainOps.interval.universal
 
-    def &(right: Bound.Upper[E]): Interval.Bounded[E] = Interval.Bounded(left, right)
+  implicit class BoundsToInterval[@sp(spNum) E, D <: Domain[E]](val lower: DomainBound.Lower[E, D]) {
+
+    def &(upper: DomainBound.Upper[E, D]): Interval[E, D] = lower.domainOps.interval(lower.bound, upper.bound)
   }
 
-  implicit def toLeftUnbounded[@sp(spNum) E](right: Bound.Upper[E]): Interval.LeftUnbounded[E] =
-    Interval.LeftUnbounded(right)
+  implicit def upperBoundToInterval[@sp(spNum) E, D <: Domain[E]](upper: DomainBound.Upper[E, D])(
+    implicit domainOps: DomainOps[E, D]): Interval[E, D] =
+    upper.domainOps.interval(upper.bound)
 
-  implicit def toRightUnbounded[@sp(spNum) E](left: Bound.Lower[E]): Interval.RightUnbounded[E] =
-    Interval.RightUnbounded(left)
+  implicit def lowerBoundToInterval[@sp(spNum) E, D <: Domain[E]](lower: DomainBound.Lower[E, D])(
+    implicit domainOps: DomainOps[E, D]): Interval[E, D] =
+    lower.domainOps.interval(lower.bound)
+
+  implicit class ValueToIntervalMapping[@sp(Boolean) +V](val value: V) {
+
+    def forAll[@sp(spNum) E, D <: Domain[E]](interval: Interval[E, D]): IntervalMapping[E, D, V] =
+      IntervalMapping(interval, value)
+  }
 }

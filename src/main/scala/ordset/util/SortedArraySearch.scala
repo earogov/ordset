@@ -1,9 +1,11 @@
-package ordset
+package ordset.util
 
-import scala.{specialized => sp}
+import ordset.Order
+
 import scala.Specializable.{AllNumeric => spNum}
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
+import scala.{specialized => sp}
 
 object SortedArraySearch {
 

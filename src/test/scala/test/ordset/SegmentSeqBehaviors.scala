@@ -1,6 +1,6 @@
 package test.ordset
 
-import ordset.Domain
+import ordset.domain.Domain
 import org.scalatest.funspec.AnyFunSpec
 
 trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
@@ -9,13 +9,20 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
   import scala.annotation.tailrec
 
   def segmentsSupportMovePrevAndNext(
-      descr: String, segmentSeq: SegmentSeq[E, D, V], expected: Seq[IntervalMapping[E, V]]): Unit = {
+    descr: String,
+    segmentSeq: SegmentSeq[E, D, V],
+    expected: Seq[IntervalMapping[E, D, V]]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit = {
+
+    val intervalMappingHash = segmentSeq.domainOps.intervalMappingHash
 
     it(s"should move to the next segment if there is one for $descr") {
       @tailrec
-      def loop(seg: Segment[E, D, V], exp: Seq[IntervalMapping[E, V]]): Unit = exp match {
+      def loop(seg: Segment[E, D, V], exp: Seq[IntervalMapping[E, D, V]]): Unit = exp match {
         case e :: es =>
-          assert(seg.intervalMapping == e)
+          assert(intervalMappingHash.eqv(seg.intervalMapping, e))
           seg match {
             case s: Segment.WithNext[E, D, V] => loop(s.moveNext, es)
             case _ => // end
@@ -27,9 +34,9 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
 
     it(s"should move to the previous segment if there is one for $descr") {
       @tailrec
-      def loop(seg: Segment[E, D, V], exp: Seq[IntervalMapping[E, V]]): Unit = exp match {
+      def loop(seg: Segment[E, D, V], exp: Seq[IntervalMapping[E, D, V]]): Unit = exp match {
         case e :: es =>
-          assert(seg.intervalMapping == e)
+          assert(intervalMappingHash.eqv(seg.intervalMapping, e))
           seg match {
             case s: Segment.WithPrev[E, D, V] => loop(s.movePrev, es)
             case _ => // end
@@ -41,14 +48,21 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
   }
 
   def segmentsSupportMoveToBound(
-      descr: String, segmentSeq: SegmentSeq[E, D, V], moveSeq: Seq[(Bound[E], IntervalMapping[E, V])]): Unit = {
+    descr: String,
+    segmentSeq: SegmentSeq[E, D, V],
+    moveSeq: Seq[(Bound[E], IntervalMapping[E, D, V])]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit = {
+
+    val intervalMappingHash = segmentSeq.domainOps.intervalMappingHash
 
     it(s"should move to the specified bound for $descr") {
       @tailrec
-      def loop(seg: Segment[E, D, V], moveSeq: Seq[(Bound[E], IntervalMapping[E, V])]): Unit = moveSeq match {
+      def loop(seg: Segment[E, D, V], moveSeq: Seq[(Bound[E], IntervalMapping[E, D, V])]): Unit = moveSeq match {
         case (bnd, exp) :: xs =>
           val next = seg.moveTo(bnd)
-          assert(next.intervalMapping == exp)
+          assert(intervalMappingHash.eqv(next.intervalMapping, exp))
           loop(next, xs)
         case _ => // end
       }
@@ -57,13 +71,21 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
   }
 
   def segmentsSupportMoveToFirstAndLast(
-    descr: String, seq: SegmentSeq[E, D, V], firstExp: IntervalMapping[E, V], lastExp: IntervalMapping[E, V]): Unit = {
+    descr: String,
+    seq: SegmentSeq[E, D, V],
+    firstExp: IntervalMapping[E, D, V],
+    lastExp: IntervalMapping[E, D, V]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit = {
+
+    val intervalMappingHash = seq.domainOps.intervalMappingHash
 
     it(s"should move to the first and last segments for $descr") {
       @tailrec
       def loop(seg: Segment[E, D, V]): Unit = {
-        assert(seg.moveToFirst.intervalMapping == firstExp)
-        assert(seg.moveToLast.intervalMapping == lastExp)
+        assert(intervalMappingHash.eqv(seg.moveToFirst.intervalMapping, firstExp))
+        assert(intervalMappingHash.eqv(seg.moveToLast.intervalMapping, lastExp))
         seg match {
           case n: Segment.WithNext[E, D, V] => loop(n.moveNext)
           case _ => // end
@@ -73,7 +95,10 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
     }
   }
 
-  def segmentsHaveNextAndPrevIndicators(descr: String, seq: SegmentSeq[E, D, V]): Unit = {
+  def segmentsHaveNextAndPrevIndicators(
+    descr: String,
+    seq: SegmentSeq[E, D, V]
+  ): Unit = {
 
     it(s"should have valid navigation indicators (`hasNext`, `hasPrev`, `isFirst`, ...) for $descr") {
       @tailrec

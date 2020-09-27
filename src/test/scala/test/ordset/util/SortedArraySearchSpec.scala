@@ -1,4 +1,4 @@
-package test.ordset
+package test.ordset.util
 
 import org.scalatest.funspec._
 
@@ -7,8 +7,9 @@ import scala.collection.immutable.ArraySeq
 trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
 
   import ordset.Order
-  import ordset.SortedArraySearch._
+  import ordset.util.SortedArraySearch._
   import test.syntax.ArraySyntax._
+
   import scala.collection.immutable.ArraySeq
   
   def searchClosestNotGreater(searchFun: (Int, ArraySeq[Int], Order[Int], Int, Int) => Int): Unit = {
@@ -163,7 +164,7 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
 class SortedArraySearchSpec extends AnyFunSpec with SortedArraySearchBehaviors {
 
   import ordset.Order
-  import ordset.SortedArraySearch._
+  import ordset.util.SortedArraySearch._
 
   describe("Binary search in sorted array") {
     

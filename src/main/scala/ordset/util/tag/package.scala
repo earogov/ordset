@@ -1,4 +1,4 @@
-package ordset
+package ordset.util
 
 package object tag {
 

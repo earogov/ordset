@@ -1,6 +1,6 @@
 package test.ordset
 
-import ordset.Domain
+import ordset.domain.Domain
 
 trait SegmentSeqCases[E, D <: Domain[E], W] {
   import ordset._

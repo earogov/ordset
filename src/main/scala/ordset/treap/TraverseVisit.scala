@@ -1,7 +1,7 @@
 package ordset.treap
 
 import ordset.Show
-import ordset.tag.TaggedRaw
+import ordset.util.tag.TaggedRaw
 
 object TraverseVisit extends TaggedRaw[Int] {
 

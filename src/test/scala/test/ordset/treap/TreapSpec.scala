@@ -26,7 +26,7 @@ class TreapSpec extends AnyFunSpec {
     import cats.instances.list._
 
     type Ord = ordset.Order[Int]
-    implicit val Ord: Order[Int] = ordset.OrderWithDir.intAscOrderWithDir
+    implicit val Ord: Order[Int] = ordset.instances.Int.intAscOrder
 
     val leaf7 = Treap.Leaf[Int, Ord](2, 2)
     val leaf8 = Treap.Leaf[Int, Ord](4, 1)

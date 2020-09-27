@@ -1,11 +1,13 @@
 package ordset
 
+import ordset.domain.{Domain, DomainOps}
+
 import scala.{specialized => sp}
 import scala.Specializable.{AllNumeric => spNum}
 
-trait SegmentLike[@sp(spNum) E, +D <: Domain[E], @sp(Boolean) +V] {
+trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) +V] {
 
-  def domain: D
+  def domainOps: DomainOps[E, D]
 
   def value: V
 

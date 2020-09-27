@@ -1,8 +1,10 @@
 package ordset
 
+import ordset.domain.Domain
+
 abstract class ArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegmentSeq[E, D, W] {
-  import SortedArraySearch._
-  import domain._
+  import ordset.util.SortedArraySearch._
+  import domainOps._
 
   override protected val bounds: collection.immutable.ArraySeq[Bound.Upper[E]]
 

@@ -1,4 +1,4 @@
-package ordset.tag
+package ordset.util.tag
 
 trait TaggedBase[R, L <: R] {
   type Raw = R

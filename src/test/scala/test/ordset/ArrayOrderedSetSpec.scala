@@ -1,46 +1,54 @@
 package test.ordset
 
-import ordset.ContinuousDomain
+import ordset.domain.Domain
 import org.scalatest.funspec.AnyFunSpec
 
 class ArrayOrderedSetSpec extends AnyFunSpec
-  with SegmentSeqCases[Int, ContinuousDomain[Int], Boolean]
-  with SegmentSeqBehaviors[Int, ContinuousDomain[Int], Boolean] {
+  with SegmentSeqCases[Int, Domain[Int], Boolean]
+  with SegmentSeqBehaviors[Int, Domain[Int], Boolean] {
 
   import ordset._
   import scala.collection.immutable.ArraySeq
-  import OrderWithDir._
+  import instances.Int._
+  import instances.Boolean._
 
   import scala.language.postfixOps
   import ordset.syntax.SetBuilderNotation._
   import ordset.syntax.BoundSyntax._
   import test.syntax.ArraySyntax._
 
-  type Domain = ContinuousDomain[Int]
-  type SegmentSeq = SetSegmentSeq[Int, Domain]
-
-  implicit val domain: Domain = ContinuousDomain()
+  type Dom = Domain[Int]
+  type SegmentSeq = SetSegmentSeq[Int, Dom]
+  
+  val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
 
   override val emptyCase: Option[SegmentSeq] = Some(
-    new ArrayOrderedSet[Int, Domain](ArraySeq.empty, complement = false)
+    new ArrayOrderedSet[Int, Dom](ArraySeq.empty, complement = false)
   )
 
   override val universalCase: Option[SegmentSeq] = Some(
-    new ArrayOrderedSet[Int, Domain](ArraySeq.empty, complement = true)
+    new ArrayOrderedSet[Int, Dom](ArraySeq.empty, complement = true)
   )
 
   override val singleBoundedCase: Option[SegmentSeq] = Some(
-    new ArrayOrderedSet[Int, Domain](Array(0`](`).toImmutableArraySeq, complement = true)
+    new ArrayOrderedSet[Int, Dom](
+      Array(0`](`).toImmutableArraySeq,
+      complement = true
+    )
   )
 
   override val multiBoundedCase: Option[SegmentSeq] = Some(
-    new ArrayOrderedSet[Int, Domain](Array(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
-                                     complement = false)
+    new ArrayOrderedSet[Int, Dom](
+      Array(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+      complement = false
+    )
   )
 
   override val degenerateCase: Option[SegmentSeq] = Some(
-    new ArrayOrderedSet[Int, Domain](Array(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`).toImmutableArraySeq,
-                                     complement = false)
+    new ArrayOrderedSet[Int, Dom](
+      Array(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`).toImmutableArraySeq,
+      complement = false
+    )
   )
 
   describe("Array based ordered set as a segment sequence") {
@@ -60,7 +68,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMovePrevAndNext(
       "single bounded set",
       singleBoundedCase.get,
-      (true forAll x <=  0) ::
+      (true forAll x <= 0) ::
       (false forAll x > 0) ::
       Nil
     )
@@ -163,14 +171,14 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMoveToFirstAndLast(
       "single bounded set",
       singleBoundedCase.get,
-      true forAll x <=  0,
+      true forAll x <= 0,
       false forAll x > 0
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
       "multi bounded set",
       multiBoundedCase.get,
-      false forAll x <  0,
+      false forAll x < 0,
       true forAll x >= 40
     )
 

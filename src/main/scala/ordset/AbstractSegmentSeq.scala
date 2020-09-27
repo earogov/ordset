@@ -1,5 +1,7 @@
 package ordset
 
+import ordset.domain.Domain
+
 abstract class AbstractSegmentSeq[E, D <: Domain[E],  W] extends SegmentSeq[E, D, W] {
 
   protected final type GenSegment = Segment[E, D, W]
