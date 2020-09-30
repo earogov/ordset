@@ -21,7 +21,7 @@ object Domain {
     new DefaultHash[E, D](ordHash)
 
   implicit def defaultShow[E, D <: Domain[E]](implicit orderShow: Show[AscOrder[E]]): Show[D] =
-    new DefaultShow[E, D](Label.commaSeparatedShow, orderShow)
+    new DefaultShow[E, D](Label.setBuilderShow, orderShow)
 
   trait Wrapper[E, D <: Domain[E]] extends Domain[E] {
 
@@ -34,12 +34,12 @@ object Domain {
     override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
   }
 
-  class DefaultImpl[E](override val label: Label, override val elementOrd: AscOrder[E]) extends Domain[E] {
+  final class DefaultImpl[E](override val label: Label, override val elementOrd: AscOrder[E]) extends Domain[E] {
 
     override implicit lazy val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd)
   }
 
-  class DefaultHash[E, D <: Domain[E]](ordHash: Hash[AscOrder[E]]) extends Hash[D] {
+  final class DefaultHash[E, D <: Domain[E]](ordHash: Hash[AscOrder[E]]) extends Hash[D] {
 
     import ordset.util.Hash._
 
@@ -50,7 +50,7 @@ object Domain {
     override def hash(x: D): Int = product2Hash(ordHash.hash(x.elementOrd), labelHash.hash(x.label))
   }
 
-  class DefaultShow[E, D <: Domain[E]](labelShow: Show[Label], orderShow: Show[AscOrder[E]]) extends Show[D] {
+  final class DefaultShow[E, D <: Domain[E]](labelShow: Show[Label], orderShow: Show[AscOrder[E]]) extends Show[D] {
 
     private val domainConst: String = "domain"
     private val orderConst: String = "order"

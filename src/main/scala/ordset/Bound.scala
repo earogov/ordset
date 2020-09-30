@@ -94,7 +94,7 @@ object Bound {
       order.min(x, y).asInstanceOf[Lower[E]]
   }
 
-  class DefaultOrder[E, Dir <: OrderDir](
+  final class DefaultOrder[E, Dir <: OrderDir](
       val elementOrd: DirectedOrder[E, Dir],
       val intOrd: DirectedOrder[Int, Dir]
   )(

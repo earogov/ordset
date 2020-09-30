@@ -19,12 +19,12 @@ object BoundedDomain {
     implicit boundsHash: Hash[Interval[E, D]], domainHash: Hash[D]): Hash[BoundedDomain[E, D]] =
     new DefaultHash[E, D]()(boundsHash, domainHash)
 
-  class DefaultImpl[E, D <: Domain[E]](
+  final class DefaultImpl[E, D <: Domain[E]](
     override val bounds: Interval[E, D],
     override val domain: D
   ) extends BoundedDomain[E, D]
 
-  class DefaultHash[E, D <: Domain[E]]()(
+  final class DefaultHash[E, D <: Domain[E]]()(
     implicit val boundsHash: Hash[Interval[E, D]],
     val domainHash: Hash[D]
   ) extends Hash[BoundedDomain[E, D]] {

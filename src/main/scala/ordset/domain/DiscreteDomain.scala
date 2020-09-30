@@ -19,12 +19,12 @@ object DiscreteDomain {
     implicit discreteHash: Hash[Discrete[E]], domainHash: Hash[D]): Hash[DiscreteDomain[E, D]] =
     new DefaultHash[E, D]()(discreteHash, domainHash)
 
-  class DefaultImpl[E, D <: Domain[E]](
+  final class DefaultImpl[E, D <: Domain[E]](
     override val discrete: Discrete[E],
     override val domain: D
   ) extends DiscreteDomain[E, D]
 
-  class DefaultHash[E, D <: Domain[E]]()(
+  final class DefaultHash[E, D <: Domain[E]]()(
     implicit val discreteHash: Hash[Discrete[E]],
     val domainHash: Hash[D]
   ) extends Hash[DiscreteDomain[E, D]] {

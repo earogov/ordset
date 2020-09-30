@@ -197,7 +197,7 @@ object Interval {
 //    }
   }
 
-  class DefaultHash[E, D <: Domain[E]]()(
+  final class DefaultHash[E, D <: Domain[E]]()(
     implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]
   ) extends Hash[Interval[E, D]] {
 

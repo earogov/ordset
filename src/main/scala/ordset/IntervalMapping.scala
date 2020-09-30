@@ -16,7 +16,7 @@ object IntervalMapping {
     implicit intervalHash: Hash[Interval[E, D]], valueHash: Hash[V]): Hash[IntervalMapping[E, D, V]] =
     new DefaultHash()(intervalHash, valueHash)
 
-  class DefaultHash[E, D <: Domain[E], V]()(
+  final class DefaultHash[E, D <: Domain[E], V]()(
     implicit intervalHash: Hash[Interval[E, D]], valueHash: Hash[V]
   ) extends Hash[IntervalMapping[E, D, V]] {
 

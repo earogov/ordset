@@ -162,7 +162,7 @@ object Segment {
     override def isTerminal: Boolean = true
   }
 
-  class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
+  final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
     implicit dirValue: SingleValue[Dir]
   ) extends DirectedOrder.Abstract[Segment[E, D, Any], Dir] {
 
@@ -190,7 +190,7 @@ object Segment {
     }
   }
 
-  class LowerBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
+  final class LowerBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
     implicit dirValue: SingleValue[Dir]
   ) extends DirectedOrder.Abstract[Segment[E, D, Any], Dir] {
 

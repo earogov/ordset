@@ -27,7 +27,7 @@ object DomainOps {
   def apply[E, D <: Domain[E]](intervalBuilderFunc: DomainOps[E, D] => IntervalBuilder[E, D])(
     implicit domain: D): DomainOps[E, D] = new DefaultImpl(intervalBuilderFunc, domain)
 
-  class DefaultImpl[E, D <: Domain[E]](
+  final class DefaultImpl[E, D <: Domain[E]](
     intervalBuilderFunc: DomainOps[E, D] => IntervalBuilder[E, D],
     override val domain: D
   ) extends DomainOps[E, D] {

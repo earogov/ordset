@@ -20,42 +20,45 @@ package object instances {
   object Boolean {
 
     implicit lazy val booleanAscOrder: AscOrder[Boolean] =
-      new Wrapper(
-        OrderLabels.booleanDefault,
-        kernel.instances.boolean.catsKernelStdOrderForBoolean,
-        kernel.instances.boolean.catsKernelStdOrderForBoolean
-      )
+      new Wrapper(OrderLabels.booleanDefault, booleanOrder, booleanHash)
 
     lazy val booleanDescOrder: DescOrder[Boolean] = booleanAscOrder.reverse
 
-    lazy val booleanHash: Hash[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
+    def booleanOrder: Order[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
+
+    def booleanHash: Hash[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
   }
 
   object Int {
 
     implicit lazy val intAscOrder: AscOrder[Int] =
-      new Wrapper(
-        OrderLabels.intDefault,
-        kernel.instances.int.catsKernelStdOrderForInt,
-        kernel.instances.int.catsKernelStdOrderForInt
-      )
+      new Wrapper(OrderLabels.intDefault, intOrder, intHash)
 
     lazy val intDescOrder: DescOrder[Int] = intAscOrder.reverse
 
-    lazy val intHash: Hash[Int] = kernel.instances.int.catsKernelStdOrderForInt
+    def intOrder: Order[Int] = kernel.instances.int.catsKernelStdOrderForInt
+
+    def intHash: Hash[Int] = kernel.instances.int.catsKernelStdOrderForInt
   }
 
   object String {
 
-    implicit lazy val stringAscOrder: AscOrder[String] = //kernel.instances.string.catsKernelStdOrderForString
-      new Wrapper(
-        OrderLabels.stringDefault,
-        kernel.instances.string.catsKernelStdOrderForString,
-        kernel.instances.string.catsKernelStdOrderForString
-      )
+    implicit lazy val stringAscOrder: AscOrder[String] =
+      new Wrapper(OrderLabels.stringDefault, stringOrder, stringHash)
 
     lazy val stringDescOrder: Order[String] = stringAscOrder.reverse
 
-    lazy val stringHash: Hash[String] = kernel.instances.string.catsKernelStdOrderForString
+    def stringOrder: Order[String] = kernel.instances.string.catsKernelStdOrderForString
+
+    def stringHash: Hash[String] = kernel.instances.string.catsKernelStdOrderForString
+  }
+
+  object LazyList {
+
+    def lazyListOrder[T](implicit ev: Order[T]): Order[LazyList[T]] =
+      kernel.instances.lazyList.catsKernelStdOrderForLazyList
+
+    def lazyListHash[T](implicit ev: Hash[T]): Hash[LazyList[T]] =
+      kernel.instances.lazyList.catsKernelStdHashForLazyList
   }
 }

@@ -29,7 +29,7 @@ object Domains {
       discrete,
       new BoundedDomain.DefaultImpl(
         bounds,
-        new Domain.DefaultImpl(Label.Empty, elementOrd)
+        new Domain.DefaultImpl(Label.empty, elementOrd)
       )
     )
 }
