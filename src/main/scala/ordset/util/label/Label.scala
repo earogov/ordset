@@ -2,15 +2,30 @@ package ordset.util.label
 
 import ordset.{Hash, Order, Show}
 
+import scala.annotation.tailrec
 import scala.collection.immutable.{Queue, TreeSet}
 
 /**
- * Labels are used to distinguish abstract entities such that orders, domains etc. Each abstract instance is equipped
- * with some label which is used for equality checks and hash calculations. Also label can be included in string
- * representation of entity.
+ * Labels are used to identify abstract entities such that orders, domains etc. Label assigned to entity may be used
+ * for equality checks and hash calculations. Also it can be included in string representation of entity.
+ *
  * Labels support two composition operations:
- * - unordered:   a <+> b == b <+> a
- * - ordered:     a +> b != b +> a    (if a != b)
+ * - Unordered
+ *   Creates set of labels:
+ *                               a <+> b == b <+> a
+ *                               a <+> a == a
+ * - Ordered
+ *   Creates sequence of labels:
+ *                               a +> b != b +> a    (if a != b, a != Empty, b != Empty)
+ *                               a +> a != a
+ *
+ * @note
+ * - Empty label is a zero element for all composition operations:
+ *                               Empty <+> a == a <+> Empty == a
+ *                               Empty +> a == a +> Empty == a
+ *
+ * - Labels set is not equivalent to sequence even if all their elements are the same:
+ *                               a <+> b != a +> b
  *
  * @example
  * 1. We can assign labels to different properties of domains: Bounded, Discrete, Continuous ...
@@ -22,112 +37,185 @@ import scala.collection.immutable.{Queue, TreeSet}
  *    the same property:
  *    BySalary_Desc +> ByName_Asc != ByName_Asc +> BySalary_Desc
  */
-sealed trait Label {
+sealed trait Label extends Comparable[Label] {
 
-  def values: List[String]
+  def tokens: LazyList[Token]
 
   def <+>(that: Label): Label
 
   def +>(that: Label): Label
+
+  override def toString: String = Label.defaultShow.show(this)
+
+  override def compareTo(o: Label): Int = Label.defaultOrder.compare(this, o)
+
+  override def equals(obj: Any): Boolean = obj match {
+    case obj: Label => Label.defaultOrder.eqv(this, obj)
+    case _ => false
+  }
+
+  override def hashCode(): Int = Label.defaultOrder.hash(this)
 }
 
 object Label {
 
-  lazy val Empty: Label = new EmptyLabel
+  def empty: Label = EmptyLabel
 
   def apply(value: String): Label = new UnitLabel(value)
 
-  implicit lazy val defaultOrder: Order[Label] with Hash[Label] = new DefaultOrder
+  def defaultShow: Show[Label] = labelBuilderShow
 
-  implicit lazy val defaultShow: Show[Label] = Show.fromToString
+  implicit lazy val labelBuilderShow: Show[Label] =
+    new DefaultShow(Token.LabelBuilderShow)
 
-  val commaSeparatedShow: Show[Label] = new CommaSeparatedShow
+  lazy val setBuilderShow: Show[Label] =
+    new DefaultShow(Token.SetBuilderShow)
 
-  final class DefaultOrder extends Order[Label] with Hash[Label] {
+  lazy val commaSeparatedShow: Show[Label] =
+    new DefaultShow(Token.CommaSeparatedShow)
 
-    private val valuesOrdering: Ordering[List[String]] = Ordering.Implicits.seqOrdering(Ordering.String)
+  implicit lazy val defaultOrder: Order[Label] with Hash[Label] =
+    new DefaultOrder(Token.defaultOrder, Token.defaultOrder)
 
-    override def compare(x: Label, y: Label): Int = valuesOrdering.compare(x.values, y.values)
+  final class DefaultOrder(
+    val tokenOrder: Order[Token],
+    val tokenHash: Hash[Token]
+  ) extends Order[Label] with Hash[Label] {
 
-    override def eqv(x: Label, y: Label): Boolean = valuesOrdering.equiv(x.values, y.values)
+    import ordset.instances.LazyList.{lazyListHash, lazyListOrder}
 
-    override def hash(x: Label): Int = x.values.hashCode()
+    private val tokensOrder: Order[LazyList[Token]] = lazyListOrder(tokenOrder)
+
+    private val tokensHash: Hash[LazyList[Token]] = lazyListHash(tokenHash)
+
+    override def compare(x: Label, y: Label): Int = tokensOrder.compare(x.tokens, y.tokens)
+
+    override def eqv(x: Label, y: Label): Boolean = tokensOrder.eqv(x.tokens, y.tokens)
+
+    override def hash(x: Label): Int = tokensHash.hash(x.tokens)
   }
 
-  final class CommaSeparatedShow extends Show[Label] {
+  final class DefaultShow(
+    val tokenShow: Show[Token]
+  ) extends Show[Label] {
 
-    override def show(t: Label): String = t.values.mkString(",")
+    override def show(t: Label): String = {
+      val builder = new StringBuilder
+      t.tokens.foreach(x => builder.append(Token.defaultShow.show(x)))
+      builder.result()
+    }
   }
 
-  private class EmptyLabel() extends Label {
+  private object EmptyLabel extends Label {
 
-    override def values: List[String] = List.empty
+    override def tokens: LazyList[Token] = LazyList.empty
 
-    override def <+>(that: Label): Label = LabelSet(that)
+    override def <+>(that: Label): Label = that
 
-    override def +>(that: Label): Label = LabelSeq(that)
-
-    override def toString: String = ""
+    override def +>(that: Label): Label = that
   }
 
   private class UnitLabel(val value: String) extends Label {
 
-    override val values: List[String] = List(value)
-
-    override def <+>(that: Label): Label = LabelSet(this, that)
-
-    override def +>(that: Label): Label = LabelSeq(this, that)
-
-    override def toString: String = value
-  }
-
-  private class LabelSet(val labels: TreeSet[Label]) extends Label {
-
-    override lazy val values: List[String] = labels.toList.flatMap(_.values)
+    override def tokens: LazyList[Token] = LazyList(Token.Element(value))
 
     override def <+>(that: Label): Label = that match {
-      case that: LabelSet => new LabelSet(that.labels.concat(this.labels))
-      case _ => new LabelSet(this.labels.incl(that))
+      case EmptyLabel => this
+      case that: LabelSet => LabelSet.fromLabelSet(that, this)
+      case _ => LabelSet.fromLabels(this, that)
     }
 
     override def +>(that: Label): Label = that match {
-      case that: LabelSeq => new LabelSeq(that.labels.prepended(this))
-      case _ => LabelSeq(this, that)
+      case EmptyLabel => this
+      case that: LabelSeq => LabelSeq.fromLabelsSeqPrepending(this, that)
+      case _ => LabelSeq.fromLabels(this, that)
+    }
+  }
+
+  private abstract class ComposedLabel(val labels: Iterable[Label]) extends Label {
+
+    override def tokens: LazyList[Token] = {
+      @tailrec
+      def merge(head: LazyList[Token], iterator: Iterator[Label], index: Int): LazyList[Token] =
+        if (iterator.hasNext) {
+          val ind = index + 1
+          val ll = LazyList.from(iterator.next().tokens)
+          if (index == 0) merge(head.appendedAll(ll), iterator, ind)
+          else merge(head.appended(separatorToken).appendedAll(ll), iterator, ind)
+        } else head
+      merge(LazyList(openToken), labels.iterator, 0).appended(closeToken)
     }
 
-    override def toString: String = values.mkString(" <+> ")
+    protected def openToken: Token
+
+    protected def closeToken: Token
+
+    protected def separatorToken: Token
+  }
+
+  private class LabelSet(override val labels: TreeSet[Label]) extends ComposedLabel(labels) {
+
+    override def <+>(that: Label): Label = that match {
+      case EmptyLabel => this
+      case that: LabelSet => LabelSet.fromLabelSets(this, that)
+      case _ => LabelSet.fromLabelSet(this, that)
+    }
+
+    override def +>(that: Label): Label = that match {
+      case EmptyLabel => this
+      case that: LabelSeq => LabelSeq.fromLabelsSeqPrepending(this, that)
+      case _ => LabelSeq.fromLabels(this, that)
+    }
+
+    override protected def openToken: Token = Token.SetOpen
+
+    override protected def closeToken: Token = Token.SetClose
+
+    override protected def separatorToken: Token = Token.SetSeparator
   }
 
   private object LabelSet {
 
     private lazy val DefaultOrdering: Ordering[Label] = defaultOrder.toOrdering
 
-    def apply(x: Label): LabelSet = new LabelSet(TreeSet.empty[Label](DefaultOrdering).incl(x))
+    def fromLabels(x: Label, y: Label): Label =
+      if (DefaultOrdering.equiv(x, y)) x
+      else new LabelSet(TreeSet.empty[Label](DefaultOrdering).incl(x).incl(y))
 
-    def apply(x: Label, y: Label): LabelSet = new LabelSet(TreeSet.empty[Label](DefaultOrdering).incl(x).incl(y))
+    def fromLabelSet(x: LabelSet, y: Label): Label = new LabelSet(x.labels.incl(y))
+
+    def fromLabelSets(x: LabelSet, y: LabelSet): Label = new LabelSet(x.labels.concat(y.labels))
   }
 
-  private class LabelSeq(val labels: Queue[Label]) extends Label {
-
-    override lazy val values: List[String] = labels.toList.flatMap(_.values)
+  private class LabelSeq(override val labels: Queue[Label]) extends ComposedLabel(labels) {
 
     override def <+>(that: Label): Label = that match {
-      case that: LabelSet => new LabelSet(that.labels.incl(this))
-      case _ => LabelSet(this, that)
+      case EmptyLabel => this
+      case that: LabelSet => LabelSet.fromLabelSet(that, this)
+      case _ => LabelSet.fromLabels(this, that)
     }
 
     override def +>(that: Label): Label = that match {
-      case that: LabelSeq => new LabelSeq(that.labels.appendedAll(this.labels))
-      case _ => new LabelSeq(this.labels.appended(that))
+      case EmptyLabel => this
+      case that: LabelSeq => LabelSeq.fromLabelSeqs(this, that)
+      case _ => LabelSeq.fromLabelSeqAppending(this, that)
     }
 
-    override def toString: String = values.mkString(" +> ")
+    override protected def openToken: Token = Token.SeqOpen
+
+    override protected def closeToken: Token = Token.SeqClose
+
+    override protected def separatorToken: Token = Token.SeqSeparator
   }
 
   private object LabelSeq {
 
-    def apply(x: Label): LabelSeq = new LabelSeq(Queue.empty[Label].appended(x))
+    def fromLabels(x: Label, y: Label): Label = new LabelSeq(Queue.empty[Label].appended(x).appended(y))
 
-    def apply(x: Label, y: Label): LabelSeq = new LabelSeq(Queue.empty[Label].appended(x).appended(y))
+    def fromLabelsSeqPrepending(x: Label, y: LabelSeq): Label = new LabelSeq(y.labels.prepended(x))
+
+    def fromLabelSeqAppending(x: LabelSeq, y: Label): Label = new LabelSeq(x.labels.appended(y))
+
+    def fromLabelSeqs(x: LabelSeq, y: LabelSeq): Label = new LabelSeq(x.labels.appendedAll(y.labels))
   }
 }
