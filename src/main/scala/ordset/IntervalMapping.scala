@@ -17,7 +17,8 @@ object IntervalMapping {
     new DefaultHash()(intervalHash, valueHash)
 
   final class DefaultHash[E, D <: Domain[E], V]()(
-    implicit intervalHash: Hash[Interval[E, D]], valueHash: Hash[V]
+    implicit intervalHash: Hash[Interval[E, D]],
+    valueHash: Hash[V]
   ) extends Hash[IntervalMapping[E, D, V]] {
 
     import util.Hash._

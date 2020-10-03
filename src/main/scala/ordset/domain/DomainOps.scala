@@ -1,10 +1,12 @@
 package ordset.domain
 
-import ordset.{Hash, Interval, IntervalBuilder, IntervalMapping, Segment}
+import ordset.{Hash, Interval, IntervalBuilder, IntervalMapping, IntervalOps, Segment}
 
 trait DomainOps[E, D <: Domain[E]] extends Domain.Wrapper[E, D] {
 
   implicit val interval: IntervalBuilder[E, D]
+
+  implicit val intervalOps: IntervalOps[E, D]
 
   implicit lazy val domainHash: Hash[D] = Domain.defaultHash[E, D](DirectedOrder.defaultAscHash)
 
@@ -22,16 +24,28 @@ object DomainOps {
 
   implicit def defaultDomainOps[E, D <: Domain[E]](
     implicit domain: D): DomainOps[E, D] =
-    new DefaultImpl[E, D](new IntervalBuilder.UnboundedBuilder(_), domain)
+    new DefaultImpl[E, D](
+      new IntervalBuilder.UnboundedBuilder(_),
+      new IntervalOps.UnboundedOps(_),
+      domain
+    )
 
-  def apply[E, D <: Domain[E]](intervalBuilderFunc: DomainOps[E, D] => IntervalBuilder[E, D])(
-    implicit domain: D): DomainOps[E, D] = new DefaultImpl(intervalBuilderFunc, domain)
+  def apply[E, D <: Domain[E]](
+    intervalBuilderFunc: DomainOps[E, D] => IntervalBuilder[E, D],
+    intervalOpsFunc: DomainOps[E, D] => IntervalOps[E, D]
+  )(
+    implicit domain: D
+  ): DomainOps[E, D] =
+    new DefaultImpl(intervalBuilderFunc, intervalOpsFunc, domain)
 
   final class DefaultImpl[E, D <: Domain[E]](
     intervalBuilderFunc: DomainOps[E, D] => IntervalBuilder[E, D],
+    intervalOpsFunc: DomainOps[E, D] => IntervalOps[E, D],
     override val domain: D
   ) extends DomainOps[E, D] {
 
     override implicit val interval: IntervalBuilder[E, D] = intervalBuilderFunc(this)
+
+    override implicit val intervalOps: IntervalOps[E, D] = intervalOpsFunc(this)
   }
 }

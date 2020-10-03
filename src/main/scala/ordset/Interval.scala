@@ -18,8 +18,6 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
   def hasUpperBound: Boolean = false
 
   def ->[@sp(Boolean) V](value: V): IntervalMapping[E, D, V] = IntervalMapping(this, value)
-
-//  def cross[E1 >: E](that: Interval[E1])(implicit order: Order[Bound[E1]]): Interval[E1]
 }
 
 object Interval {
@@ -51,8 +49,6 @@ object Interval {
     override def isEmpty: Boolean = true
 
     override def toString: String = "{}"
-
-//    override def cross[E1 >: Nothing](that: Interval[E1])(implicit order: Order[Bound[E1]]): Interval[E1] = this
   }
 
   case class Universal[E, D <: Domain[E]](
@@ -62,8 +58,6 @@ object Interval {
     override def isUniversal: Boolean = true
 
     override def toString: String = "x in U"
-
-//    override def cross[E1 >: Nothing](that: Interval[E1])(implicit order: Order[Bound[E1]]): Interval[E1] = that
   }
 
   case class Greater[@sp(spNum) E, D <: Domain[E]](
@@ -73,34 +67,6 @@ object Interval {
   ) extends NonEmpty[E, D] with WithLowerBound[E, D] {
 
     override def toString: String = lowerBound.toString
-
-//    override def cross[E1 >: E](that: Interval[E1])(implicit order: Order[Bound[E1]]): Interval[E1] = that match {
-//      case Empty => that
-//      case Unbounded => this
-//      case that: RightUnbounded[E1] =>
-//        // this:      |--------------
-//        // that:  |------------------
-//        if (order.lt(that.leftBound, this.leftBound)) this
-//        // this:      |--------------
-//        // that:          |----------
-//        else that
-//      case that: WithRightBound[E1] =>
-//        // this:      |--------------
-//        // that: ?--|
-//        if (order.lt(that.rightBound, this.leftBound)) Empty
-//        else that match {
-//          // this:      |------------
-//          // that: ---------|
-//          case that: LeftUnbounded[E1] => Bounded(this.leftBound, that.rightBound)
-//          case that: Bounded[E1] =>
-//            // this:      |----------
-//            // that:    |---|
-//            if (order.lt(that.leftBound, this.leftBound)) Bounded(this.leftBound, that.rightBound)
-//            // this:      |----------
-//            // that:        |---|
-//            else that
-//        }
-//    }
   }
 
   case class Less[@sp(spNum) E, D <: Domain[E]](
@@ -110,34 +76,6 @@ object Interval {
   ) extends NonEmpty[E, D] with WithUpperBound[E, D] {
 
     override def toString: String = upperBound.toString
-
-//    override def cross[E1 >: E](that: Interval[E1])(implicit order: Order[Bound[E1]]): Interval[E1] = that match {
-//      case Empty => that
-//      case Unbounded => this
-//      case that: LeftUnbounded[E1] =>
-//        // this: ---------|
-//        // that: --------------|
-//        if (order.lt(this.rightBound, that.rightBound)) this
-//        // this: ---------|
-//        // that: -----|
-//        else that
-//      case that: WithLeftBound[E1] =>
-//        // this: ---------|
-//        // that:            |------?
-//        if (order.lt(this.rightBound, that.leftBound)) Empty
-//        else that match {
-//          // this: ---------|
-//          // that:      |-----------
-//          case that: RightUnbounded[E1] => Bounded(that.leftBound, this.rightBound)
-//          case that: Bounded[E1] =>
-//            // this: ---------|
-//            // that:        |---|
-//            if (order.lt(this.rightBound, that.rightBound)) Bounded(that.leftBound, this.rightBound)
-//            // this: ---------|
-//            // that:    |---|
-//            else that
-//        }
-//    }
   }
 
   case class Between[@sp(spNum) E, D <: Domain[E]](
@@ -148,53 +86,6 @@ object Interval {
   ) extends NonEmpty[E, D] with WithLowerBound[E, D] with WithUpperBound[E, D] {
 
     override def toString: String = s"$lowerBound & $upperBound"
-
-//    override def cross[E1 >: E](that: Interval[E1])(implicit order: Order[Bound[E1]]): Interval[E1] = that match {
-//      case Empty => that
-//      case Unbounded => this
-//      case that: RightUnbounded[E] =>
-//        // this:       |-----|
-//        // that:   |----------------
-//        if (order.lteqv(that.leftBound, this.leftBound)) this
-//        // this:       |-----|
-//        // that:          |---------
-//        else if (order.lteqv(that.leftBound, this.rightBound)) Bounded(that.leftBound, this.rightBound)
-//        // this:       |-----|
-//        // that:                |---
-//        else Empty
-//      case that: LeftUnbounded[E] =>
-//        // this:       |-----|
-//        // that: ----------------|
-//        if (order.lteqv(this.rightBound, that.rightBound)) this
-//        // this:       |-----|
-//        // that: ---------|
-//        else if (order.lteqv(this.leftBound, that.rightBound)) Bounded(this.leftBound, that.rightBound)
-//        // this:       |-----|
-//        // that: ----|
-//        else Empty
-//      case that: Bounded[E] =>
-//        if (order.lteqv(this.leftBound, that.rightBound))
-//          if (order.lteqv(that.leftBound, this.leftBound))
-//            // this:         |-----|
-//            // that:      |-----|
-//            if (order.lt(that.rightBound, this.rightBound)) Bounded(this.leftBound, that.rightBound)
-//            // this:         |-----|
-//            // that:      |-----------|
-//            else this
-//          else if (order.lteqv(that.leftBound, this.rightBound))
-//            // this:         |-----|
-//            // that:            |-----|
-//            if (order.lt(this.rightBound, that.rightBound)) Bounded(that.leftBound, this.rightBound)
-//            // this:         |-----|
-//            // that:           |-|
-//            else that
-//          // this:         |-----|
-//          // that:                 |-----|
-//          else Empty
-//        // this:              |-----|
-//        // that:      |-----|
-//        else Empty
-//    }
   }
 
   final class DefaultHash[E, D <: Domain[E]]()(

@@ -10,7 +10,7 @@ trait IntervalBuilder[E, D <: Domain[E]] {
 
   def apply(leftBound: Bound.Lower[E], rightBound: Bound.Upper[E]): Interval[E, D]
 
-  def empty: Interval.Empty[E, D]
+  def empty: Interval[E, D]
 
   def universal: Interval[E, D]
 
@@ -23,7 +23,7 @@ trait IntervalBuilder[E, D <: Domain[E]] {
 
 object IntervalBuilder {
 
-  class UnboundedBuilder[E, D <: Domain[E]](
+  final class UnboundedBuilder[E, D <: Domain[E]](
     val domainOps: DomainOps[E, D]
   ) extends IntervalBuilder[E, D] {
 
