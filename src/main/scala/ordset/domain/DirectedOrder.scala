@@ -23,14 +23,16 @@ trait DirectedOrder[E, +Dir <: OrderDir] extends Order[E] with Hash[E] {
     new DirectedOrder.ReversedWrapper[E, Rev](label, this, this)(SingleValue(revDir))
   }
 
-  override def toString: String = s"${label.toString} ${OrderDirection.toString(direction)}"
+  override def toString: String = DirectedOrder.defaultShow.show(this)
 }
 
 object DirectedOrder {
 
-  implicit def defaultAscHash[E]: Hash[AscOrder[E]] = defaultHashInstance.asInstanceOf[Hash[AscOrder[E]]]
+  implicit def defaultHash[E, Dir <: OrderDir]: Hash[DirectedOrder[E, Dir]] =
+    defaultHashInstance.asInstanceOf[Hash[DirectedOrder[E, Dir]]]
 
-  implicit def defaultDescHash[E]: Hash[DescOrder[E]] = defaultHashInstance.asInstanceOf[Hash[DescOrder[E]]]
+  implicit def defaultShow[E, Dir <: OrderDir]: Show[DirectedOrder[E, Dir]] =
+    defaultShowInstance.asInstanceOf[Show[DirectedOrder[E, Dir]]]
 
   abstract class Abstract[E, +Dir <: OrderDir](
     implicit dirValue: SingleValue[Dir]
@@ -87,12 +89,12 @@ object DirectedOrder {
     }
   }
 
-  final class DefaultHash[E] extends Hash[DirectedOrder[E, OrderDir]] {
+  final class DefaultHash[E](
+    labelHash: Hash[Label],
+    dirHash: Hash[OrderDir]
+  ) extends Hash[DirectedOrder[E, OrderDir]] {
 
     import util.Hash._
-
-    private val labelHash: Hash[Label] = Label.defaultOrder
-    private val dirHash: Hash[OrderDir] = OrderDirection.defaultHash
 
     override def eqv(x: DirectedOrder[E, OrderDir], y: DirectedOrder[E, OrderDir]): Boolean =
       labelHash.eqv(x.label, y.label) && dirHash.eqv(x.direction, y.direction)
@@ -101,5 +103,18 @@ object DirectedOrder {
       product2Hash(labelHash.hash(x.label), dirHash.hash(x.direction))
   }
 
-  private lazy val defaultHashInstance: Hash[DirectedOrder[Any, OrderDir]] = new DefaultHash[Any]()
+  final class DefaultShow[E](
+    labelShow: Show[Label],
+    dirShow: Show[OrderDir]
+  ) extends Show[DirectedOrder[E, OrderDir]] {
+
+    override def show(t: DirectedOrder[E, OrderDir]): String =
+      s"Order(label: ${labelShow.show(t.label)}, direction: ${dirShow.show(t.direction)})"
+  }
+
+  private lazy val defaultHashInstance: Hash[DirectedOrder[Any, OrderDir]] =
+    new DefaultHash[Any](Label.defaultOrder, OrderDirection.defaultHash)
+
+  private lazy val defaultShowInstance: Show[DirectedOrder[Any, OrderDir]] =
+    new DefaultShow[Any](Label.defaultShow, OrderDirection.defaultShow)
 }

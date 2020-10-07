@@ -9,11 +9,12 @@ import scala.Specializable.{AllNumeric => spNum}
   * Representation of ordered sequence of elements with identifier of type `E`.
   * It's encoded by a sequence of segments which covers universal set without gaps and overlapping.
   * `Boolean` value is assigned to each segment indicating whether it belongs to set:
-  *
+  * {{{
+ *
   *   Segment 0       Segment 1       Segment 2   - segment index
   * -------------|-----------------|------------
   *    false            true           false      - belongs to set
-  *
+  * }}}
   * Type `W` represents some value which is associated with each segment.
   * To define ordered set of elements we should consider this value as 'belongs to set' indicator (`W` = `Boolean`).
   * To define ordered map to some type `V` (`E` -> `V`) we assume `W` = `Option[V]`. Where `None` corresponds to
@@ -41,9 +42,9 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E]  @sp(Boolean), W] {
   /** @return last segment of sequence. */
   def lastSegment: Segment.Last[E, D, W]
 
-  /** @return segment containing `bound`. */
+  /** @return segment which contains specified `bound`. */
   def getSegment(bound: Bound[E]): Segment[E, D, W]
 
-  /** @return segment containing `element`. */
+  /** @return segment which contains specified `element`. */
   def getSegment(element: E): Segment[E, D, W]
 }

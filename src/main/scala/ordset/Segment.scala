@@ -9,7 +9,8 @@ import ordset.util.types.SingleValue
   * The main feature of segments is that they cover ordered universal set without gaps and overlapping.
   * So we can move from given segment to the next, previous, first or last.
   * Segments have next hierarchy (subclass -> superclass):
-  *
+  * {{{
+ *
   *                   Single
   *                 ↙        ↘
   *            First         Last
@@ -19,12 +20,12 @@ import ordset.util.types.SingleValue
   *           WithNext      WithPrev
   *                 ↖      ↗
   *                  Inner
-  *
+  * }}}
   * For details see description of corresponding traits.
   *
-  * @tparam E - type of element in ordered set
-  * @tparam D - type of domain
-  * @tparam V - type of value assigned to interval
+  * @tparam E type of element in ordered set
+  * @tparam D type of domain
+  * @tparam V type of value assigned to interval
   *
   * @note Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
   *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this the

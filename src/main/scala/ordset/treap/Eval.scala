@@ -10,7 +10,7 @@ object Eval {
     evalFunc: Func[K, Ord, C, S]
   ): EvalOps[K, Ord, C, S] = new EvalOps(evalFunc)
 
-  class EvalOps[K, Ord <: Order[K], C, S](val evalFunc: Func[K, Ord, C, S]) extends AnyVal {
+  final class EvalOps[K, Ord <: Order[K], C, S](val evalFunc: Func[K, Ord, C, S]) extends AnyVal {
 
     def thenEval(nextEvalFunc: Eval.Func[K, Ord, C, S]): Eval.Func[K, Ord, C, S] =
       (tree, context, step) => {

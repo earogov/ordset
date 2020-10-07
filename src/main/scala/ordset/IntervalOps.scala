@@ -4,7 +4,16 @@ import ordset.domain.{Domain, DomainOps}
 
 trait IntervalOps[E, D <: Domain[E]] {
 
+  /**
+   * Return cross of two intervals.
+   * Set of intervals with cross operation form a commutative monoid with universal interval as identity:
+   * {{{ x cross universal = universal cross x = x }}}
+   */
   def cross(x: Interval[E, D], y: Interval[E, D]): Interval[E, D]
+
+//  def cutLower(x: Interval[E, D], bound: Bound.Lower[E]): Interval[E, D]
+//
+//  def cutUpper(x: Interval[E, D], bound: Bound.Upper[E]): Interval[E, D]
 }
 
 object IntervalOps {

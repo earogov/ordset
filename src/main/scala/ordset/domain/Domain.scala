@@ -17,11 +17,11 @@ object Domain {
   implicit def defaultDomain[E](implicit elementOrd: AscOrder[E]): Domain[E] =
     Domains.ContinuousUnbounded(elementOrd)
 
-  implicit def defaultHash[E, D <: Domain[E]](implicit ordHash: Hash[AscOrder[E]]): Hash[D] =
-    new DefaultHash[E, D](ordHash)
+  implicit def defaultHash[E](implicit ordHash: Hash[AscOrder[E]]): Hash[Domain[E]] =
+    defaultHashInstance.asInstanceOf[Hash[Domain[E]]]
 
-  implicit def defaultShow[E, D <: Domain[E]](implicit orderShow: Show[AscOrder[E]]): Show[D] =
-    new DefaultShow[E, D](Label.setBuilderShow, orderShow)
+  implicit def defaultShow[E](implicit ordShow: Show[AscOrder[E]]): Show[Domain[E]] =
+    defaultShowInstance.asInstanceOf[Show[Domain[E]]]
 
   trait Wrapper[E, D <: Domain[E]] extends Domain[E] {
 
@@ -34,34 +34,38 @@ object Domain {
     override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
   }
 
-  final class DefaultImpl[E](override val label: Label, override val elementOrd: AscOrder[E]) extends Domain[E] {
+  final class DefaultImpl[E](
+    override val label: Label,
+    override val elementOrd: AscOrder[E]
+  ) extends Domain[E] {
 
     override implicit lazy val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd)
   }
 
-  final class DefaultHash[E, D <: Domain[E]](ordHash: Hash[AscOrder[E]]) extends Hash[D] {
+  final class DefaultHash[E, D <: Domain[E]](
+    labelHash: Hash[Label],
+    ordHash: Hash[AscOrder[E]]
+  ) extends Hash[D] {
 
     import ordset.util.Hash._
-
-    protected val labelHash: Hash[Label] = Label.defaultOrder
 
     override def eqv(x: D, y: D): Boolean = ordHash.eqv(x.elementOrd, y.elementOrd) && labelHash.eqv(x.label, y.label)
 
     override def hash(x: D): Int = product2Hash(ordHash.hash(x.elementOrd), labelHash.hash(x.label))
   }
 
-  final class DefaultShow[E, D <: Domain[E]](labelShow: Show[Label], orderShow: Show[AscOrder[E]]) extends Show[D] {
+  final class DefaultShow[E, D <: Domain[E]](
+    labelShow: Show[Label],
+    orderShow: Show[AscOrder[E]]
+  ) extends Show[D] {
 
-    private val domainConst: String = "domain"
-    private val orderConst: String = "order"
-    private val withConst: String = "with"
-
-    override def show(t: D): String = {
-      var labelStr = labelShow.show(t.label)
-      labelStr = if (labelStr.isEmpty) domainConst else s"$labelStr $domainConst"
-      val orderStr = orderShow.show(t.elementOrd)
-      if (orderStr.isEmpty) labelStr
-      else s"$labelStr $withConst $orderStr $orderConst"
-    }
+    override def show(t: D): String =
+      s"Domain(label: ${labelShow.show(t.label)}, order: ${orderShow.show(t.elementOrd)})"
   }
+
+  private lazy val defaultHashInstance: Hash[Domain[Any]] =
+    new DefaultHash[Any, Domain[Any]](Label.defaultOrder, DirectedOrder.defaultHash[Any, AscDir])
+
+  private lazy val defaultShowInstance: Show[Domain[Any]] =
+    new DefaultShow[Any, Domain[Any]](Label.defaultShow, DirectedOrder.defaultShow[Any, AscDir])
 }

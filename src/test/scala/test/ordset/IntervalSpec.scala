@@ -1,6 +1,6 @@
 package test.ordset
 
-import ordset.domain.{Domain, DomainOps}
+import ordset.domain.{AscOrder, Domain, DomainOps}
 import org.scalatest.funspec.AnyFunSpec
 
 class IntervalSpec extends AnyFunSpec {

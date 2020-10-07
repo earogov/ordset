@@ -23,7 +23,7 @@ object Traverse {
     traverseFunc: Func[K, Ord, C, S]
   ): TraverseOps[K, Ord, C, S] = new TraverseOps(traverseFunc)
 
-  class TraverseOps[K, Ord <: Order[K], C, S](val traverseFunc: Func[K, Ord, C, S]) extends AnyVal {
+  final class TraverseOps[K, Ord <: Order[K], C, S](val traverseFunc: Func[K, Ord, C, S]) extends AnyVal {
 
     def thenEval(evalFunc: Eval.Func[K, Ord, C, S]): Func[K, Ord, C, S] =
       (tree, context) => {

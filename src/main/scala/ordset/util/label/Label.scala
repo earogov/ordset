@@ -6,36 +6,39 @@ import scala.annotation.tailrec
 import scala.collection.immutable.{Queue, TreeSet}
 
 /**
- * Labels are used to identify abstract entities such that orders, domains etc. Label assigned to entity may be used
+ * Labels are used to identify abstract entities such as orders, domains etc. Label assigned to the entity may be used
  * for equality checks and hash calculations. Also it can be included in string representation of entity.
  *
  * Labels support two composition operations:
- * - Unordered
- *   Creates set of labels:
- *                               a <+> b == b <+> a
- *                               a <+> a == a
- * - Ordered
- *   Creates sequence of labels:
- *                               a +> b != b +> a    (if a != b, a != Empty, b != Empty)
- *                               a +> a != a
+ *
+ * 1. Unordered - creates a set of labels:
+ *   {{{ a <+> b == b <+> a }}}
+ *   {{{ a <+> a == a }}}
+ *
+ * 2. Ordered - creates a sequence of labels:
+ *   {{{ a +> b != b +> a    (if a != b, a != Empty, b != Empty) }}}
+ *   {{{ a +> a != a                                             }}}
  *
  * @note
- * - Empty label is a zero element for all composition operations:
- *                               Empty <+> a == a <+> Empty == a
- *                               Empty +> a == a +> Empty == a
  *
- * - Labels set is not equivalent to sequence even if all their elements are the same:
- *                               a <+> b != a +> b
+ * 1. Empty label is a zero element for all composition operations:
+ *   {{{ Empty <+> a == a <+> Empty == a }}}
+ *   {{{ Empty +> a == a +> Empty == a   }}}
+ *
+ * 2. Labels set is not equivalent to sequence even if all their elements are the same:
+ *   {{{ a <+> b != a +> b }}}
  *
  * @example
+ *
  * 1. We can assign labels to different properties of domains: Bounded, Discrete, Continuous ...
  *    Order of properties doesn't matter for a new domain, so its label should be created with unordered composition:
- *    Bounded <+> Continuous
+ *    {{{ Bounded <+> Continuous }}}
+ *
  * 2. Consider some tuple: (personId, personName, Salary)
  *    Suppose we have orderings for each field with labels: ById_Asc, ByName_Asc, BySalary_Desc.
  *    Composing them in different ways we will get different orderings. So label of composed ordering should have
  *    the same property:
- *    BySalary_Desc +> ByName_Asc != ByName_Asc +> BySalary_Desc
+ *    {{{ BySalary_Desc +> ByName_Asc != ByName_Asc +> BySalary_Desc }}}
  */
 sealed trait Label extends Comparable[Label] {
 
@@ -63,7 +66,7 @@ object Label {
 
   def apply(value: String): Label = new UnitLabel(value)
 
-  def defaultShow: Show[Label] = labelBuilderShow
+  def defaultShow: Show[Label] = setBuilderShow
 
   implicit lazy val labelBuilderShow: Show[Label] =
     new DefaultShow(Token.LabelBuilderShow)
@@ -101,7 +104,7 @@ object Label {
 
     override def show(t: Label): String = {
       val builder = new StringBuilder
-      t.tokens.foreach(x => builder.append(Token.defaultShow.show(x)))
+      t.tokens.foreach(x => builder.append(tokenShow.show(x)))
       builder.result()
     }
   }

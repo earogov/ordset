@@ -25,7 +25,7 @@ object DiscreteDomain {
   ) extends DiscreteDomain[E, D]
 
   final class DefaultHash[E, D <: Domain[E]]()(
-    implicit val discreteHash: Hash[Discrete[E]],
+    val discreteHash: Hash[Discrete[E]],
     val domainHash: Hash[D]
   ) extends Hash[DiscreteDomain[E, D]] {
 
