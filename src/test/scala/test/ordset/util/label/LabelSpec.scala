@@ -108,8 +108,8 @@ class LabelSpec extends AnyFunSpec {
     )
   }
 
-  it("should return string representation") {
-    val show = Label.defaultShow
+  it("should be converted to string in label builder style") {
+    val show = Label.labelBuilderShow
     assert(show.show(Label.empty) == "")
     assert(show.show(Label("A")) == "A")
     assert(show.show(Label("A") <+> Label("B")) == "(A <+> B)")
@@ -118,5 +118,17 @@ class LabelSpec extends AnyFunSpec {
     assert(show.show((Label("C") +> Label("B")) +> Label("A")) == "(C +> B +> A)")
     assert(show.show((Label("C") <+> Label("B")) +> Label("A")) == "((B <+> C) +> A)")
     assert(show.show((Label("C") +> Label("B")) <+> Label("A")) == "((C +> B) <+> A)")
+  }
+
+  it("should be converted to string in set builder style") {
+    val show = Label.setBuilderShow
+    assert(show.show(Label.empty) == "")
+    assert(show.show(Label("A")) == "A")
+    assert(show.show(Label("A") <+> Label("B")) == "{A, B}")
+    assert(show.show(Label("A") +> Label("B")) == "(A, B)")
+    assert(show.show((Label("C") <+> Label("B")) <+> Label("A")) == "{A, B, C}")
+    assert(show.show((Label("C") +> Label("B")) +> Label("A")) == "(C, B, A)")
+    assert(show.show((Label("C") <+> Label("B")) +> Label("A")) == "({B, C}, A)")
+    assert(show.show((Label("C") +> Label("B")) <+> Label("A")) == "{(C, B), A}")
   }
 }

@@ -1,15 +1,16 @@
-package ordset.treap.eval
-
-import ordset.{Interval, Order, Show}
-import ordset.treap.{Eval, TraverseStep, TraverseVisit, Treap}
-
-object NodeIntervalStack {
-
-//  type Stack[K, Ord <: Order[K]] = List[Element[K, Ord]]
-//  type EvalFunc[K, Ord <: Order[K]] = Eval.Func[K, Ord, Context[K, Ord], TraverseStep.Type]
+//package ordset.treap.eval
 //
-//  class Element[K, Ord <: Order[K]](
-//    val interval: Interval[K],
+//import ordset.domain.Domain
+//import ordset.{Interval, Order, Show}
+//import ordset.treap.{Eval, TraverseStep, TraverseVisit, Treap}
+//
+//object NodeIntervalStack {
+//
+//  type Stack[K, D <: Domain[K]] = List[Element[K, D]]
+//  type EvalFunc[K, D <: Domain[K]] = Eval.Func[K, D, Context[K, D], TraverseStep.Type]
+//
+//  class Element[K, D <: Domain[K]](
+//    val interval: Interval[K, D],
 //    override val tree: Treap[K, Ord],
 //    override val visits: TraverseVisit.Type
 //  ) extends NodeVisitStack.Element[K, Ord](
@@ -115,4 +116,4 @@ object NodeIntervalStack {
 //    case n: Treap.Node[K, Ord] => Interval.rightUnbounded(n.key, isInclusive = false)
 //    case _ => Interval.Empty
 //  }
-}
+//}

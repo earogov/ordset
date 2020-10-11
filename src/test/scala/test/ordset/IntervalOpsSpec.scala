@@ -8,6 +8,8 @@ class IntervalOpsSpec extends AnyFunSpec {
   import ordset._
   import instances.Int._
   import ordset.syntax.SetBuilderNotation._
+  import ordset.syntax.BoundSyntax._
+  import scala.language.postfixOps
 
   type Dom = Domain[Int]
 
@@ -15,8 +17,8 @@ class IntervalOpsSpec extends AnyFunSpec {
   val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
   val interval: IntervalBuilder[Int, Dom] = ops.interval
 
-  private implicit def toCrossOps[E, D <: Domain[E]](interval: Interval[E, D]): CrossOps[E, D] =
-    new CrossOps[E, D](interval)
+  private implicit def toAssertOps[E, D <: Domain[E]](interval: Interval[E, D]): AssertOps[E, D] =
+    new AssertOps[E, D](interval)
 
   it("should cross two intervals") {
 
@@ -124,10 +126,136 @@ class IntervalOpsSpec extends AnyFunSpec {
     assert((x >= 5 & x <= 5).isCrossOf(x > -10 & x <= 5, x >= 5 & x < 10))
   }
 
-  private class CrossOps[E, D <: Domain[E]](interval: Interval[E, D]) {
+  it("should cut interval below the bound") {
+
+    // Empty cases
+    assert(interval.empty.isCutBelow(0`[`, interval.empty))
+
+    // Unbounded cases
+    assert(interval(x >= 0).isCutBelow(0`[`, interval.universal))
+
+    // Left unbounded cases
+    // ------|
+    // ///|          cut
+    assert((x >= -1 & x < 0).isCutBelow(-1`[`, x < 0))
+
+    // ------|
+    // /////|        cut
+    assert((x >= 0 & x <= 0).isCutBelow(0`[`, x <= 0))
+
+    // ------|
+    // //////|       cut
+    assert(interval.empty.isCutBelow(0`(`, x <= 0))
+
+    // ------|
+    // /////////|    cut
+    assert(interval.empty.isCutBelow(3`(`, x <= 0))
+
+    // Right unbounded cases
+    //       |------
+    // ///|          cut
+    assert(interval(x >= 0).isCutBelow(-2`(`, x >= 0))
+
+    //       |------
+    // //////|       cut
+    assert(interval(x > 0).isCutBelow(0`(`, x >= 0))
+
+    //       |------
+    // /////////|    cut
+    assert(interval(x > 2).isCutBelow(2`(`, x >= 0))
+
+    // Bounded cases
+    //    |----|
+    // //|           cut
+    assert((x >= 0 & x < 2).isCutBelow(-1`(`, x >= 0 & x < 2))
+
+    //    |----|
+    // ///|          cut
+    assert((x > 0 & x < 2).isCutBelow(0`(`, x >= 0 & x < 2))
+
+    //    |----|
+    // //////|       cut
+    assert((x > 1 & x < 2).isCutBelow(1`(`, x >= 0 & x < 2))
+
+    //    |----|
+    // ////////|     cut
+    assert(interval.empty.isCutBelow(2`[`, x >= 0 & x < 2))
+
+    //    |----|
+    // ///////////|  cut
+    assert(interval.empty.isCutBelow(3`[`, x >= 0 & x < 2))
+  }
+
+  it("should cut interval above the bound") {
+
+    // Empty cases
+    assert(interval.empty.isCutAbove(0`]`, interval.empty))
+
+    // Unbounded cases
+    assert(interval(x <= 0).isCutAbove(0`]`, interval.universal))
+
+    // Left unbounded cases
+    // ----|
+    //        |///// cut
+    assert(interval(x < 0).isCutAbove(0`]`, x < 0))
+
+    // ----|
+    //     |//////// cut
+    assert(interval(x < 0).isCutAbove(0`)`, x <= 0))
+
+    // ----|
+    //   |////////// cut
+    assert(interval(x <= -1).isCutAbove(-1`]`, x < 0))
+
+    // Right unbounded cases
+    //      |-------
+    //         |//// cut
+    assert((x >= 0 & x <= 1).isCutAbove(1`]`, x >= 0))
+
+    //      |-------
+    //       |////// cut
+    assert((x >= 0 & x <= 0).isCutAbove(0`]`, x >= 0))
+
+    //      |-------
+    //      |/////// cut
+    assert(interval.empty.isCutAbove(0`)`, x >= 0))
+
+    //      |-------
+    //   |////////// cut
+    assert(interval.empty.isCutAbove(-1`)`, x >= 0))
+
+    // Bounded cases
+    //    |----|
+    //           |// cut
+    assert((x >= 0 & x <= 2).isCutAbove(5`]`, x >= 0 & x <= 2))
+
+    //    |----|
+    //         |//// cut
+    assert((x >= 0 & x < 2).isCutAbove(2`)`, x >= 0 & x <= 2))
+
+    //    |----|
+    //      |/////// cut
+    assert((x >= 0 & x < 1).isCutAbove(1`)`, x >= 0 & x <= 2))
+
+    //    |----|
+    //    |///////// cut
+    assert(interval.empty.isCutAbove(0`)`, x >= 0 & x <= 2))
+
+    //    |----|
+    //  |/////////// cut
+    assert(interval.empty.isCutAbove(-1`)`, x >= 0 & x <= 2))
+  }
+
+  private class AssertOps[E, D <: Domain[E]](interval: Interval[E, D]) {
 
     def isCrossOf(x: Interval[E, D], y: Interval[E, D])(implicit ops: DomainOps[E, D]): Boolean =
       ops.intervalHash.eqv(interval, ops.intervalOps.cross(x, y)) &&
         ops.intervalHash.eqv(interval, ops.intervalOps.cross(y, x))
+
+    def isCutBelow(bound: Bound.Lower[E], x: Interval[E, D])(implicit ops: DomainOps[E, D]): Boolean =
+      ops.intervalHash.eqv(interval, ops.intervalOps.cutBelow(bound, x))
+
+    def isCutAbove(bound: Bound.Upper[E], x: Interval[E, D])(implicit ops: DomainOps[E, D]): Boolean =
+      ops.intervalHash.eqv(interval, ops.intervalOps.cutAbove(bound, x))
   }
 }

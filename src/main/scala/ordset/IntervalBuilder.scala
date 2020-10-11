@@ -37,17 +37,18 @@ object IntervalBuilder {
     override def apply(bound: Bound.Lower[E]): Interval.Greater[E, D] =
       Interval.Greater(bound)(domainOps)
 
-    override def apply(leftBound: Bound.Lower[E], rightBound: Bound.Upper[E]): Interval.Between[E, D] =
-      Interval.Between(leftBound, rightBound)(domainOps)
+    override def apply(leftBound: Bound.Lower[E], rightBound: Bound.Upper[E]): Interval[E, D] =
+      if (domainOps.boundOrd.lt(rightBound, leftBound)) empty
+      else Interval.Between(leftBound, rightBound)(domainOps)
 
     override def lessThen(element: E, isInclusive: Boolean): Interval.Less[E, D] =
-      Interval.Less(Bound.Upper(element, isInclusive))(domainOps)
+      apply(Bound.Upper(element, isInclusive))
 
     override def greaterThen(element: E, isInclusive: Boolean): Interval.Greater[E, D] =
-      Interval.Greater(Bound.Lower(element, isInclusive))(domainOps)
+      apply(Bound.Lower(element, isInclusive))
 
-    override def between(leftElement: E, leftIncl: Boolean, rightElement: E, rightIncl: Boolean): Interval.Between[E, D] =
-      Interval.Between(Bound.Lower(leftElement, leftIncl), Bound.Upper(rightElement, rightIncl))(domainOps)
+    override def between(leftElement: E, leftIncl: Boolean, rightElement: E, rightIncl: Boolean): Interval[E, D] =
+      apply(Bound.Lower(leftElement, leftIncl), Bound.Upper(rightElement, rightIncl))
   }
 
 //  abstract class BoundedBuilder[E, D <: Domain[E]](

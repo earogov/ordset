@@ -29,20 +29,12 @@ object NodeVisitStack {
   implicit  def elementShow[K, Ord <: Order[K]](
     implicit visitShow: Show[TraverseVisit.Type], treeShow: Show[Treap[K, Ord]]
   ): Show[Element[K, Ord]] =
-    Show.show(e =>
-      s"Element(" +
-        s"tree: ${treeShow.show(e.tree)}, " +
-        s"visits: ${visitShow.show(e.visits)})"
-    )
+    Show.show(e => s"Element(tree: ${treeShow.show(e.tree)}, visits: ${visitShow.show(e.visits)})")
 
   implicit def contextShow[K, Ord <: Order[K]](
     implicit visitShow: Show[TraverseVisit.Type], stackShow: Show[Stack[K, Ord]]
   ): Show[Context[K, Ord]] =
-    Show.show(c =>
-      s"Context(" +
-        s"currentVisits: ${visitShow.show(c.currentVisits)}, " +
-        s"stack: ${stackShow.show(c.stack)})"
-    )
+    Show.show(c => s"Context(currentVisits: ${visitShow.show(c.currentVisits)}, stack: ${stackShow.show(c.stack)})")
 
   implicit def contextOps[K, Ord <: Order[K]]: ContextOps[K, Ord, Context[K, Ord]] =
     ContextOpsImpl.asInstanceOf[ContextOps[K, Ord, Context[K, Ord]]]
