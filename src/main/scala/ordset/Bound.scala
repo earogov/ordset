@@ -38,6 +38,9 @@ object Bound {
   def defaultDescOrder[E](implicit elementOrd: DescOrder[E]): DescOrder[Bound[E]] =
     new DefaultOrder(elementOrd, instances.Int.intDescOrder)
 
+  implicit def defaultShow[E](implicit elementShow: Show[E]): Show[Bound[E]] =
+    Show.fromToString
+
   case class Upper[+E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
 
     override def isUpper: Boolean = true

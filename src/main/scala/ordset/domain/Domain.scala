@@ -3,14 +3,7 @@ package ordset.domain
 import ordset.util.label.Label
 import ordset.{Bound, Hash, Show}
 
-trait Domain[E] {
-
-  def label: Label
-
-  implicit def elementOrd: AscOrder[E]
-
-  implicit def boundOrd: AscOrder[Bound[E]]
-}
+trait Domain[E] extends DomainLike[E]
 
 object Domain {
 
@@ -23,16 +16,7 @@ object Domain {
   implicit def defaultShow[E](implicit ordShow: Show[AscOrder[E]]): Show[Domain[E]] =
     defaultShowInstance.asInstanceOf[Show[Domain[E]]]
 
-  trait Wrapper[E, D <: Domain[E]] extends Domain[E] {
-
-    implicit val domain: D
-
-    override def label: Label = domain.label
-
-    override implicit def elementOrd: AscOrder[E] = domain.elementOrd
-
-    override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
-  }
+  trait Wrapper[E, D <: Domain[E]] extends Domain[E] with DomainLike.Wrapper[E, D]
 
   final class DefaultImpl[E](
     override val label: Label,

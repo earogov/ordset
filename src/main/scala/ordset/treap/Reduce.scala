@@ -1,18 +1,18 @@
 package ordset.treap
 
-import ordset.Order
+import ordset.domain.Domain
 
 object Reduce {
 
-  trait Func[K, Ord <: Order[K], -C, R] extends ((Treap[K, Ord], C, R) => R)
+  trait Func[E, D <: Domain[E], -C, R] extends ((Treap[E, D], C, R) => R)
 
-  def apply[K, Ord <: Order[K], C, R](
-    treap: Treap[K, Ord],
+  def apply[E, D <: Domain[E], C, R](
+    treap: Treap[E, D],
     initContext: C,
     initValue: R
   )(
-    traverseFunc: Traverse.GenericFunc[K, Ord, C],
-    reduceFunc: Func[K, Ord, C, R]
+    traverseFunc: Traverse.GenericFunc[E, D, C],
+    reduceFunc: Func[E, D, C, R]
   ): R = {
     var result = initValue
     var context = initContext

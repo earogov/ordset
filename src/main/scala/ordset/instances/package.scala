@@ -27,6 +27,8 @@ package object instances {
     def booleanOrder: Order[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
 
     def booleanHash: Hash[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
+
+    def booleanShow: Show[Boolean] = cats.instances.boolean.catsStdShowForBoolean
   }
 
   object Int {
@@ -36,9 +38,11 @@ package object instances {
 
     lazy val intDescOrder: DescOrder[Int] = intAscOrder.reverse
 
-    def intOrder: Order[Int] = kernel.instances.int.catsKernelStdOrderForInt
+    implicit def intOrder: Order[Int] = kernel.instances.int.catsKernelStdOrderForInt
 
-    def intHash: Hash[Int] = kernel.instances.int.catsKernelStdOrderForInt
+    implicit def intHash: Hash[Int] = kernel.instances.int.catsKernelStdOrderForInt
+
+    implicit def intShow: Show[Int] = cats.instances.int.catsStdShowForInt
   }
 
   object String {
@@ -48,17 +52,34 @@ package object instances {
 
     lazy val stringDescOrder: Order[String] = stringAscOrder.reverse
 
-    def stringOrder: Order[String] = kernel.instances.string.catsKernelStdOrderForString
+    implicit def stringOrder: Order[String] = kernel.instances.string.catsKernelStdOrderForString
 
-    def stringHash: Hash[String] = kernel.instances.string.catsKernelStdOrderForString
+    implicit def stringHash: Hash[String] = kernel.instances.string.catsKernelStdOrderForString
+
+    implicit def stringShow: Show[String] = cats.instances.string.catsStdShowForString
+  }
+
+  object List {
+
+    implicit def listOrder[T](implicit ev: Order[T]): Order[List[T]] =
+      kernel.instances.list.catsKernelStdOrderForList
+
+    implicit def listHash[T](implicit ev: Hash[T]): Hash[List[T]] =
+      kernel.instances.list.catsKernelStdHashForList
+
+    implicit def listShow[T](implicit ev: Show[T]): Show[List[T]] =
+      cats.instances.list.catsStdShowForList
   }
 
   object LazyList {
 
-    def lazyListOrder[T](implicit ev: Order[T]): Order[LazyList[T]] =
+    implicit def lazyListOrder[T](implicit ev: Order[T]): Order[LazyList[T]] =
       kernel.instances.lazyList.catsKernelStdOrderForLazyList
 
-    def lazyListHash[T](implicit ev: Hash[T]): Hash[LazyList[T]] =
+    implicit def lazyListHash[T](implicit ev: Hash[T]): Hash[LazyList[T]] =
       kernel.instances.lazyList.catsKernelStdHashForLazyList
+
+    implicit def lazyListShow[T](implicit ev: Show[T]): Show[LazyList[T]] =
+      cats.instances.lazyList.catsStdShowForLazyList
   }
 }

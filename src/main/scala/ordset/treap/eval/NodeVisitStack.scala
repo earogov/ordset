@@ -1,19 +1,20 @@
 package ordset.treap.eval
 
-import ordset.Order
 import ordset.Show
+import ordset.domain.Domain
 import ordset.treap.{Eval, TraverseStep, TraverseVisit, Treap}
 
 object NodeVisitStack {
 
-  type Stack[K, Ord <: Order[K]] = List[Element[K, Ord]]
-  type EvalFunc[K, Ord <: Order[K]] = Eval.Func[K, Ord, Context[K, Ord], TraverseStep.Type]
+  type Stack[E, D <: Domain[E]] = List[Element[E, D]]
 
-  class Element[K, Ord <: Order[K]](val tree: Treap[K, Ord], val visits: TraverseVisit.Type)
+  type EvalFunc[E, D <: Domain[E]] = Eval.DefaultFunc[E, D, Context[E, D]]
 
-  class Context[K, Ord <: Order[K]](val currentVisits: TraverseVisit.Type, val stack: Stack[K, Ord])
+  class Element[E, D <: Domain[E]](val tree: Treap[E, D], val visits: TraverseVisit.Type)
 
-  trait ContextOps[K, Ord <: Order[K], C <: Context[K, Ord]] {
+  class Context[E, D <: Domain[E]](val currentVisits: TraverseVisit.Type, val stack: Stack[E, D])
+
+  trait ContextOps[E, D <: Domain[E], C <: Context[E, D]] {
 
     def leftVisitAdded(context: C): C
 
@@ -22,36 +23,43 @@ object NodeVisitStack {
     def withVisits(context: C, visits: TraverseVisit.Type): C
   }
 
-  def apply[K, Ord <: Order[K]](): EvalFunc[K, Ord] = EvalFunc.asInstanceOf[EvalFunc[K, Ord]]
+  def apply[E, D <: Domain[E]](): EvalFunc[E, D] = EvalFunc.asInstanceOf[EvalFunc[E, D]]
 
-  def of[K, Ord <: Order[K]](tree: Treap[K, Ord]): EvalFunc[K, Ord] = EvalFunc.asInstanceOf[EvalFunc[K, Ord]]
+  def of[E, D <: Domain[E]](tree: Treap[E, D]): EvalFunc[E, D] = EvalFunc.asInstanceOf[EvalFunc[E, D]]
 
-  implicit  def elementShow[K, Ord <: Order[K]](
-    implicit visitShow: Show[TraverseVisit.Type], treeShow: Show[Treap[K, Ord]]
-  ): Show[Element[K, Ord]] =
+  implicit  def elementShow[E, D <: Domain[E]](
+    implicit visitShow: Show[TraverseVisit.Type], treeShow: Show[Treap[E, D]]
+  ): Show[Element[E, D]] =
     Show.show(e => s"Element(tree: ${treeShow.show(e.tree)}, visits: ${visitShow.show(e.visits)})")
 
-  implicit def contextShow[K, Ord <: Order[K]](
-    implicit visitShow: Show[TraverseVisit.Type], stackShow: Show[Stack[K, Ord]]
-  ): Show[Context[K, Ord]] =
+  // Implicit function must be imported!
+  // Stack is type alias, so implicit resolver doesn't search here for its implicits by default.
+  implicit def stackShow[E, D <: Domain[E]](
+    implicit elementShow: Show[Element[E, D]]
+  ): Show[Stack[E, D]] =
+    ordset.instances.List.listShow(elementShow)
+
+  implicit def contextShow[E, D <: Domain[E]](
+    implicit visitShow: Show[TraverseVisit.Type], stackShow: Show[Stack[E, D]]
+  ): Show[Context[E, D]] =
     Show.show(c => s"Context(currentVisits: ${visitShow.show(c.currentVisits)}, stack: ${stackShow.show(c.stack)})")
 
-  implicit def contextOps[K, Ord <: Order[K]]: ContextOps[K, Ord, Context[K, Ord]] =
-    ContextOpsImpl.asInstanceOf[ContextOps[K, Ord, Context[K, Ord]]]
+  implicit def contextOps[E, D <: Domain[E]]: ContextOps[E, D, Context[E, D]] =
+    ContextOpsImpl.asInstanceOf[ContextOps[E, D, Context[E, D]]]
 
-  private lazy val ContextOpsImpl = new ContextOps[Any, Order[Any], Context[Any, Order[Any]]] {
+  private lazy val ContextOpsImpl = new ContextOps[Any, Domain[Any], Context[Any, Domain[Any]]] {
 
-    override def leftVisitAdded(context: Context[Any, Order[Any]]): Context[Any, Order[Any]] =
+    override def leftVisitAdded(context: Context[Any, Domain[Any]]): Context[Any, Domain[Any]] =
       withVisits(context, TraverseVisit.addLeftVisit(context.currentVisits))
 
-    override def rightVisitAdded(context: Context[Any, Order[Any]]): Context[Any, Order[Any]] =
+    override def rightVisitAdded(context: Context[Any, Domain[Any]]): Context[Any, Domain[Any]] =
       withVisits(context, TraverseVisit.addRightVisit(context.currentVisits))
 
-    override def withVisits(context: Context[Any, Order[Any]], visits: TraverseVisit.Type): Context[Any, Order[Any]] =
+    override def withVisits(context: Context[Any, Domain[Any]], visits: TraverseVisit.Type): Context[Any, Domain[Any]] =
       new Context(visits, context.stack)
   }
 
-  private lazy val EvalFunc: EvalFunc[Any, Order[Any]] =
+  private lazy val EvalFunc: EvalFunc[Any, Domain[Any]] =
     (tree, context, step) =>
       step match {
         case TraverseStep.Up => context.stack match {

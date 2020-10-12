@@ -1,31 +1,33 @@
 package ordset.treap
 
-import ordset.Order
+import ordset.domain.Domain
 
 object Traverse {
 
-  trait Func[K, Ord <: Order[K], C, +S] extends ((Treap[K, Ord], C) => Output[K, Ord, C, S])
+  trait Func[E, D <: Domain[E], C, +S] extends ((Treap[E, D], C) => Output[E, D, C, S])
 
-  type DefaultFunc[K, Ord <: Order[K], C] = Func[K, Ord, C, TraverseStep.Type]
+  type DefaultFunc[E, D <: Domain[E], C] = Func[E, D, C, TraverseStep.Type]
 
-  type GenericFunc[K, Ord <: Order[K], C] = Func[K, Ord, C, Any]
+  type GenericFunc[E, D <: Domain[E], C] = Func[E, D, C, Any]
 
-  case class Output[K, Ord <: Order[K], C, +S](tree: Treap[K, Ord], context: C, step: S, stop: Boolean) {
+  type DefaultOutput[E, D <: Domain[E], C] = Output[E, D, C, TraverseStep.Type]
 
-    def withContext(c: C): Output[K, Ord, C, S] =
+  case class Output[E, D <: Domain[E], C, +S](tree: Treap[E, D], context: C, step: S, stop: Boolean) {
+
+    def withContext(c: C): Output[E, D, C, S] =
       Output(tree, c, step, stop)
 
-    def eval(evalFunc: Eval.Func[K, Ord, C, S]): Output[K, Ord, C, S] =
+    def eval(evalFunc: Eval.Func[E, D, C, S]): Output[E, D, C, S] =
       Output(tree, evalFunc(tree, context, step), step, stop)
   }
 
-  implicit def toTraverseOps[K, Ord <: Order[K], C, S](
-    traverseFunc: Func[K, Ord, C, S]
-  ): TraverseOps[K, Ord, C, S] = new TraverseOps(traverseFunc)
+  implicit def toTraverseOps[E, D <: Domain[E], C, S](
+    traverseFunc: Func[E, D, C, S]
+  ): TraverseOps[E, D, C, S] = new TraverseOps(traverseFunc)
 
-  final class TraverseOps[K, Ord <: Order[K], C, S](val traverseFunc: Func[K, Ord, C, S]) extends AnyVal {
+  final class TraverseOps[E, D <: Domain[E], C, S](val traverseFunc: Func[E, D, C, S]) extends AnyVal {
 
-    def thenEval(evalFunc: Eval.Func[K, Ord, C, S]): Func[K, Ord, C, S] =
+    def thenEval(evalFunc: Eval.Func[E, D, C, S]): Func[E, D, C, S] =
       (tree, context) => {
         val traverseOutput = traverseFunc(tree, context)
         traverseOutput.withContext(evalFunc(tree, traverseOutput.context, traverseOutput.step))

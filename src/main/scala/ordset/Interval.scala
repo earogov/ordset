@@ -26,6 +26,11 @@ object Interval {
     implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]): Hash[Interval[E, D]] =
     new DefaultHash()(boundHash, domainHash)
 
+  implicit def intervalShow[E, D <: Domain[E]](
+    implicit boundShow: Show[Bound[E]]
+  ): Show[Interval[E, D]] =
+    Show.fromToString
+
   sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D]
 
   sealed trait WithLowerBound[@sp(spNum) E, D <: Domain[E]] extends Interval[E, D] {

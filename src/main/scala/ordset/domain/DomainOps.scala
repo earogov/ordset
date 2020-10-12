@@ -3,7 +3,7 @@ package ordset.domain
 import ordset.util.label.Label
 import ordset.{Hash, Interval, IntervalBuilder, IntervalMapping, IntervalOps, Segment}
 
-trait DomainOps[E, D <: Domain[E]] extends Domain.Wrapper[E, D] {
+trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
 
   implicit val interval: IntervalBuilder[E, D]
 
@@ -24,7 +24,8 @@ trait DomainOps[E, D <: Domain[E]] extends Domain.Wrapper[E, D] {
 object DomainOps {
 
   implicit def defaultDomainOps[E, D <: Domain[E]](
-    implicit domain: D): DomainOps[E, D] =
+    implicit domain: D
+  ): DomainOps[E, D] =
     new DefaultImpl[E, D](
       new IntervalBuilder.UnboundedBuilder(_),
       new IntervalOps.UnboundedOps(_),
