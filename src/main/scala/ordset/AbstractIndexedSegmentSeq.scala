@@ -7,7 +7,7 @@ import ordset.domain.{Domain, DomainOps}
   * It's encoded by a sequence of segments which covers universal set without gaps and overlapping.
   * `Boolean` value is assigned to each segment indicating whether it belongs to set:
   * {{{
- *
+  *
   *   Segment 0       Segment 1       Segment 2   - segment index
   * -------------|-----------------|------------
   *    false            true           false      - belongs to set
@@ -17,7 +17,7 @@ import ordset.domain.{Domain, DomainOps}
   * false and vice versa.
   * Segments are defined by their upper bounds which are stored in `bounds` standard sequence:
   * {{{
- *
+  *
   *   Segment 0       Segment 1       Segment 2   - segment index
   *              0                 1              - bound index
   * -------------|-----------------|------------

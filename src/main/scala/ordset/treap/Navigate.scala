@@ -4,10 +4,10 @@ import ordset.domain.Domain
 
 object Navigate {
 
-  trait Func[E, D <: Domain[E], -C, +S] extends ((Treap[E, D], C) => S)
+  trait Func[E, D <: Domain[E], W, -C, +S] extends ((Treap[E, D, W], C) => S)
 
-  type DefaultFunc[E, D <: Domain[E], C] = Func[E, D, C, TraverseStep.Type]
+  type DefaultFunc[E, D <: Domain[E], W, C] = Func[E, D, W, C, TraverseStep.Type]
 
-  type GenericFunc[E, D <: Domain[E], C] = Func[E, D, C, Any]
+  type GenericFunc[E, D <: Domain[E], W, C] = Func[E, D, W, C, Any]
 
 }

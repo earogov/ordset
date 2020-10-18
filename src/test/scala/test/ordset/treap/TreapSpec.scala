@@ -18,42 +18,54 @@ class TreapSpec extends AnyFunSpec {
 
   implicit val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
 
-  //   9  -                               1
+  //   9  -                               A
   //   8  -                      ↙          ↘
-  //   7  -             2                     ↘
-  //   6  -       ↙           ↘                 3
-  //   5  -    ↙                    5             ↘
-  //   4  - 4                      ↙                ↘
-  //   3  -    ↘                 ↙                    6
-  //   2  -       7            ↙
-  //   1  -                   8
+  //   7  -             B                     ↘
+  //   6  -       ↙           ↘                 C
+  //   5  -    ↙                    E             ↘
+  //   4  - D                      ↙                ↘
+  //   3  -    ↘                 ↙                    G
+  //   2  -       F            ↙
+  //   1  -                   H
   //        |-----|-----|-----|-----|-----|-----|-----|
   //        1     2     3     4     5     6     7     8
 
   it("should reduce tree") {
 
-    val leaf7 = Treap.Leaf[Int, Dom](2, 2)
-    val leaf8 = Treap.Leaf[Int, Dom](4, 1)
-    val node4 = Treap.WithRightOnly[Int, Dom](leaf7, 1, 4)
-    val node5 = Treap.WithLeftOnly[Int, Dom](leaf8, 5, 5)
-    val node2 = Treap.WithLeftRight[Int, Dom](node4, node5, 3, 7)
-    val leaf6 = Treap.Leaf[Int, Dom](8, 3)
-    val node3 = Treap.WithRightOnly[Int, Dom](leaf6, 7, 6)
-    val treap = Treap.WithLeftRight[Int, Dom](node2, node3, 6, 9)
+    val leafF = Treap.Leaf[Int, Dom, String](2, 2, "F")
+    val leafH = Treap.Leaf[Int, Dom, String](4, 1, "H")
+    val nodeD = Treap.NodeWithRightOnly[Int, Dom, String](leafF, 1, 4, "D")
+    val nodeE = Treap.NodeWithLeftOnly[Int, Dom, String](leafH, 5, 5, "E")
+    val nodeB = Treap.NodeWithLeftRight[Int, Dom, String](nodeD, nodeE, 3, 7, "B")
+    val leafG = Treap.Leaf[Int, Dom, String](8, 3, "G")
+    val nodeC = Treap.NodeWithRightOnly[Int, Dom, String](leafG, 7, 6, "C")
+    val nodeA = Treap.NodeWithLeftRight[Int, Dom, String](nodeB, nodeC, 6, 9, "A")
 
     println("")
     println("DepthFirst traverse with NodeVisitStack context")
 
+//    Reduce(
+//      nodeA,
+//      new NodeVisitStack.Context[Int, Dom, String](TraverseVisit.None, Nil),
+//      ()
+//    )(
+//      DepthFirst.nonEmpty(
+//        DepthFirst.leftFirstNavigate,
+//        NodeVisitStack.of(nodeA)
+//      ),
+//      CallTrace.toConsole
+//    )
+
     Reduce(
-      treap,
-      new NodeVisitStack.Context[Int, Dom](TraverseVisit.None, Nil),
+      nodeA,
+      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
       ()
     )(
-      DepthFirst.nonEmpty(
+      DepthFirst.withEmpty(
         DepthFirst.leftFirstNavigate,
-        NodeVisitStack.of(treap)
+        NodeIntervalStack.of(nodeA)
       ),
-      CallTrace.toConsole
+      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]]((NodeIntervalStack.contextShow()))
     )
 
     println("")
@@ -72,12 +84,12 @@ class TreapSpec extends AnyFunSpec {
     println("KeySearch traverse with NodeIntervalStack context")
 
     Reduce(
-      treap,
-      new NodeIntervalStack.Context[Int, Dom](ops.interval.universal, TraverseVisit.None, Nil),
+      nodeA,
+      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
       ()
     )(
       KeySearch.evalContext(4, NodeIntervalStack()),
-      CallTrace.toConsole[Int, Dom, NodeIntervalStack.Context[Int, Dom]](NodeIntervalStack.contextShow())
+      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](NodeIntervalStack.contextShow())
     )
   }
 }

@@ -6,29 +6,29 @@ import ordset.treap.{Eval, TraverseStep, TraverseVisit, Treap}
 
 object NodeIntervalStack {
 
-  type Stack[E, D <: Domain[E]] = List[Element[E, D]]
+  type Stack[E, D <: Domain[E], W] = List[Element[E, D, W]]
 
-  type EvalFunc[E, D <: Domain[E]] = Eval.DefaultFunc[E, D, Context[E, D]]
+  type EvalFunc[E, D <: Domain[E], W] = Eval.DefaultFunc[E, D, W, Context[E, D, W]]
 
-  class Element[E, D <: Domain[E]](
+  class Element[E, D <: Domain[E], W](
     val interval: Interval[E, D],
-    override val tree: Treap[E, D],
+    override val tree: Treap[E, D, W],
     override val visits: TraverseVisit.Type
-  ) extends NodeVisitStack.Element[E, D](
+  ) extends NodeVisitStack.Element[E, D, W](
     tree = tree,
     visits = visits
   )
 
-  class Context[E, D <: Domain[E]](
+  class Context[E, D <: Domain[E], W](
     val currentInterval: Interval[E, D],
     override val currentVisits: TraverseVisit.Type,
-    override val stack: Stack[E, D]
-  ) extends NodeVisitStack.Context[E, D](
+    override val stack: Stack[E, D, W]
+  ) extends NodeVisitStack.Context[E, D, W](
     currentVisits = currentVisits,
     stack = stack
   )
 
-  trait ContextOps[E, D <: Domain[E], C <: Context[E, D]] extends NodeVisitStack.ContextOps[E, D, C] {
+  trait ContextOps[E, D <: Domain[E], W, C <: Context[E, D, W]] extends NodeVisitStack.ContextOps[E, D, W, C] {
 
     def leftVisitAdded(context: C): C
 
@@ -39,13 +39,13 @@ object NodeIntervalStack {
     def withInterval(context: C, interval: Interval[E, D]): C
   }
 
-  def apply[E, D <: Domain[E]](): EvalFunc[E, D] = EvalFunc.asInstanceOf[EvalFunc[E, D]]
+  def apply[E, D <: Domain[E], W](): EvalFunc[E, D, W] = EvalFunc.asInstanceOf[EvalFunc[E, D, W]]
 
-  def of[E, D <: Domain[E]](tree: Treap[E, D]): EvalFunc[E, D] = EvalFunc.asInstanceOf[EvalFunc[E, D]]
+  def of[E, D <: Domain[E], W](tree: Treap[E, D, W]): EvalFunc[E, D, W] = EvalFunc.asInstanceOf[EvalFunc[E, D, W]]
 
-  implicit  def elementShow[E, D <: Domain[E]](
-    implicit intervalShow: Show[Interval[E, D]], visitShow: Show[TraverseVisit.Type], treeShow: Show[Treap[E, D]]
-  ): Show[Element[E, D]] =
+  implicit  def elementShow[E, D <: Domain[E], W](
+    implicit intervalShow: Show[Interval[E, D]], visitShow: Show[TraverseVisit.Type], treeShow: Show[Treap[E, D, W]]
+  ): Show[Element[E, D, W]] =
     Show.show(e =>
       s"Element(" +
         s"tree: ${treeShow.show(e.tree)}, " +
@@ -54,15 +54,15 @@ object NodeIntervalStack {
     )
 
   // Implicit function must be imported!
-  // Stack is type alias, so implicit resolver doesn't search here for its implicits by default.
-  implicit def stackShow[E, D <: Domain[E]](
-    implicit elementShow: Show[Element[E, D]]
-  ): Show[Stack[E, D]] =
+  // `Stack` is type alias, so implicit resolver doesn't search here for its implicits by default.
+  implicit def stackShow[E, D <: Domain[E], W](
+    implicit elementShow: Show[Element[E, D, W]]
+  ): Show[Stack[E, D, W]] =
     ordset.instances.List.listShow(elementShow)
 
-  implicit def contextShow[E, D <: Domain[E]]()(
-    implicit intervalShow: Show[Interval[E, D]], visitShow: Show[TraverseVisit.Type], stackShow: Show[Stack[E, D]]
-  ): Show[Context[E, D]] =
+  implicit def contextShow[E, D <: Domain[E], W]()(
+    implicit intervalShow: Show[Interval[E, D]], visitShow: Show[TraverseVisit.Type], stackShow: Show[Stack[E, D, W]]
+  ): Show[Context[E, D, W]] =
     Show.show(c =>
       s"Context(" +
         s"currentInterval: ${intervalShow.show(c.currentInterval)}, " +
@@ -70,37 +70,35 @@ object NodeIntervalStack {
         s"stack: ${stackShow.show(c.stack)})"
     )
 
-  implicit def contextOps[E, D <: Domain[E]](
-    context: Context[E, D]
-  ): ContextOps[E, D, Context[E, D]] =
-    ContextOpsImpl.asInstanceOf[ContextOps[E, D, Context[E, D]]]
+  implicit def contextOps[E, D <: Domain[E], W]: ContextOps[E, D, W, Context[E, D, W]] =
+    ContextOpsImpl.asInstanceOf[ContextOps[E, D, W, Context[E, D, W]]]
 
-  private lazy val ContextOpsImpl = new ContextOps[Any, Domain[Any], Context[Any, Domain[Any]]] {
+  private lazy val ContextOpsImpl = new ContextOps[Any, Domain[Any], Any, Context[Any, Domain[Any], Any]] {
 
     override def leftVisitAdded(
-      context: Context[Any, Domain[Any]]
-    ): Context[Any, Domain[Any]] =
+      context: Context[Any, Domain[Any], Any]
+    ): Context[Any, Domain[Any], Any] =
       withVisits(context, TraverseVisit.addLeftVisit(context.currentVisits))
 
     override def rightVisitAdded(
-      context: Context[Any, Domain[Any]]
-    ): Context[Any, Domain[Any]] =
+      context: Context[Any, Domain[Any], Any]
+    ): Context[Any, Domain[Any], Any] =
       withVisits(context, TraverseVisit.addRightVisit(context.currentVisits))
 
     override def withVisits(
-      context: Context[Any, Domain[Any]],
+      context: Context[Any, Domain[Any], Any],
       visits: TraverseVisit.Type
-    ): Context[Any, Domain[Any]] =
+    ): Context[Any, Domain[Any], Any] =
       new Context(context.currentInterval, visits, context.stack)
 
     override def withInterval(
-      context: Context[Any, Domain[Any]],
+      context: Context[Any, Domain[Any], Any],
       interval: Interval[Any, Domain[Any]]
-    ): Context[Any, Domain[Any]] =
+    ): Context[Any, Domain[Any], Any] =
       new Context(interval, context.currentVisits, context.stack)
   }
 
-  private lazy val EvalFunc: EvalFunc[Any, Domain[Any]] =
+  private lazy val EvalFunc: EvalFunc[Any, Domain[Any], Any] =
     (tree, context, step) => {
       val domainOps = context.currentInterval.domainOps
       step match {
@@ -131,7 +129,7 @@ object NodeIntervalStack {
         // Let's choose left, so upper bound should be included here.
         case TraverseStep.Left =>
           val interval = tree match {
-            case tree: Treap.Node[Any, Domain[Any]] =>
+            case tree: Treap.Node[Any, Domain[Any], Any] =>
               domainOps.intervalOps.cutAbove(
                 Bound.Upper[Any](tree.key, isInclusive = true),
                 context.currentInterval
@@ -155,7 +153,7 @@ object NodeIntervalStack {
         // We have chosen to include parent key into left subtree interval, so lower bound should not be included here.
         case TraverseStep.Right =>
           val interval = tree match {
-            case tree: Treap.Node[Any, Domain[Any]] =>
+            case tree: Treap.Node[Any, Domain[Any], Any] =>
               domainOps.intervalOps.cutBelow(
                 Bound.Lower[Any](tree.key, isInclusive = false),
                 context.currentInterval

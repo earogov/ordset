@@ -4,19 +4,19 @@ import ordset.domain.Domain
 
 object Eval {
 
-  trait Func[E, D <: Domain[E], C, -S] extends ((Treap[E, D], C, S) => C)
+  trait Func[E, D <: Domain[E], W, C, -S] extends ((Treap[E, D, W], C, S) => C)
 
-  type DefaultFunc[E, D <: Domain[E], C] = Func[E, D, C, TraverseStep.Type]
+  type DefaultFunc[E, D <: Domain[E], W, C] = Func[E, D, W, C, TraverseStep.Type]
 
-  type GenericFunc[E, D <: Domain[E], C] = Func[E, D, C, Any]
+  type GenericFunc[E, D <: Domain[E], W, C] = Func[E, D, W, C, Any]
 
-  implicit def toEvalOps[E, D <: Domain[E], C, S](
-    evalFunc: Func[E, D, C, S]
-  ): EvalOps[E, D, C, S] = new EvalOps(evalFunc)
+  implicit def toEvalOps[E, D <: Domain[E], W, C, S](
+    evalFunc: Func[E, D, W, C, S]
+  ): EvalOps[E, D, W, C, S] = new EvalOps(evalFunc)
 
-  final class EvalOps[E, D <: Domain[E], C, S](val evalFunc: Func[E, D, C, S]) extends AnyVal {
+  final class EvalOps[E, D <: Domain[E], W, C, S](val evalFunc: Func[E, D, W, C, S]) extends AnyVal {
 
-    def thenEval(nextEvalFunc: Eval.Func[E, D, C, S]): Eval.Func[E, D, C, S] =
+    def thenEval(nextEvalFunc: Eval.Func[E, D, W, C, S]): Eval.Func[E, D, W, C, S] =
       (tree, context, step) => {
         val nextContext = evalFunc(tree, context, step)
         nextEvalFunc(tree, nextContext, step)
