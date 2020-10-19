@@ -136,11 +136,8 @@ object NodeIntervalStack {
               )
             case _ => domainOps.interval.empty
           }
-          new Context(
-            interval,
-            TraverseVisit.None,
-            new Element(interval, tree, TraverseVisit.addLeftVisit(context.currentVisits)) :: context.stack
-          )
+          val element = new Element(context.currentInterval, tree, TraverseVisit.addLeftVisit(context.currentVisits))
+          new Context(interval, TraverseVisit.None, element :: context.stack)
         // Step into right subtree.
         //
         //                    A
@@ -160,11 +157,8 @@ object NodeIntervalStack {
               )
             case _ => domainOps.interval.empty
           }
-          new Context(
-            interval,
-            TraverseVisit.None,
-            new Element(interval, tree, TraverseVisit.addRightVisit(context.currentVisits)) :: context.stack
-          )
+          val element = new Element(context.currentInterval, tree, TraverseVisit.addRightVisit(context.currentVisits))
+          new Context(interval, TraverseVisit.None, element :: context.stack)
         case TraverseStep.None =>
           context
       }

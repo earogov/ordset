@@ -2,7 +2,7 @@ package test.ordset.treap
 
 import ordset.domain.{Domain, DomainOps}
 import ordset.instances
-import ordset.treap.eval.{NodeIntervalStack, NodeVisitStack}
+import ordset.treap.eval.NodeIntervalStack
 import ordset.treap.reduce.CallTrace
 import ordset.treap.traverse.{DepthFirst, KeySearch}
 import ordset.treap.{Reduce, TraverseVisit, Treap}
@@ -11,7 +11,6 @@ import org.scalatest.funspec.AnyFunSpec
 class TreapSpec extends AnyFunSpec {
 
   import instances.Int._
-  import NodeVisitStack.stackShow
   import NodeIntervalStack.stackShow
 
   type Dom = Domain[Int]
@@ -65,7 +64,9 @@ class TreapSpec extends AnyFunSpec {
         DepthFirst.leftFirstNavigate,
         NodeIntervalStack.of(nodeA)
       ),
-      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]]((NodeIntervalStack.contextShow()))
+      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
+        NodeIntervalStack.contextShow()
+      )
     )
 
     println("")
@@ -89,7 +90,9 @@ class TreapSpec extends AnyFunSpec {
       ()
     )(
       KeySearch.evalContext(4, NodeIntervalStack()),
-      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](NodeIntervalStack.contextShow())
+      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
+        NodeIntervalStack.contextShow()
+      )
     )
   }
 }
