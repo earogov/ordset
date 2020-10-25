@@ -16,11 +16,21 @@ object NodeVisitStack {
 
   trait ContextOps[E, D <: Domain[E], W, C <: Context[E, D, W]] {
 
-    def leftVisitAdded(context: C): C
+    def emptyContext(): C
 
-    def rightVisitAdded(context: C): C
+    def withLeftVisitAdded(context: C): C
+
+    def withRightVisitAdded(context: C): C
 
     def withVisits(context: C, visits: TraverseVisit.Type): C
+
+    def withStack(context: C, stack: Stack[E, D, W]): C
+
+    def ofLeftChild(context: C, tree: Treap[E, D, W]): C
+
+    def ofRightChild(context: C, tree: Treap[E, D, W]): C
+
+    def ofParent(context: C): C
   }
 
   def apply[E, D <: Domain[E], W](): EvalFunc[E, D, W] = EvalFunc.asInstanceOf[EvalFunc[E, D, W]]
@@ -49,12 +59,15 @@ object NodeVisitStack {
 
   private lazy val ContextOpsImpl = new ContextOps[Any, Domain[Any], Any, Context[Any, Domain[Any], Any]] {
 
-    override def leftVisitAdded(
+    override def emptyContext(): Context[Any, Domain[Any], Any] =
+      new Context(TraverseVisit.None, Nil)
+
+    override def withLeftVisitAdded(
       context: Context[Any, Domain[Any], Any]
     ): Context[Any, Domain[Any], Any] =
       withVisits(context, TraverseVisit.addLeftVisit(context.currentVisits))
 
-    override def rightVisitAdded(
+    override def withRightVisitAdded(
       context: Context[Any, Domain[Any], Any]
     ): Context[Any, Domain[Any], Any] =
       withVisits(context, TraverseVisit.addRightVisit(context.currentVisits))
@@ -63,28 +76,45 @@ object NodeVisitStack {
       context: Context[Any, Domain[Any], Any], visits: TraverseVisit.Type
     ): Context[Any, Domain[Any], Any] =
       new Context(visits, context.stack)
+
+    override def withStack(
+      context: Context[Any, Domain[Any], Any], stack: Stack[Any, Domain[Any], Any]
+    ): Context[Any, Domain[Any], Any] =
+      new Context(context.currentVisits, stack)
+
+    override def ofLeftChild(
+      context: Context[Any, Domain[Any], Any], tree: Treap[Any, Domain[Any], Any]
+    ): Context[Any, Domain[Any], Any] =
+      new Context(
+        TraverseVisit.None,
+        new Element(tree, TraverseVisit.addLeftVisit(context.currentVisits)) :: context.stack
+      )
+
+    override def ofRightChild(
+      context: Context[Any, Domain[Any], Any], tree: Treap[Any, Domain[Any], Any]
+    ): Context[Any, Domain[Any], Any] =
+      new Context(
+        TraverseVisit.None,
+        new Element(tree, TraverseVisit.addRightVisit(context.currentVisits)) :: context.stack
+      )
+
+    override def ofParent(
+      context: Context[Any, Domain[Any], Any]
+    ): Context[Any, Domain[Any], Any] =
+      context.stack match {
+        case head :: tail =>
+          new Context(head.visits, tail)
+        case _ =>
+          new Context(TraverseVisit.None, Nil)
+      }
   }
 
   private lazy val EvalFunc: EvalFunc[Any, Domain[Any], Any] =
     (tree, context, step) =>
       step match {
-        case TraverseStep.Up => context.stack match {
-          case head :: tail =>
-            new Context(head.visits, tail)
-          case _ =>
-            new Context(TraverseVisit.None, Nil)
-        }
-        case TraverseStep.Left =>
-          new Context(
-            TraverseVisit.None,
-            new Element(tree, TraverseVisit.addLeftVisit(context.currentVisits)) :: context.stack
-          )
-        case TraverseStep.Right =>
-          new Context(
-            TraverseVisit.None,
-            new Element(tree, TraverseVisit.addRightVisit(context.currentVisits)) :: context.stack
-          )
-        case TraverseStep.None =>
-          context
+        case TraverseStep.Up => ContextOpsImpl.ofParent(context)
+        case TraverseStep.Left => ContextOpsImpl.ofLeftChild(context, tree)
+        case TraverseStep.Right => ContextOpsImpl.ofRightChild(context, tree)
+        case TraverseStep.None => context
       }
 }

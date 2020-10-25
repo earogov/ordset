@@ -2,8 +2,8 @@ package test.ordset.treap
 
 import ordset.domain.{Domain, DomainOps}
 import ordset.instances
-import ordset.treap.eval.NodeIntervalStack
-import ordset.treap.reduce.CallTrace
+import ordset.treap.eval.{NodeVisitStack}
+import ordset.treap.reduce.{CallTrace, ContextExtract}
 import ordset.treap.traverse.{DepthFirst, KeySearch}
 import ordset.treap.{Reduce, TraverseVisit, Treap}
 import org.scalatest.funspec.AnyFunSpec
@@ -11,7 +11,6 @@ import org.scalatest.funspec.AnyFunSpec
 class TreapSpec extends AnyFunSpec {
 
   import instances.Int._
-  import NodeIntervalStack.stackShow
 
   type Dom = Domain[Int]
 
@@ -43,7 +42,7 @@ class TreapSpec extends AnyFunSpec {
     println("")
     println("DepthFirst traverse with NodeVisitStack context")
 
-//    Reduce(
+//    Reduce.before(
 //      nodeA,
 //      new NodeVisitStack.Context[Int, Dom, String](TraverseVisit.None, Nil),
 //      ()
@@ -55,24 +54,25 @@ class TreapSpec extends AnyFunSpec {
 //      CallTrace.toConsole
 //    )
 
-    Reduce(
-      nodeA,
-      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
-      ()
-    )(
-      DepthFirst.withEmpty(
-        DepthFirst.leftFirstNavigate,
-        NodeIntervalStack.of(nodeA)
-      ),
-      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
-        NodeIntervalStack.contextShow()
-      )
-    )
+//    Reduce.before(
+//      nodeA,
+//      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
+//      ()
+//    )(
+//      DepthFirst.withEmpty(
+//        DepthFirst.leftFirstNavigate,
+//        NodeIntervalStack.of(nodeA)
+//      ),
+//      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
+//        Treap.treapShow,
+//        NodeIntervalStack.contextShow()
+//      )
+//    )
 
     println("")
-    println("KeySearch traverse with NodeVisitStack context")
+    println("KeySearch.down traverse with NodeVisitStack context")
 
-//    Reduce(
+//    Reduce.before(
 //      treap,
 //      new NodeVisitStack.Context[Int, Dom](TraverseVisit.None, Nil),
 //      ()
@@ -81,18 +81,58 @@ class TreapSpec extends AnyFunSpec {
 //      CallTrace.toConsole
 //    )
 
-    println("")
-    println("KeySearch traverse with NodeIntervalStack context")
+//    Reduce.before(
+//      nodeA,
+//      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
+//      ()
+//    )(
+//      KeySearch.down(4, NodeIntervalStack()),
+//      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
+//        Treap.treapShow,
+//        NodeIntervalStack.contextShow()
+//      )
+//    )
 
-    Reduce(
-      nodeA,
-      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
-      ()
-    )(
-      KeySearch.evalContext(4, NodeIntervalStack()),
-      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
-        NodeIntervalStack.contextShow()
-      )
+    println("")
+    println("KeySearch.nextKey traverse with NodeVisitStack context")
+
+    val initContext = new NodeVisitStack.Context[Int, Dom, String](TraverseVisit.None, Nil)
+    val initOutput = new ContextExtract.Output[Int, Dom, String, NodeVisitStack.Context[Int, Dom, String]](
+      Treap.Empty(),
+      initContext
     )
+    val contextExtract =
+      Reduce.before(
+        nodeA,
+        initContext,
+        initOutput
+      )(
+        DepthFirst.nonEmpty(
+          DepthFirst.leftOnlyNavigate,
+          NodeVisitStack.of(nodeA)
+        ),
+        ContextExtract.function[Int, Dom, String, NodeVisitStack.Context[Int, Dom, String]]
+      )
+
+    val toConsole = CallTrace.toConsole[Int, Dom, String, NodeVisitStack.Context[Int, Dom, String]](
+      Treap.treapShow,
+      NodeVisitStack.contextShow
+    )
+    var context = contextExtract.context
+    var tree = contextExtract.tree
+    toConsole(tree, context, ())
+    for (i <- 1 to 7) {
+      val currentExtract = Reduce.after(
+          tree,
+          context,
+          initOutput
+        )(
+          KeySearch.nextKey(NodeVisitStack()),
+          ContextExtract.function[Int, Dom, String, NodeVisitStack.Context[Int, Dom, String]]
+        )
+      context = currentExtract.context
+      tree = currentExtract.tree
+      toConsole(tree, context, ())
+    }
   }
 }

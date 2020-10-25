@@ -31,9 +31,9 @@ object DepthFirst {
         }
         case TraverseStep.Up => context.stack match {
           case head :: _ => new Output(head.tree, context, step, stop = false)
-          case _ => new Output(Treap.Empty(), context, TraverseStep.None, stop = true)
+          case _ => new Output(Treap.Empty(), context, step, stop = true)
         }
-        case TraverseStep.None => new Output(tree, context, TraverseStep.None, stop = true)
+        case TraverseStep.None => new Output(tree, context, step, stop = true)
       }
       output.withContext(evalFunc(tree, output.context, output.step))
     }
@@ -59,9 +59,9 @@ object DepthFirst {
           }
           case TraverseStep.Up => context.stack match {
             case head :: _ => new Output(head.tree, context, step, stop = false)
-            case _ => new Output(Treap.Empty(), context, TraverseStep.None, stop = true)
+            case _ => new Output(Treap.Empty(), context, step, stop = true)
           }
-          case TraverseStep.None => new Output(tree, context, TraverseStep.None, stop = true)
+          case TraverseStep.None => new Output(tree, context, step, stop = true)
         }
       }
       val traverseOutput = traverse(tree, context.currentVisits)
@@ -83,34 +83,24 @@ object DepthFirst {
   private lazy val LeftFirstNavigate: NavigateFunc[Any, Domain[Any], Any] =
     (tree, context) =>
       if (!tree.isNode) TraverseStep.Up
-      else context.currentVisits match {
-        case TraverseVisit.None => TraverseStep.Left
-        case TraverseVisit.Left => TraverseStep.Right
-        case _ => TraverseStep.Up
-      }
+      else if (TraverseVisit.isLeftUnvisited(context.currentVisits)) TraverseStep.Left
+      else if (TraverseVisit.isRightUnvisited(context.currentVisits)) TraverseStep.Right
+      else TraverseStep.Up
 
   private lazy val LeftOnlyNavigate: NavigateFunc[Any, Domain[Any], Any] =
     (tree, context) =>
-      if (!tree.isNode) TraverseStep.None
-      else context.currentVisits match {
-        case TraverseVisit.None => TraverseStep.Left
-        case _ => TraverseStep.None
-      }
+      if (!tree.isNode || TraverseVisit.isLeftVisited(context.currentVisits)) TraverseStep.None
+      else TraverseStep.Left
 
   private lazy val RightFirstNavigate: NavigateFunc[Any, Domain[Any], Any] =
     (tree, context) =>
       if (!tree.isNode) TraverseStep.Up
-      else context.currentVisits match {
-        case TraverseVisit.None => TraverseStep.Right
-        case TraverseVisit.Left => TraverseStep.Left
-        case _ => TraverseStep.Up
-      }
+      else if (TraverseVisit.isRightUnvisited(context.currentVisits)) TraverseStep.Right
+      else if (TraverseVisit.isLeftUnvisited(context.currentVisits)) TraverseStep.Left
+      else TraverseStep.Up
 
   private lazy val RightOnlyNavigate: NavigateFunc[Any, Domain[Any], Any] =
     (tree, context) =>
-      if (!tree.isNode) TraverseStep.None
-      else context.currentVisits match {
-        case TraverseVisit.None => TraverseStep.Right
-        case _ => TraverseStep.None
-      }
+      if (!tree.isNode || TraverseVisit.isRightVisited(context.currentVisits)) TraverseStep.None
+      else TraverseStep.Right
 }

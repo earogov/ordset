@@ -13,8 +13,11 @@ object TraverseVisit extends TaggedRaw[Int] {
   private val LeftMask: Int = 0x00000001
   private val RightMask: Int = 0x00000010
 
-  def wasLeftVisited(v: Type): Boolean = (v & LeftMask) != 0
-  def wasRightVisited(v: Type): Boolean = (v & RightMask) != 0
+  def isLeftVisited(v: Type): Boolean = (v & LeftMask) != 0
+  def isRightVisited(v: Type): Boolean = (v & RightMask) != 0
+
+  def isLeftUnvisited(v: Type): Boolean = (v & LeftMask) == 0
+  def isRightUnvisited(v: Type): Boolean = (v & RightMask) == 0
 
   def addLeftVisit(v: Type): Type = fromRaw(v | LeftMask)
   def addRightVisit(v: Type): Type = fromRaw(v | RightMask)

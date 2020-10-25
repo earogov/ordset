@@ -14,7 +14,11 @@ object Traverse {
 
   case class Output[E, D <: Domain[E], W, C, +S](tree: Treap[E, D, W], context: C, step: S, stop: Boolean) {
 
+    def withTree(t: Treap[E, D, W]): Output[E, D, W, C, S] = Output(t, context, step, stop)
+
     def withContext(c: C): Output[E, D, W, C, S] = Output(tree, c, step, stop)
+
+    def withStop(s: Boolean): Output[E, D, W, C, S] = Output(tree, context, step, s)
   }
 
   implicit def toTraverseOps[E, D <: Domain[E], W, C, S](
