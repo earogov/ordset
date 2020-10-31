@@ -11,9 +11,9 @@ object ContextExtract {
 
     def initial[E, D <: Domain[E], W, C](context: C): Output[E, D, W, C] = Output(Treap.Empty(), context)
 
-    def initialUnsafe[E, D <: Domain[E], W, C]: Output[E, D, W, C] = InitUnsafe.asInstanceOf[Output[E, D, W, C]]
+    def initialUnsafe[E, D <: Domain[E], W, C]: Output[E, D, W, C] = InitialUnsafe.asInstanceOf[Output[E, D, W, C]]
 
-    private lazy val InitUnsafe: Output[Any, Domain[Any], Any, Any] = Output(Treap.Empty(), null)
+    private lazy val InitialUnsafe: Output[Any, Domain[Any], Any, Any] = Output(Treap.Empty(), null)
   }
 
   def function[E, D <: Domain[E], W, C]: Reduce.Func[E, D, W, C, Output[E, D, W, C]] =

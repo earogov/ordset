@@ -67,7 +67,7 @@ object KeySearch {
     implicit domain: Domain[E],
     contextOps: ContextOps[E, D, W, C]
   ): Traverse.DefaultFunc[E, D, W, C] =
-    (tree, context) => {
+    (tree, context) =>
       tree match {
         case tree: Treap.NodeWithRight[E, D, W] =>
           val traverseLeftFunc = DepthFirst.nonEmpty(DepthFirst.leftOnlyNavigate, evalFunc)(contextOps)
@@ -83,5 +83,27 @@ object KeySearch {
           val output = new Output(tree, context, TraverseStep.None, stop = true)
           output.withContext(evalFunc(tree, output.context, output.step))
         }
-    }
+
+  def prevKey[E, D <: Domain[E], W, C <: Context[E, D, W]](
+    evalFunc: EvalFunc[E, D, W, C]
+  )(
+    implicit domain: Domain[E],
+    contextOps: ContextOps[E, D, W, C]
+  ): Traverse.DefaultFunc[E, D, W, C] =
+    (tree, context) =>
+      tree match {
+        case tree: Treap.NodeWithLeft[E, D, W] =>
+          val traverseRightFunc = DepthFirst.nonEmpty(DepthFirst.rightOnlyNavigate, evalFunc)(contextOps)
+          val leftContext = evalFunc(tree, context, TraverseStep.Left)
+          val contextExtract = ContextExtract.reduceAfter(tree.left, leftContext)(traverseRightFunc)
+          new Output(contextExtract.tree, contextExtract.context, TraverseStep.Left, stop = true)
+        case tree: Treap.Node[E, D, W] =>
+          val stopPredicate = (node: Treap.Node[E, D, W]) => domain.elementOrd.compare(node.key, tree.key) < 0
+          val traverseUpFunc = up(stopPredicate, evalFunc)
+          val contextExtract = ContextExtract.reduceAfter(tree, context)(traverseUpFunc)
+          new Output(contextExtract.tree, contextExtract.context, TraverseStep.Up, stop = true)
+        case _ =>
+          val output = new Output(tree, context, TraverseStep.None, stop = true)
+          output.withContext(evalFunc(tree, output.context, output.step))
+      }
 }
