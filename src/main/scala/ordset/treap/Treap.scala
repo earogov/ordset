@@ -22,7 +22,11 @@ sealed trait Treap[E, D <: Domain[E], W] {
 
 object Treap {
 
-  implicit def treapShow[E, D <: Domain[E], W]: Show[Treap[E, D, W]] = Show.show(t => t.toString)
+  implicit def treapShow[E, D <: Domain[E], W]: Show[Treap[E, D, W]] =
+    ShowInstance.asInstanceOf[Show[Treap[E, D, W]]]
+
+  implicit def nodeShow[E, D <: Domain[E], W]: Show[Treap.Node[E, D, W]] =
+    ShowInstance.asInstanceOf[Show[Treap.Node[E, D, W]]]
 
   sealed trait Node[E, D <: Domain[E], W] extends Treap[E, D, W] {
 
@@ -32,11 +36,23 @@ object Treap {
 
     override def isNode: Boolean = true
 
-    def withLeft(tree: Node[E, D, W]): NodeWithLeft[E, D, W]
+    def withLeftTree(tree: Treap[E, D, W]): Node[E, D, W] =
+      tree match {
+        case tree: Node[E, D, W] => withLeftNode(tree)
+        case _ => withoutLeft()
+      }
+
+    def withLeftNode(node: Node[E, D, W]): NodeWithLeft[E, D, W]
 
     def withoutLeft(): Node[E, D, W]
 
-    def withRight(tree: Node[E, D, W]): NodeWithRight[E, D, W]
+    def withRightTree(tree: Treap[E, D, W]): Node[E, D, W] =
+      tree match {
+        case tree: Node[E, D, W] => withRightNode(tree)
+        case _ => withoutRight()
+      }
+
+    def withRightNode(node: Node[E, D, W]): NodeWithRight[E, D, W]
 
     def withoutRight(): Node[E, D, W]
   }
@@ -81,13 +97,13 @@ object Treap {
     override val value: W
   ) extends Node[E, D, W] {
 
-    override def withLeft(tree: Node[E, D, W]): NodeWithLeftOnly[E, D, W] =
-      NodeWithLeftOnly(tree, key, priority, value)
+    override def withLeftNode(node: Node[E, D, W]): NodeWithLeftOnly[E, D, W] =
+      NodeWithLeftOnly(node, key, priority, value)
 
     override def withoutLeft(): Leaf[E, D, W] = this
 
-    override def withRight(tree: Node[E, D, W]): NodeWithRightOnly[E, D, W] =
-      NodeWithRightOnly(tree, key, priority, value)
+    override def withRightNode(node: Node[E, D, W]): NodeWithRightOnly[E, D, W] =
+      NodeWithRightOnly(node, key, priority, value)
 
     override def withoutRight(): Leaf[E, D, W] = this
 
@@ -101,15 +117,15 @@ object Treap {
     override val value: W
   ) extends NodeWithLeft[E, D, W] {
 
-    override def withLeft(tree: Node[E, D, W]): NodeWithLeftOnly[E, D, W] =
-      if (hasLeftInstance(tree)) this
-      else NodeWithLeftOnly(tree, key, priority, value)
+    override def withLeftNode(node: Node[E, D, W]): NodeWithLeftOnly[E, D, W] =
+      if (hasLeftInstance(node)) this
+      else NodeWithLeftOnly(node, key, priority, value)
 
     override def withoutLeft(): Leaf[E, D, W] =
       Leaf(key, priority, value)
 
-    override def withRight(tree: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
-      NodeWithLeftRight(left, tree, key, priority, value)
+    override def withRightNode(node: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
+      NodeWithLeftRight(left, node, key, priority, value)
 
     override def withoutRight(): NodeWithLeftOnly[E, D, W] = this
 
@@ -123,14 +139,14 @@ object Treap {
     override val value: W
   ) extends NodeWithRight[E, D, W] {
 
-    override def withLeft(tree: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
-      NodeWithLeftRight(tree, right, key, priority, value)
+    override def withLeftNode(node: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
+      NodeWithLeftRight(node, right, key, priority, value)
 
     override def withoutLeft(): NodeWithRightOnly[E, D, W] = this
 
-    override def withRight(tree: Node[E, D, W]): NodeWithRightOnly[E, D, W] =
-      if (hasRightInstance(tree)) this
-      else NodeWithRightOnly(tree, key, priority, value)
+    override def withRightNode(node: Node[E, D, W]): NodeWithRightOnly[E, D, W] =
+      if (hasRightInstance(node)) this
+      else NodeWithRightOnly(node, key, priority, value)
 
     override def withoutRight(): Leaf[E, D, W] =
       Leaf(key, priority, value)
@@ -146,20 +162,22 @@ object Treap {
     override val value: W
   ) extends NodeWithLeft[E, D, W] with NodeWithRight[E, D, W] {
 
-    override def withLeft(tree: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
-      if (hasLeftInstance(tree)) this
-      else NodeWithLeftRight(tree, right, key, priority, value)
+    override def withLeftNode(node: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
+      if (hasLeftInstance(node)) this
+      else NodeWithLeftRight(node, right, key, priority, value)
 
     override def withoutLeft(): NodeWithRightOnly[E, D, W] =
       NodeWithRightOnly(right, key, priority, value)
 
-    override def withRight(tree: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
-      if (hasRightInstance(tree)) this
-      else NodeWithLeftRight(left, tree, key, priority, value)
+    override def withRightNode(node: Node[E, D, W]): NodeWithLeftRight[E, D, W] =
+      if (hasRightInstance(node)) this
+      else NodeWithLeftRight(left, node, key, priority, value)
 
     override def withoutRight(): NodeWithLeftOnly[E, D, W] =
       NodeWithLeftOnly(left, key, priority, value)
 
     override def toString: String = s"Treap.NodeWithLeftRight(key: $key, priority: $priority, value: $value)"
   }
+
+  private lazy val ShowInstance: Show[Treap[Any, Domain[Any], Any]] = Show.fromToString
 }

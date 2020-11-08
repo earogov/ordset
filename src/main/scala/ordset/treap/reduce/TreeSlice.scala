@@ -1,10 +1,12 @@
 package ordset.treap.reduce
 
 import ordset.domain.Domain
+import ordset.treap.eval.NodeVisitStack
+import ordset.treap.traverse.KeySearch
 import ordset.treap.{Reduce, Treap}
 
 /**
- * [[TreeSlice.function]] implements slice operation for treap. Output is a pair of left and right trees.
+ * [[TreeSlice.sliceFunc]] implements slice operation for treap. Output is a pair of left and right trees.
  * If node key ≤ slice key then node is included in left tree, else in right.
  * Both immutable and mutable output tuples are available.
  *
@@ -42,8 +44,9 @@ import ordset.treap.{Reduce, Treap}
  * }}}
  * =Usage=
  *
- * 1. Move down from the root to the specified key and save context - stack of visited nodes.
- *    In example above we start from node A and stop at node H and context is a list of nodes E, B, A.
+ * 1. Move down from the root to the specified key and save context with stack of visited nodes.
+ *    In example above we start from node A and stop at node H. Context will contain list of nodes E, B, A.
+ *
  * {{{
  * val contextExtract = ContextExtract.reduceAfter(
  *    nodeA,
@@ -52,16 +55,18 @@ import ordset.treap.{Reduce, Treap}
  *    KeySearch.down(4, NodeVisitStack.of(nodeA))
  * )
  * }}}
- * 2. Move upward starting from node H (with the received context) and apply [[TreeSlice.function]] as a reduce
+ *
+ * 2. Move upward starting from node H (with the received context) and apply [[TreeSlice.sliceFunc]] as a reduce
  *    function to build left and right subtrees.
+ *
  * {{{
  * val slice = Reduce.before(
  *    contextExtract.tree,
  *    contextExtract.context,
- *    TreeSlice.Immutable.Output.initial[Int, Dom, String]
+ *    TreeSlice.Immutable.Output.initial[Int, Domain[Int], String]
  * )(
  *    KeySearch.up(_ => false, NodeVisitStack.of(contextExtract.tree)),
- *    TreeSlice.function[Int, Dom, String, NodeVisitStack.Context[Int, Dom, String]](4)
+ *    TreeSlice.sliceFunc[Int, Domain[Int], String, NodeVisitStack.Context[Int, Domain[Int], String]](4)
  * )
  * println("Left tree: " + slice.leftTree)
  * println("Right tree: " + slice.rightTree)
@@ -77,11 +82,11 @@ object TreeSlice {
 
     def withLeftTree(tree: Treap[E, D, W]): Output[E, D, W]
 
-    def withLeftParent(parent: Treap.Node[E, D, W]): Output[E, D, W]
-
     def withRightTree(tree: Treap[E, D, W]): Output[E, D, W]
 
-    def withRightParent(parent: Treap.Node[E, D, W]): Output[E, D, W]
+    def withLeftParent(parent: Treap.Node[E, D, W]): Output[E, D, W] = withLeftTree(parent.withRightTree(leftTree))
+
+    def withRightParent(parent: Treap.Node[E, D, W]): Output[E, D, W] = withRightTree(parent.withLeftTree(rightTree))
   }
 
   object Immutable {
@@ -93,19 +98,7 @@ object TreeSlice {
 
       override def withLeftTree(tree: Treap[E, D, W]): Output[E, D, W] = Output(tree, rightTree)
 
-      override def withLeftParent(parent: Treap.Node[E, D, W]): Output[E, D, W] =
-        leftTree match {
-          case leftTree: Treap.Node[E, D, W] => Output(parent.withRight(leftTree), rightTree)
-          case _ => Output(parent.withoutRight(), rightTree)
-        }
-
       override def withRightTree(tree: Treap[E, D, W]): Output[E, D, W] = Output(leftTree, tree)
-
-      override def withRightParent(parent: Treap.Node[E, D, W]): Output[E, D, W] =
-        rightTree match {
-          case rightTree: Treap.Node[E, D, W] => Output(leftTree, parent.withLeft(rightTree))
-          case _ => Output(leftTree, parent.withoutLeft())
-        }
     }
 
     object Output {
@@ -132,24 +125,8 @@ object TreeSlice {
         this
       }
 
-      override def withLeftParent(parent: Treap.Node[E, D, W]): Output[E, D, W] = {
-        leftTreeVar match {
-          case leftTree: Treap.Node[E, D, W] => this.leftTreeVar = parent.withRight(leftTree)
-          case _ => this.leftTreeVar = parent.withoutRight()
-        }
-        this
-      }
-
       override def withRightTree(tree: Treap[E, D, W]): Output[E, D, W] = {
         this.rightTreeVar = tree
-        this
-      }
-
-      override def withRightParent(parent: Treap.Node[E, D, W]): Output[E, D, W] = {
-        rightTreeVar match {
-          case rightTree: Treap.Node[E, D, W] => this.rightTreeVar = parent.withLeft(rightTree)
-          case _ => this.rightTreeVar = parent.withoutLeft()
-        }
         this
       }
     }
@@ -160,7 +137,7 @@ object TreeSlice {
     }
   }
 
-  def function[E, D <: Domain[E], W, C](
+  def sliceFunc[E, D <: Domain[E], W, C](
     key: E
   )(
     implicit domain: Domain[E]
@@ -171,4 +148,27 @@ object TreeSlice {
         else output.withRightParent(tree)
       case _ => output
     }
+
+  def reduce[E, D <: Domain[E], W](
+    tree: Treap[E, D, W],
+    key: E,
+    initial: Output[E, D, W]
+  )(
+    implicit domain: Domain[E]
+  ): Output[E, D, W] = {
+    val contextExtract = ContextExtract.reduceAfter(
+      tree,
+      NodeVisitStack.contextOps[E, D, W].getEmptyContext
+    )(
+      KeySearch.down(key, NodeVisitStack.of(tree))
+    )
+    Reduce.before(
+      contextExtract.tree,
+      contextExtract.context,
+      initial
+    )(
+      KeySearch.up(_ => false, NodeVisitStack.of(contextExtract.tree)),
+      TreeSlice.sliceFunc[E, D, W, NodeVisitStack.Context[E, D, W]](key)
+    )
+  }
 }

@@ -20,22 +20,29 @@ object DepthFirst {
   ): Traverse.DefaultFunc[E, D, W, C] =
     (tree, context) => {
       val step = navigateFunc(tree, context)
-      val output: Output[E, D, W, C] = step match {
+      val newContext = evalFunc(tree, context, step)
+      step match {
         case TraverseStep.Left => tree match {
-          case n: Treap.NodeWithLeft[E, D, W] => new Output(n.left, context, step, stop = false)
-          case _ => new Output(Treap.Empty(), context, step, stop = false)
+          case n: Treap.NodeWithLeft[E, D, W] =>
+            new Output(n.left, newContext, step, stop = false)
+          case _ =>
+            new Output(Treap.Empty(), newContext, step, stop = false)
         }
         case TraverseStep.Right => tree match {
-          case n: Treap.NodeWithRight[E, D, W] => new Output(n.right, context, step, stop = false)
-          case _ => new Output(Treap.Empty(), context, step, stop = false)
+          case n: Treap.NodeWithRight[E, D, W] =>
+            new Output(n.right, newContext, step, stop = false)
+          case _ =>
+            new Output(Treap.Empty(), newContext, step, stop = false)
         }
         case TraverseStep.Up => context.stack match {
-          case head :: _ => new Output(head.tree, context, step, stop = false)
-          case _ => new Output(Treap.Empty(), context, step, stop = true)
+          case head :: _ =>
+            new Output(head.tree, newContext, step, stop = false)
+          case _ =>
+            new Output(Treap.Empty(), newContext, step, stop = true)
         }
-        case TraverseStep.None => new Output(tree, context, step, stop = true)
+        case TraverseStep.None =>
+          new Output(tree, newContext, step, stop = true)
       }
-      output.withContext(evalFunc(tree, output.context, output.step))
     }
 
   def nonEmpty[E, D <: Domain[E], W, C <: Context[E, D, W]](
@@ -47,25 +54,31 @@ object DepthFirst {
     (tree, context) => {
       @tailrec
       def traverse(tree: Treap[E, D, W], visits: TraverseVisit.Type): Output[E, D, W, C] = {
-        val step = navigateFunc(tree, contextOps.withVisits(context, visits))
+        val step = navigateFunc(tree, contextOps.getContextWithVisits(context, visits))
         step match {
           case TraverseStep.Left => tree match {
-            case n: Treap.NodeWithLeft[E, D, W] => new Output(n.left, context, step, stop = false)
-            case _ => traverse(tree, TraverseVisit.addLeftVisit(visits))
+            case n: Treap.NodeWithLeft[E, D, W] =>
+              new Output(n.left, evalFunc(tree, context, step), step, stop = false)
+            case _ =>
+              traverse(tree, TraverseVisit.addLeftVisit(visits))
           }
           case TraverseStep.Right => tree match {
-            case n: Treap.NodeWithRight[E, D, W] => new Output(n.right, context, step, stop = false)
-            case _ => traverse(tree, TraverseVisit.addRightVisit(visits))
+            case n: Treap.NodeWithRight[E, D, W] =>
+              new Output(n.right, evalFunc(tree, context, step), step, stop = false)
+            case _ =>
+              traverse(tree, TraverseVisit.addRightVisit(visits))
           }
           case TraverseStep.Up => context.stack match {
-            case head :: _ => new Output(head.tree, context, step, stop = false)
-            case _ => new Output(Treap.Empty(), context, step, stop = true)
+            case head :: _ =>
+              new Output(head.tree, evalFunc(tree, context, step), step, stop = false)
+            case _ =>
+              new Output(Treap.Empty(), evalFunc(tree, context, step), step, stop = true)
           }
-          case TraverseStep.None => new Output(tree, context, step, stop = true)
+          case TraverseStep.None =>
+            new Output(tree, evalFunc(tree, context, step), step, stop = true)
         }
       }
-      val traverseOutput = traverse(tree, context.currentVisits)
-      traverseOutput.withContext(evalFunc(tree, traverseOutput.context, traverseOutput.step))
+      traverse(tree, context.currentVisits)
     }
 
   def leftFirstNavigate[E, D <: Domain[E], W]: NavigateFunc[E, D, W] =
