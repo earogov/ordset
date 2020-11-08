@@ -1,7 +1,7 @@
 package ordset.treap
 
 import ordset.domain.Domain
-import ordset.Show
+import ordset.{Order, Show}
 
 sealed trait Treap[E, D <: Domain[E], W] {
 
@@ -27,6 +27,9 @@ object Treap {
 
   implicit def nodeShow[E, D <: Domain[E], W]: Show[Treap.Node[E, D, W]] =
     ShowInstance.asInstanceOf[Show[Treap.Node[E, D, W]]]
+
+  implicit def nodeOrder[E, D <: Domain[E], W](implicit keyOrder: Order[E]): Order[Treap.Node[E, D, W]] =
+    new NodePriorityOrder(ordset.instances.Int.intOrder, keyOrder)
 
   sealed trait Node[E, D <: Domain[E], W] extends Treap[E, D, W] {
 
@@ -177,6 +180,24 @@ object Treap {
       NodeWithLeftOnly(left, key, priority, value)
 
     override def toString: String = s"Treap.NodeWithLeftRight(key: $key, priority: $priority, value: $value)"
+  }
+
+  final class NodePriorityOrder[E, D <: Domain[E], W](
+    val intOrder: Order[Int],
+    val keyOrder: Order[E]
+  ) extends Order[Node[E, D, W]] {
+
+    override def compare(x: Node[E, D, W], y: Node[E, D, W]): Int = {
+      val cmp = intOrder.compare(x.priority, y.priority)
+      if (cmp == 0) keyOrder.compare(x.key, y.key)
+      else cmp
+    }
+
+    override def eqv(x: Node[E, D, W], y: Node[E, D, W]): Boolean = {
+      val eq = intOrder.eqv(x.priority, y.priority)
+      if (eq) keyOrder.eqv(x.key, y.key)
+      else eq
+    }
   }
 
   private lazy val ShowInstance: Show[Treap[Any, Domain[Any], Any]] = Show.fromToString

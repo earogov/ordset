@@ -1,5 +1,6 @@
 package ordset.treap.reduce
 
+import ordset.Order
 import ordset.domain.Domain
 import ordset.treap.Treap
 import ordset.treap.eval.NodeStack
@@ -10,7 +11,7 @@ import scala.annotation.tailrec
 /**
  * [[TreeMerge.mergeFunc]] implements merge operation for two trees.
  *
- * Precondition: max key of left tree < min key of right tree
+ * Precondition: max key of left tree `<` min key of right tree
  *
  * {{{
  *               left tree           right tree
@@ -95,10 +96,12 @@ object TreeMerge {
     leftStack: Stack[E, D, W],
     rightStack: Stack[E, D, W],
     mergedTree: Treap[E, D, W]
+  )(
+    implicit priorityOrder: Order[Treap.Node[E, D, W]]
   ): Treap[E, D, W] = {
     (leftStack, rightStack) match {
       case (leftHead :: leftTail, rightHead :: rightTail) =>
-        if (leftHead.priority <= rightHead.priority) {
+        if (priorityOrder.compare(leftHead, rightHead) <= 0) {
           //       rightHead
           //        /    \
           //  leftHead   ...
@@ -177,6 +180,8 @@ object TreeMerge {
   def reduce[E, D <: Domain[E], W](
     leftTree: Treap[E, D, W],
     rightTree: Treap[E, D, W]
+  )(
+    implicit priorityOrder: Order[Treap.Node[E, D, W]]
   ): Treap[E, D, W] = {
 
     val leftExtract = ContextExtract.reduceAfter(

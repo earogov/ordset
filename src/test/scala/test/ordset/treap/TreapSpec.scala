@@ -3,7 +3,7 @@ package test.ordset.treap
 import ordset.domain.{Domain, DomainOps}
 import ordset.instances
 import ordset.treap.eval.NodeVisitStack
-import ordset.treap.reduce.{CallTrace, ContextExtract, TreeMerge, TreeSlice}
+import ordset.treap.reduce.{CallTrace, ContextExtract, TreeMerge, TreeSplit}
 import ordset.treap.traverse.{DepthFirst, KeySearch}
 import ordset.treap.{Reduce, TraverseVisit, Treap}
 import org.scalatest.funspec.AnyFunSpec
@@ -125,11 +125,11 @@ class TreapSpec extends AnyFunSpec {
     println("")
     println("KeySearch.up traverse + TreeSlice reduce")
 
-    val slice = TreeSlice.reduce[Int, Dom, String](nodeA, 4, TreeSlice.Mutable.Output.initial)
+    val split = TreeSplit.reduce[Int, Dom, String](nodeA, 4, TreeSplit.Mutable.Output.initial)
 
-    println(slice.leftTree)
+    println(split.leftTree)
 
-    val mergedTree = TreeMerge.reduce(slice.leftTree, slice.rightTree)
+    val mergedTree = TreeMerge.reduce(split.leftTree, split.rightTree)
 
     println(mergedTree)
   }
