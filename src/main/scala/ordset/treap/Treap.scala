@@ -18,6 +18,8 @@ sealed trait Treap[E, D <: Domain[E], W] {
   def isUniversal: Boolean = false
 
   def isNode: Boolean = false
+
+  def isLeaf: Boolean = false
 }
 
 object Treap {
@@ -31,10 +33,17 @@ object Treap {
   implicit def nodeOrder[E, D <: Domain[E], W](implicit keyOrder: Order[E]): Order[Treap.Node[E, D, W]] =
     new NodePriorityOrder(ordset.instances.Int.intOrder, keyOrder)
 
-  sealed trait Node[E, D <: Domain[E], W] extends Treap[E, D, W] {
+  sealed trait WithValue[E, D <: Domain[E], W] extends Treap[E, D, W] {
+
+    val value: W
+  }
+
+  sealed trait Node[E, D <: Domain[E], W] extends WithValue[E, D, W] {
 
     val key: E
-    val value: W
+
+    override val value: W
+
     val priority: Int
 
     override def isNode: Boolean = true
@@ -86,8 +95,8 @@ object Treap {
   }
 
   sealed case class Universal[E, D <: Domain[E], W](
-    value: W
-  ) extends Treap[E, D, W] {
+    override val value: W
+  ) extends WithValue[E, D, W] {
 
     override def isUniversal: Boolean = true
 
@@ -99,6 +108,8 @@ object Treap {
     override val priority: Int,
     override val value: W
   ) extends Node[E, D, W] {
+
+    override def isLeaf: Boolean = true
 
     override def withLeftNode(node: Node[E, D, W]): NodeWithLeftOnly[E, D, W] =
       NodeWithLeftOnly(node, key, priority, value)

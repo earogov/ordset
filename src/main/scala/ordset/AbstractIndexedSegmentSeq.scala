@@ -32,8 +32,6 @@ import ordset.domain.{Domain, DomainOps}
   */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
-  import domainOps._
-
   /** @return true if sequence is empty i.e. contains no elements. */
   final override def isEmpty: Boolean = bounds.isEmpty && !complement
 
@@ -113,29 +111,6 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `0 <= ind <= bounds.length (last index of segments)`.
-    *
-    * @return interval that corresponds to the segment with index `ind`.
-    */
-  protected final def getInterval(ind: Int): Interval[E, D] =
-    if      (bounds.isEmpty)       interval.universal
-    else if (ind <= 0)             interval(getUpperBound(0))
-    else if (ind >= bounds.length) interval(getLowerBound(lastSegmentIndex))
-    else                           interval(getLowerBound(ind), getUpperBound(ind))
-
-  /**
-    * Preconditions:
-    *
-    * 1. `0 <= ind <= bounds.length (last index of segments)`.
-    *
-    * @return interval and value that correspond to the segment with index `ind`.
-    */
-  protected final def getIntervalMapping(ind: Int): IntervalMapping[E, D, W] =
-    IntervalMapping(getInterval(ind), getSegmentValue(ind))
-
-  /**
-    * Preconditions:
-    *
     * 1. `bounds` is non empty;
     *
     * 2. `1 <= ind <= bounds.length (last index of segments)`.
@@ -185,7 +160,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * @return segment (which has previous segment) with index `ind`.
     */
-  protected final def makeSegmentWithPrev(ind: Int): SegmentWithPrev =
+  protected final def makeSegmentWithPrev(ind: Int): IndexedSegmentWithPrev =
     if (ind >= lastSegmentIndex) IndexedTerminalSegment() else IndexedInnerSegment(ind)
 
   /**
@@ -197,7 +172,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * @return segment (which has next segment) with index `ind`.
     */
-  protected final def makeSegmentWithNext(ind: Int): SegmentWithNext =
+  protected final def makeSegmentWithNext(ind: Int): IndexedSegmentWithNext =
     if (ind <= 0) IndexedInitialSegment() else IndexedInnerSegment(ind)
 
   /**
@@ -211,7 +186,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     */
   protected sealed trait IndexedSegmentBase extends SegmentLike[E, D, W] {
 
-    protected val ind: Int
+    val ind: Int
 
     override def domainOps: DomainOps[E, D] = seq.domainOps
 

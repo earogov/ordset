@@ -115,6 +115,11 @@ class TreapSpec extends AnyFunSpec {
       tree = currentExtract.tree
       toConsole(tree, context, ())
     }
+
+    println("")
+    println("KeySearch.prevKey traverse with NodeVisitStack context")
+
+    toConsole(tree, context, ())
     for (i <- 1 to 7) {
       val currentExtract = ContextExtract.reduceAfter(tree, context)(KeySearch.prevKey(NodeVisitStack()))
       context = currentExtract.context

@@ -23,6 +23,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
       def loop(seg: Segment[E, D, V], exp: Seq[IntervalMapping[E, D, V]]): Unit = exp match {
         case e :: es =>
           assert(intervalMappingHash.eqv(seg.intervalMapping, e))
+          assertSameBounds(seg, e.interval)
           seg match {
             case s: Segment.WithNext[E, D, V] => loop(s.moveNext, es)
             case _ => // end
@@ -37,6 +38,7 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
       def loop(seg: Segment[E, D, V], exp: Seq[IntervalMapping[E, D, V]]): Unit = exp match {
         case e :: es =>
           assert(intervalMappingHash.eqv(seg.intervalMapping, e))
+          assertSameBounds(seg, e.interval)
           seg match {
             case s: Segment.WithPrev[E, D, V] => loop(s.movePrev, es)
             case _ => // end
@@ -144,6 +146,23 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
         case _ => sys.error("Unexpected case")
       }
       loop(seq.firstSegment)
+    }
+  }
+
+  def assertSameBounds(segment: Segment[E, D, V], interval: Interval[E, D]): Unit = {
+    interval match {
+      case i: Interval.WithLowerBound[E, D] =>
+        assert(segment.hasLowerBound)
+        assert(segment.hasLowerBound(i.lowerBound))
+      case _ =>
+        assert(!segment.hasLowerBound)
+    }
+    interval match {
+      case i: Interval.WithUpperBound[E, D] =>
+        assert(segment.hasUpperBound)
+        assert(segment.hasUpperBound(i.upperBound))
+      case _ =>
+        assert(!segment.hasUpperBound)
     }
   }
 }

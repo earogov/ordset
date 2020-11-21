@@ -17,6 +17,10 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
 
   def hasUpperBound: Boolean = false
 
+  def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+
+  def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
+
   def ->[@sp(Boolean) V](value: V): IntervalMapping[E, D, V] = IntervalMapping(this, value)
 }
 
@@ -38,6 +42,8 @@ object Interval {
     def lowerBound: Bound.Lower[E]
 
     override def hasLowerBound: Boolean = true
+
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
   }
 
   sealed trait WithUpperBound[@sp(spNum) E, D <: Domain[E]] extends Interval[E, D] {
@@ -45,6 +51,8 @@ object Interval {
     def upperBound: Bound.Upper[E]
 
     override def hasUpperBound: Boolean = true
+
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
   }
 
   case class Empty[E, D <: Domain[E]](

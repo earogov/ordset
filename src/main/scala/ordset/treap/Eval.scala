@@ -10,6 +10,8 @@ object Eval {
 
   type GenericFunc[E, D <: Domain[E], W, C] = Func[E, D, W, C, Any]
 
+  def none[E, D <: Domain[E], W, C, S]: Func[E, D, W, C, S] = NoneInstance.asInstanceOf[Func[E, D, W, C, S]]
+
   implicit def toEvalOps[E, D <: Domain[E], W, C, S](
     evalFunc: Func[E, D, W, C, S]
   ): EvalOps[E, D, W, C, S] = new EvalOps(evalFunc)
@@ -22,4 +24,6 @@ object Eval {
         nextEvalFunc(tree, nextContext, step)
       }
   }
+
+  private lazy val NoneInstance: Func[Any, Domain[Any], Any, Any, Any] = (_, context, _) => context
 }

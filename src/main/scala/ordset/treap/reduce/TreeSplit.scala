@@ -167,7 +167,7 @@ object TreeSplit {
       contextExtract.context,
       initial
     )(
-      KeySearch.up(_ => false, NodeVisitStack.of(contextExtract.tree)),
+      KeySearch.up(KeySearch.UpwardStopPredicate.never, NodeVisitStack.of(contextExtract.tree)),
       TreeSplit.splitFunc[E, D, W, NodeVisitStack.Context[E, D, W]](key)
     )
   }

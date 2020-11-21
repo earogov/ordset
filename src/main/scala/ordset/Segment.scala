@@ -75,6 +75,10 @@ object Segment {
 
     override def hasNext: Boolean = true
 
+    override def hasUpperBound: Boolean = true
+
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
+
     def upperBound: Bound.Upper[E]
 
     def moveNext: WithPrev[E, D, V]
@@ -91,6 +95,10 @@ object Segment {
   trait WithPrev[E, D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def hasPrev: Boolean = true
+
+    override def hasLowerBound: Boolean = true
+
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
 
     def lowerBound: Bound.Lower[E]
 

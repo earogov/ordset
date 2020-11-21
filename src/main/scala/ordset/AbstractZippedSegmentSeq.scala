@@ -14,10 +14,10 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   val valueEq: Eq[W]
 
   /** @return true if sequence is empty i.e. contains no elements. */
-  override def isEmpty: Boolean = _firstSegment.isSingle && !belongsToSet(_firstSegment.value)
+  override def isEmpty: Boolean = firstSegmentInstance.isSingle && !belongsToSet(firstSegmentInstance.value)
 
   /** @return true if sequence is universal i.e. contains all elements of domain. */
-  override def isUniversal: Boolean = _firstSegment.isSingle && belongsToSet(_firstSegment.value)
+  override def isUniversal: Boolean = firstSegmentInstance.isSingle && belongsToSet(firstSegmentInstance.value)
 
   /** @return true if sequence contains `bound`. */
   override def contains(bound: Bound[E]): Boolean =
@@ -28,7 +28,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     belongsToSet(getSegmentValue(left.getSegment(element), right.getSegment(element)))
 
   /** @return first segment of sequence. */
-  final override def firstSegment: Segment.First[E, D, W] = _firstSegment
+  final override def firstSegment: Segment.First[E, D, W] = firstSegmentInstance
 
   /** @return last segment of sequence. */
   final override def lastSegment: Segment.Last[E, D, W] = lastFrontZipper(left.lastSegment, right.lastSegment)
@@ -80,7 +80,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected def belongsToSet(value: W): Boolean
 
   /** First segment of sequence. It's either initial ot single. */
-  protected final lazy val _firstSegment: ZippedSegmentBase with FirstSegment =
+  protected final lazy val firstSegmentInstance: ZippedSegmentBase with FirstSegment =
     searchFrontZipper(firstFrontZipper, left.firstSegment, right.firstSegment)
 
   /**
@@ -96,7 +96,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    * @return zipped segment for `left` and `right` subsegments.
    */
   protected final def generalFrontZipper(left: GenSegment, right: GenSegment): ZippedSegmentBase with GenSegment =
-    if (_firstSegment.isRepresentedBy(left, right)) _firstSegment
+    if (firstSegmentInstance.isRepresentedBy(left, right)) firstSegmentInstance
     else withPrevFrontZipper(left, right)
 
   /**
@@ -132,7 +132,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    */
   protected final def lastFrontZipper(left: LastSegment, right: LastSegment): ZippedSegmentBase with LastSegment =
     // First zipped segment is single if it's represented by two last subsegments => cast is safe.
-    if (_firstSegment.isRepresentedBy(left, right)) _firstSegment.asInstanceOf[ZippedSingleSegment]
+    if (firstSegmentInstance.isRepresentedBy(left, right)) firstSegmentInstance.asInstanceOf[ZippedSingleSegment]
     else ZippedTerminalSegment(left, right)
 
   /**
@@ -168,7 +168,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    */
   protected final def withNextFrontZipper(left: SegmentWithNext, right: GenSegment): ZippedSegmentWithNext =
     // First zipped segment is initial if one of its subsegments has next segment => cast is safe.
-    if (_firstSegment.isRepresentedBy(left, right)) _firstSegment.asInstanceOf[ZippedInitialSegment]
+    if (firstSegmentInstance.isRepresentedBy(left, right)) firstSegmentInstance.asInstanceOf[ZippedInitialSegment]
     else right match {
       case rn: SegmentWithNext =>
         if (boundOrd.compare(left.upperBound, rn.upperBound) >= 0) ZippedInnerSegment(rn, left)

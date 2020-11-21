@@ -15,6 +15,14 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) +V] {
 
   def hasPrev: Boolean = false
 
+  def hasUpperBound: Boolean = false
+
+  def hasLowerBound: Boolean = false
+
+  def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
+
+  def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+
   def isFirst: Boolean = false
 
   def isLast: Boolean = false
