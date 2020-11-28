@@ -1,30 +1,31 @@
-package ordset.treap.reduce
+package ordset.tree.core.reduce
 
-import ordset.domain.Domain
 import ordset.Show
-import ordset.treap.{Reduce, Treap}
+import ordset.tree.core.Reduce
 
 import scala.collection.immutable.Queue
 
 object CallTrace {
 
-  def toConsole[E, D <: Domain[E], W, C](
+  def toConsole[K, V, Tree[KK, VV], C](
     implicit
-    treeShow: Show[Treap[E, D, W]],
+    treeShow: Show[Tree[K, V]],
     contextShow: Show[C]
-  ): Reduce.Func[E, D, W, C, Unit] =
+  ): Reduce.Func[K, V, Tree, C, Unit] =
     (tree, context, _) => println(makeString(tree, context, treeShow, contextShow))
 
-  def toQueue[E, D <: Domain[E], W, C](
+  def toQueue[K, V, Tree[KK, VV], C](
     implicit
-    treeShow: Show[Treap[E, D, W]],
+    treeShow: Show[Tree[K, V]],
     contextShow: Show[C]
-  ): Reduce.Func[E, D, W, C, Queue[String]] =
+  ): Reduce.Func[K, V, Tree, C, Queue[String]] =
     (tree, context, queue) => queue.appended(makeString(tree, context, treeShow, contextShow))
 
-  private def makeString[E, D <: Domain[E], W, C](
-    tree: Treap[E, D, W],
-    context: C, treeShow: Show[Treap[E, D, W]],
+  // PRIVATE SECTION
+  private def makeString[K, V, Tree[KK, VV], C](
+    tree: Tree[K, V],
+    context: C,
+    treeShow: Show[Tree[K, V]],
     contextShow: Show[C]
   ): String =
     s"tree: ${treeShow.show(tree)}, context: ${contextShow.show(context)}"

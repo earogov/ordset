@@ -1,9 +1,9 @@
-package ordset.treap
+package ordset.tree.core
 
 import ordset.Show
 import ordset.util.tag.TaggedRaw
 
-object TraverseVisit extends TaggedRaw[Int] {
+object BinaryTreeVisit extends TaggedRaw[Int] {
 
   val Left: Type = fromRaw(0x00000001)
   val Right: Type = fromRaw(0x00000010)
@@ -29,5 +29,5 @@ object TraverseVisit extends TaggedRaw[Int] {
     case None => "None"
   }
 
-  implicit val visitShow: Show[TraverseVisit.Type] = Show.show(toString)
+  implicit val visitShow: Show[BinaryTreeVisit.Type] = Show.show(toString)
 }

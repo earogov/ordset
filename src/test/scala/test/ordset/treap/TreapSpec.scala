@@ -2,10 +2,13 @@ package test.ordset.treap
 
 import ordset.domain.{Domain, DomainOps}
 import ordset.instances
-import ordset.treap.eval.NodeVisitStack
-import ordset.treap.reduce.{CallTrace, ContextExtract, TreeMerge, TreeSplit}
-import ordset.treap.traverse.{DepthFirst, KeySearch}
-import ordset.treap.{Reduce, TraverseVisit, Treap}
+import ordset.tree.core.eval.TreeVisitStack
+import ordset.tree.core.reduce.{CallTrace, ContextExtract}
+import ordset.tree.treap.reduce.{SplitOutput, TreeMerge, TreeSplit}
+import ordset.tree.treap.traverse.{NodeDepthFirst, NodeSearch}
+import ordset.tree.treap.Treap
+import ordset.tree.core.{BinaryTreeVisit, Reduce}
+import ordset.tree.treap.eval.NodeVisitContext
 import org.scalatest.funspec.AnyFunSpec
 
 class TreapSpec extends AnyFunSpec {
@@ -30,40 +33,40 @@ class TreapSpec extends AnyFunSpec {
 
   it("should reduce tree") {
 
-    val leafF = Treap.Leaf[Int, Dom, String](2, 2, "F")
-    val leafH = Treap.Leaf[Int, Dom, String](4, 1, "H")
-    val nodeD = Treap.NodeWithRightOnly[Int, Dom, String](leafF, 1, 4, "D")
-    val nodeE = Treap.NodeWithLeftOnly[Int, Dom, String](leafH, 5, 5, "E")
-    val nodeB = Treap.NodeWithLeftRight[Int, Dom, String](nodeD, nodeE, 3, 7, "B")
-    val leafG = Treap.Leaf[Int, Dom, String](8, 3, "G")
-    val nodeC = Treap.NodeWithRightOnly[Int, Dom, String](leafG, 7, 6, "C")
-    val nodeA = Treap.NodeWithLeftRight[Int, Dom, String](nodeB, nodeC, 6, 9, "A")
+    val leafF = Treap.Leaf[Int, String](2, 2, "F")
+    val leafH = Treap.Leaf[Int, String](4, 1, "H")
+    val nodeD = Treap.NodeWithRightOnly[Int, String](leafF, 1, 4, "D")
+    val nodeE = Treap.NodeWithLeftOnly[Int, String](leafH, 5, 5, "E")
+    val nodeB = Treap.NodeWithLeftRight[Int, String](nodeD, nodeE, 3, 7, "B")
+    val leafG = Treap.Leaf[Int, String](8, 3, "G")
+    val nodeC = Treap.NodeWithRightOnly[Int, String](leafG, 7, 6, "C")
+    val nodeA = Treap.NodeWithLeftRight[Int, String](nodeB, nodeC, 6, 9, "A")
 
     println("")
     println("DepthFirst traverse with NodeVisitStack context")
 
-    Reduce.before(
+    Reduce.before[Int, String, Treap.Node, NodeVisitContext[Int, String], Unit](
       nodeA,
-      new NodeVisitStack.Context[Int, Dom, String](TraverseVisit.None, Nil),
+      new TreeVisitStack.Context(BinaryTreeVisit.None, Nil),
       ()
     )(
-      DepthFirst.nonEmpty(
-        DepthFirst.leftFirstNavigate,
-        NodeVisitStack.of(nodeA)
+      NodeDepthFirst.standard(
+        NodeDepthFirst.leftFirstNavigate,
+        TreeVisitStack.function()
       ),
       CallTrace.toConsole
     )
 
 //    Reduce.before(
 //      nodeA,
-//      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
+//      new NodeIntervalStack.Context[Int, String](ops.interval.universal, TraverseVisit.None, Nil),
 //      ()
 //    )(
 //      DepthFirst.withEmpty(
 //        DepthFirst.leftFirstNavigate,
 //        NodeIntervalStack.of(nodeA)
 //      ),
-//      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
+//      CallTrace.toConsole[Int, String, NodeIntervalStack.Context[Int, String]](
 //        Treap.treapShow,
 //        NodeIntervalStack.contextShow()
 //      )
@@ -83,11 +86,11 @@ class TreapSpec extends AnyFunSpec {
 
 //    Reduce.before(
 //      nodeA,
-//      new NodeIntervalStack.Context[Int, Dom, String](ops.interval.universal, TraverseVisit.None, Nil),
+//      new NodeIntervalStack.Context[Int, String](ops.interval.universal, TraverseVisit.None, Nil),
 //      ()
 //    )(
 //      KeySearch.down(4, NodeIntervalStack()),
-//      CallTrace.toConsole[Int, Dom, String, NodeIntervalStack.Context[Int, Dom, String]](
+//      CallTrace.toConsole[Int, String, NodeIntervalStack.Context[Int, String]](
 //        Treap.treapShow,
 //        NodeIntervalStack.contextShow()
 //      )
@@ -97,20 +100,25 @@ class TreapSpec extends AnyFunSpec {
     println("KeySearch.nextKey traverse with NodeVisitStack context")
 
     var contextExtract =
-      ContextExtract.reduceBefore(
+      ContextExtract.reduceBefore[Int, String, Treap.Node, NodeVisitContext[Int, String]](
         nodeA,
-        NodeVisitStack.contextOps[Int, Dom, String].getEmptyContext
+        TreeVisitStack.contextOps.getEmptyContext
       )(
-        DepthFirst.nonEmpty(DepthFirst.leftOnlyNavigate, NodeVisitStack.of(nodeA))
+        NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigate, TreeVisitStack.function())
       )
 
-    val toConsole = CallTrace.toConsole[Int, Dom, String, NodeVisitStack.Context[Int, Dom, String]]
+    val toConsole = CallTrace.toConsole[Int, String, Treap.Node, NodeVisitContext[Int, String]]
     var context = contextExtract.context
     var tree = contextExtract.tree
 
     toConsole(tree, context, ())
     for (i <- 1 to 7) {
-      val currentExtract = ContextExtract.reduceAfter(tree, context)(KeySearch.nextKey(NodeVisitStack()))
+      val currentExtract = ContextExtract.reduceAfter(
+        tree,
+        context
+      )(
+        NodeSearch.nextKey(TreeVisitStack.function())
+      )
       context = currentExtract.context
       tree = currentExtract.tree
       toConsole(tree, context, ())
@@ -121,20 +129,35 @@ class TreapSpec extends AnyFunSpec {
 
     toConsole(tree, context, ())
     for (i <- 1 to 7) {
-      val currentExtract = ContextExtract.reduceAfter(tree, context)(KeySearch.prevKey(NodeVisitStack()))
+      val currentExtract = ContextExtract.reduceAfter(
+        tree,
+        context
+      )(
+        NodeSearch.prevKey(TreeVisitStack.function())
+      )
       context = currentExtract.context
       tree = currentExtract.tree
       toConsole(tree, context, ())
     }
 
     println("")
-    println("KeySearch.up traverse + TreeSlice reduce")
+    println("TreeSlice")
 
-    val split = TreeSplit.reduce[Int, Dom, String](nodeA, 4, TreeSplit.Mutable.Output.initial)
+    val split = TreeSplit.reduceNode[Int, String](
+      nodeA,
+      4,
+      SplitOutput.Mutable.Output.initial
+    )
 
-    println(split.leftTree)
+    println(split)
 
-    val mergedTree = TreeMerge.reduce(split.leftTree, split.rightTree)
+    println("")
+    println("MergeSlice")
+
+    val mergedTree = TreeMerge.reduceTreap[Int, String](
+      split.leftTree,
+      split.rightTree
+    )
 
     println(mergedTree)
   }

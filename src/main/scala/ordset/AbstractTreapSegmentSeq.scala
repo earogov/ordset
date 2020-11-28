@@ -1,10 +1,10 @@
 //package ordset
 //
 //import ordset.domain.{Domain, DomainOps}
-//import ordset.treap.Treap
-//import ordset.treap.eval.NodeVisitStack
-//import ordset.treap.reduce.ContextExtract
-//import ordset.treap.traverse.KeySearch
+//import ordset.tree.treap.Treap
+//import ordset.tree.core.eval.NodeVisitStack
+//import ordset.tree.treap.reduce.ContextExtract
+//import ordset.tree.treap.traverse.KeySearch
 //
 ///**
 // * {{{

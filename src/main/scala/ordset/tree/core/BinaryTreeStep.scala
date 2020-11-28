@@ -1,9 +1,9 @@
-package ordset.treap
+package ordset.tree.core
 
 import ordset.Show
 import ordset.util.tag.TaggedRaw
 
-object TraverseStep extends TaggedRaw[Int] { outer =>
+object BinaryTreeStep extends TaggedRaw[Int] { outer =>
 
   val None: Type = fromRaw(-2)
   val Up: Type = fromRaw(-1)
@@ -17,5 +17,5 @@ object TraverseStep extends TaggedRaw[Int] { outer =>
     case Right => "Right"
   }
 
-  implicit val stepShow: Show[TraverseStep.Type] = Show.show(toString)
+  implicit val stepShow: Show[BinaryTreeStep.Type] = Show.show(toString)
 }

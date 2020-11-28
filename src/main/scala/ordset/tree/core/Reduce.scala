@@ -1,22 +1,20 @@
-package ordset.treap
-
-import ordset.domain.Domain
+package ordset.tree.core
 
 object Reduce {
 
-  trait Func[E, D <: Domain[E], W, -C, R] extends ((Treap[E, D, W], C, R) => R)
+  trait Func[K, V, Tree[KK, VV], -C, R] extends ((Tree[K, V], C, R) => R)
 
-  def before[E, D <: Domain[E], W, C, R](
-    treap: Treap[E, D, W],
+  def before[K, V, Tree[KK, VV], C, R](
+    initTree: Tree[K, V],
     initContext: C,
     initValue: R
   )(
-    traverseFunc: Traverse.GenericFunc[E, D, W, C],
-    reduceFunc: Func[E, D, W, C, R]
+    traverseFunc: Traverse.GenericFunc[K, V, Tree, C],
+    reduceFunc: Func[K, V, Tree, C, R]
   ): R = {
     var result = initValue
     var context = initContext
-    var tree = treap
+    var tree = initTree
     var stop = false
     while (!stop) {
       result = reduceFunc(tree, context, result)
@@ -28,17 +26,17 @@ object Reduce {
     result
   }
 
-  def after[E, D <: Domain[E], W, C, R](
-    treap: Treap[E, D, W],
+  def after[K, V, Tree[KK, VV], C, R](
+    initTree: Tree[K, V],
     initContext: C,
     initValue: R
   )(
-    traverseFunc: Traverse.GenericFunc[E, D, W, C],
-    reduceFunc: Func[E, D, W, C, R]
+    traverseFunc: Traverse.GenericFunc[K, V, Tree, C],
+    reduceFunc: Func[K, V, Tree, C, R]
   ): R = {
     var result = initValue
     var context = initContext
-    var tree = treap
+    var tree = initTree
     var stop = false
     while (!stop) {
       val traverse = traverseFunc(tree, context)

@@ -1,10 +1,11 @@
-package ordset.treap.reduce
+package ordset.tree.treap.reduce
 
 import ordset.Order
-import ordset.domain.Domain
-import ordset.treap.Treap
-import ordset.treap.eval.NodeStack
-import ordset.treap.traverse.KeySearch
+import ordset.tree.treap.Treap
+import ordset.tree.core.eval.TreeStack
+import ordset.tree.core.reduce.ContextExtract
+import ordset.tree.treap.eval.NodeStack
+import ordset.tree.treap.traverse.NodeSearch
 
 import scala.annotation.tailrec
 
@@ -49,56 +50,54 @@ import scala.annotation.tailrec
  *    In example above we start from node B and stop at node H. Stack will contain one node H.
  *
  * {{{
- * val leftExtract = ContextExtract.reduceAfter(
- *    leftTree,
- *    NodeStack.contextOps[E, D, W].getEmptyContext
- * )(
- *    KeySearch.maxKey(NodeStack.of(leftTree))
- * )
+ *     val leftExtract = ContextExtract.reduceAfter(
+ *       leftTree,
+ *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
+ *     )(
+ *       NodeSearch.maxKey(TreeStack.function())
+ *     )
  * }}}
  *
  *    Add the last node H to the stack.
  *
  * {{{
- * val leftStack = NodeStack.contextOps.getChildTreeContext(leftExtract.context, leftExtract.tree)
+ *     val leftStack = TreeStack.contextOps.addToStack(leftExtract.context, leftExtract.tree)
  * }}}
  *
  * 2. Move down from the right tree root to the min key (the most left) and build stack of visited nodes.
  *    We start from node A and stop at node E. Stack will contain one node E.
  *
  * {{{
- * val rightExtract = ContextExtract.reduceAfter(
- *    rightTree,
- *    NodeStack.contextOps[E, D, W].getEmptyContexts
- * )(
- *    KeySearch.minKey(NodeStack.of(rightTree))
- * )
+ *     val rightExtract = ContextExtract.reduceAfter(
+ *       rightTree,
+ *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
+ *     )(
+ *       NodeSearch.minKey(TreeStack.function())
+ *     )
  * }}}
  *
  *    Add the last node E to the stack.
  *
  * {{{
- * val rightStack = NodeStack.contextOps.getChildTreeContext(rightExtract.context, rightExtract.tree)
+ *     val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
  * }}}
  *
  * 3. Apply [[TreeMerge.mergeFunc]] to the received stacks to build merged tree.
  *
  * {{{
- * mergeFunc(leftStack, rightStack, Treap.Empty())
+ *     mergeFunc(leftStack, rightStack, Treap.Empty())
  * }}}
  */
 object TreeMerge {
 
-  type Stack[E, D <: Domain[E], W] = NodeStack.Stack[E, D, W]
-
   @tailrec
-  def mergeFunc[E, D <: Domain[E], W](
-    leftStack: Stack[E, D, W],
-    rightStack: Stack[E, D, W],
-    mergedTree: Treap[E, D, W]
+  def mergeFunc[K, V](
+    leftStack: NodeStack[K, V],
+    rightStack: NodeStack[K, V],
+    mergedTree: Treap[K, V]
   )(
-    implicit priorityOrder: Order[Treap.Node[E, D, W]]
-  ): Treap[E, D, W] = {
+    implicit priorityOrder: Order[Treap.Node[K, V]]
+  ): Treap[K, V] = {
     (leftStack, rightStack) match {
       case (leftHead :: leftTail, rightHead :: rightTail) =>
         if (priorityOrder.compare(leftHead, rightHead) <= 0) {
@@ -144,10 +143,10 @@ object TreeMerge {
    * {{{ mergeFunc(leftStack, Nil, mergedTree) }}}
    */
   @tailrec
-  def mergeLeftFunc[E, D <: Domain[E], W](
-    leftStack: Stack[E, D, W],
-    mergedTree: Treap[E, D, W]
-  ): Treap[E, D, W] =
+  def mergeLeftFunc[K, V](
+    leftStack: NodeStack[K, V],
+    mergedTree: Treap[K, V]
+  ): Treap[K, V] =
     leftStack match {
       //  leftHead
       //   /    \
@@ -163,10 +162,10 @@ object TreeMerge {
    * {{{ mergeFunc(Nil, rightStack, mergedTree) }}}
    */
   @tailrec
-  def mergeRightFunc[E, D <: Domain[E], W](
-    rightStack: Stack[E, D, W],
-    mergedTree: Treap[E, D, W]
-  ): Treap[E, D, W] =
+  def mergeRightFunc[K, V](
+    rightStack: NodeStack[K, V],
+    mergedTree: Treap[K, V]
+  ): Treap[K, V] =
     rightStack match {
       //             rightHead
       //              /    \
@@ -177,29 +176,44 @@ object TreeMerge {
       case _ => mergedTree
   }
 
-  def reduce[E, D <: Domain[E], W](
-    leftTree: Treap[E, D, W],
-    rightTree: Treap[E, D, W]
+  def reduceNode[K, V](
+    leftNode: Treap.Node[K, V],
+    rightNode: Treap.Node[K, V]
   )(
-    implicit priorityOrder: Order[Treap.Node[E, D, W]]
-  ): Treap[E, D, W] = {
+    implicit priorityOrder: Order[Treap.Node[K, V]]
+  ): Treap[K, V] = {
 
     val leftExtract = ContextExtract.reduceAfter(
-      leftTree,
-      NodeStack.contextOps[E, D, W].getEmptyContext
+      leftNode,
+      TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
     )(
-      KeySearch.maxKey(NodeStack.of(leftTree))
+      NodeSearch.maxKey(TreeStack.function())
     )
-    val leftStack = NodeStack.contextOps.getChildTreeContext(leftExtract.context, leftExtract.tree)
+    val leftStack = TreeStack.contextOps.addToStack(leftExtract.context, leftExtract.tree)
 
     val rightExtract = ContextExtract.reduceAfter(
-      rightTree,
-      NodeStack.contextOps[E, D, W].getEmptyContext
+      rightNode,
+      TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
     )(
-      KeySearch.minKey(NodeStack.of(rightTree))
+      NodeSearch.minKey(TreeStack.function())
     )
-    val rightStack = NodeStack.contextOps.getChildTreeContext(rightExtract.context, rightExtract.tree)
+    val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
 
     mergeFunc(leftStack, rightStack, Treap.Empty())
   }
+
+  def reduceTreap[K, V](
+    leftTree: Treap[K, V],
+    rightTree: Treap[K, V]
+  )(
+    implicit priorityOrder: Order[Treap.Node[K, V]]
+  ): Treap[K, V] =
+    leftTree match {
+      case leftNode: Treap.Node[K, V] =>
+        rightTree match {
+          case rightNode: Treap.Node[K, V] => reduceNode(leftNode, rightNode)(priorityOrder)
+          case _ => leftNode
+      }
+      case _ => rightTree
+    }
 }
