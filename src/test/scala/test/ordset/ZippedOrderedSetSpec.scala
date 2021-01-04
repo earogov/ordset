@@ -23,6 +23,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
   
   override val emptyCase: Option[TestCase] = TestCase.some(
+    description =
+      "empty set",
     sequence =
       // f union c:
       //                                              out
@@ -78,6 +80,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   )
 
   override val universalCase: Option[TestCase] = TestCase.some(
+    description =
+      "universal set",
     sequence =
       // f intersection c:
       //                                              in
@@ -133,6 +137,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   )
 
   override val singleBoundedCase: Option[TestCase] = TestCase.some(
+    description =
+      "single bounded set",
     sequence =
       // b union c:
       //                          in                                                 out
@@ -173,6 +179,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   )
 
   override val multiBoundedCase: Option[TestCase] = TestCase.some(
+    description =
+      "multi bounded set",
     sequence =
       // c intersection d:
       //      in       out     in             out               in            out             in       out     in
@@ -231,6 +239,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   )
 
   override val degenerateCase: Option[TestCase] = TestCase.some(
+    description =
+     "set with degenerate interval",
     sequence =
       // c intersection d:
       //     out   in        out                in         out         in        out               in
@@ -283,37 +293,37 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   describe("Zipped ordered set as a segment sequence") {
 
     it should behave like segmentsSupportMovePrevAndNext(
-      "empty set",
+      emptyCase.get.description,
       emptyCase.get.sequence,
       emptyCase.get.expected
     )
 
     it should behave like segmentsSupportMovePrevAndNext(
-      "universal set",
+      universalCase.get.description,
       universalCase.get.sequence,
       universalCase.get.expected
     )
 
     it should behave like segmentsSupportMovePrevAndNext(
-      "single bounded set",
+      singleBoundedCase.get.description,
       singleBoundedCase.get.sequence,
       singleBoundedCase.get.expected
     )
 
     it should behave like segmentsSupportMovePrevAndNext(
-      "multi bounded set",
+      multiBoundedCase.get.description,
       multiBoundedCase.get.sequence,
       multiBoundedCase.get.expected
     )
 
     it should behave like segmentsSupportMovePrevAndNext(
-      "set with degenerate interval",
+      degenerateCase.get.description,
       degenerateCase.get.sequence,
       degenerateCase.get.expected
     )
 
     it should behave like segmentsSupportMoveToBound(
-      "empty set",
+      emptyCase.get.description,
       emptyCase.get.sequence,
       ( 10`)`, false forAll x) ::
       ( 15`[`, false forAll x) ::
@@ -323,7 +333,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     )
 
     it should behave like segmentsSupportMoveToBound(
-      "universal set",
+      universalCase.get.description,
       universalCase.get.sequence,
       ( 10`)`, true forAll x) ::
       ( 15`[`, true forAll x) ::
@@ -333,7 +343,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     )
 
     it should behave like segmentsSupportMoveToBound(
-      "single bounded set",
+      singleBoundedCase.get.description,
       singleBoundedCase.get.sequence,
       ( 10`)`, false forAll x >  0) ::
       ( 15`[`, false forAll x >  0) ::
@@ -345,7 +355,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     )
 
     it should behave like segmentsSupportMoveToBound(
-      "multi bounded set",
+      multiBoundedCase.get.description,
        multiBoundedCase.get.sequence,
        ( 7`[`, false forAll x >= 7  & x <= 20) ::
        (30`)`, false forAll x >= 25 & x <= 35) ::
@@ -358,7 +368,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     )
 
     it should behave like segmentsSupportMoveToBound(
-      "set with degenerate interval",
+      degenerateCase.get.description,
       degenerateCase.get.sequence,
       (20`[`, false forAll x >= 20 & x <= 20) ::
       (20`]`, false forAll x >= 20 & x <= 20) ::
@@ -371,62 +381,62 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
-      "empty set",
+      emptyCase.get.description,
       emptyCase.get.sequence,
       false forAll x,
       false forAll x
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
-      "universal set",
+      universalCase.get.description,
       universalCase.get.sequence,
       true forAll x,
       true forAll x
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
-      "single bounded set",
+      singleBoundedCase.get.description,
       singleBoundedCase.get.sequence,
       true forAll x <=  0,
       false forAll x > 0
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
-      "multi bounded set",
+      multiBoundedCase.get.description,
       multiBoundedCase.get.sequence,
       true forAll x <=  0,
       true forAll x >= 60
     )
 
     it should behave like segmentsSupportMoveToFirstAndLast(
-      "set with degenerate interval",
+      degenerateCase.get.description,
       degenerateCase.get.sequence,
       false forAll x <  0,
       true forAll x > 30
     )
 
     it should behave like segmentsHaveNextAndPrevIndicators(
-      "empty set",
+      emptyCase.get.description,
       emptyCase.get.sequence
     )
 
     it should behave like segmentsHaveNextAndPrevIndicators(
-      "universal set",
+      universalCase.get.description,
       universalCase.get.sequence
     )
 
     it should behave like segmentsHaveNextAndPrevIndicators(
-      "single bounded set",
+      singleBoundedCase.get.description,
       singleBoundedCase.get.sequence
     )
 
     it should behave like segmentsHaveNextAndPrevIndicators(
-      "multi bounded set",
+      multiBoundedCase.get.description,
       multiBoundedCase.get.sequence
     )
 
     it should behave like segmentsHaveNextAndPrevIndicators(
-      "set with degenerate interval",
+      degenerateCase.get.description,
       degenerateCase.get.sequence
     )
   }

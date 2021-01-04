@@ -5,9 +5,9 @@ import ordset.tree.core.{BinaryTreeStep, Eval}
 
 object TreeStack {
 
-  type Stack[K, V, Tree[KK, VV]] = List[Tree[K, V]]
+  type Stack[K, V, +Tree[KK, VV]] = List[Tree[K, V]]
 
-  type Context[K, V, Tree[KK, VV]] = Stack[K, V, Tree]
+  type Context[K, V, +Tree[KK, VV]] = Stack[K, V, Tree]
 
   type EvalFunc[K, V, Tree[KK, VV]] = Eval.BinaryFunc[K, V, Tree, Context[K, V, Tree]]
 

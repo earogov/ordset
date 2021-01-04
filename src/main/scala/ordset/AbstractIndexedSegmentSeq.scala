@@ -33,17 +33,20 @@ import ordset.domain.{Domain, DomainOps}
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
   /** @return true if sequence is empty i.e. contains no elements. */
-  final override def isEmpty: Boolean = bounds.isEmpty && !complement
+  final override def isEmpty: Boolean =
+    bounds.isEmpty && !complement
 
   /** @return true if sequence is universal i.e. contains all elements of domain. */
-  final override def isUniversal: Boolean = bounds.isEmpty && complement
+  final override def isUniversal: Boolean =
+    bounds.isEmpty && complement
 
   /** @return true if sequence contains `bound`. */
-  final override def contains(bound: Bound[E]): Boolean = belongsToSet(searchSegmentFromBegin(bound))
+  final override def contains(bound: Bound[E]): Boolean =
+    belongsToSet(searchSegmentFromBegin(bound))
 
   /** @return true if sequence contains `element`. */
   final override def contains(element: E): Boolean =
-    belongsToSet(searchSegmentFromBegin(Bound.Upper.inclusive(element)))
+    super.contains(element)
 
   /** @return first segment of sequence. */
   final override def firstSegment: Segment.First[E, D, W] =
@@ -59,7 +62,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
   /** @return segment which contains specified `element`. */
   final override def getSegment(element: E): Segment[E, D, W] =
-    makeSegment(searchSegmentFromBegin(Bound.Upper.inclusive(element)))
+    super.getSegment(element)
 
   /** Sequence of upper bounds of segments. */
   protected val bounds: collection.Seq[Bound.Upper[E]]

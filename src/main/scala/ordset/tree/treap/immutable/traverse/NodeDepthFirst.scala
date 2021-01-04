@@ -1,32 +1,32 @@
-package ordset.tree.treap.traverse
+package ordset.tree.treap.immutable.traverse
 
 import ordset.tree.core.{BinaryTreeStep, BinaryTreeVisit}
-import ordset.tree.treap.Treap
-import ordset.tree.treap.eval.{NodeEvalFunc, NodeVisitContext, NodeVisitContextOps}
+import ordset.tree.treap.immutable.ImmutableTreap
+import ordset.tree.treap.immutable.eval.{NodeEvalFunc, NodeVisitContext, NodeVisitContextOps}
 
 import scala.annotation.tailrec
 
 object NodeDepthFirst {
 
   def standard[K, V, C <: NodeVisitContext[K, V]](
-    navigateFunc: NodeNavigateFunc[K, V, C],
+    navigationFunc: NodeNavigationFunc[K, V, C],
     evalFunc: NodeEvalFunc[K, V, C]
   )(
     implicit contextOps: NodeVisitContextOps[K, V, C]
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) => {
       @tailrec
-      def traverse(tree: Treap.Node[K, V], visits: BinaryTreeVisit.Type): NodeTraverseOutput[K, V, C] = {
-        val step = navigateFunc(tree, contextOps.getContextWithVisits(context, visits))
+      def traverse(tree: ImmutableTreap.Node[K, V], visits: BinaryTreeVisit.Type): NodeTraverseOutput[K, V, C] = {
+        val step = navigationFunc(tree, contextOps.getContextWithVisits(context, visits))
         step match {
           case BinaryTreeStep.Left => tree match {
-            case n: Treap.NodeWithLeft[K, V] =>
+            case n: ImmutableTreap.NodeWithLeft[K, V] =>
               new NodeTraverseOutput(n.left, evalFunc(tree, context, step), step, stop = false)
             case _ =>
               traverse(tree, BinaryTreeVisit.addLeftVisit(visits))
           }
           case BinaryTreeStep.Right => tree match {
-            case n: Treap.NodeWithRight[K, V] =>
+            case n: ImmutableTreap.NodeWithRight[K, V] =>
               new NodeTraverseOutput(n.right, evalFunc(tree, context, step), step, stop = false)
             case _ =>
               traverse(tree, BinaryTreeVisit.addRightVisit(visits))
@@ -45,22 +45,22 @@ object NodeDepthFirst {
     }
 
   def extended[K, V, C <: NodeVisitContext[K, V]](
-    navigateFunc: NodeNavigateFunc[K, V, C],
+    navigationFunc: NodeNavigationFunc[K, V, C],
     evalFunc: NodeEvalFunc[K, V, C],
-    dummy: Treap.Node[K, V]
+    dummy: ImmutableTreap.Node[K, V]
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) => {
-      val step = navigateFunc(tree, context)
+      val step = navigationFunc(tree, context)
       val newContext = evalFunc(tree, context, step)
       step match {
         case BinaryTreeStep.Left => tree match {
-          case n: Treap.NodeWithLeft[K, V] =>
+          case n: ImmutableTreap.NodeWithLeft[K, V] =>
             new NodeTraverseOutput(n.left, newContext, step, stop = false)
           case _ =>
             new NodeTraverseOutput(dummy, newContext, step, stop = false)
         }
         case BinaryTreeStep.Right => tree match {
-          case n: Treap.NodeWithRight[K, V] =>
+          case n: ImmutableTreap.NodeWithRight[K, V] =>
             new NodeTraverseOutput(n.right, newContext, step, stop = false)
           case _ =>
             new NodeTraverseOutput(dummy, newContext, step, stop = false)
@@ -76,37 +76,37 @@ object NodeDepthFirst {
       }
     }
 
-  def leftFirstNavigate[K, V, C <: NodeVisitContext[K, V]]: NodeNavigateFunc[K, V, C] =
-    LeftFirstNavigate.asInstanceOf[NodeNavigateFunc[K, V, C]]
+  def leftFirstNavigation[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
+    LeftFirstNavigation.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
-  def leftOnlyNavigate[K, V, C <: NodeVisitContext[K, V]]: NodeNavigateFunc[K, V, C] =
-    LeftOnlyNavigate.asInstanceOf[NodeNavigateFunc[K, V, C]]
+  def leftOnlyNavigation[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
+    LeftOnlyNavigation.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
-  def rightFirstNavigate[K, V, C <: NodeVisitContext[K, V]]: NodeNavigateFunc[K, V, C] =
-    RightFirstNavigate.asInstanceOf[NodeNavigateFunc[K, V, C]]
+  def rightFirstNavigation[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
+    RightFirstNavigation.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
-  def rightOnlyNavigate[K, V, C <: NodeVisitContext[K, V]]: NodeNavigateFunc[K, V, C] =
-    RightOnlyNavigate.asInstanceOf[NodeNavigateFunc[K, V, C]]
+  def rightOnlyNavigation[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
+    RightOnlyNavigation.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
   // PRIVATE SECTION
-  private lazy val LeftFirstNavigate: NodeNavigateFunc[Any, Any, NodeVisitContext[Any, Any]] =
+  private lazy val LeftFirstNavigation: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
     (_, context) =>
       if (BinaryTreeVisit.isLeftUnvisited(context.currentVisits)) BinaryTreeStep.Left
       else if (BinaryTreeVisit.isRightUnvisited(context.currentVisits)) BinaryTreeStep.Right
       else BinaryTreeStep.Up
 
-  private lazy val LeftOnlyNavigate: NodeNavigateFunc[Any, Any, NodeVisitContext[Any, Any]] =
+  private lazy val LeftOnlyNavigation: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
     (_, context) =>
       if (BinaryTreeVisit.isLeftVisited(context.currentVisits)) BinaryTreeStep.None
       else BinaryTreeStep.Left
 
-  private lazy val RightFirstNavigate: NodeNavigateFunc[Any, Any, NodeVisitContext[Any, Any]] =
+  private lazy val RightFirstNavigation: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
     (_, context) =>
       if (BinaryTreeVisit.isRightUnvisited(context.currentVisits)) BinaryTreeStep.Right
       else if (BinaryTreeVisit.isLeftUnvisited(context.currentVisits)) BinaryTreeStep.Left
       else BinaryTreeStep.Up
 
-  private lazy val RightOnlyNavigate: NodeNavigateFunc[Any, Any, NodeVisitContext[Any, Any]] =
+  private lazy val RightOnlyNavigation: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
     (_, context) =>
       if (BinaryTreeVisit.isRightVisited(context.currentVisits)) BinaryTreeStep.None
       else BinaryTreeStep.Right

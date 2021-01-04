@@ -1,27 +1,27 @@
-package ordset.tree.treap.traverse
+package ordset.tree.treap.immutable.traverse
 
-import ordset.domain.Domain
+import ordset.Order
 import ordset.tree.core.BinaryTreeStep
-import ordset.tree.core.reduce.ContextExtract
-import ordset.tree.treap.Treap
-import ordset.tree.treap.eval.{NodeEvalFunc, NodeStackOps, NodeVisitContext, NodeVisitContextOps}
+import ordset.tree.core.fold.ContextExtract
+import ordset.tree.treap.immutable.ImmutableTreap
+import ordset.tree.treap.immutable.eval.{NodeEvalFunc, NodeStackOps, NodeVisitContext, NodeVisitContextOps}
 
 object NodeSearch {
 
-  trait UpwardStopPredicate[K, V] {
+  trait UpwardStopPredicate[-K, -V] {
 
-    def apply(parent: Treap.Node[K, V], child: Treap.Node[K, V]): Boolean
+    def apply(parent: ImmutableTreap.Node[K, V], child: ImmutableTreap.Node[K, V]): Boolean
   }
 
   object UpwardStopPredicate {
 
-    def toNextKey[K, V]: UpwardStopPredicate[K, V] = NextKeyInstance.asInstanceOf[UpwardStopPredicate[K, V]]
+    def toNextKey[K, V]: UpwardStopPredicate[K, V] = NextKeyInstance
 
-    def toPrevKey[K, V]: UpwardStopPredicate[K, V] = PrevKeyInstance.asInstanceOf[UpwardStopPredicate[K, V]]
+    def toPrevKey[K, V]: UpwardStopPredicate[K, V] = PrevKeyInstance
 
-    def never[K, V]: UpwardStopPredicate[K, V] = NeverInstance.asInstanceOf[UpwardStopPredicate[K, V]]
+    def never[K, V]: UpwardStopPredicate[K, V] = NeverInstance
 
-    def always[K, V]: UpwardStopPredicate[K, V] = AlwaysInstance.asInstanceOf[UpwardStopPredicate[K, V]]
+    def always[K, V]: UpwardStopPredicate[K, V] = AlwaysInstance
 
     // PRIVATE SECTION
     private lazy val NextKeyInstance: UpwardStopPredicate[Any, Any] = (parent, tree) => parent.hasLeftInstance(tree)
@@ -33,16 +33,16 @@ object NodeSearch {
     private lazy val AlwaysInstance: UpwardStopPredicate[Any, Any] = (_, _) => true
   }
 
-  def down[K, V, C](
-    key: K,
+  def down[K, KK >: K, V, C](
+    key: KK,
     evalFunc: NodeEvalFunc[K, V, C]
   )(
-    implicit domain: Domain[K]
+    implicit keyOrder: Order[KK]
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) => {
-      val cmp = domain.elementOrd.compare(key, tree.key)
+      val cmp = keyOrder.compare(key, tree.key)
       if (cmp > 0) tree match {
-        case n: Treap.NodeWithRight[K, V] =>
+        case n: ImmutableTreap.NodeWithRight[K, V] =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.Right)
           new NodeTraverseOutput(n.right, newContext, BinaryTreeStep.Right, stop = false)
         case _ =>
@@ -50,7 +50,7 @@ object NodeSearch {
           new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
       }
       else if (cmp < 0) tree match {
-        case n: Treap.NodeWithLeft[K, V] =>
+        case n: ImmutableTreap.NodeWithLeft[K, V] =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.Left)
           new NodeTraverseOutput(n.left, newContext, BinaryTreeStep.Left, stop = false)
         case _ =>
@@ -87,14 +87,14 @@ object NodeSearch {
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) =>
       tree match {
-        case tree: Treap.NodeWithRight[K, V] =>
-          val traverseLeftFunc = NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigate, evalFunc)(contextOps)
+        case tree: ImmutableTreap.NodeWithRight[K, V] =>
+          val traverseLeftFunc = NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigation, evalFunc)(contextOps)
           val rightContext = evalFunc(tree, context, BinaryTreeStep.Right)
-          val contextExtract = ContextExtract.reduceAfter(tree.right, rightContext)(traverseLeftFunc)
+          val contextExtract = ContextExtract.foldAfter(tree.right, rightContext)(traverseLeftFunc)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Right, stop = true)
-        case tree: Treap.Node[K, V] =>
+        case tree: ImmutableTreap.Node[K, V] =>
           val traverseUpFunc = up(UpwardStopPredicate.toNextKey, evalFunc)(contextOps)
-          val contextExtract = ContextExtract.reduceAfter(tree, context)(traverseUpFunc)
+          val contextExtract = ContextExtract.foldAfter(tree, context)(traverseUpFunc)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Up, stop = true)
         case _ =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.None)
@@ -108,14 +108,14 @@ object NodeSearch {
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) =>
       tree match {
-        case tree: Treap.NodeWithLeft[K, V] =>
-          val traverseRightFunc = NodeDepthFirst.standard(NodeDepthFirst.rightOnlyNavigate, evalFunc)(contextOps)
+        case tree: ImmutableTreap.NodeWithLeft[K, V] =>
+          val traverseRightFunc = NodeDepthFirst.standard(NodeDepthFirst.rightOnlyNavigation, evalFunc)(contextOps)
           val leftContext = evalFunc(tree, context, BinaryTreeStep.Left)
-          val contextExtract = ContextExtract.reduceAfter(tree.left, leftContext)(traverseRightFunc)
+          val contextExtract = ContextExtract.foldAfter(tree.left, leftContext)(traverseRightFunc)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Left, stop = true)
-        case tree: Treap.Node[K, V] =>
+        case tree: ImmutableTreap.Node[K, V] =>
           val traverseUpFunc = up(UpwardStopPredicate.toPrevKey, evalFunc)(contextOps)
-          val contextExtract = ContextExtract.reduceAfter(tree, context)(traverseUpFunc)
+          val contextExtract = ContextExtract.foldAfter(tree, context)(traverseUpFunc)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Up, stop = true)
         case _ =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.None)
@@ -127,7 +127,7 @@ object NodeSearch {
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) =>
       tree match {
-        case tree: Treap.NodeWithLeft[K, V] =>
+        case tree: ImmutableTreap.NodeWithLeft[K, V] =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.Left)
           new NodeTraverseOutput(tree.left, newContext, BinaryTreeStep.Left, stop = false)
         case _ =>
@@ -140,7 +140,7 @@ object NodeSearch {
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) =>
       tree match {
-        case tree: Treap.NodeWithRight[K, V] =>
+        case tree: ImmutableTreap.NodeWithRight[K, V] =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.Left)
           new NodeTraverseOutput(tree.right, newContext, BinaryTreeStep.Left, stop = false)
         case _ =>

@@ -4,6 +4,8 @@ import ordset.domain.{AscDir, DescDir, DirectedOrder, Domain, OrderDir}
 import ordset.util.label.Label
 import ordset.util.types.SingleValue
 
+import scala.collection.{AbstractIterable, AbstractIterator}
+
 /**
   * Segment is equivalent to interval with some value assigned to it.
   * The main feature of segments is that they cover ordered universal set without gaps and overlapping.
@@ -19,7 +21,7 @@ import ordset.util.types.SingleValue
   *          ↘      ↗     ↖       ↗
   *           WithNext      WithPrev
   *                 ↖      ↗
-  *                  Inner
+  *                   Inner
   * }}}
   * For details see description of corresponding traits.
   *
@@ -31,8 +33,27 @@ import ordset.util.types.SingleValue
   *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this the
   *       the basic use case of segments.
   */
-sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] {
+sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segment =>
   import Segment._
+
+  def forwardIterable: Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
+
+    override def iterator: Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+
+      private var current: Segment[E, D, V] = segment
+
+      override def hasNext: Boolean = !current.isLast
+
+      override def next(): Segment[E, D, V] = current match {
+        case n: WithNext[E, D, V] =>
+          val result = current
+          current = n.moveNext
+          result
+        case _ =>
+          throw new NoSuchElementException(s"Segment $current doesn't have next segment.")
+      }
+    }
+  }
 
   def forwardLazyList: LazyList[Segment[E, D, V]] = this match {
     case n: WithNext[E, D, V] => LazyList.cons(this, n.moveNext.forwardLazyList)
@@ -44,14 +65,16 @@ sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] {
     case _                    => LazyList.cons(this, LazyList.empty)
   }
 
-  def intervalMapping: IntervalMapping[E, D, V] = this match {
-    case i: Inner[E, D, V]    => IntervalMapping(domainOps.interval(i.lowerBound, i.upperBound), value)
-    case p: WithPrev[E, D, V] => IntervalMapping(domainOps.interval(p.lowerBound), value)
-    case n: WithNext[E, D, V] => IntervalMapping(domainOps.interval(n.upperBound), value)
-    case _                    => IntervalMapping(domainOps.interval.universal, value)
+  def interval: Interval[E, D] = this match {
+    case i: Inner[E, D, V]    => domainOps.interval(i.lowerBound, i.upperBound)
+    case p: WithPrev[E, D, V] => domainOps.interval(p.lowerBound)
+    case n: WithNext[E, D, V] => domainOps.interval(n.upperBound)
+    case _                    => domainOps.interval.universal
   }
 
-  override def toString: String = intervalMapping.toString
+  def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
+
+  override def toString: String = SetBuilderFormat.segment(this, (e: E) => e.toString, (v: V) => v.toString)
 }
 
 object Segment {
@@ -85,9 +108,9 @@ object Segment {
 
     override def forwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, moveNext.forwardLazyList)
 
-    override def intervalMapping: IntervalMapping[E, D, V] = this match {
-      case p: WithPrev[E, D, V] => IntervalMapping(domainOps.interval(p.lowerBound, upperBound), value)
-      case _                    => IntervalMapping(domainOps.interval(upperBound), value)
+    override def interval: Interval[E, D] = this match {
+      case p: WithPrev[E, D, V] => domainOps.interval(p.lowerBound, upperBound)
+      case _                    => domainOps.interval(upperBound)
     }
   }
 
@@ -106,19 +129,10 @@ object Segment {
 
     override def backwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, movePrev.backwardLazyList)
 
-    override def intervalMapping: IntervalMapping[E, D, V] = this match {
-      case n: WithNext[E, D, V] => IntervalMapping(domainOps.interval(lowerBound, n.upperBound), value)
-      case _                    => IntervalMapping(domainOps.interval(lowerBound), value)
+    override def interval: Interval[E, D] = this match {
+      case n: WithNext[E, D, V] => domainOps.interval(lowerBound, n.upperBound)
+      case _                    => domainOps.interval(lowerBound)
     }
-  }
-
-  /** Segment which has both next and previous segments. */
-  trait Inner[E, D <: Domain[E], +V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
-
-    override def isInner: Boolean = true
-
-    override def intervalMapping: IntervalMapping[E, D, V] =
-      IntervalMapping(domainOps.interval(lowerBound, upperBound), value)
   }
 
   /**
@@ -130,6 +144,11 @@ object Segment {
     override def isFirst: Boolean = true
 
     override def moveToFirst: First[E, D, V] = this
+
+    override def interval: Interval[E, D] = this match {
+      case n: WithNext[E, D, V] => domainOps.interval(n.upperBound)
+      case _ => domainOps.interval.universal
+    }
   }
 
   /**
@@ -141,6 +160,11 @@ object Segment {
     override def isLast: Boolean = true
 
     override def moveToLast: Last[E, D, V] = this
+
+    override def interval: Interval[E, D] = this match {
+      case p: WithPrev[E, D, V] => domainOps.interval(p.lowerBound)
+      case _ => domainOps.interval.universal
+    }
   }
 
   /**
@@ -151,6 +175,11 @@ object Segment {
     override def isSingle: Boolean = true
 
     override def moveTo(bound: Bound[E]): Segment[E, D, V] = this
+
+    override def interval: Interval[E, D] = domainOps.interval.universal
+
+    override def toString: String =
+      SetBuilderFormat.singleSegment(this, (v: V) => v.toString)
   }
 
   /**
@@ -160,6 +189,11 @@ object Segment {
   trait Initial[E, D <: Domain[E], +V] extends WithNext[E, D, V] with First[E, D, V] {
 
     override def isInitial: Boolean = true
+
+    override def interval: Interval[E, D] = domainOps.interval(upperBound)
+
+    override def toString: String =
+      SetBuilderFormat.initialSegment(this, (e: E) => e.toString, (v: V) => v.toString)
   }
 
   /**
@@ -169,13 +203,29 @@ object Segment {
   trait Terminal[E, D <: Domain[E], +V] extends WithPrev[E, D, V] with Last[E, D, V] {
 
     override def isTerminal: Boolean = true
+
+    override def interval: Interval[E, D] = domainOps.interval(lowerBound)
+
+    override def toString: String =
+      SetBuilderFormat.terminalSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+  }
+
+  /** Segment which has both next and previous segments. */
+  trait Inner[E, D <: Domain[E], +V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
+
+    override def isInner: Boolean = true
+
+    override def interval: Interval[E, D] = domainOps.interval(lowerBound, upperBound)
+
+    override def toString: String =
+      SetBuilderFormat.innerSegment(this, (e: E) => e.toString, (v: V) => v.toString)
   }
 
   final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
     implicit dirValue: SingleValue[Dir]
   ) extends DirectedOrder.Abstract[Segment[E, D, Any], Dir] {
 
-    import util.Hash._
+    import util.HashUtil._
 
     override val label: Label = OrderLabels.SegmentByUpperBound
 
@@ -203,7 +253,7 @@ object Segment {
     implicit dirValue: SingleValue[Dir]
   ) extends DirectedOrder.Abstract[Segment[E, D, Any], Dir] {
 
-    import util.Hash._
+    import util.HashUtil._
 
     override def label: Label = OrderLabels.SegmentByLowerBound
 

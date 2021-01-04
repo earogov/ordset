@@ -34,7 +34,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E]  @sp(Boolean), W] {
   def contains(bound: Bound[E]): Boolean
 
   /** @return true if sequence contains `element`. */
-  def contains(element: E): Boolean
+  def contains(element: E): Boolean = contains(Bound.Upper.inclusive(element))
 
   /** @return first segment of sequence. */
   def firstSegment: Segment.First[E, D, W]
@@ -46,5 +46,5 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E]  @sp(Boolean), W] {
   def getSegment(bound: Bound[E]): Segment[E, D, W]
 
   /** @return segment which contains specified `element`. */
-  def getSegment(element: E): Segment[E, D, W]
+  def getSegment(element: E): Segment[E, D, W] = getSegment(Bound.Upper.inclusive(element))
 }

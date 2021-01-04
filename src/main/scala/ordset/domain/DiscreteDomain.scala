@@ -29,7 +29,7 @@ object DiscreteDomain {
     val domainHash: Hash[D]
   ) extends Hash[DiscreteDomain[E, D]] {
 
-    import ordset.util.Hash._
+    import ordset.util.HashUtil._
 
     override def eqv(x: DiscreteDomain[E, D], y: DiscreteDomain[E, D]): Boolean =
       discreteHash.eqv(x.discrete, y.discrete) && domainHash.eqv(x.domain, y.domain)

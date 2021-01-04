@@ -9,6 +9,10 @@ trait DomainLike[E] {
 
   implicit def elementOrd: AscOrder[E]
 
+  implicit def intOrd: AscOrder[Int]
+
+  implicit def longOrd: AscOrder[Long]
+
   implicit def boundOrd: AscOrder[Bound[E]]
 }
 
@@ -21,6 +25,10 @@ object DomainLike {
     override def label: Label = domain.label
 
     override implicit def elementOrd: AscOrder[E] = domain.elementOrd
+
+    implicit def intOrd: AscOrder[Int] = domain.intOrd
+
+    implicit def longOrd: AscOrder[Long] = domain.longOrd
 
     override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
   }

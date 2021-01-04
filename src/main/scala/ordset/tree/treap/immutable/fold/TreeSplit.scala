@@ -1,11 +1,12 @@
-package ordset.tree.treap.reduce
+package ordset.tree.treap.immutable.fold
 
-import ordset.domain.Domain
+import ordset.Order
 import ordset.tree.core.eval.TreeVisitStack
-import ordset.tree.treap.traverse.NodeSearch
-import ordset.tree.treap.Treap
-import ordset.tree.core.Reduce
-import ordset.tree.core.reduce.ContextExtract
+import ordset.tree.treap.immutable.traverse.NodeSearch
+import ordset.tree.core.Fold
+import ordset.tree.core.fold.ContextExtract
+import ordset.tree.treap.immutable.ImmutableTreap
+import ordset.tree.treap.immutable.eval.NodeVisitContext
 
 /**
  * [[TreeSplit.splitFunc]] implements split operation for treap. Output is a pair of left and right trees.
@@ -13,8 +14,9 @@ import ordset.tree.core.reduce.ContextExtract
  * Both immutable and mutable output tuples are available.
  *
  * {{{
- *                           initial tree
  *
+ *  priority
+ *                                  initial tree
  *    9  -                               A
  *    8  -                      ↙          ↘
  *    7  -             B                     ↘
@@ -25,15 +27,14 @@ import ordset.tree.core.reduce.ContextExtract
  *    2  -       F            ↙
  *    1  -                   H
  *         |-----|-----|-----|-----|-----|-----|-----|
- *         1     2     3     4     5     6     7     8
+ *         1     2     3     4     5     6     7     8  key
  *
  *                        split at key 4
  *                              V
- *
- *               output.leftTree      output.rightTree
- *
+ *  priority
+ *                                 output.rightTree
  *    9  -                               A
- *    8  -                             /   ↘
+ *    8  -        output.leftTree      /   ↘
  *    7  -             B              /       ↘
  *    6  -       ↙      \            /          C
  *    5  -    ↙          \          E             ↘
@@ -42,7 +43,7 @@ import ordset.tree.core.reduce.ContextExtract
  *    2  -       F          \
  *    1  -                   H
  *         |-----|-----|-----|-----|-----|-----|-----|
- *         1     2     3     4     5     6     7     8
+ *         1     2     3     4     5     6     7     8  key
  * }}}
  * =Usage=
  *
@@ -50,19 +51,19 @@ import ordset.tree.core.reduce.ContextExtract
  *    In example above we start from node A and stop at node H. Context will contain list of nodes E, B, A.
  *
  * {{{
- *     val contextExtract = ContextExtract.reduceAfter(
- *       tree,
- *       TreeVisitStack.contextOps[K, V, Treap.Node].getEmptyContext
+ *     val contextExtract = ContextExtract.foldAfter[K, V, Treap.Node, NodeVisitContext[K, V]](
+ *       node,
+ *       TreeVisitStack.contextOps.getEmptyContext
  *     )(
- *       NodeSearch.down(key, TreeVisitStack.function())
+ *       NodeSearch.down(key, TreeVisitStack.function[K, V, Treap.Node]())(keyOrder)
  *     )
  * }}}
  *
- * 2. Move upward starting from node H (with the received context) and apply [[TreeSplit.splitFunc]] as a reduce
+ * 2. Move upward starting from node H (with the received context) and apply [[TreeSplit.splitFunc]] as a fold
  *    function to build left and right subtrees.
  *
  * {{{
- *     val split = Reduce.before(
+ *     val split = Fold.before(
  *       contextExtract.tree,
  *       contextExtract.context,
  *       initial
@@ -76,47 +77,47 @@ import ordset.tree.core.reduce.ContextExtract
  */
 object TreeSplit {
 
-  def splitFunc[K, V, C](
-    key: K
+  def splitFunc[K, KK >: K, V, C](
+    key: KK
   )(
-    implicit domain: Domain[K]
-  ): NodeReduceFunc[K, V, C, SplitOutput[K, V]] =
+    implicit keyOrder: Order[KK]
+  ): NodeFoldFunc[K, V, C, SplitOutput[K, V]] =
     (tree, _, output) =>
-      if (domain.elementOrd.compare(tree.key, key) <= 0) output.withLeftParent(tree)
+      if (keyOrder.compare(tree.key, key) <= 0) output.withLeftParent(tree)
       else output.withRightParent(tree)
 
-  def reduceNode[K, V](
-    node: Treap.Node[K, V],
-    key: K,
+  def foldNode[K, KK >: K, V](
+    node: ImmutableTreap.Node[K, V],
+    key: KK,
     initial: SplitOutput[K, V]
   )(
-    implicit domain: Domain[K]
+    implicit keyOrder: Order[KK]
   ): SplitOutput[K, V] = {
-    val contextExtract = ContextExtract.reduceAfter(
+    val contextExtract = ContextExtract.foldAfter[K, V, ImmutableTreap.Node, NodeVisitContext[K, V]](
       node,
-      TreeVisitStack.contextOps[K, V, Treap.Node].getEmptyContext
+      TreeVisitStack.contextOps.getEmptyContext
     )(
-      NodeSearch.down(key, TreeVisitStack.function())
+      NodeSearch.down(key, TreeVisitStack.function[K, V, ImmutableTreap.Node]())(keyOrder)
     )
-    Reduce.before(
+    Fold.before(
       contextExtract.tree,
       contextExtract.context,
       initial
     )(
       NodeSearch.up(NodeSearch.UpwardStopPredicate.never, TreeVisitStack.function()),
-      TreeSplit.splitFunc(key)
+      TreeSplit.splitFunc[K, KK, V, NodeVisitContext[K, V]](key)(keyOrder)
     )
   }
 
-  def reduceTreap[K, V](
-    tree: Treap[K, V],
-    key: K,
+  def foldTreap[K, KK >: K, V](
+    tree: ImmutableTreap[K, V],
+    key: KK,
     initial: SplitOutput[K, V]
   )(
-    implicit domain: Domain[K]
+    implicit keyOrder: Order[KK]
   ): SplitOutput[K, V] =
     tree match {
-      case node: Treap.Node[K, V] => reduceNode(node, key, initial)(domain)
+      case node: ImmutableTreap.Node[K, V] => foldNode(node, key, initial)(keyOrder)
       case _ => initial
     }
 }

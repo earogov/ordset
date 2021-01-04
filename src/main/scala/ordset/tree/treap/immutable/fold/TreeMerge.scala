@@ -1,11 +1,12 @@
-package ordset.tree.treap.reduce
+package ordset.tree.treap.immutable.fold
 
 import ordset.Order
-import ordset.tree.treap.Treap
 import ordset.tree.core.eval.TreeStack
-import ordset.tree.core.reduce.ContextExtract
-import ordset.tree.treap.eval.NodeStack
-import ordset.tree.treap.traverse.NodeSearch
+import ordset.tree.core.fold.ContextExtract
+import ordset.tree.treap.Treap
+import ordset.tree.treap.immutable.ImmutableTreap
+import ordset.tree.treap.immutable.eval.NodeStack
+import ordset.tree.treap.immutable.traverse.NodeSearch
 
 import scala.annotation.tailrec
 
@@ -15,10 +16,10 @@ import scala.annotation.tailrec
  * Precondition: max key of left tree `<` min key of right tree
  *
  * {{{
- *               left tree           right tree
- *
+ *  priority
+ *                                   right tree
  *    9  -                               A
- *    8  -                             /   ↘
+ *    8  -         left tree           /   ↘
  *    7  -             B              /       ↘
  *    6  -       ↙      \            /          C
  *    5  -    ↙          \          E             ↘
@@ -27,10 +28,11 @@ import scala.annotation.tailrec
  *    2  -       F          \
  *    1  -                   H
  *         |-----|-----|-----|-----|-----|-----|-----|
- *         1     2     3     4     5     6     7     8
+ *         1     2     3     4     5     6     7     8  key
  *
- *                                   mergedTree
  *
+ *  priority
+ *                                  merged tree
  *    9  -                               A
  *    8  -                      ↙          ↘
  *    7  -             B                     ↘
@@ -41,7 +43,7 @@ import scala.annotation.tailrec
  *    2  -       F            ↙
  *    1  -                   H
  *         |-----|-----|-----|-----|-----|-----|-----|
- *         1     2     3     4     5     6     7     8
+ *         1     2     3     4     5     6     7     8  key
  *
  * }}}
  * =Usage=
@@ -50,7 +52,7 @@ import scala.annotation.tailrec
  *    In example above we start from node B and stop at node H. Stack will contain one node H.
  *
  * {{{
- *     val leftExtract = ContextExtract.reduceAfter(
+ *     val leftExtract = ContextExtract.foldAfter(
  *       leftTree,
  *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
  *     )(
@@ -68,7 +70,7 @@ import scala.annotation.tailrec
  *    We start from node A and stop at node E. Stack will contain one node E.
  *
  * {{{
- *     val rightExtract = ContextExtract.reduceAfter(
+ *     val rightExtract = ContextExtract.foldAfter(
  *       rightTree,
  *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
  *     )(
@@ -91,13 +93,13 @@ import scala.annotation.tailrec
 object TreeMerge {
 
   @tailrec
-  def mergeFunc[K, V](
+  def mergeFunc[K, KK >: K, V](
     leftStack: NodeStack[K, V],
     rightStack: NodeStack[K, V],
-    mergedTree: Treap[K, V]
+    mergedTree: ImmutableTreap[K, V]
   )(
-    implicit priorityOrder: Order[Treap.Node[K, V]]
-  ): Treap[K, V] = {
+    implicit priorityOrder: Order[Treap.Node[KK, V]]
+  ): ImmutableTreap[K, V] = {
     (leftStack, rightStack) match {
       case (leftHead :: leftTail, rightHead :: rightTail) =>
         if (priorityOrder.compare(leftHead, rightHead) <= 0) {
@@ -108,7 +110,7 @@ object TreeMerge {
           // ...   mergedTree
           //         /   \
           //       ...   ...
-          mergeFunc(leftTail, rightTail, rightHead.withLeftNode(leftHead.withRightTree(mergedTree)))
+          mergeFunc[K, KK, V](leftTail, rightTail, rightHead.withLeftNode(leftHead.withRightTree(mergedTree)))
         } else {
           //        leftHead
           //         /    \
@@ -117,7 +119,7 @@ object TreeMerge {
           //       mergedTree  ...
           //         /   \
           //       ...   ...
-          mergeFunc(leftTail, rightTail, leftHead.withRightNode(rightHead.withLeftTree(mergedTree)))
+          mergeFunc[K, KK, V](leftTail, rightTail, leftHead.withRightNode(rightHead.withLeftTree(mergedTree)))
         }
       case (leftHead :: leftTail, _) =>
         //  leftHead   ...
@@ -145,8 +147,8 @@ object TreeMerge {
   @tailrec
   def mergeLeftFunc[K, V](
     leftStack: NodeStack[K, V],
-    mergedTree: Treap[K, V]
-  ): Treap[K, V] =
+    mergedTree: ImmutableTreap[K, V]
+  ): ImmutableTreap[K, V] =
     leftStack match {
       //  leftHead
       //   /    \
@@ -164,8 +166,8 @@ object TreeMerge {
   @tailrec
   def mergeRightFunc[K, V](
     rightStack: NodeStack[K, V],
-    mergedTree: Treap[K, V]
-  ): Treap[K, V] =
+    mergedTree: ImmutableTreap[K, V]
+  ): ImmutableTreap[K, V] =
     rightStack match {
       //             rightHead
       //              /    \
@@ -176,44 +178,47 @@ object TreeMerge {
       case _ => mergedTree
   }
 
-  def reduceNode[K, V](
-    leftNode: Treap.Node[K, V],
-    rightNode: Treap.Node[K, V]
+  def foldNode[K, KK >: K, V](
+    leftNode: ImmutableTreap.Node[K, V],
+    rightNode: ImmutableTreap.Node[K, V]
   )(
-    implicit priorityOrder: Order[Treap.Node[K, V]]
-  ): Treap[K, V] = {
+    implicit priorityOrder: Order[Treap.Node[KK, V]]
+  ): ImmutableTreap[K, V] = {
 
-    val leftExtract = ContextExtract.reduceAfter(
+    val leftExtract = ContextExtract.foldAfter(
       leftNode,
-      TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
+      TreeStack.contextOps[K, V, ImmutableTreap.Node].getEmptyContext
     )(
       NodeSearch.maxKey(TreeStack.function())
     )
     val leftStack = TreeStack.contextOps.addToStack(leftExtract.context, leftExtract.tree)
 
-    val rightExtract = ContextExtract.reduceAfter(
+    val rightExtract = ContextExtract.foldAfter(
       rightNode,
-      TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
+      TreeStack.contextOps[K, V, ImmutableTreap.Node].getEmptyContext
     )(
       NodeSearch.minKey(TreeStack.function())
     )
     val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
 
-    mergeFunc(leftStack, rightStack, Treap.Empty())
+    mergeFunc[K, KK, V](leftStack, rightStack, ImmutableTreap.Empty)
   }
 
-  def reduceTreap[K, V](
-    leftTree: Treap[K, V],
-    rightTree: Treap[K, V]
+  def foldTreap[K, KK >: K, V](
+    leftTree: ImmutableTreap[K, V],
+    rightTree: ImmutableTreap[K, V]
   )(
-    implicit priorityOrder: Order[Treap.Node[K, V]]
-  ): Treap[K, V] =
+    implicit priorityOrder: Order[Treap.Node[KK, V]]
+  ): ImmutableTreap[K, V] =
     leftTree match {
-      case leftNode: Treap.Node[K, V] =>
+      case leftNode: ImmutableTreap.Node[K, V] =>
         rightTree match {
-          case rightNode: Treap.Node[K, V] => reduceNode(leftNode, rightNode)(priorityOrder)
-          case _ => leftNode
+          case rightNode: ImmutableTreap.Node[K, V] =>
+            foldNode[K, KK, V](leftNode, rightNode)(priorityOrder)
+          case _ =>
+            leftNode
       }
-      case _ => rightTree
+      case _ =>
+        rightTree
     }
 }

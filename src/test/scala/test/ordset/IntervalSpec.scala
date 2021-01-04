@@ -27,37 +27,37 @@ class IntervalSpec extends AnyFunSpec {
   }
 
   private def validateLess[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
-    assert(!x.isEmpty)
-    assert(!x.hasLowerBound)
-    assert(x.hasUpperBound)
-    assert(!x.isUniversal)
+    assert(!x.isEmpty, s"expected $x is not empty")
+    assert(!x.hasLowerBound, s"expected $x does not have lower bound")
+    assert(x.hasUpperBound, s"expected $x has upper bound")
+    assert(!x.isUniversal, s"expected $x is not universal")
   }
 
   private def validateGreater[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
-    assert(!x.isEmpty)
-    assert(x.hasLowerBound)
-    assert(!x.hasUpperBound)
-    assert(!x.isUniversal)
+    assert(!x.isEmpty, s"expected $x is not empty")
+    assert(x.hasLowerBound, s"expected $x has lower bound")
+    assert(!x.hasUpperBound, s"expected $x does not have upper bound")
+    assert(!x.isUniversal, s"expected $x is not universal")
   }
 
   private def validateBetween[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
-    assert(!x.isEmpty)
-    assert(x.hasLowerBound)
-    assert(x.hasUpperBound)
-    assert(!x.isUniversal)
+    assert(!x.isEmpty, s"expected $x is not empty")
+    assert(x.hasLowerBound, s"expected $x has lower bound")
+    assert(x.hasUpperBound, s"expected $x has upper bound")
+    assert(!x.isUniversal, s"expected $x is not universal")
   }
 
   private def validateEmpty[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
-    assert(x.isEmpty)
-    assert(!x.hasLowerBound)
-    assert(!x.hasUpperBound)
-    assert(!x.isUniversal)
+    assert(x.isEmpty, s"expected $x is empty")
+    assert(!x.hasLowerBound, s"expected $x does not have lower bound")
+    assert(!x.hasUpperBound, s"expected $x does not have upper bound")
+    assert(!x.isUniversal, s"expected $x is not universal")
   }
 
   private def validateUniversal[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
-    assert(!x.isEmpty)
-    assert(!x.hasLowerBound)
-    assert(!x.hasUpperBound)
-    assert(x.isUniversal)
+    assert(!x.isEmpty, s"expected $x is not empty")
+    assert(!x.hasLowerBound, s"expected $x does not have lower bound")
+    assert(!x.hasUpperBound, s"expected $x does not have upper bound")
+    assert(x.isUniversal, s"expected $x is universal")
   }
 }

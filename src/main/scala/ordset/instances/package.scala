@@ -14,6 +14,8 @@ package object instances {
 
     val intDefault: Label = Label("IntDefault")
 
+    val longDefault: Label = Label("LongDefault")
+
     val stringDefault: Label = Label("StringDefault")
   }
 
@@ -43,6 +45,20 @@ package object instances {
     implicit def intHash: Hash[Int] = kernel.instances.int.catsKernelStdOrderForInt
 
     implicit def intShow: Show[Int] = cats.instances.int.catsStdShowForInt
+  }
+
+  object Long {
+
+    implicit lazy val longAscOrder: AscOrder[Long] =
+      new Wrapper(OrderLabels.longDefault, longOrder, longHash)
+
+    lazy val longDescOrder: DescOrder[Long] = longAscOrder.reverse
+
+    implicit def longOrder: Order[Long] = kernel.instances.long.catsKernelStdOrderForLong
+
+    implicit def longHash: Hash[Long] = kernel.instances.long.catsKernelStdOrderForLong
+
+    implicit def longShow: Show[Long] = cats.instances.long.catsStdShowForLong
   }
 
   object String {

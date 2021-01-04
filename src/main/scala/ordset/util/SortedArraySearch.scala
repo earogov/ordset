@@ -11,8 +11,8 @@ object SortedArraySearch {
 
   val NotFound: Int = -1
 
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   def binSearchClosestNotGreater[@sp(spNum) E](
       element: E,
       array: ArraySeq[E]
@@ -26,8 +26,8 @@ object SortedArraySearch {
     uncheckedBinSearchClosestNotGreater(element, order, array, start, end)
   }
 
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   def binSearchClosestNotLess[@sp(spNum) E](
       element: E,
       array: ArraySeq[E]
@@ -41,8 +41,8 @@ object SortedArraySearch {
     uncheckedBinSearchClosestNotLess(element, order, array, start, end)
   }
 
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   def linSearchClosestNotGreater[@sp(spNum) E](
       element: E,
       array: ArraySeq[E]
@@ -56,8 +56,8 @@ object SortedArraySearch {
     uncheckedLinSearchClosestNotGreater(element, order, array, start, end)
   }
 
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   def linSearchClosestNotLess[@sp(spNum) E](
       element: E,
       array: ArraySeq[E]
@@ -71,8 +71,8 @@ object SortedArraySearch {
     uncheckedLinSearchClosestNotLess(element, order, array, start, end)
   }
 
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   def optimisticBinSearchClosestNotGreater[@sp(spNum) E](
       element: E,
       array: ArraySeq[E]
@@ -97,8 +97,8 @@ object SortedArraySearch {
     }
   }
 
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   def optimisticBinSearchClosestNotLess[@sp(spNum) E](
       element: E,
       array: ArraySeq[E]
@@ -123,7 +123,7 @@ object SortedArraySearch {
     }
   }
 
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[ArrayIndexOutOfBoundsException]
   private def uncheckedBinSearchClosestNotGreater[@sp(spNum) E](
       element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
@@ -150,7 +150,7 @@ object SortedArraySearch {
     else loop(element, order, array, start, end)
   }
 
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[ArrayIndexOutOfBoundsException]
   private def uncheckedBinSearchClosestNotLess[@sp(spNum) E](
       element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
@@ -177,12 +177,12 @@ object SortedArraySearch {
     else loop(element, order, array, start, end)
   }
 
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[ArrayIndexOutOfBoundsException]
   private def uncheckedLinSearchClosestNotGreater[@sp(spNum) E](
       element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
     @tailrec
-    @throws(classOf[ArrayIndexOutOfBoundsException])
+    @throws[ArrayIndexOutOfBoundsException]
     def loop(element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
       val cmp = order.compare(array(start), element)
       if (cmp > 0) start - 1
@@ -196,7 +196,7 @@ object SortedArraySearch {
     else loop(element, order, array, start + 1, end)
   }
 
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[ArrayIndexOutOfBoundsException]
   private def uncheckedLinSearchClosestNotLess[@sp(spNum) E](
       element: E, order: Order[E], array: ArraySeq[E], start: Int, end: Int): Int = {
 
@@ -213,8 +213,8 @@ object SortedArraySearch {
   }
 
   @inline
-  @throws(classOf[IllegalArgumentException])
-  @throws(classOf[ArrayIndexOutOfBoundsException])
+  @throws[IllegalArgumentException]
+  @throws[ArrayIndexOutOfBoundsException]
   private def requireValidIndexes(start: Int, end: Int, length: Int): Unit = {
     if (start < 0 || start >= length) throw new ArrayIndexOutOfBoundsException(start)
     else if (end < 0 || end >= length) throw new ArrayIndexOutOfBoundsException(end)

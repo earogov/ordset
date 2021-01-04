@@ -5,13 +5,13 @@ import ordset.tree.core.{BinaryTreeStep, BinaryTreeVisit, Eval}
 
 object TreeVisitStack {
 
-  type Stack[K, V, Tree[KK, VV]] = List[Element[K, V, Tree]]
+  type Stack[K, V, +Tree[KK, VV]] = List[Element[K, V, Tree]]
 
   type EvalFunc[K, V, Tree[KK, VV]] = Eval.BinaryFunc[K, V, Tree, Context[K, V, Tree]]
 
-  class Element[K, V, Tree[KK, VV]](val tree: Tree[K, V], val visits: BinaryTreeVisit.Type)
+  class Element[K, V, +Tree[KK, VV]](val tree: Tree[K, V], val visits: BinaryTreeVisit.Type)
 
-  class Context[K, V, Tree[KK, VV]](val currentVisits: BinaryTreeVisit.Type, val stack: Stack[K, V, Tree])
+  class Context[K, V, +Tree[KK, VV]](val currentVisits: BinaryTreeVisit.Type, val stack: Stack[K, V, Tree])
 
   /**
    * Common operations for [[Context]].

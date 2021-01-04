@@ -2,11 +2,11 @@ package ordset.tree.core
 
 object Eval {
 
-  trait Func[K, V, Tree[KK, VV], C, -S] extends ((Tree[K, V], C, S) => C)
+  trait Func[K, V, -Tree[KK, VV], C, -S] extends ((Tree[K, V], C, S) => C)
 
-  type BinaryFunc[K, V, Tree[KK, VV], C] = Func[K, V, Tree, C, BinaryTreeStep.Type]
+  type BinaryFunc[K, V, -Tree[KK, VV], C] = Func[K, V, Tree, C, BinaryTreeStep.Type]
 
-  type GenericFunc[K, V, Tree[KK, VV], C] = Func[K, V, Tree, C, Any]
+  type GenericFunc[K, V, -Tree[KK, VV], C] = Func[K, V, Tree, C, Any]
 
   def none[K, V, Tree[KK, VV], C, S]: Func[K, V, Tree, C, S] =
     NoneInstance.asInstanceOf[Func[K, V, Tree, C, S]]

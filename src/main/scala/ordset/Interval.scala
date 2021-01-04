@@ -21,23 +21,24 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
 
   def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
-  def ->[@sp(Boolean) V](value: V): IntervalMapping[E, D, V] = IntervalMapping(this, value)
+  def ->[@sp(Boolean) V](value: V): IntervalRelation[E, D, V] = IntervalRelation(this, value)
 }
 
 object Interval {
 
   implicit def defaultHash[E, D <: Domain[E]](
-    implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]): Hash[Interval[E, D]] =
+    implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]
+  ): Hash[Interval[E, D]] =
     new DefaultHash()(boundHash, domainHash)
 
-  implicit def intervalShow[E, D <: Domain[E]](
-    implicit boundShow: Show[Bound[E]]
+  implicit def defaultShow[E, D <: Domain[E]](
+    implicit elementShow: Show[E]
   ): Show[Interval[E, D]] =
-    Show.fromToString
+    SetBuilderFormat.intervalShow(elementShow)
 
   sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D]
 
-  sealed trait WithLowerBound[@sp(spNum) E, D <: Domain[E]] extends Interval[E, D] {
+  sealed trait WithLowerBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
 
     def lowerBound: Bound.Lower[E]
 
@@ -46,7 +47,7 @@ object Interval {
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
   }
 
-  sealed trait WithUpperBound[@sp(spNum) E, D <: Domain[E]] extends Interval[E, D] {
+  sealed trait WithUpperBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
 
     def upperBound: Bound.Upper[E]
 
@@ -61,7 +62,7 @@ object Interval {
 
     override def isEmpty: Boolean = true
 
-    override def toString: String = "{}"
+    override def toString: String = SetBuilderFormat.emptyInterval
   }
 
   case class Universal[E, D <: Domain[E]](
@@ -70,25 +71,25 @@ object Interval {
 
     override def isUniversal: Boolean = true
 
-    override def toString: String = "x in U"
+    override def toString: String = SetBuilderFormat.universalInterval
   }
 
   case class Greater[@sp(spNum) E, D <: Domain[E]](
     override val lowerBound: Bound.Lower[E]
   )(
     override val domainOps: DomainOps[E, D]
-  ) extends NonEmpty[E, D] with WithLowerBound[E, D] {
+  ) extends WithLowerBound[E, D] {
 
-    override def toString: String = lowerBound.toString
+    override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, (e: E) => e.toString)
   }
 
   case class Less[@sp(spNum) E, D <: Domain[E]](
     override val upperBound: Bound.Upper[E]
   )(
     override val domainOps: DomainOps[E, D]
-  ) extends NonEmpty[E, D] with WithUpperBound[E, D] {
+  ) extends WithUpperBound[E, D] {
 
-    override def toString: String = upperBound.toString
+    override def toString: String = SetBuilderFormat.upperBoundedInterval(this, (e: E) => e.toString)
   }
 
   case class Between[@sp(spNum) E, D <: Domain[E]](
@@ -96,16 +97,16 @@ object Interval {
     override val upperBound: Bound.Upper[E]
   )(
     override val domainOps: DomainOps[E, D]
-  ) extends NonEmpty[E, D] with WithLowerBound[E, D] with WithUpperBound[E, D] {
+  ) extends WithLowerBound[E, D] with WithUpperBound[E, D] {
 
-    override def toString: String = s"$lowerBound & $upperBound"
+    override def toString: String = SetBuilderFormat.boundedInterval(this, (e: E) => e.toString)
   }
 
   final class DefaultHash[E, D <: Domain[E]]()(
     implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]
   ) extends Hash[Interval[E, D]] {
 
-    import util.Hash._
+    import util.HashUtil._
 
     override def hash(x: Interval[E, D]): Int = x match {
       case x: Empty[E, D]     => product1Hash(domainHash.hash(x.domainOps.domain))

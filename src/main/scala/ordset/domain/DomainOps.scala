@@ -1,7 +1,7 @@
 package ordset.domain
 
 import ordset.util.label.Label
-import ordset.{Hash, Interval, IntervalBuilder, IntervalMapping, IntervalOps, Segment}
+import ordset.{Hash, Interval, IntervalBuilder, IntervalRelation, IntervalOps, Segment}
 
 trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
 
@@ -13,8 +13,8 @@ trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
 
   implicit lazy val intervalHash: Hash[Interval[E, D]] = Interval.defaultHash(boundOrd, domainHash)
 
-  implicit def intervalMappingHash[V](implicit valueHash: Hash[V]): Hash[IntervalMapping[E, D, V]] =
-    IntervalMapping.defaultHash(intervalHash, valueHash)
+  implicit def intervalRelationHash[V](implicit valueHash: Hash[V]): Hash[IntervalRelation[E, D, V]] =
+    IntervalRelation.defaultHash(intervalHash, valueHash)
 
   implicit lazy val segmentUpperOrd: Segment.UpperBoundAscOrder[E, D] = Segment.upperBoundAscOrder
 

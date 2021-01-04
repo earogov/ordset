@@ -11,7 +11,7 @@ class ZippedOrderedSet[E, D <: Domain[E]](
   implicit override val domainOps: DomainOps[E, D]
 ) extends AbstractZippedSegmentSeq[E, D, Boolean] {
 
-  override final val valueEq: Eq[Boolean] = instances.Boolean.booleanHash
+  override final def valueEq: Eq[Boolean] = instances.Boolean.booleanHash
 
   override protected def operator(left: Boolean, right: Boolean): Boolean = operatorFunc(left, right)
 

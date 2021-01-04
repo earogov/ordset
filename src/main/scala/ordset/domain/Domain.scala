@@ -20,36 +20,56 @@ object Domain {
 
   final class DefaultImpl[E](
     override val label: Label,
-    override val elementOrd: AscOrder[E]
+    override val elementOrd: AscOrder[E],
   ) extends Domain[E] {
 
-    override implicit lazy val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd)
+    override implicit val intOrd: AscOrder[Int] = ordset.instances.Int.intAscOrder
+
+    override implicit val longOrd: AscOrder[Long] = ordset.instances.Long.longAscOrder
+
+    override implicit val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd, intOrd)
   }
 
   final class DefaultHash[E, D <: Domain[E]](
     labelHash: Hash[Label],
-    ordHash: Hash[AscOrder[E]]
+    orderHash: Hash[DirectedOrder[_, _ <: OrderDir]]
   ) extends Hash[D] {
 
-    import ordset.util.Hash._
+    import ordset.util.HashUtil._
 
-    override def eqv(x: D, y: D): Boolean = ordHash.eqv(x.elementOrd, y.elementOrd) && labelHash.eqv(x.label, y.label)
+    override def eqv(x: D, y: D): Boolean =
+      orderHash.eqv(x.elementOrd, y.elementOrd) &&
+        orderHash.eqv(x.intOrd, y.intOrd) &&
+        orderHash.eqv(x.longOrd, y.longOrd) &&
+        labelHash.eqv(x.label, y.label)
 
-    override def hash(x: D): Int = product2Hash(ordHash.hash(x.elementOrd), labelHash.hash(x.label))
+    override def hash(x: D): Int =
+      product4Hash(
+        orderHash.hash(x.elementOrd),
+        orderHash.hash(x.intOrd),
+        orderHash.hash(x.longOrd),
+        labelHash.hash(x.label)
+      )
   }
 
   final class DefaultShow[E, D <: Domain[E]](
     labelShow: Show[Label],
-    orderShow: Show[AscOrder[E]]
+    orderShow: Show[DirectedOrder[_, _ <: OrderDir]]
   ) extends Show[D] {
 
     override def show(t: D): String =
-      s"Domain(label: ${labelShow.show(t.label)}, order: ${orderShow.show(t.elementOrd)})"
+      s"Domain(" +
+        s"label: ${labelShow.show(t.label)}, " +
+        s"elementOrd: ${orderShow.show(t.elementOrd)}, " +
+        s"intOrd: ${orderShow.show(t.intOrd)}, " +
+        s"longOrd: ${orderShow.show(t.longOrd)}, " +
+        s"boundOrd: ${orderShow.show(t.boundOrd)}" +
+        s")"
   }
 
   private lazy val defaultHashInstance: Hash[Domain[Any]] =
-    new DefaultHash[Any, Domain[Any]](Label.defaultOrder, DirectedOrder.defaultHash[Any, AscDir])
+    new DefaultHash[Any, Domain[Any]](Label.defaultOrder, DirectedOrder.defaultHash)
 
   private lazy val defaultShowInstance: Show[Domain[Any]] =
-    new DefaultShow[Any, Domain[Any]](Label.defaultShow, DirectedOrder.defaultShow[Any, AscDir])
+    new DefaultShow[Any, Domain[Any]](Label.defaultShow, DirectedOrder.defaultShow)
 }

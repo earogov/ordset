@@ -11,13 +11,15 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected final type ComposedZipped[S <: ZippedTuple] = (Zipper[S], GenSegment, GenSegment) => S
 
   /** Equality typeclass for segments values. */
-  val valueEq: Eq[W]
+  def valueEq: Eq[W]
 
   /** @return true if sequence is empty i.e. contains no elements. */
-  override def isEmpty: Boolean = firstSegmentInstance.isSingle && !belongsToSet(firstSegmentInstance.value)
+  override def isEmpty: Boolean =
+    firstSegmentInstance.isSingle && !belongsToSet(firstSegmentInstance.value)
 
   /** @return true if sequence is universal i.e. contains all elements of domain. */
-  override def isUniversal: Boolean = firstSegmentInstance.isSingle && belongsToSet(firstSegmentInstance.value)
+  override def isUniversal: Boolean =
+    firstSegmentInstance.isSingle && belongsToSet(firstSegmentInstance.value)
 
   /** @return true if sequence contains `bound`. */
   override def contains(bound: Bound[E]): Boolean =
@@ -25,13 +27,15 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
 
   /** @return true if sequence contains `element`. */
   override def contains(element: E): Boolean =
-    belongsToSet(getSegmentValue(left.getSegment(element), right.getSegment(element)))
+    super.contains(element)
 
   /** @return first segment of sequence. */
-  final override def firstSegment: Segment.First[E, D, W] = firstSegmentInstance
+  final override def firstSegment: Segment.First[E, D, W] =
+    firstSegmentInstance
 
   /** @return last segment of sequence. */
-  final override def lastSegment: Segment.Last[E, D, W] = lastFrontZipper(left.lastSegment, right.lastSegment)
+  final override def lastSegment: Segment.Last[E, D, W] =
+    lastFrontZipper(left.lastSegment, right.lastSegment)
 
   /** @return segment which contains specified `bound`. */
   final override def getSegment(bound: Bound[E]): Segment[E, D, W] =
@@ -39,7 +43,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
 
   /** @return segment which contains specified `element`. */
   final override def getSegment(element: E): Segment[E, D, W] =
-    searchFrontZipper(generalFrontZipper, left.getSegment(element), right.getSegment(element))
+    super.getSegment(element)
 
   /** Original sequence to which zipping is applied. */
   protected val left: SegmentSeq[E, D, W]

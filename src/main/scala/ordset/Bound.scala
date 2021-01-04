@@ -32,16 +32,16 @@ object Bound {
   implicit def upperToInterval[E, D <: Domain[E]](upper: Upper[E])(
     implicit domainOps: DomainOps[E, D]): Interval[E, D] = domainOps.interval(upper)
 
-  implicit def defaultAscOrder[E](implicit elementOrd: AscOrder[E]): AscOrder[Bound[E]] =
-    new DefaultOrder(elementOrd, instances.Int.intAscOrder)
+  implicit def defaultAscOrder[E](implicit elementOrd: AscOrder[E], intOrder: AscOrder[Int]): AscOrder[Bound[E]] =
+    new DefaultOrder(elementOrd, intOrder)
 
-  def defaultDescOrder[E](implicit elementOrd: DescOrder[E]): DescOrder[Bound[E]] =
-    new DefaultOrder(elementOrd, instances.Int.intDescOrder)
+  def defaultDescOrder[E](implicit elementOrd: DescOrder[E], intOrder: DescOrder[Int]): DescOrder[Bound[E]] =
+    new DefaultOrder(elementOrd, intOrder)
 
   implicit def defaultShow[E](implicit elementShow: Show[E]): Show[Bound[E]] =
-    Show.fromToString
+    SetBuilderFormat.boundShow(elementShow)
 
-  case class Upper[+E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
+  case class Upper[@sp(spNum) +E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
 
     override def isUpper: Boolean = true
 
@@ -53,14 +53,14 @@ object Bound {
 
     override def offset: Int = if (isInclusive) 0 else -1
 
-    override def toString: String = s"x ${if (isInclusive) "<=" else "<"} $value"
+    override def toString: String = SetBuilderFormat.upperBound(this, (e: E) => e.toString)
   }
 
   object Upper {
 
-    def inclusive[E](element: E): Bound.Upper[E] = Upper(element, isInclusive = true)
+    def inclusive[@sp(spNum) E](element: E): Bound.Upper[E] = Upper(element, isInclusive = true)
 
-    def exclusive[E](element: E): Bound.Upper[E] = Upper(element, isInclusive = false)
+    def exclusive[@sp(spNum) E](element: E): Bound.Upper[E] = Upper(element, isInclusive = false)
 
     def max[E](x: Upper[E], y: Upper[E])(implicit order: Order[Bound[E]]): Upper[E] =
       order.max(x, y).asInstanceOf[Upper[E]]
@@ -69,7 +69,7 @@ object Bound {
       order.min(x, y).asInstanceOf[Upper[E]]
   }
 
-  case class Lower[+E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
+  case class Lower[@sp(spNum) +E](override val value: E, override val isInclusive: Boolean) extends Bound[E] {
 
     override def isUpper: Boolean = false
 
@@ -81,14 +81,14 @@ object Bound {
 
     override def offset: Int = if (isInclusive) 0 else 1
 
-    override def toString: String = s"x ${if (isInclusive) ">=" else ">"} $value"
+    override def toString: String = SetBuilderFormat.lowerBound(this, (e: E) => e.toString)
   }
 
   object Lower {
 
-    def inclusive[E](element: E): Bound.Lower[E] = Lower(element, isInclusive = true)
+    def inclusive[@sp(spNum) E](element: E): Bound.Lower[E] = Lower(element, isInclusive = true)
 
-    def exclusive[E](element: E): Bound.Lower[E] = Lower(element, isInclusive = false)
+    def exclusive[@sp(spNum) E](element: E): Bound.Lower[E] = Lower(element, isInclusive = false)
 
     def max[E](x: Lower[E], y: Lower[E])(implicit order: Order[Bound[E]]): Lower[E] =
       order.max(x, y).asInstanceOf[Lower[E]]
@@ -104,7 +104,7 @@ object Bound {
       implicit val dirValue: SingleValue[Dir]
   ) extends DirectedOrder.Abstract[Bound[E], Dir] {
 
-    import util.Hash._
+    import util.HashUtil._
 
     override val label: Label = OrderLabels.BoundDefault
 
@@ -119,6 +119,5 @@ object Bound {
 
     override def eqv(x: Bound[E], y: Bound[E]): Boolean =
       elementOrd.eqv(x.value, y.value) && intOrd.eqv(x.offset, y.offset)
-
   }
 }

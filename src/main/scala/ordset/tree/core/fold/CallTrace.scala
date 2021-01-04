@@ -1,7 +1,7 @@
-package ordset.tree.core.reduce
+package ordset.tree.core.fold
 
 import ordset.Show
-import ordset.tree.core.Reduce
+import ordset.tree.core.Fold
 
 import scala.collection.immutable.Queue
 
@@ -11,14 +11,14 @@ object CallTrace {
     implicit
     treeShow: Show[Tree[K, V]],
     contextShow: Show[C]
-  ): Reduce.Func[K, V, Tree, C, Unit] =
+  ): Fold.Func[K, V, Tree, C, Unit] =
     (tree, context, _) => println(makeString(tree, context, treeShow, contextShow))
 
   def toQueue[K, V, Tree[KK, VV], C](
     implicit
     treeShow: Show[Tree[K, V]],
     contextShow: Show[C]
-  ): Reduce.Func[K, V, Tree, C, Queue[String]] =
+  ): Fold.Func[K, V, Tree, C, Queue[String]] =
     (tree, context, queue) => queue.appended(makeString(tree, context, treeShow, contextShow))
 
   // PRIVATE SECTION

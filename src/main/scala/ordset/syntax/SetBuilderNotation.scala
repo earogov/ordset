@@ -1,7 +1,7 @@
 package ordset.syntax
 
 import ordset.domain.{Domain, DomainOps}
-import ordset.{Interval, IntervalMapping}
+import ordset.{Interval, IntervalRelation}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -45,9 +45,9 @@ object SetBuilderNotation {
     implicit domainOps: DomainOps[E, D]): Interval[E, D] =
     lower.domainOps.interval(lower.bound)
 
-  implicit class ValueToIntervalMapping[@sp(Boolean) +V](val value: V) {
+  implicit class ValueToIntervalRelation[@sp(Boolean) +V](val value: V) {
 
-    def forAll[@sp(spNum) E, D <: Domain[E]](interval: Interval[E, D]): IntervalMapping[E, D, V] =
-      IntervalMapping(interval, value)
+    def forAll[@sp(spNum) E, D <: Domain[E]](interval: Interval[E, D]): IntervalRelation[E, D, V] =
+      IntervalRelation(interval, value)
   }
 }

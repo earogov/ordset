@@ -29,7 +29,7 @@ object BoundedDomain {
     val domainHash: Hash[D]
   ) extends Hash[BoundedDomain[E, D]] {
 
-    import ordset.util.Hash._
+    import ordset.util.HashUtil._
 
     override def eqv(x: BoundedDomain[E, D], y: BoundedDomain[E, D]): Boolean =
       boundsHash.eqv(x.bounds, y.bounds) && domainHash.eqv(x.domain, y.domain)
