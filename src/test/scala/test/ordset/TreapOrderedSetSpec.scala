@@ -4,7 +4,13 @@ import ordset.domain.{Domain, DomainOps}
 import ordset.util.RandomUtil
 import org.scalatest.funspec.AnyFunSpec
 
-class TreapOrderedSetSpec extends AnyFunSpec
+class TreapOrderedSetSpecSeed1 extends TreapOrderedSetSpec(1)
+class TreapOrderedSetSpecSeed10 extends TreapOrderedSetSpec(10)
+class TreapOrderedSetSpecSeed100 extends TreapOrderedSetSpec(100)
+
+abstract class TreapOrderedSetSpec(
+  val seed: Int
+) extends AnyFunSpec
   with SegmentSeqCases[Int, Domain[Int], Boolean]
   with SegmentSeqBehaviors[Int, Domain[Int], Boolean] {
 
@@ -27,22 +33,26 @@ class TreapOrderedSetSpec extends AnyFunSpec
       "multi bounded set",
     sequence =
       TreapOrderedSet.fromIterable[Int, Dom](
-        Array(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-        RandomUtil.intLazyList(1),
+        Array(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`, 50`](`, 60`](`, 70`)[`, 80`)[`),
+        RandomUtil.intLazyList(seed),
         complement = false,
         domainOps.boundOrd.validateStrictly
       ),
     expected =
       (false forAll x < 0) ::
-        (true forAll x >= 0 & x < 10) ::
-        (false forAll x >= 10 & x < 20) ::
-        (true forAll x >= 20 & x < 30) ::
-        (false forAll x >= 30 & x < 40) ::
-        (true forAll x >= 40) ::
-        Nil
+      (true forAll x >= 0 & x < 10) ::
+      (false forAll x >= 10 & x < 20) ::
+      (true forAll x >= 20 & x < 30) ::
+      (false forAll x >= 30 & x < 40) ::
+      (true forAll x >= 40 & x <= 50) ::
+      (false forAll x > 50 & x <= 60) ::
+      (true forAll x > 60 & x < 70) ::
+      (false forAll x >= 70 & x < 80) ::
+      (true forAll x >= 80) ::
+      Nil
   )
 
-  describe("Treap based ordered set as a segment sequence") {
+  describe(s"Treap based ordered set as a segment sequence. Seed: $seed") {
 
     it should behave like segmentsSupportMovePrevAndNext(
       multiBoundedCase.get.description,
@@ -54,14 +64,19 @@ class TreapOrderedSetSpec extends AnyFunSpec
       multiBoundedCase.get.description,
       multiBoundedCase.get.sequence,
       (10`)`, true  forAll x >= 0  & x < 10) ::
-        (10`)`, true  forAll x >= 0  & x < 10) ::
-        (30`[`, false forAll x >= 30 & x < 40) ::
-        (40`)`, false forAll x >= 30 & x < 40) ::
-        (40`[`, true  forAll x >= 40) ::
-        (45`[`, true  forAll x >= 40) ::
-        (25`[`, true  forAll x >= 20 & x < 30) ::
-        (-5`[`, false forAll x <  0) ::
-        Nil
+      (10`)`, true  forAll x >= 0  & x < 10) ::
+      (30`[`, false forAll x >= 30 & x < 40) ::
+      (40`)`, false forAll x >= 30 & x < 40) ::
+      (40`[`, true  forAll x >= 40 & x <= 50) ::
+      (45`[`, true  forAll x >= 40 & x <= 50) ::
+      (25`[`, true  forAll x >= 20 & x < 30) ::
+      (-5`[`, false forAll x <  0) ::
+      (80`[`, true  forAll x >= 80) ::
+      (70`)`, true  forAll x > 60 & x < 70) ::
+      (75`[`, false forAll x >= 70 & x < 80) ::
+      (70`]`, false forAll x >= 70 & x < 80) ::
+      (70`[`, false forAll x >= 70 & x < 80) ::
+      Nil
     )
   }
 }

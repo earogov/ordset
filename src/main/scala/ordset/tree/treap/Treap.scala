@@ -21,7 +21,7 @@ trait Treap[+K, +V] {
 
 object Treap {
 
-  trait Node[+K, +V] {
+  trait Node[+K, +V] extends Treap[K, V] {
 
     def key: K
 

@@ -154,6 +154,7 @@ object SetBuilderFormat { format =>
       case s: Segment.Initial[E, D, V] => format.initialSegment(s, elementToStr, valueToStr)
       case s: Segment.Terminal[E, D, V] => format.terminalSegment(s, elementToStr, valueToStr)
       case s: Segment.Inner[E, D, V] => format.innerSegment(s, elementToStr, valueToStr)
+      case _ => s"Segment(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
     }
 
   def segmentShow[E, D <: Domain[E], V](

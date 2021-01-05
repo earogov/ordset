@@ -7,32 +7,115 @@ import ordset.util.types.SingleValue
 import scala.collection.{AbstractIterable, AbstractIterator}
 
 /**
-  * Segment is equivalent to interval with some value assigned to it.
-  * The main feature of segments is that they cover ordered universal set without gaps and overlapping.
-  * So we can move from given segment to the next, previous, first or last.
-  * Segments have next hierarchy (subclass -> superclass):
-  * {{{
+ * Segment is equivalent to interval with some value assigned to it.
+ * The main property of segments is that they <u>cover ordered universal set without gaps and overlapping</u>.
+ * So we can move from given segment to the next, previous, first or last of sequence.
  *
-  *                   Single
-  *                 ↙        ↘
-  *            First         Last
-  *          ↗      ↘      ↙      ↘
-  *     Initial      Segment       Terminal
-  *          ↘      ↗     ↖       ↗
-  *           WithNext      WithPrev
-  *                 ↖      ↗
-  *                   Inner
-  * }}}
-  * For details see description of corresponding traits.
-  *
-  * @tparam E type of element in ordered set
-  * @tparam D type of domain
-  * @tparam V type of value assigned to interval
-  *
-  * @note Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
-  *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this the
-  *       the basic use case of segments.
-  */
+ * <h1>Basic Types</h1>
+ *
+ * Consider segment sequences.
+ *
+ * 1. General case.
+ *
+ * {{{
+ *   Initial      Inner     Terminal
+ *     v           v          v
+ * X--------|-----------|-----------X
+ * }}}
+ *
+ * 2. Special case (empty or universal sequence).
+ *
+ * {{{
+ *               Single
+ *                 v
+ * X--------------------------------X
+ * }}}
+ * {{{
+ * X - sequence bound;
+ * | - segment bound.
+ * }}}
+ *
+ * We can introduce next segment types.
+ *
+ * <h2>Initial</h2>
+ *
+ * First segment of sequence with properties:
+ *
+ * - doesn't have previous segment;
+ *
+ * - always has next segment.
+ *
+ * <h2>Terminal</h2>
+ *
+ * Last segment of sequence with properties:
+ *
+ * - doesn't have next segment;
+ *
+ * - always has previous segment.
+ *
+ * <h2>Inner</h2>
+ *
+ * Segment with properties:
+ *
+ * - always has next segment;
+ *
+ * - always has previous segment.
+ *
+ * <h2>Single</h2>
+ *
+ * The only segment in sequence (in case of empty or universal sequence) with properties:
+ *
+ * - doesn't have next segment;
+ *
+ * - doesn't have previous segment.
+ *
+ * <h3>
+ * Each concrete class implementing segment MUST have ONE (and only one) of supertypes:
+ * </h3>
+ * <tr><b> - Initial  </b></tr>
+ * <tr><b> - Terminal </b></tr>
+ * <tr><b> - Inner    </b></tr>
+ * <tr><b> - Single   </b></tr>
+ *
+ * <h1>Segment Hierarchy</h1>
+ *
+ * {{{
+ *
+ *                   Single
+ *                 ↙        ↘
+ *            First         Last
+ *          ↗      ↘      ↙      ↖
+ *     Initial      Segment       Terminal
+ *          ↘      ↗      ↖      ↙
+ *           WithNext      WithPrev
+ *                 ↖      ↗
+ *                   Inner
+ *
+ *    * subtype -> supertype
+ * }}}
+ *
+ * General segment hierarchy include some auxiliary supertypes:
+ *
+ * <tr><b>Segment </b> - supertype for all segments.</tr>
+ *
+ * <tr><b>First   </b> - first segment of sequence. Doesn't have previous segment. May be Single or Initial.</tr>
+ *
+ * <tr><b>Last    </b> - last segment of sequence. Doesn't have next segment. May be Single or Terminal.</tr>
+ *
+ * <tr><b>WithPrev</b> - segment which has previous segment. May be Terminal or Inner.</tr>
+ *
+ * <tr><b>WithNext</b> - segment which has next segment. May be Initial or Inner.</tr>
+ *
+ * <tr></tr>
+ *
+ * @tparam E type of element in ordered set
+ * @tparam D type of domain
+ * @tparam V type of value assigned to interval
+ *
+ * @note Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
+ *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this the
+ *       the basic use case of segments.
+ */
 sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segment =>
   import Segment._
 
@@ -93,7 +176,11 @@ object Segment {
 
   def lowerBoundDescOrder[E, D <: Domain[E]]: LowerBoundDescOrder[E, D] = new LowerBoundOrder
 
-  /** Segment which has next segment. */
+  /**
+   * Segment which has next segment. May be Initial or Inner.
+   *
+   * @see [[Segment]]
+   */
   trait WithNext[E, D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def hasNext: Boolean = true
@@ -114,7 +201,11 @@ object Segment {
     }
   }
 
-  /** Segment which has previous segment. */
+  /**
+   * Segment which has previous segment. May be Terminal or Inner.
+   *
+   * @see [[Segment]]
+   */
   trait WithPrev[E, D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def hasPrev: Boolean = true
@@ -136,9 +227,10 @@ object Segment {
   }
 
   /**
-    * First segment of sequence.
-    * It may be `Single` (the only segment in sequence) or `Initial` (first segment with next).
-    */
+   * First segment of sequence. Doesn't have previous segment. May be Single or Initial.
+   *
+   * @see [[Segment]]
+   */
   trait First[E, D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def isFirst: Boolean = true
@@ -152,9 +244,10 @@ object Segment {
   }
 
   /**
-    * Last segment of sequence.
-    * It may be `Single` (the only segment in sequence) or `Terminal` (last segment with previous).
-    */
+   * Last segment of sequence. Doesn't have next segment. May be Single or Terminal.
+   *
+   * @see [[Segment]]
+   */
   trait Last[E, D <: Domain[E], +V] extends Segment[E, D, V] {
 
     override def isLast: Boolean = true
@@ -168,8 +261,12 @@ object Segment {
   }
 
   /**
-    * The only segment in sequence. Sequence in that case either empty or universal.
-    */
+   * The only segment in sequence (in case of empty or universal sequence) with properties:
+   * <tr>- doesn't have next segment;     </tr>
+   * <tr>- doesn't have previous segment. </tr>
+   * <tr>                                 </tr>
+   * @see [[Segment]]
+   */
   trait Single[E, D <: Domain[E], +V] extends First[E, D, V] with Last[E, D, V] {
 
     override def isSingle: Boolean = true
@@ -183,9 +280,12 @@ object Segment {
   }
 
   /**
-    * First segment of sequence which has next segment. Given segment can't be `Single`.
-    * Sequence in that case isn't empty or universal.
-    */
+   * First segment of sequence with properties:
+   * <tr>- doesn't have previous segment; </tr>
+   * <tr>- always has next segment.       </tr>
+   * <tr>                                 </tr>
+   * @see [[Segment]]
+   */
   trait Initial[E, D <: Domain[E], +V] extends WithNext[E, D, V] with First[E, D, V] {
 
     override def isInitial: Boolean = true
@@ -197,9 +297,12 @@ object Segment {
   }
 
   /**
-    * Last segment of sequence which has previous segment. Given segment can't be `Single`.
-    * Sequence in that case isn't empty or universal.
-    */
+   * Last segment of sequence with properties:
+   * <tr>- doesn't have next segment;   </tr>
+   * <tr>- always has previous segment. </tr>
+   * <tr>                               </tr>
+   * @see [[Segment]]
+   */
   trait Terminal[E, D <: Domain[E], +V] extends WithPrev[E, D, V] with Last[E, D, V] {
 
     override def isTerminal: Boolean = true
@@ -210,7 +313,13 @@ object Segment {
       SetBuilderFormat.terminalSegment(this, (e: E) => e.toString, (v: V) => v.toString)
   }
 
-  /** Segment which has both next and previous segments. */
+  /**
+   * Segment with properties:
+   * <tr>- always has next segment;     </tr>
+   * <tr>- always has previous segment. </tr>
+   * <tr>                               </tr>
+   * @see [[Segment]]
+   */
   trait Inner[E, D <: Domain[E], +V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
 
     override def isInner: Boolean = true
@@ -259,8 +368,8 @@ object Segment {
 
     override def compare(x: Segment[E, D, Any], y: Segment[E, D, Any]): Int = (x, y) match {
       case (xp: WithPrev[E, _, _], yp: WithPrev[E, _, _]) => x.domainOps.boundOrd.compare(xp.lowerBound, yp.lowerBound)
-      case (_, _: WithPrev[E, _, _]) => sign
-      case (_: WithPrev[E, _, _], _) => invertedSign
+      case (_, _: WithPrev[E, _, _]) => invertedSign
+      case (_: WithPrev[E, _, _], _) => sign
       case _ => 0
     }
 

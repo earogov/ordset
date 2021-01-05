@@ -19,9 +19,9 @@ object MutableTreap {
     override val priority: Int
   ) extends MutableTreap[K, V] with Treap.Node[K, V] {
 
-    private var left: Treap.Node[K, V] = null
+    private var left: Treap.Node[K, V] = _
 
-    private var right: Treap.Node[K, V] = null
+    private var right: Treap.Node[K, V] = _
 
     def setLeftTree(tree: Treap[K, V]): Unit =
       tree match {
