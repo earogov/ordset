@@ -7,13 +7,14 @@ import ordset.tree.treap.immutable.fold.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
 
 class TreapOrderedSet[E, D <: Domain[E]](
-  override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
-  override val lastValue: Boolean
+  override final val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
+  override final val lastValue: Boolean
 )(
-  implicit override val domainOps: DomainOps[E, D]
+  implicit override final val domainOps: DomainOps[E, D]
 ) extends AbstractTreapSegmentSeq[E, D, Boolean] {
 
-  override protected def belongsToSet(value: Boolean): Boolean = value
+  @inline
+  override protected final def belongsToSet(value: Boolean): Boolean = value
 }
 
 object TreapOrderedSet {
@@ -31,7 +32,7 @@ object TreapOrderedSet {
   )(
     implicit domainOps: DomainOps[E, D],
 
-  ): TreapOrderedSet[E, D] = {
+  ): OrderedSet[E, D] = {
     var buffer = List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]]
     var value = complement
     var prevBound: Bound.Upper[E] = null
@@ -42,7 +43,7 @@ object TreapOrderedSet {
     while(boundIterator.hasNext) {
       val bound = boundIterator.next()
       if (prevBound != null && !validationFunc(prevBound, bound)) {
-        throw new AssertionError(s"Illegal key order: $prevBound >= $bound");
+        throw new AssertionError(s"Illegal key order: $prevBound >= $bound")
       }
       val priority = util.IterableUtil.nextOrThrowMsg(
         priorityIterator,
@@ -61,8 +62,7 @@ object TreapOrderedSet {
       case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
         new TreapOrderedSet(r, value)(domainOps)
       case _ =>
-        // TODO: implement empty treap sequence
-        throw new UnsupportedOperationException("Empty treap sequence")
+        new UniformOrderedSet(value)(domainOps)
     }
   }
 }

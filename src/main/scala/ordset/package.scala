@@ -45,4 +45,6 @@ package object ordset {
   type SetSegmentSeq[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
 
   type SetIntervalRelation[E, D <: Domain[E]] = IntervalRelation[E, D, Boolean]
+
+  type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
 }

@@ -51,6 +51,16 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
     }
   }
 
+  def segmentsSupportMovePrevAndNextForCases(
+    cases: List[SegmentSeqTestCase[E, D, V]]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit = {
+    cases.foreach { c =>
+      it should behave like segmentsSupportMovePrevAndNext(c.description, c.sequence, c.expected)
+    }
+  }
+
   def segmentsSupportMoveToBound(
     descr: String,
     segmentSeq: SegmentSeq[E, D, V],
@@ -99,6 +109,22 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
         }
       }
       loop(seq.firstSegment)
+    }
+  }
+
+  def segmentsSupportMoveToFirstAndLastForCases(
+    cases: List[SegmentSeqTestCase[E, D, V]]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit = {
+    cases.foreach { c =>
+      if (c.expected.isEmpty) fail("Invalid test case: expected sequence must be non empty.")
+      it should behave like segmentsSupportMoveToFirstAndLast(
+        c.description,
+        c.sequence,
+        c.expected.head,
+        c.expected.last
+      )
     }
   }
 
@@ -151,6 +177,16 @@ trait SegmentSeqBehaviors[E, D <: Domain[E], V] { this: AnyFunSpec =>
         case _ => sys.error("Unexpected case")
       }
       loop(seq.firstSegment)
+    }
+  }
+
+  def segmentsHaveNextAndPrevIndicatorsForCases(
+    cases: List[SegmentSeqTestCase[E, D, V]]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit = {
+    cases.foreach { c =>
+      it should behave like segmentsHaveNextAndPrevIndicators(c.description, c.sequence)
     }
   }
 

@@ -264,6 +264,13 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   protected sealed case class IndexedInnerSegment(override val ind: Int
   ) extends IndexedSegmentWithPrev with IndexedSegmentWithNext with InnerSegment
 
+  /**
+   * Single segment of sequence. It has no previous and next segments.
+   *
+   * Preconditions:
+   *
+   * 1. `bounds` is empty.
+   */
   protected sealed case class IndexedSingleSegment() extends SingleSegment {
 
     override def domainOps: DomainOps[E, D] = seq.domainOps

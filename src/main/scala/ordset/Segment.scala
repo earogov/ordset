@@ -4,7 +4,7 @@ import ordset.domain.{AscDir, DescDir, DirectedOrder, Domain, OrderDir}
 import ordset.util.label.Label
 import ordset.util.types.SingleValue
 
-import scala.collection.{AbstractIterable, AbstractIterator}
+import scala.collection.AbstractIterator
 
 /**
  * Segment is equivalent to interval with some value assigned to it.
@@ -112,29 +112,44 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * @tparam D type of domain
  * @tparam V type of value assigned to interval
  *
+ * <tr></tr>
+ *
  * @note Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
- *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this the
+ *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this is
  *       the basic use case of segments.
  */
 sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segment =>
   import Segment._
 
-  def forwardIterable: Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
+  def forwardIterator: Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
 
-    override def iterator: Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+    private var current: Segment[E, D, V] = segment
 
-      private var current: Segment[E, D, V] = segment
+    override def hasNext: Boolean = !current.isLast
 
-      override def hasNext: Boolean = !current.isLast
+    override def next(): Segment[E, D, V] = current match {
+      case n: WithNext[E, D, V] =>
+        val result = current
+        current = n.moveNext
+        result
+      case _ =>
+        throw new NoSuchElementException(s"Segment $current doesn't have next segment.")
+    }
+  }
 
-      override def next(): Segment[E, D, V] = current match {
-        case n: WithNext[E, D, V] =>
-          val result = current
-          current = n.moveNext
-          result
-        case _ =>
-          throw new NoSuchElementException(s"Segment $current doesn't have next segment.")
-      }
+  def backwardIterator: Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+
+    private var current: Segment[E, D, V] = segment
+
+    override def hasNext: Boolean = !current.isFirst
+
+    override def next(): Segment[E, D, V] = current match {
+      case p: WithPrev[E, D, V] =>
+        val result = current
+        current = p.movePrev
+        result
+      case _ =>
+        throw new NoSuchElementException(s"Segment $current doesn't have previous segment.")
     }
   }
 

@@ -114,6 +114,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   /** Value of last segment (without upper bound). */
   protected val lastValue: W
 
+  /**
+   * @return true if `value` belongs to set.
+   */
   protected def belongsToSet(value: W): Boolean
 
   /**

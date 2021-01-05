@@ -4,7 +4,6 @@ import ordset.domain.{Domain, DomainOps}
 
 // TODO: class description.
 abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSegmentSeq[E, D, W] { seq =>
-  import domainOps._
 
   protected final type Zipper[S <: ZippedTuple] = (GenSegment, GenSegment) => S
   protected final type NextGenZipper[S <: ZippedTuple] = (SegmentWithNext, GenSegment) => S
@@ -116,8 +115,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected final def firstFrontZipper(left: GenSegment, right: GenSegment): ZippedSegmentBase with FirstSegment =
     (left, right) match {
       case (ln: SegmentWithNext, rn: SegmentWithNext) =>
-        if (boundOrd.compare(ln.upperBound, rn.upperBound) >= 0) ZippedInitialSegment(rn, ln)
-        else                                                     ZippedInitialSegment(ln, rn)
+        if (domainOps.boundOrd.compare(ln.upperBound, rn.upperBound) >= 0) ZippedInitialSegment(rn, ln)
+        else                                                               ZippedInitialSegment(ln, rn)
       case (ln: SegmentWithNext, _) => ZippedInitialSegment(ln, right)
       case (_, rn: SegmentWithNext) => ZippedInitialSegment(rn, left)
       case (ll: LastSegment, rl: LastSegment) => ZippedSingleSegment(ll, rl)
@@ -152,8 +151,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected final def withPrevFrontZipper(left: GenSegment, right: GenSegment): ZippedSegmentWithPrev =
     (left, right) match {
       case (ln: SegmentWithNext, rn: SegmentWithNext) =>
-        if (boundOrd.compare(ln.upperBound, rn.upperBound) >= 0) ZippedInnerSegment(rn, ln)
-        else                                                     ZippedInnerSegment(ln, rn)
+        if (domainOps.boundOrd.compare(ln.upperBound, rn.upperBound) >= 0) ZippedInnerSegment(rn, ln)
+        else                                                               ZippedInnerSegment(ln, rn)
       case (ln: SegmentWithNext, _) => ZippedInnerSegment(ln, right)
       case (_, rn: SegmentWithNext) => ZippedInnerSegment(rn, left)
       case (ll: LastSegment, rl: LastSegment) => ZippedTerminalSegment(ll, rl)
@@ -175,8 +174,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     if (firstSegmentInstance.isRepresentedBy(left, right)) firstSegmentInstance.asInstanceOf[ZippedInitialSegment]
     else right match {
       case rn: SegmentWithNext =>
-        if (boundOrd.compare(left.upperBound, rn.upperBound) >= 0) ZippedInnerSegment(rn, left)
-        else                                                       ZippedInnerSegment(left, rn)
+        if (domainOps.boundOrd.compare(left.upperBound, rn.upperBound) >= 0) ZippedInnerSegment(rn, left)
+        else                                                                 ZippedInnerSegment(left, rn)
       case _ => ZippedInnerSegment(left, right)
     }
   
@@ -371,7 +370,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected final def stepForwardNextNextZipper[S <: ZippedTuple](
     zipper: Zipper[S], left: SegmentWithNext, right: SegmentWithNext
   ): S = {
-    val cmp = boundOrd.compare(left.upperBound, right.upperBound)
+    val cmp = domainOps.boundOrd.compare(left.upperBound, right.upperBound)
     // left:  ?---------------|
     // right: ?---------------|
     if (cmp == 0) zipper(left.moveNext, right.moveNext)
@@ -388,7 +387,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected final def stepBackwardPrevPrevZipper[S <: ZippedTuple](
     zipper: NextGenZipper[S], left: SegmentWithPrev, right: SegmentWithPrev
   ): S = {
-    val cmp = boundOrd.compare(left.lowerBound, right.lowerBound)
+    val cmp = domainOps.boundOrd.compare(left.lowerBound, right.lowerBound)
     // left:  |---------------?
     // right: |---------------?
     if (cmp == 0) zipper(left.movePrev, right.movePrev)
@@ -454,10 +453,12 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     /** @return `true` if subsegments of tuple correspond to input `left` and `right`.
      *           Which is `left` and which is `right` doesn't matter.
      */
-    def isRepresentedBy(left: GenSegment, right: GenSegment): Boolean =
-      if      (segmentUpperOrd.eqv(left, this.left))  segmentUpperOrd.eqv(right, this.right)
-      else if (segmentUpperOrd.eqv(right, this.left)) segmentUpperOrd.eqv(left, this.right)
-      else                                                   false
+    def isRepresentedBy(left: GenSegment, right: GenSegment): Boolean = {
+      val ord = domainOps.segmentUpperOrd
+      if      (ord.eqv(left, this.left))  ord.eqv(right, this.right)
+      else if (ord.eqv(right, this.left)) ord.eqv(left, this.right)
+      else                                false
+    }
 
     lazy val value: W = getSegmentValue(left, right)
   }
@@ -562,7 +563,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
 
     private lazy val back: Back = {
       val backTuple = searchBackZipper(ZippedTupleImpl, left, right)
-      if (segmentLowerOrd.compare(backTuple.left, backTuple.right) >= 0)
+      if (domainOps.segmentLowerOrd.compare(backTuple.left, backTuple.right) >= 0)
         Back(backTuple.right, backTuple.left)
       else
         Back(backTuple.left, backTuple.right)
