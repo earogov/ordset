@@ -209,60 +209,6 @@ object BuildAsc {
         ImmutableTreap.Empty
     }
 
-  def fromIterable[I, K, KK >: K, V](
-    iterable: IterableOnce[I],
-    keyMapper: I => K,
-    priorityMapper: I => Int,
-    valueMapper: I => V
-  )(
-    implicit
-    intOrder: Order[Int],
-    keyOrder: Order[KK]
-  ): ImmutableTreap[K, V] = {
-    var buffer = List.empty[MutableTreap.Node[K, V]]
-    val iterator = iterable.iterator
-    while (iterator.hasNext) {
-      val next = iterator.next()
-      buffer = appendToBuffer[K, KK, V](
-        buffer,
-        keyMapper(next),
-        priorityMapper(next),
-        valueMapper(next)
-      )(
-        intOrder,
-        keyOrder
-      )
-    }
-    finalizeBuffer(buffer)
-  }
-
-  def fromIterables[K, KK >: K, V](
-    keyIterable: IterableOnce[K],
-    priorityIterable: IterableOnce[Int],
-    valueIterable: IterableOnce[V]
-  )(
-    implicit
-    intOrder: Order[Int],
-    keyOrder: Order[KK]
-  ): ImmutableTreap[K, V] = {
-    var buffer = List.empty[MutableTreap.Node[K, V]]
-    val keyIterator = keyIterable.iterator
-    val priorityIterator = priorityIterable.iterator
-    val valueIterator = valueIterable.iterator
-    while (keyIterator.hasNext && priorityIterator.hasNext && valueIterator.hasNext) {
-      buffer = appendToBuffer[K, KK, V](
-        buffer,
-        keyIterator.next(),
-        priorityIterator.next(),
-        valueIterator.next()
-      )(
-        intOrder,
-        keyOrder
-      )
-    }
-    finalizeBuffer(buffer)
-  }
-
   /**
    * Converts mutable node to immutable one.
    *

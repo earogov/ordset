@@ -8,7 +8,6 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
 
   import ordset.Order
   import ordset.util.SortedArraySearch._
-  import test.syntax.ArraySyntax._
 
   import scala.collection.immutable.ArraySeq
   
@@ -20,7 +19,7 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
       val emp = ArraySeq.empty[Int]
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, emp, ord, 0, 0))
 
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, arr, ord, 0, 6))
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, arr, ord, -1, 2))
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, arr, ord, -2, -1))
@@ -28,25 +27,25 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
     }
 
     it("should throw IllegalArgument exception if start index is greater then end") {
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assertThrows[IllegalArgumentException](searchFun(6, arr, ord, 4, 3))
     }
 
     it("should return SortedArraySearch.NotFound if array contains no such element") {
-      val single = Array[Int](7).toImmutableArraySeq
+      val single = ArraySeq[Int](7)
       assert(searchFun(6, single, ord, 0, 0) == NotFound)
 
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assert(searchFun(0, arr, ord, 0, 5) == NotFound)
       assert(searchFun(6, arr, ord, 3, 3) == NotFound)
       assert(searchFun(6, arr, ord, 3, 5) == NotFound)
     }
 
     it("should return index of element otherwise") {
-      val single = Array[Int](5).toImmutableArraySeq
+      val single = ArraySeq[Int](5)
       assert(single(searchFun(6, single, ord, 0, 0)) == 5)
 
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assert(arr(searchFun(2, arr, ord, 0, 5)) == 1)
       assert(arr(searchFun(6, arr, ord, 0, 1)) == 3)
       assert(arr(searchFun(6, arr, ord, 1, 1)) == 3)
@@ -59,7 +58,7 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
       assert(arr(searchFun(12, arr, ord, 4, 5)) == 11)
       assert(arr(searchFun(12, arr, ord, 5, 5)) == 11)
 
-      val arr2 = Array[Int](0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100).toImmutableArraySeq
+      val arr2 = ArraySeq[Int](0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
       val end2 = arr2.length - 1
       assert(arr2(searchFun(0, arr2, ord, 0, end2)) == 0)
       assert(arr2(searchFun(5, arr2, ord, 0, end2)) == 0)
@@ -94,7 +93,7 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
       val emp = ArraySeq.empty[Int]
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, emp, ord, 0, 0))
 
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, arr, ord, 0, 6))
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, arr, ord, -1, 2))
       assertThrows[ArrayIndexOutOfBoundsException](searchFun(6, arr, ord, -2, -1))
@@ -102,25 +101,25 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
     }
 
     it("should throw IllegalArgument exception if start index is greater then end") {
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assertThrows[IllegalArgumentException](searchFun(6, arr, ord, 4, 3))
     }
 
     it("should return SortedArraySearch.NotFound if array contains no such element") {
-      val single = Array[Int](7).toImmutableArraySeq
+      val single = ArraySeq[Int](7)
       assert(searchFun(8, single, ord, 0, 0) == NotFound)
 
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assert(searchFun(12, arr, ord, 0, 5) == NotFound)
       assert(searchFun(8, arr, ord, 3, 3) == NotFound)
       assert(searchFun(12, arr, ord, 3, 5) == NotFound)
     }
 
     it("should return index of element otherwise") {
-      val single = Array[Int](5).toImmutableArraySeq
+      val single = ArraySeq[Int](5)
       assert(single(searchFun(4, single, ord, 0, 0)) == 5)
 
-      val arr = Array[Int](1, 3, 5, 7, 9, 11).toImmutableArraySeq
+      val arr = ArraySeq[Int](1, 3, 5, 7, 9, 11)
       assert(arr(searchFun(0, arr, ord, 0, 5)) == 1)
       assert(arr(searchFun(2, arr, ord, 0, 1)) == 3)
       assert(arr(searchFun(1, arr, ord, 1, 1)) == 3)
@@ -133,7 +132,7 @@ trait SortedArraySearchBehaviors{ this: AnyFunSpec =>
       assert(arr(searchFun(10, arr, ord, 4, 5)) == 11)
       assert(arr(searchFun(10, arr, ord, 5, 5)) == 11)
 
-      val arr2 = Array[Int](0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100).toImmutableArraySeq
+      val arr2 = ArraySeq[Int](0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
       val end2 = arr2.length - 1
       assert(arr2(searchFun(-1, arr2, ord, 0, end2)) == 0)
       assert(arr2(searchFun(0, arr2, ord, 0, end2)) == 0)

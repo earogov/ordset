@@ -7,6 +7,7 @@ import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.eval.NodeVisitContext
 import ordset.tree.treap.immutable.traverse.NodeSearch
 
+// TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
   protected final type TreapSegment = TreapSegmentBase with Segment[E, D, W]
@@ -184,6 +185,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     else TreapInnerSegment(contextExtract.tree, contextExtract.context)
   }
 
+  /**
+   * Base trait for non single segments. It has either previous segment or next.
+   */
   protected sealed trait TreapSegmentBase extends SegmentLike[E, D, W] {
 
     val node: ImmutableTreap.Node[Bound.Upper[E], W]
@@ -201,6 +205,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     override def moveTo(bound: Bound[E]): GenSegment = getSegment(bound)
   }
 
+  /**
+   * Segment which has next segment.
+   */
   protected sealed trait TreapSegmentWithNext extends TreapSegmentBase with SegmentWithNext {
 
     override def upperBound: Bound.Upper[E] = node.key
@@ -208,6 +215,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     override def moveNext: SegmentWithPrev = makeSegmentWithPrev(this)
   }
 
+  /**
+   * Segment which has previous segment.
+   */
   protected sealed trait TreapSegmentWithPrev extends TreapSegmentBase with SegmentWithPrev {
 
     override lazy val lowerBound: Bound.Lower[E] = {
@@ -228,16 +238,34 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     override def movePrev: SegmentWithNext = makeSegmentWithNext(this)
   }
 
+  /**
+   * Initial segment of sequence.
+   *
+   * @param node treap node defining segment upper bound.
+   * @param context path from treap root to current `node`.
+   */
   protected sealed case class TreapInitialSegment(
     override val node: ImmutableTreap.Node[Bound.Upper[E], W],
     override val context: NodeVisitContext[Bound.Upper[E], W]
   ) extends TreapSegmentWithNext with InitialSegment
 
+  /**
+   * Inner segment of sequence.
+   *
+   * @param node treap node defining segment upper bound.
+   * @param context path from treap root to current `node`.
+   */
   protected sealed case class TreapInnerSegment(
     override val node: ImmutableTreap.Node[Bound.Upper[E], W],
     override val context: NodeVisitContext[Bound.Upper[E], W]
   ) extends TreapSegmentWithNext with TreapSegmentWithPrev with InnerSegment
 
+  /**
+   * Terminal segment of sequence.
+   *
+   * @param node treap node defining segment <u>lower</u> bound.
+   * @param context path from treap root to current `node`.
+   */
   protected sealed case class TreapTerminalSegment(
     override val node: ImmutableTreap.Node[Bound.Upper[E], W],
     override val context: NodeVisitContext[Bound.Upper[E], W]

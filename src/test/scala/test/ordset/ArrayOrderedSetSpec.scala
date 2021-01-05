@@ -15,7 +15,6 @@ class ArrayOrderedSetSpec extends AnyFunSpec
   import scala.language.postfixOps
   import ordset.syntax.SetBuilderNotation._
   import ordset.syntax.BoundSyntax._
-  import test.syntax.ArraySyntax._
 
   type Dom = Domain[Int]
   type SegmentSeq = SetSegmentSeq[Int, Dom]
@@ -45,7 +44,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       "single bounded set",
     sequence =
       new ArrayOrderedSet[Int, Dom](
-        Array(0`](`).toImmutableArraySeq,
+        ArraySeq(0`](`),
         complement = true
       ),
     expected =
@@ -59,7 +58,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       "multi bounded set",
     sequence =
       new ArrayOrderedSet[Int, Dom](
-        Array(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+        ArraySeq(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
         complement = false
       ),
     expected =
@@ -77,7 +76,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       "set with degenerate interval",
     sequence =
       new ArrayOrderedSet[Int, Dom](
-        Array(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`).toImmutableArraySeq,
+        ArraySeq(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`),
         complement = false
       ),
     expected =

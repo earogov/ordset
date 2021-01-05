@@ -15,7 +15,6 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   import scala.language.postfixOps
   import ordset.syntax.SetBuilderNotation._
   import ordset.syntax.BoundSyntax._
-  import test.syntax.ArraySyntax._
 
   type Dom = Domain[Int]
   type SegmentSeq = SetSegmentSeq[Int, Dom]
@@ -53,7 +52,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         ZippedOrderedSet.intersection(
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = false
           ),
           // a
@@ -66,11 +65,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         ZippedOrderedSet.intersection(
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = false),
           // ~b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = true
           )
         )
@@ -111,7 +110,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         ZippedOrderedSet.union(
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = false),
           // a
           new ArrayOrderedSet[Int, Dom](
@@ -123,11 +122,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         ZippedOrderedSet.union(
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = false),
           // ~b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = true
           )
         )
@@ -158,13 +157,13 @@ class ZippedOrderedSetSpec extends AnyFunSpec
       ZippedOrderedSet.union(
         // b
         new ArrayOrderedSet[Int, Dom](
-          Array(0`](`).toImmutableArraySeq,
+          ArraySeq(0`](`),
           complement = true),
         // c
         ZippedOrderedSet.union(
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`).toImmutableArraySeq,
+            ArraySeq(0`](`),
             complement = true),
           // a
           new ArrayOrderedSet[Int, Dom](
@@ -208,19 +207,19 @@ class ZippedOrderedSetSpec extends AnyFunSpec
       ZippedOrderedSet.intersection(
         // c
         new ArrayOrderedSet[Int, Dom](
-          Array(7`)[`, 20`](`, 25`)[`, 35`](`).toImmutableArraySeq,
+          ArraySeq(7`)[`, 20`](`, 25`)[`, 35`](`),
           complement = true
         ),
         // d
         ZippedOrderedSet.union(
           // a
           new ArrayOrderedSet[Int, Dom](
-            Array(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`).toImmutableArraySeq,
+            ArraySeq(0`](`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
             complement = true
           ),
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(5`)[`, 12`](`, 20`)[`, 30`](`, 60`)[`).toImmutableArraySeq,
+            ArraySeq(5`)[`, 12`](`, 20`)[`, 30`](`, 60`)[`),
             complement = false
           )
         )
@@ -270,11 +269,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         ZippedOrderedSet.union(
           // b
           new ArrayOrderedSet[Int, Dom](
-            Array(0`)[`, 0`](`, 30`](`).toImmutableArraySeq,
+            ArraySeq(0`)[`, 0`](`, 30`](`),
             complement = false),
           // a
           new ArrayOrderedSet[Int, Dom](
-            Array(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`).toImmutableArraySeq,
+            ArraySeq(0`)[`, 0`](`, 10`)[`, 20`)[`, 20`](`, 30`)[`),
             complement = false)
         )
       ),
