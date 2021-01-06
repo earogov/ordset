@@ -9,7 +9,7 @@ import scala.collection.AbstractIterator
 /**
  * Segment is equivalent to interval with some value assigned to it.
  * The main property of segments is that they <u>cover ordered universal set without gaps and overlapping</u>.
- * So we can move from given segment to the next, previous, first or last of sequence.
+ * So we can move from given segment to the next, previous, first or last segment of sequence.
  *
  * <h1>Basic Types</h1>
  *

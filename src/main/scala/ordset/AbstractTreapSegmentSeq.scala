@@ -10,31 +10,20 @@ import ordset.tree.treap.immutable.traverse.NodeSearch
 // TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
-  protected final type TreapSegment = TreapSegmentBase with Segment[E, D, W]
-
-  /** @return true if sequence is empty i.e. contains no elements. */
+  // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = false
 
-  /** @return true if sequence is universal i.e. contains all elements of domain. */
   final override def isUniversal: Boolean = false
 
-  /** @return true if sequence contains `bound`. */
-  final override def contains(bound: Bound[E]): Boolean =
-    belongsToSet(getSegment(bound).value)
+  final override def contains(bound: Bound[E]): Boolean = belongsToSet(getSegment(bound).value)
 
-  /** @return true if sequence contains `element`. */
-  final override def contains(element: E): Boolean =
-    super.contains(element)
+  final override def contains(element: E): Boolean = super.contains(element)
 
-  /** @return first segment of sequence. */
-  final override lazy val firstSegment: TreapInitialSegment =
-    makeInitialSegment()
+  // Navigation --------------------------------------------------------------- //
+  final override lazy val firstSegment: TreapInitialSegment = makeInitialSegment()
 
-  /** @return last segment of sequence. */
-  final override lazy val lastSegment: TreapTerminalSegment =
-    makeTerminalSegment()
+  final override lazy val lastSegment: TreapTerminalSegment = makeTerminalSegment()
 
-  /** @return segment which contains specified `bound`. */
   final override def getSegment(bound: Bound[E]): TreapSegment = {
     // We need to find upper bound of segment which contains input `bound`.
     // But `NodeSearch.down` function can return either upper or lower bound
@@ -102,9 +91,21 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     }
   }
 
-  /** @return segment which contains specified `element`. */
   final override def getSegment(element: E): Segment[E, D, W] =
     super.getSegment(element)
+
+  // Transformation ----------------------------------------------------------- //
+  // TODO: implement sequence transformations
+  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+
+  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+
+  // Protected section -------------------------------------------------------- //
+  protected final type TreapSegment = TreapSegmentBase with Segment[E, D, W]
 
   /**
    * Treap of segments upper bounds.

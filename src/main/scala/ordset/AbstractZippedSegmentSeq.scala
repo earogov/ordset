@@ -5,50 +5,51 @@ import ordset.domain.{Domain, DomainOps}
 // TODO: class description.
 abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
-  protected final type Zipper[S <: ZippedTuple] = (GenSegment, GenSegment) => S
-  protected final type NextGenZipper[S <: ZippedTuple] = (SegmentWithNext, GenSegment) => S
-  protected final type ComposedZipped[S <: ZippedTuple] = (Zipper[S], GenSegment, GenSegment) => S
-
-  /** Equality typeclass for segments values. */
-  def valueEq: Eq[W]
-
-  /** @return true if sequence is empty i.e. contains no elements. */
-  override def isEmpty: Boolean =
+  // Inspection --------------------------------------------------------------- //
+  final override def isEmpty: Boolean =
     firstSegmentInstance.isSingle && !belongsToSet(firstSegmentInstance.value)
 
-  /** @return true if sequence is universal i.e. contains all elements of domain. */
-  override def isUniversal: Boolean =
+  final override def isUniversal: Boolean =
     firstSegmentInstance.isSingle && belongsToSet(firstSegmentInstance.value)
 
-  /** @return true if sequence contains `bound`. */
-  override def contains(bound: Bound[E]): Boolean =
+  final override def contains(bound: Bound[E]): Boolean =
     belongsToSet(getSegmentValue(left.getSegment(bound), right.getSegment(bound)))
 
-  /** @return true if sequence contains `element`. */
-  override def contains(element: E): Boolean =
-    super.contains(element)
+  final override def contains(element: E): Boolean = super.contains(element)
 
-  /** @return first segment of sequence. */
-  final override def firstSegment: Segment.First[E, D, W] =
-    firstSegmentInstance
+  // Navigation --------------------------------------------------------------- //
+  final override def firstSegment: Segment.First[E, D, W] = firstSegmentInstance
 
-  /** @return last segment of sequence. */
-  final override def lastSegment: Segment.Last[E, D, W] =
-    lastFrontZipper(left.lastSegment, right.lastSegment)
+  final override def lastSegment: Segment.Last[E, D, W] = lastFrontZipper(left.lastSegment, right.lastSegment)
 
-  /** @return segment which contains specified `bound`. */
   final override def getSegment(bound: Bound[E]): Segment[E, D, W] =
     searchFrontZipper(generalFrontZipper, left.getSegment(bound), right.getSegment(bound))
 
-  /** @return segment which contains specified `element`. */
-  final override def getSegment(element: E): Segment[E, D, W] =
-    super.getSegment(element)
+  final override def getSegment(element: E): Segment[E, D, W] = super.getSegment(element)
+
+  // Transformation ----------------------------------------------------------- //
+  // TODO: implement sequence transformations
+  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+
+  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+
+  // Protected section -------------------------------------------------------- //
+  protected final type Zipper[S <: ZippedTuple] = (GenSegment, GenSegment) => S
+  protected final type NextGenZipper[S <: ZippedTuple] = (SegmentWithNext, GenSegment) => S
+  protected final type ComposedZipped[S <: ZippedTuple] = (Zipper[S], GenSegment, GenSegment) => S
 
   /** Original sequence to which zipping is applied. */
   protected val left: SegmentSeq[E, D, W]
 
   /** Original sequence to which zipping is applied. */
   protected val right: SegmentSeq[E, D, W]
+
+  /** Equality typeclass for segments values. */
+  protected def valueEq: Eq[W]
 
   /**
    * Function combining values of `left` and `right` sequences and returning value of zipped sequence.
@@ -79,7 +80,6 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     else operator(left.value, right.value)
 
   /** @return true if segment `value` belongs to set. */
-  @inline
   protected def belongsToSet(value: W): Boolean
 
   /** First segment of sequence. It's either initial ot single. */

@@ -3,71 +3,58 @@ package ordset
 import ordset.domain.{Domain, DomainOps}
 
 /**
-  * Representation of ordered sequence of elements with identifier of type `E`.
-  * It's encoded by a sequence of segments which covers universal set without gaps and overlapping.
-  * `Boolean` value is assigned to each segment indicating whether it belongs to set:
-  * {{{
-  *
-  *   Segment 0       Segment 1       Segment 2   - segment index
-  * -------------|-----------------|------------
-  *    false            true           false      - belongs to set
-  * }}}
-  * These indicators always alternate, so we can keep only the first. It's called `complement`, because its flipping
-  * gives complement set. We assume that first segment (with zero index) doesn't belong to set when `complement` = 
-  * false and vice versa.
-  * Segments are defined by their upper bounds which are stored in `bounds` standard sequence:
-  * {{{
-  *
-  *   Segment 0       Segment 1       Segment 2   - segment index
-  *              0                 1              - bound index
-  * -------------|-----------------|------------
-  *    false            true           false      - belongs to set
-  * }}}
-  * Last segment has no upper bound.
-  * 
-  * Type `W` represents some value which is associated with each segment. 
-  * To define ordered set of elements we should consider this value as 'belongs to set' indicator (`W` = `Boolean`).
-  * To define ordered map to some type `V` (`E` -> `V`) we assume `W` = `Option[V]`. Where `None` corresponds to
-  * segments that don't belong to set.
-  */
+ * For common description of segment sequence see [[SegmentSeq]].
+ *
+ * Upper bounds of segments are stored in `bounds` standard collection:
+ * {{{
+ *
+ *   Segment 0       Segment 1       Segment 2   - segment index
+ *              0                 1              - bound index
+ * -------------|-----------------|------------
+ *       A               B              C        - value
+ * }}}
+ * Upper bound of last segment is not stored.
+ *
+ * `bounds` collection should provide fast access by index.
+ */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
-  /** @return true if sequence is empty i.e. contains no elements. */
-  final override def isEmpty: Boolean =
-    bounds.isEmpty && !complement
+  // Inspection --------------------------------------------------------------- //
+  final override def isEmpty: Boolean = bounds.isEmpty && !complement
 
-  /** @return true if sequence is universal i.e. contains all elements of domain. */
-  final override def isUniversal: Boolean =
-    bounds.isEmpty && complement
+  final override def isUniversal: Boolean = bounds.isEmpty && complement
 
-  /** @return true if sequence contains `bound`. */
-  final override def contains(bound: Bound[E]): Boolean =
-    belongsToSet(searchSegmentFromBegin(bound))
+  final override def contains(bound: Bound[E]): Boolean = belongsToSet(searchSegmentFromBegin(bound))
 
-  /** @return true if sequence contains `element`. */
-  final override def contains(element: E): Boolean =
-    super.contains(element)
+  final override def contains(element: E): Boolean = super.contains(element)
 
-  /** @return first segment of sequence. */
+  // Navigation --------------------------------------------------------------- //
   final override def firstSegment: Segment.First[E, D, W] =
     if (bounds.isEmpty) IndexedSingleSegment() else IndexedInitialSegment()
 
-  /** @return last segment of sequence. */
   final override def lastSegment: Segment.Last[E, D, W] =
     if (bounds.isEmpty) IndexedSingleSegment() else IndexedTerminalSegment()
 
-  /** @return segment which contains specified `bound`. */
   final override def getSegment(bound: Bound[E]): Segment[E, D, W] =
     makeSegment(searchSegmentFromBegin(bound))
 
-  /** @return segment which contains specified `element`. */
-  final override def getSegment(element: E): Segment[E, D, W] =
-    super.getSegment(element)
+  final override def getSegment(element: E): Segment[E, D, W] = super.getSegment(element)
 
+  // Transformation ----------------------------------------------------------- //
+  // TODO: implement sequence transformations
+  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+
+  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+
+  // Protected section -------------------------------------------------------- //
   /** Sequence of upper bounds of segments. */
   protected val bounds: collection.Seq[Bound.Upper[E]]
 
-  /** Complement indicator. When false first segment doesn't belong to set/map and vice versa.*/
+  /** Complement indicator. When false, first segment doesn't belong to set/map and vice versa.*/
   protected val complement: Boolean
 
   /**
@@ -84,7 +71,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
     *
     * @return index of segment containing `bound`.
     */
@@ -93,7 +80,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
     *
     * 2. `0 <= ind <= bounds.length (last index of segments)`.
     *
@@ -114,7 +101,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
     *
     * 2. `1 <= ind <= bounds.length (last index of segments)`.
     *
@@ -126,7 +113,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
     *
     * 2. `0 <= ind < bounds.length (last index of segments)`.
     *
@@ -157,7 +144,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
    *
     * 2. `1 <= ind <= bounds.length (last index of segments)`.
     *
@@ -169,7 +156,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   /**
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
     *
     * 2. `0 <= ind < bounds.length (last index of segments)`.
     *
@@ -183,7 +170,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * Preconditions:
     *
-    * 1. `bounds` is non empty;
+    * 1. `bounds` collection is non empty;
     *
     * 2. `0 <= ind <= bounds.length (last index of segments)`.
     */
@@ -235,7 +222,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * Preconditions:
     *
-    * 1. `bounds` is non empty.
+    * 1. `bounds` collection is non empty.
     */
   protected sealed case class IndexedInitialSegment() extends IndexedSegmentWithNext with InitialSegment {
 
@@ -247,7 +234,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * Preconditions:
     *
-    * 1. `bounds` is non empty.
+    * 1. `bounds` collection is non empty.
     */
   protected sealed case class IndexedTerminalSegment() extends IndexedSegmentWithPrev with TerminalSegment {
 
@@ -261,7 +248,8 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * 1. `1 <= ind < bounds.length (last index of segments)`.
     */
-  protected sealed case class IndexedInnerSegment(override val ind: Int
+  protected sealed case class IndexedInnerSegment(
+    override val ind: Int
   ) extends IndexedSegmentWithPrev with IndexedSegmentWithNext with InnerSegment
 
   /**
@@ -269,7 +257,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
    *
    * Preconditions:
    *
-   * 1. `bounds` is empty.
+   * 1. `bounds` collection is empty.
    */
   protected sealed case class IndexedSingleSegment() extends SingleSegment {
 

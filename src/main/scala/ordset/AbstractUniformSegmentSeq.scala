@@ -5,29 +5,34 @@ import ordset.domain.{Domain, DomainOps}
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
+  // Navigation --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !belongsToSet(value)
 
-  /** @return true if sequence is universal i.e. contains all elements of domain. */
   final override def isUniversal: Boolean = belongsToSet(value)
 
-  /** @return true if sequence contains `bound`. */
   final override def contains(bound: Bound[E]): Boolean = belongsToSet(value)
 
-  /** @return true if sequence contains `element`. */
   final override def contains(element: E): Boolean = belongsToSet(value)
 
-  /** @return first segment of sequence. */
+  // Navigation --------------------------------------------------------------- //
   final override def firstSegment: Segment.First[E, D, W] = UniformSingleSegment
 
-  /** @return last segment of sequence. */
   final override def lastSegment: Segment.Last[E, D, W] = UniformSingleSegment
 
-  /** @return segment which contains specified `bound`. */
   final override def getSegment(bound: Bound[E]): Segment[E, D, W] = UniformSingleSegment
 
-  /** @return segment which contains specified `element`. */
   final override def getSegment(element: E): Segment[E, D, W] = UniformSingleSegment
 
+  // Transformation ----------------------------------------------------------- //
+  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = this
+
+  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = this
+
+  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = (this, this)
+
+  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
+
+  // Protected section -------------------------------------------------------- //
   /** Value of single segment. */
   protected val value: W
 
