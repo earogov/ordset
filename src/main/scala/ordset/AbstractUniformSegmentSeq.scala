@@ -15,20 +15,21 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   final override def contains(element: E): Boolean = belongsToSet(value)
 
   // Navigation --------------------------------------------------------------- //
-  final override def firstSegment: Segment.First[E, D, W] = UniformSingleSegment
+  final override def firstSegment: UniformSingleSegment.type = UniformSingleSegment
 
-  final override def lastSegment: Segment.Last[E, D, W] = UniformSingleSegment
+  final override def lastSegment: UniformSingleSegment.type = UniformSingleSegment
 
-  final override def getSegment(bound: Bound[E]): Segment[E, D, W] = UniformSingleSegment
+  final override def getSegment(bound: Bound[E]): UniformSingleSegment.type = UniformSingleSegment
 
-  final override def getSegment(element: E): Segment[E, D, W] = UniformSingleSegment
+  final override def getSegment(element: E): UniformSingleSegment.type = UniformSingleSegment
 
   // Transformation ----------------------------------------------------------- //
-  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = this
+  final override def droppedBelow(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, W] = this
 
-  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = this
+  final override def droppedAbove(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, W] = this
 
-  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = (this, this)
+  final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
+    (this, this)
 
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
 

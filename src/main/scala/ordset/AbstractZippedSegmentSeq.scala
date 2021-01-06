@@ -18,14 +18,17 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   final override def contains(element: E): Boolean = super.contains(element)
 
   // Navigation --------------------------------------------------------------- //
-  final override def firstSegment: Segment.First[E, D, W] = firstSegmentInstance
+  final override def firstSegment: ZippedSegmentBase with FirstSegment =
+    firstSegmentInstance
 
-  final override def lastSegment: Segment.Last[E, D, W] = lastFrontZipper(left.lastSegment, right.lastSegment)
+  final override def lastSegment: ZippedSegmentBase with LastSegment =
+    lastFrontZipper(left.lastSegment, right.lastSegment)
 
-  final override def getSegment(bound: Bound[E]): Segment[E, D, W] =
+  final override def getSegment(bound: Bound[E]): ZippedSegmentBase with GenSegment =
     searchFrontZipper(generalFrontZipper, left.getSegment(bound), right.getSegment(bound))
 
-  final override def getSegment(element: E): Segment[E, D, W] = super.getSegment(element)
+  final override def getSegment(element: E): ZippedSegmentBase with GenSegment =
+    getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   // TODO: implement sequence transformations
@@ -33,7 +36,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
 
   final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
 
-  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
 
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 

@@ -27,7 +27,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       description =
         Description.emptySet,
       sequence =
-        new ArrayOrderedSet[Int, Dom](ArraySeq.empty, complement = false),
+        ArrayOrderedSet[Int, Dom](ArraySeq.empty, complement = false),
       expected =
         (false forAll x) :: Nil
     )
@@ -36,7 +36,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       description =
         Description.universalSet,
       sequence =
-        new ArrayOrderedSet[Int, Dom](ArraySeq.empty, complement = true),
+        ArrayOrderedSet[Int, Dom](ArraySeq.empty, complement = true),
       expected =
         (true forAll x) :: Nil
     )
@@ -45,7 +45,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       description =
         Description.singleBoundedSet,
       sequence =
-        new ArrayOrderedSet[Int, Dom](
+        ArrayOrderedSet[Int, Dom](
           ArraySeq(0 `](`),
           complement = true
         ),
@@ -59,7 +59,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       description =
         Description.multiBoundedSet,
       sequence =
-        new ArrayOrderedSet[Int, Dom](
+        ArrayOrderedSet[Int, Dom](
           ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
           complement = false
         ),
@@ -77,7 +77,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
       description =
         Description.degenerateIntervalSet,
       sequence =
-        new ArrayOrderedSet[Int, Dom](
+        ArrayOrderedSet[Int, Dom](
           ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`),
           complement = false
         ),

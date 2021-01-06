@@ -3,16 +3,19 @@ package ordset
 import ordset.domain.{Domain, DomainOps}
 
 class UniformOrderedSet[E, D <: Domain[E]](
-  override final val value: Boolean
+  final override val value: Boolean
 )(
-  implicit override final val domainOps: DomainOps[E, D]
+  implicit final override val domainOps: DomainOps[E, D]
 ) extends AbstractUniformSegmentSeq[E, D, Boolean] {
 
   @inline
-  override protected final def belongsToSet(value: Boolean): Boolean = value
+  protected final override def belongsToSet(value: Boolean): Boolean = value
 }
 
 object UniformOrderedSet {
+
+  def apply[E, D <: Domain[E]](value: Boolean)(implicit domainOps: DomainOps[E, D]): UniformOrderedSet[E, D] =
+    new UniformOrderedSet[E, D](value)(domainOps)
 
   def empty[E, D <: Domain[E]](implicit domainOps: DomainOps[E, D]): UniformOrderedSet[E, D] =
     new UniformOrderedSet[E, D](false)(domainOps)

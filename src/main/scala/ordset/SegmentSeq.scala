@@ -132,7 +132,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   /**
    * @return tuple of sequences: ([[droppedAbove]], [[droppedBelow]]).
    */
-  def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
+  def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
 
   /**
    * Returns sequence containing:

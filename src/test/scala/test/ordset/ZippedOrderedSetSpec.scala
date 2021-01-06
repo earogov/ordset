@@ -53,12 +53,12 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         ZippedOrderedSet.union(
           ZippedOrderedSet.intersection(
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = false
             ),
             // a
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq.empty,
               complement = false
             )
@@ -66,11 +66,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
           // f
           ZippedOrderedSet.intersection(
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = false),
             // ~b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = true
             )
@@ -111,11 +111,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
           // c
           ZippedOrderedSet.union(
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = false),
             // a
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq.empty,
               complement = true
             )
@@ -123,11 +123,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
           // f
           ZippedOrderedSet.union(
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = false),
             // ~b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = true
             )
@@ -158,17 +158,17 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         // X--------------------------------------------------------------------------------------------------------X
         ZippedOrderedSet.union(
           // b
-          new ArrayOrderedSet[Int, Dom](
+          ArrayOrderedSet[Int, Dom](
             ArraySeq(0 `](`),
             complement = true),
           // c
           ZippedOrderedSet.union(
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`),
               complement = true),
             // a
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq.empty,
               complement = false)
           )
@@ -208,19 +208,19 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
         ZippedOrderedSet.intersection(
           // c
-          new ArrayOrderedSet[Int, Dom](
+          ArrayOrderedSet[Int, Dom](
             ArraySeq(7 `)[`, 20 `](`, 25 `)[`, 35 `](`),
             complement = true
           ),
           // d
           ZippedOrderedSet.union(
             // a
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
               complement = true
             ),
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(5 `)[`, 12 `](`, 20 `)[`, 30 `](`, 60 `)[`),
               complement = false
             )
@@ -264,17 +264,17 @@ class ZippedOrderedSetSpec extends AnyFunSpec
         // X--------0)|(0--------------10)[10--------------20)|(20---------------30)[30-----------------------------X
         ZippedOrderedSet.intersection(
           // d
-          new ArrayOrderedSet[Int, Dom](
+          ArrayOrderedSet[Int, Dom](
             ArraySeq.empty,
             complement = true),
           // c
           ZippedOrderedSet.union(
             // b
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `)[`, 0 `](`, 30 `](`),
               complement = false),
             // a
-            new ArrayOrderedSet[Int, Dom](
+            ArrayOrderedSet[Int, Dom](
               ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`),
               complement = false)
           )

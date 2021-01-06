@@ -4,13 +4,27 @@ import ordset.domain.{Domain, DomainOps}
 
 import scala.collection.immutable.ArraySeq
 
-sealed class ArrayOrderedSet[E, D <: Domain[E]] (
-  protected final val bounds: ArraySeq[Bound.Upper[E]],
-  protected final val complement: Boolean
+class ArrayOrderedSet[E, D <: Domain[E]] protected (
+  final val bounds: ArraySeq[Bound.Upper[E]],
+  final val complement: Boolean
 )(
-  implicit override final val domainOps: DomainOps[E, D]
-) extends ArraySegmentSeq[E, D, Boolean] {
+  implicit final override val domainOps: DomainOps[E, D]
+) extends AbstractArraySegmentSeq[E, D, Boolean] {
+
+  validate()
 
   @inline
-  override protected final def getSegmentValue(ind: Int): Boolean = belongsToSet(ind)
+  protected final override def getSegmentValue(ind: Int): Boolean = belongsToSet(ind)
+}
+
+object ArrayOrderedSet {
+
+  def apply[E, D <: Domain[E]](
+    bounds: ArraySeq[Bound.Upper[E]],
+    complement: Boolean
+  )(
+    implicit domainOps: DomainOps[E, D]
+  ): OrderedSet[E, D] =
+    if (bounds.isEmpty) UniformOrderedSet(complement)(domainOps)
+    else new ArrayOrderedSet[E, D](bounds, complement)(domainOps)
 }

@@ -7,14 +7,14 @@ import ordset.tree.treap.immutable.fold.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
 
 class TreapOrderedSet[E, D <: Domain[E]](
-  override final val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
-  override final val lastValue: Boolean
+  final override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
+  final override val lastValue: Boolean
 )(
-  implicit override final val domainOps: DomainOps[E, D]
+  implicit final override val domainOps: DomainOps[E, D]
 ) extends AbstractTreapSegmentSeq[E, D, Boolean] {
 
   @inline
-  override protected final def belongsToSet(value: Boolean): Boolean = value
+  protected final override def belongsToSet(value: Boolean): Boolean = value
 }
 
 object TreapOrderedSet {
@@ -59,10 +59,8 @@ object TreapOrderedSet {
     }
     val root = BuildAsc.finalizeBuffer(buffer)
     root match {
-      case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
-        new TreapOrderedSet(r, value)(domainOps)
-      case _ =>
-        new UniformOrderedSet(value)(domainOps)
+      case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => new TreapOrderedSet(r, value)(domainOps)
+      case _ => UniformOrderedSet(value)(domainOps)
     }
   }
 }
