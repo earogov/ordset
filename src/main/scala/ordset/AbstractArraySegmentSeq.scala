@@ -2,12 +2,22 @@ package ordset
 
 import ordset.domain.Domain
 
-abstract class ArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegmentSeq[E, D, W] {
+/**
+ * For common description of segment sequence see [[SegmentSeq]].
+ *
+ * <u>Class is not intended to model empty and universal sets.</u>
+ * For such cases [[AbstractUniformSegmentSeq]] can be used.
+ *
+ * Upper bounds of segments are stored in `bounds` array based collection.
+ *
+ * <tr>`bounds` collection MUST be non empty. </tr>
+ */
+abstract class AbstractArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegmentSeq[E, D, W] {
   import ordset.util.SortedArraySearch._
 
-  override protected val bounds: collection.immutable.ArraySeq[Bound.Upper[E]]
+  protected override val bounds: collection.immutable.ArraySeq[Bound.Upper[E]]
 
-  override final def searchSegmentFromBegin(bound: Bound[E]): Int = {
+  protected override  def searchSegmentFromBegin(bound: Bound[E]): Int = {
     val res = binSearchClosestNotLess[Bound[E]](
       bound, bounds
     )(
@@ -21,7 +31,7 @@ abstract class ArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegm
     else res
   }
 
-  override final def searchSegmentFromIndex(ind: Int, bound: Bound[E]): Int = {
+  protected override def searchSegmentFromIndex(ind: Int, bound: Bound[E]): Int = {
     val limitedInd = if (ind == lastSegmentIndex) lastBoundIndex else ind
     // Search function is optimized for the case of sequential traverse through segments with some jumps forward
     // to skip some of them. At first it uses a variation of binary search to look forward from the current index.
@@ -34,7 +44,7 @@ abstract class ArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegm
     )
     // Target element is greater then all elements in array.
     if (res == NotFound) lastSegmentIndex
-    // We'v got first index. It's possible that there is better solution (i.e. closer to target `bound`) backwards.
+    // We have got first index. It's possible that there is better solution (i.e. closer to target `bound`) backwards.
     else if (res == limitedInd) binSearchClosestNotLess[Bound[E]](
       bound, bounds
     )(

@@ -100,7 +100,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
 
   final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
 
-  final override def slice(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
 
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
