@@ -23,8 +23,6 @@ import ordset.domain.{Domain, DomainOps}
  */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
-  //if (bounds.isEmpty) throw new AssertionError("Bounds collection must be non empty.")
-
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = bounds.isEmpty && !complement
 
@@ -44,16 +42,6 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
   final override def getSegment(element: E): IndexedSegmentBase with GenSegment =
     getSegment(Bound.Upper.inclusive(element))
-
-  // Transformation ----------------------------------------------------------- //
-  // TODO: implement sequence transformations
-  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ???
-
-  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
-
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
-
-  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
   // Protected section -------------------------------------------------------- //
   /**

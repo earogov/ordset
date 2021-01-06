@@ -15,6 +15,23 @@ import ordset.domain.Domain
 abstract class AbstractArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegmentSeq[E, D, W] {
   import ordset.util.SortedArraySearch._
 
+  // Transformation ----------------------------------------------------------- //
+  // TODO: implement sequence transformations
+  final override def droppedBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ??? /// {
+//    // start
+//    val startInd = searchSegmentFromBegin(bound)
+//    if (startInd)
+//    val newBoundsArray = bounds.copyToArray()//
+//    // getSegment(bound)
+//  }
+
+  final override def droppedAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+
+  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+
+  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+
+  // Protected section -------------------------------------------------------- //
   protected override val bounds: collection.immutable.ArraySeq[Bound.Upper[E]]
 
   protected override  def searchSegmentFromBegin(bound: Bound[E]): Int = {

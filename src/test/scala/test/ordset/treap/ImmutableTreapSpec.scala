@@ -12,6 +12,7 @@ import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.eval.NodeVisitContext
 import org.scalatest.funspec.AnyFunSpec
 
+// TODO implement unit tests for treap.
 class ImmutableTreapSpec extends AnyFunSpec {
 
   import instances.Int._
@@ -43,125 +44,86 @@ class ImmutableTreapSpec extends AnyFunSpec {
     val nodeC = ImmutableTreap.NodeWithRightOnly[Int, String](leafG, 7, 6, "C")
     val nodeA = ImmutableTreap.NodeWithLeftRight[Int, String](nodeB, nodeC, 6, 9, "A")
 
-    println("")
-    println("DepthFirst traverse with NodeVisitStack context")
-
-    Fold.before[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String], Unit](
-      nodeA,
-      new TreeVisitStack.Context(BinaryTreeVisit.None, Nil),
-      ()
-    )(
-      NodeDepthFirst.standard(
-        NodeDepthFirst.leftFirstNavigation,
-        TreeVisitStack.function()
-      ),
-      CallTrace.toConsole
-    )
-
-//    Fold.before(
+//    println("")
+//    println("DepthFirst traverse with NodeVisitStack context")
+//
+//    Fold.before[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String], Unit](
 //      nodeA,
-//      new NodeIntervalStack.Context[Int, String](ops.interval.universal, TraverseVisit.None, Nil),
+//      new TreeVisitStack.Context(BinaryTreeVisit.None, Nil),
 //      ()
 //    )(
-//      DepthFirst.withEmpty(
-//        DepthFirst.leftFirstNavigation,
-//        NodeIntervalStack.of(nodeA)
+//      NodeDepthFirst.standard(
+//        NodeDepthFirst.leftFirstNavigation,
+//        TreeVisitStack.function()
 //      ),
-//      CallTrace.toConsole[Int, String, NodeIntervalStack.Context[Int, String]](
-//        Treap.treapShow,
-//        NodeIntervalStack.contextShow()
-//      )
-//    )
-
-    println("")
-    println("KeySearch.down traverse with NodeVisitStack context")
-
-//    Fold.before(
-//      treap,
-//      new NodeVisitStack.Context[Int, Dom](TraverseVisit.None, Nil),
-//      ()
-//    )(
-//      KeySearch.evalContext(4, NodeVisitStack()),
 //      CallTrace.toConsole
 //    )
-
-//    Fold.before(
-//      nodeA,
-//      new NodeIntervalStack.Context[Int, String](ops.interval.universal, TraverseVisit.None, Nil),
-//      ()
-//    )(
-//      KeySearch.down(4, NodeIntervalStack()),
-//      CallTrace.toConsole[Int, String, NodeIntervalStack.Context[Int, String]](
-//        Treap.treapShow,
-//        NodeIntervalStack.contextShow()
+//
+//    println("")
+//    println("KeySearch.nextKey traverse with NodeVisitStack context")
+//
+//    var contextExtract =
+//      ContextExtract.foldBefore[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String]](
+//        nodeA,
+//        TreeVisitStack.contextOps.getEmptyContext
+//      )(
+//        NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigation, TreeVisitStack.function())
 //      )
+//
+//    val toConsole = CallTrace.toConsole[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String]]
+//    var context = contextExtract.context
+//    var tree = contextExtract.tree
+//
+//    toConsole(tree, context, ())
+//    for (i <- 1 to 7) {
+//      val currentExtract = ContextExtract.foldAfter(
+//        tree,
+//        context
+//      )(
+//        NodeSearch.nextKey(TreeVisitStack.function())
+//      )
+//      context = currentExtract.context
+//      tree = currentExtract.tree
+//      toConsole(tree, context, ())
+//    }
+//
+//    println("")
+//    println("KeySearch.prevKey traverse with NodeVisitStack context")
+//
+//    toConsole(tree, context, ())
+//    for (i <- 1 to 7) {
+//      val currentExtract = ContextExtract.foldAfter(
+//        tree,
+//        context
+//      )(
+//        NodeSearch.prevKey(TreeVisitStack.function())
+//      )
+//      context = currentExtract.context
+//      tree = currentExtract.tree
+//      toConsole(tree, context, ())
+//    }
+//
+//    println("")
+//    println("TreeSlice")
+//
+//    val split = TreeSplit.foldNode[Int, Int, String](
+//      nodeA,
+//      4,
+//      SplitOutput.Mutable.Output.initial
 //    )
-
-    println("")
-    println("KeySearch.nextKey traverse with NodeVisitStack context")
-
-    var contextExtract =
-      ContextExtract.foldBefore[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String]](
-        nodeA,
-        TreeVisitStack.contextOps.getEmptyContext
-      )(
-        NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigation, TreeVisitStack.function())
-      )
-
-    val toConsole = CallTrace.toConsole[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String]]
-    var context = contextExtract.context
-    var tree = contextExtract.tree
-
-    toConsole(tree, context, ())
-    for (i <- 1 to 7) {
-      val currentExtract = ContextExtract.foldAfter(
-        tree,
-        context
-      )(
-        NodeSearch.nextKey(TreeVisitStack.function())
-      )
-      context = currentExtract.context
-      tree = currentExtract.tree
-      toConsole(tree, context, ())
-    }
-
-    println("")
-    println("KeySearch.prevKey traverse with NodeVisitStack context")
-
-    toConsole(tree, context, ())
-    for (i <- 1 to 7) {
-      val currentExtract = ContextExtract.foldAfter(
-        tree,
-        context
-      )(
-        NodeSearch.prevKey(TreeVisitStack.function())
-      )
-      context = currentExtract.context
-      tree = currentExtract.tree
-      toConsole(tree, context, ())
-    }
-
-    println("")
-    println("TreeSlice")
-
-    val split = TreeSplit.foldNode[Int, Int, String](
-      nodeA,
-      4,
-      SplitOutput.Mutable.Output.initial
-    )
-
-    println(split)
-
-    println("")
-    println("MergeSlice")
-
-    val mergedTree = TreeMerge.foldTreap[Int, Int, String](
-      split.leftTree,
-      split.rightTree
-    )(
-      Treap.nodePriorityOrder
-    )
-
-    println(mergedTree)
+//
+//    println(split)
+//
+//    println("")
+//    println("MergeSlice")
+//
+//    val mergedTree = TreeMerge.foldTreap[Int, Int, String](
+//      split.leftTree,
+//      split.rightTree
+//    )(
+//      Treap.nodePriorityOrder
+//    )
+//
+//    println(mergedTree)
   }
 }
