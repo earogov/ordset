@@ -35,7 +35,7 @@ object Treap {
   }
 
   def nodePriorityOrder[K, V](implicit keyOrder: Order[K]): NodePriorityOrder[K, V] =
-    new NodePriorityOrder(ordset.instances.Int.intOrder, keyOrder)
+    new NodePriorityOrder(ordset.core.instances.Int.intOrder, keyOrder)
 
   def nodePriorityCompare[K, KK >: K, V](
     priority1: Int,

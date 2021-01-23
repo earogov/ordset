@@ -1,7 +1,7 @@
 package test.ordset.treap
 
-import ordset.domain.{Domain, DomainOps}
-import ordset.instances
+import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.instances
 import ordset.tree.core.eval.TreeVisitStack
 import ordset.tree.core.fold.{CallTrace, ContextExtract}
 import ordset.tree.treap.immutable.fold.{SplitOutput, TreeMerge, TreeSplit}
@@ -15,7 +15,7 @@ import org.scalatest.funspec.AnyFunSpec
 // TODO implement unit tests for treap.
 class ImmutableTreapSpec extends AnyFunSpec {
 
-  import instances.Int._
+  import ordset.core.instances.Int._
 
   type Dom = Domain[Int]
 

@@ -1,134 +1,91 @@
 package test.ordset.util.label
 
+import ordset.{Hash, Order}
 import ordset.util.label.Label
 import org.scalatest.funspec.AnyFunSpec
 
+import scala.collection.immutable.Queue
+
 class LabelSpec extends AnyFunSpec {
 
-  it("should support unordered composition") {
-    assert(Label("A") <+> Label("B") <+> Label("C") == Label("A") <+> Label("B") <+> Label("C"))
-    assert(Label("A") <+> Label("B") <+> Label("C") == Label("B") <+> Label("A") <+> Label("C"))
-    assert(Label("A") <+> Label("B") <+> Label("C") == Label("B") <+> Label("C") <+> Label("A"))
-    assert(Label("A") <+> Label("B") <+> Label("C") == Label("A") <+> Label("C") <+> Label("B"))
-    assert(Label("A") <+> Label("B") <+> Label("C") == Label("C") <+> Label("A") <+> Label("B"))
-    assert(Label("A") <+> Label("B") <+> Label("C") == Label("C") <+> Label("B") <+> Label("A"))
+  it("should have consistent equality checks") {
+    val order = Label.defaultOrder
+    val hash = Label.defaultHash
+    val a = Label("A")
+    val a2 = Label("A")
+    val b = Label("B")
 
-    assert(Label("A") <+> Label("A") == Label("A"))
-    assert((Label("A") <+> Label("A")) <+> Label("A") == Label("A"))
+    testObjectEquality(a, a2, b)
+    testHashTypeclass(a, a2, b, hash)
+    testObjectComparison(a, a2, b)
+    testOrderTypeclass(a, a2, b, order)
   }
 
-  it("should support ordered composition") {
-    assert(Label("A") +> Label("B") +> Label("C") == Label("A") +> Label("B") +> Label("C"))
-    assert(Label("A") +> Label("B") +> Label("C") != Label("B") +> Label("A") +> Label("C"))
-    assert(Label("A") +> Label("B") +> Label("C") != Label("B") +> Label("C") +> Label("A"))
-    assert(Label("A") +> Label("B") +> Label("C") != Label("A") +> Label("C") +> Label("B"))
-    assert(Label("A") +> Label("B") +> Label("C") != Label("C") +> Label("A") +> Label("B"))
-    assert(Label("A") +> Label("B") +> Label("C") != Label("C") +> Label("B") +> Label("A"))
+  it("should have consistent equality checks for set") {
+    val hash = Label.defaultSetHash
 
-    assert(Label("A") +> Label("A") != Label("A"))
-    assert((Label("A") +> Label("A")) +> Label("A") != Label("A"))
+    val abc = Set(Label("A"), Label("B"), Label("C"))
+    val abc2 = Set(Label("C"), Label("B"), Label("A"))
+    val ab = Set(Label("A"), Label("B"))
+
+    testObjectEquality(abc, abc2, ab)
+    testHashTypeclass(abc, abc2, ab, hash)
   }
 
-  it("should support mixed composition") {
-    assert((Label("A") +> Label("B")) <+> Label("C") == (Label("A") +> Label("B")) <+> Label("C"))
-    assert((Label("A") +> Label("B")) <+> Label("C") == Label("C") <+> (Label("A") +> Label("B")))
-    assert((Label("A") +> Label("B")) <+> Label("C") != (Label("B") +> Label("A")) <+> Label("C"))
+  it("should have consistent equality checks for queue") {
+    val order = Label.defaultQueueOrder
+    val hash = Label.defaultQueueHash
 
-    assert((Label("A") <+> Label("B")) +> Label("C") == (Label("A") <+> Label("B")) +> Label("C"))
-    assert((Label("A") <+> Label("B")) +> Label("C") == (Label("B") <+> Label("A")) +> Label("C"))
-    assert((Label("A") <+> Label("B")) +> Label("C") != Label("C") +> (Label("A") <+> Label("B")))
+    val abc = Queue(Label("A"), Label("B"), Label("C"))
+    val abc2 = Queue(Label("A"), Label("B"), Label("C"))
+    val ba = Queue(Label("B"), Label("A"))
+
+    testObjectEquality(abc, abc2, ba)
+    testHashTypeclass(abc, abc2, ba, hash)
+    testOrderTypeclass(abc, abc2, ba, order)
   }
 
-  it("label set should not be equal to seq") {
-    assert(Label("A") <+> Label("B") != Label("A") +> Label("B"))
-    assert(Label("A") <+> Label("B") <+> Label("C") != Label("A") +> Label("B") +> Label("C"))
+  private def testObjectEquality[T](x: T, same: T, notSame: T): Unit = {
+    assert(x == x)
+    assert(x == same)
+    assert(same == x)
+    assert(x != notSame)
+    assert(notSame != x)
+
+    assert(x.hashCode() == x.hashCode())
+    assert(x.hashCode() == same.hashCode())
   }
 
-  it("empty label should be a zero element for all composition operations") {
-    val unitLabel = Label("A")
-    val labelSet = Label("A") <+> Label("B")
-    val labelSeq = Label("A") +> Label("B")
+  private def testHashTypeclass[T](x: T, same: T, notSame: T, hash: Hash[T]): Unit = {
+    assert(hash.eqv(x, x))
+    assert(hash.eqv(x, same))
+    assert(hash.eqv(same, x))
+    assert(!hash.eqv(x, notSame))
+    assert(!hash.eqv(notSame, x))
 
-    assert(Label.empty <+> Label.empty == Label.empty)
-
-    assert(Label.empty <+> unitLabel == unitLabel)
-    assert(unitLabel <+> Label.empty == unitLabel)
-
-    assert(Label.empty <+> labelSet == labelSet)
-    assert(labelSet <+> Label.empty == labelSet)
-
-    assert(Label.empty <+> labelSeq == labelSeq)
-    assert(labelSeq <+> Label.empty == labelSeq)
-
-    assert(Label.empty +> Label.empty == Label.empty)
-
-    assert(Label.empty +> unitLabel == unitLabel)
-    assert(unitLabel +> Label.empty == unitLabel)
-
-    assert(Label.empty +> labelSet == labelSet)
-    assert(labelSet +> Label.empty == labelSet)
-
-    assert(Label.empty +> labelSeq == labelSeq)
-    assert(labelSeq +> Label.empty == labelSeq)
+    assert(hash.hash(x) == hash.hash(x))
+    assert(hash.hash(x) == hash.hash(same))
   }
 
-  it("should return tokens list") {
-    import ordset.util.label.{Token => T}
-
-    // empty
-    assert(Label.empty.tokens == LazyList())
-
-    // unit
-    assert(Label("A").tokens == LazyList(T("A")))
-
-    // empty composition
-    assert((Label.empty <+> Label("A") <+> Label.empty).tokens == LazyList(T("A")))
-    assert((Label.empty +> Label("A") +> Label.empty).tokens == LazyList(T("A")))
-
-    // self composition
-    assert((Label("A") <+> Label("A")).tokens == LazyList(T("A")))
-    assert((Label("A") +> Label("A")).tokens == LazyList(T.SeqOpen, T("A"), T.SeqSeparator, T("A"), T.SeqClose))
-
-    // unordered composition
-    assert((Label("A") <+> Label("B") <+> Label("C")).tokens ==
-      LazyList(T.SetOpen, T("A"), T.SetSeparator, T("B"), T.SetSeparator, T("C"), T.SetClose)
-    )
-
-    // ordered composition
-    assert((Label("A") +> Label("B") +> Label("C")).tokens ==
-      LazyList(T.SeqOpen, T("A"), T.SeqSeparator, T("B"), T.SeqSeparator, T("C"), T.SeqClose)
-    )
-
-    // mixed composition
-    assert(((Label("A") <+> Label("B")) +> Label("C")).tokens ==
-      LazyList(T.SeqOpen, T.SetOpen, T("A"), T.SetSeparator, T("B"), T.SetClose, T.SeqSeparator, T("C"), T.SeqClose)
-    )
-    assert(((Label("A") +> Label("B")) <+> Label("C")).tokens ==
-      LazyList(T.SetOpen, T.SeqOpen, T("A"), T.SeqSeparator, T("B"), T.SeqClose, T.SetSeparator, T("C"), T.SetClose)
-    )
+  private def testObjectComparison[T <: Comparable[T]](x: T, same: T, greater: T): Unit = {
+    assert(x.compareTo(x) == 0)
+    assert(x.compareTo(same) == 0)
+    assert(same.compareTo(x) == 0)
+    assert(x.compareTo(greater) < 0)
+    assert(greater.compareTo(x) > 0)
   }
 
-  it("should be converted to string in label builder style") {
-    val show = Label.labelBuilderShow
-    assert(show.show(Label.empty) == "")
-    assert(show.show(Label("A")) == "A")
-    assert(show.show(Label("A") <+> Label("B")) == "(A <+> B)")
-    assert(show.show(Label("A") +> Label("B")) == "(A +> B)")
-    assert(show.show((Label("C") <+> Label("B")) <+> Label("A")) == "(A <+> B <+> C)")
-    assert(show.show((Label("C") +> Label("B")) +> Label("A")) == "(C +> B +> A)")
-    assert(show.show((Label("C") <+> Label("B")) +> Label("A")) == "((B <+> C) +> A)")
-    assert(show.show((Label("C") +> Label("B")) <+> Label("A")) == "((C +> B) <+> A)")
-  }
+  private def testOrderTypeclass[T](x: T, same: T, greater: T, order: Order[T]): Unit = {
+    assert(order.eqv(x, x))
+    assert(order.eqv(x, same))
+    assert(order.eqv(same, x))
+    assert(!order.eqv(x, greater))
+    assert(!order.eqv(greater, x))
 
-  it("should be converted to string in set builder style") {
-    val show = Label.setBuilderShow
-    assert(show.show(Label.empty) == "")
-    assert(show.show(Label("A")) == "A")
-    assert(show.show(Label("A") <+> Label("B")) == "{A, B}")
-    assert(show.show(Label("A") +> Label("B")) == "(A, B)")
-    assert(show.show((Label("C") <+> Label("B")) <+> Label("A")) == "{A, B, C}")
-    assert(show.show((Label("C") +> Label("B")) +> Label("A")) == "(C, B, A)")
-    assert(show.show((Label("C") <+> Label("B")) +> Label("A")) == "({B, C}, A)")
-    assert(show.show((Label("C") +> Label("B")) <+> Label("A")) == "{(C, B), A}")
+    assert(order.compare(x, x) == 0)
+    assert(order.compare(x, same) == 0)
+    assert(order.compare(same, x) == 0)
+    assert(order.compare(x, greater) < 0)
+    assert(order.compare(greater, x) > 0)
   }
 }

@@ -73,7 +73,7 @@ object TreeVisitStack {
   implicit def stackShow[K, V, Tree[KK, VV]](
     implicit elementShow: Show[Element[K, V, Tree]]
   ): Show[Stack[K, V, Tree]] =
-    ordset.instances.List.listShow(elementShow)
+    ordset.core.instances.List.listShow(elementShow)
 
   /**
    * Implicit [[Show]] instance for [[Context]].
