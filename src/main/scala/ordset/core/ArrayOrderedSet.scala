@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.util.SortedArraySearch
 
 import scala.collection.immutable.ArraySeq
@@ -34,14 +34,14 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     val len = bounds.length - ind
     val newBoundsArray = new Array[Bound.Upper[E]](len)
     Array.copy(bounds.unsafeArray, ind, newBoundsArray, 0, len)
-    ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
+    ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
   }
 
   protected final def consBelow(ind: Int): SegmentSeq[E, D, Boolean] = {
     val len = ind + 1
     val newBoundsArray = new Array[Bound.Upper[E]](len)
     Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, len)
-    ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
+    ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
   }
 
   // Private section ---------------------------------------------------------- //
@@ -56,6 +56,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     //        originalLastBound
     //
     // other:
+    //
     //        appendedFirstVal
     //             v
     //           true        false
@@ -92,10 +93,10 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
       if (originalPenultimateValue == appendedFirstValue) bounds.length - 1
       else bounds.length
 
-    if (originalCopyLen == 0 && otherCopyLen == 0)
+    val newBoundsLen = originalCopyLen + otherCopyLen
+    if (newBoundsLen == 0)
       consUniform(appendedFirstValue)
     else {
-      val newBoundsLen = originalCopyLen + otherCopyLen
       val newBoundsArray = new Array[Bound.Upper[E]](newBoundsLen)
       if (originalCopyLen > 0) {
         Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, originalCopyLen)
@@ -107,18 +108,44 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     }
   }
 
-  // TODO implement method `appendedGeneral`
   private def appendedGeneral(other: SegmentSeq[E, D, Boolean]): SegmentSeq[E, D, Boolean] =
     if (other.isUniform)
       if (getLastSegmentValue == other.firstSegment.value) this
       else if (bounds.length == 1) consUniform(complementary)
       else consBelow(lastBoundIndex - 1)
-    else ???
+    else {
+      val originalPenultimateValue = getPenultimateSegmentValue
+
+      val appendedFirstSegment = other.getSegment(bounds(lastBoundIndex).flip)
+
+      val (otherCopyList, otherCopyLen) = SegmentSeqOps.getForwardBoundsList(appendedFirstSegment)
+
+      val originalCopyLen =
+        if (originalPenultimateValue == appendedFirstSegment.value) bounds.length - 1
+        else bounds.length
+
+      val newBoundsLen = originalCopyLen + otherCopyLen
+      if (newBoundsLen == 0)
+        consUniform(appendedFirstSegment.value)
+      else {
+        val newBoundsArray = new Array[Bound.Upper[E]](newBoundsLen)
+        if (originalCopyLen > 0) {
+          Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, originalCopyLen)
+        }
+        otherCopyList.copyToArray(newBoundsArray, originalCopyLen, otherCopyLen)
+        ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
+      }
+    }
 }
 
 object ArrayOrderedSet {
 
-  def apply[E, D <: Domain[E]](
+  /**
+   * Creates ordered set from treap node (see [[AbstractIndexedSegmentSeq]]).
+   *
+   * Validation of key order is not applied.
+   */
+  def unchecked[E, D <: Domain[E]](
     bounds: ArraySeq[Bound.Upper[E]],
     complementary: Boolean
   )(
@@ -126,4 +153,45 @@ object ArrayOrderedSet {
   ): OrderedSet[E, D] =
     if (bounds.isEmpty) UniformOrderedSet(complementary)(domainOps)
     else new ArrayOrderedSet[E, D](bounds, complementary)(domainOps)
+
+  /**
+   * Creates ordered set from collection of upper bounds.
+   *
+   * Preconditions:
+   *
+   * 1. `bounds` collection is ordered according to `validationFunc`:
+   *
+   * validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
+   */
+  @throws[SegmentSeqException]("if preconditions are violated")
+  def fromIterableUnsafe[E, D <: Domain[E]](
+    bounds: IterableOnce[Bound.Upper[E]],
+    complementary: Boolean,
+    domainOps: DomainOps[E, D]
+  )(
+    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+  ): OrderedSet[E, D] = bounds match {
+    case bounds: ArraySeq[Bound.Upper[E]] =>
+      OrderValidationFunc.validateIterable(bounds, validationFunc)
+      unchecked(bounds, complementary)(domainOps)
+    case _ =>
+      val boundsArraySeq =
+        OrderValidationFunc.foldIterableAfter[Bound.Upper[E], ArraySeq[Bound.Upper[E]]](
+          bounds,
+          validationFunc,
+          ArraySeq.empty[Bound.Upper[E]],
+          (seq, bnd) => seq.appended(bnd)
+        )
+      unchecked(boundsArraySeq, complementary)(domainOps)
+  }
+
+  /**
+   * Returns ordered set factory.
+   */
+  def getFactory[E, D <: Domain[E]](
+    domainOps: DomainOps[E, D]
+  )(
+    validationFunc: OrderValidationFunc[Bound.Upper[E]] =  domainOps.boundOrd.strictValidationFunc
+  ): OrderedSetFactory[E, D] =
+    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(validationFunc)
 }

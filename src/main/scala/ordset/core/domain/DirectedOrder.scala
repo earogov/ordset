@@ -20,6 +20,16 @@ import ordset.util.types.{>|<, SingleValue}
 trait DirectedOrder[E, +Dir <: OrderDir] extends Order[E] with Hash[E] {
 
   /**
+   * Validation function wrapping [[validateStrictly]] method.
+   */
+  final lazy val strictValidationFunc: OrderValidationFunc[E] = validateStrictly _
+
+  /**
+   * Validation function wrapping [[validateNonStrictly]] method.
+   */
+  final lazy val nonStrictValidationFunc: OrderValidationFunc[E] = validateNonStrictly _
+
+  /**
    * Value representation of Dir type parameter.
    */
   def direction: Dir

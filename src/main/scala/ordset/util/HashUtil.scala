@@ -1,6 +1,6 @@
 package ordset.util
 
-private[ordset] object HashUtil {
+object HashUtil {
 
   val product1Hash: Int => Int = cats.kernel.instances.StaticMethods.product1Hash
 

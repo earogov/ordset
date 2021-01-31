@@ -1,13 +1,14 @@
 package ordset.core
 
-import ordset.core.domain.{Domain, DomainOps}
-import ordset.tree.core.Validation
+import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.fold.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
-import ordset.util
+import ordset.util.IterableUtil
 
-class TreapOrderedSet[E, D <: Domain[E]](
+import java.util.NoSuchElementException
+
+class TreapOrderedSet[E, D <: Domain[E]] protected(
   final override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
   final override val lastValue: Boolean
 )(
@@ -21,47 +22,81 @@ class TreapOrderedSet[E, D <: Domain[E]](
 object TreapOrderedSet {
 
   /**
-   * Creates ordered set from bounds collection.
+   * Creates ordered set from treap node (see [[AbstractSegmentSeq]]).
+   *
+   * Validation of treap invariants (key and priorities order) is not applied.
    */
-  @throws[NoSuchElementException]("if size of priorities collection is less than size of bounds collection")
-  @throws[AssertionError]("if key order validation (with validationFunc) fails")
-  def fromIterable[E, D <: Domain[E]](
+  def unchecked[E, D <: Domain[E]](
+    root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
+    lastValue: Boolean
+  )(
+    implicit domainOps: DomainOps[E, D]
+  ): OrderedSet[E, D] = new TreapOrderedSet(root, lastValue)
+
+  /**
+   * Creates ordered set from collection of upper bounds.
+   *
+   * Preconditions:
+   *
+   * 1. Size of `priorities` collection must be greater or equal to size of `bounds` collection:
+   *
+   * priorities.size `>=` bounds.size
+   *
+   * 2. `bounds` collection is ordered according to `validationFunc`:
+   *
+   * validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
+   */
+  @throws[SegmentSeqException]("if preconditions are violated")
+  def fromIterableUnsafe[E, D <: Domain[E]](
     bounds: IterableOnce[Bound.Upper[E]],
     priorities: IterableOnce[Int],
     complementary: Boolean,
-    validationFunc: Validation.KeyOrderFunc[Bound.Upper[E]]
+    domainOps: DomainOps[E, D]
   )(
-    implicit domainOps: DomainOps[E, D],
-
+    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
   ): OrderedSet[E, D] = {
-    var buffer = List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]]
-    var value = complementary
-    var prevBound: Bound.Upper[E] = null
     val boundOrd = domainOps.domain.boundOrd
     val intOrd = domainOps.domain.intOrd
-    val boundIterator = bounds.iterator
     val priorityIterator = priorities.iterator
-    while(boundIterator.hasNext) {
-      val bound = boundIterator.next()
-      if (prevBound != null && !validationFunc(prevBound, bound)) {
-        throw new AssertionError(s"Illegal key order: $prevBound >= $bound")
+    try {
+      var value = complementary
+      val buffer =
+        OrderValidationFunc.foldIterableAfter[Bound.Upper[E], List[MutableTreap.Node[Bound.Upper[E], Boolean]]](
+          bounds,
+          validationFunc,
+          List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]],
+          (buf, bnd) => {
+            val priority =IterableUtil.nextOrThrowMsg(
+              priorityIterator,
+              "Size of priorities collection must be greater or equal to size of bounds collection."
+            )
+            val buffer = BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
+              buf, bnd, priority, value
+            )(
+              intOrd, boundOrd
+            )
+            value = !value
+            buffer
+          }
+        )
+      val root = BuildAsc.finalizeBuffer(buffer)
+      root match {
+        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => new TreapOrderedSet(r, value)(domainOps)
+        case _ => UniformOrderedSet(value)(domainOps)
       }
-      val priority = util.IterableUtil.nextOrThrowMsg(
-        priorityIterator,
-        "Size of priorities collection must be greater or equal to size of bounds collection."
-      )
-      buffer = BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
-        buffer, bound, priority, value
-      )(
-        intOrd, boundOrd
-      )
-      value = !value
-      prevBound = bound
-    }
-    val root = BuildAsc.finalizeBuffer(buffer)
-    root match {
-      case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => new TreapOrderedSet(r, value)(domainOps)
-      case _ => UniformOrderedSet(value)(domainOps)
+    } catch {
+      case e @ (_: NoSuchElementException | _: IllegalArgumentException) => throw SegmentSeqException(e)
     }
   }
+
+  /**
+   * Returns ordered set factory.
+   */
+  def getFactory[E, D <: Domain[E]](
+    priorities: IterableOnce[Int],
+    domainOps: DomainOps[E, D]
+  )(
+    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+  ): OrderedSetFactory[E, D] =
+    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, priorities, complementary, domainOps)(validationFunc)
 }
