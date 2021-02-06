@@ -18,8 +18,5 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.singleBoundedSeq
 
   override def sequence: GenSegmentSeq =
-    ArrayOrderedSet.unchecked(
-      ArraySeq(0 `](`),
-      complementary = true
-    )
+    ArrayOrderedSet.fromIterableUnsafe(bounds, complementary, domainOps)()
 }

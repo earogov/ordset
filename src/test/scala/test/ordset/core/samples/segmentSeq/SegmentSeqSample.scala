@@ -9,12 +9,15 @@ import test.ordset.core.Labels
 abstract class SegmentSeqSample[E, D <: Domain[E], W](
   implicit val domainOps: DomainOps[E, D]
 ) {
-
   def sample: String
 
   def labels: Set[Label] = Set.empty + Labels.sample(sample)
 
   def sequence: SegmentSeq[E, D, W]
+
+  def bounds: IterableOnce[Bound.Upper[E]]
+
+  def complementary: Boolean
 
   def reference: Seq[IntervalRelation[E, D, W]]
 

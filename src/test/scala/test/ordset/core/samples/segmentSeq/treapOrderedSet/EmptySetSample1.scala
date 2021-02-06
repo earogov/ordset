@@ -19,10 +19,5 @@ class EmptySetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.emptySet
 
   override def sequence: GenSegmentSeq =
-    TreapOrderedSet.fromIterableUnsafe[Int, D](
-      ArraySeq.empty,
-      RandomUtil.intLazyList(seed),
-      complementary = false,
-      domainOps
-    )()
+    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, RandomUtil.intLazyList(seed), complementary, domainOps)()
 }

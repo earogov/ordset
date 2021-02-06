@@ -17,8 +17,5 @@ class UniversalSetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.universalSet
 
   override def sequence: GenSegmentSeq =
-    ArrayOrderedSet.unchecked(
-      ArraySeq.empty,
-      complementary = true
-    )
+    ArrayOrderedSet.fromIterableUnsafe(bounds, complementary, domainOps)()
 }

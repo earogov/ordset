@@ -16,31 +16,27 @@ class ArrayOrderedSetSpec extends AnyFunSpec
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
-  private val navTestSuite = List(
-    new EmptySetSample1[Dom](),
-    new UniversalSetSample1[Dom](),
+  private val testSuite = List(
+    new EmptySetSample1[Dom],
+    new UniversalSetSample1[Dom],
     new SingleBoundedSetSample1[Dom],
     new MultiBoundedSetSample1[Dom],
     new DegenerateSetSample1[Dom]
   )
 
-  private val transTestSuite = List(
-    new MultiBoundedSetSample1[Dom]
-  )
-
   describe("Array based ordered set navigation operations") {
 
-    it should behave like segmentsSupportMovePrevAndNext(navTestSuite)
+    it should behave like segmentsSupportMovePrevAndNext(testSuite)
 
-    it should behave like segmentsSupportMoveToBound(navTestSuite)
+    it should behave like segmentsSupportMoveToBound(testSuite)
 
-    it should behave like segmentsSupportMoveToFirstAndLast(navTestSuite)
+    it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
 
-    it should behave like segmentsHaveNextAndPrevIndicators(navTestSuite)
+    it should behave like segmentsHaveNextAndPrevIndicators(testSuite)
   }
 
   describe("Array based ordered set transformation operations") {
 
-    it should behave like segmentSeqCanBeAppended(transTestSuite)
+    it should behave like segmentSeqCanBeAppended(testSuite)
   }
 }

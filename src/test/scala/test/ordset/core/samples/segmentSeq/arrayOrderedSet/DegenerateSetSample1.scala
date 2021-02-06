@@ -18,9 +18,5 @@ class DegenerateSetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.degenerateSeq
 
   override def sequence: GenSegmentSeq =
-    ArrayOrderedSet.fromIterableUnsafe(
-      ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`, 30 `](`),
-      complementary = false,
-      domainOps
-    )()
+    ArrayOrderedSet.fromIterableUnsafe(bounds, complementary, domainOps)()
 }

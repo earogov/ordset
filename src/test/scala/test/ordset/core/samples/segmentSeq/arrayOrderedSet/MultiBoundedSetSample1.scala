@@ -18,9 +18,5 @@ class MultiBoundedSetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
   override def sequence: GenSegmentSeq =
-    ArrayOrderedSet.fromIterableUnsafe(
-      ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-      complementary = false,
-      domainOps
-    )()
+    ArrayOrderedSet.fromIterableUnsafe(bounds, complementary, domainOps)()
 }

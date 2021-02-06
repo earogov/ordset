@@ -1,11 +1,13 @@
 package test.ordset.core.behaviors.segmentSeq.multiBoundedSet
 
+import ordset.core.Bound
 import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import test.ordset.core.behaviors.segmentSeq.SegmentMoveToBoundTest
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
+import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 trait Sample2[D <: Domain[Int]]
@@ -13,6 +15,11 @@ trait Sample2[D <: Domain[Int]]
   self: SegmentSeqSample[Int, D, Boolean] =>
 
   override def sample: String = "2"
+
+  override def bounds: IterableOnce[Bound.Upper[Int]] =
+    ArraySeq(0 `](`, 5 `)[`, 7 `)[`, 20 `](`, 25 `)[`, 35 `](`, 40 `)[`, 60 `)[`)
+
+  override def complementary: Boolean = true
 
   override def reference: Seq[GenIntervalRelation] =
     (true  forAll x <= 0) ::

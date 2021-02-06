@@ -17,8 +17,5 @@ class EmptySetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.emptySet
 
   override def sequence: GenSegmentSeq =
-    ArrayOrderedSet.unchecked(
-      ArraySeq.empty,
-      complementary = false
-    )
+    ArrayOrderedSet.fromIterableUnsafe(bounds, complementary, domainOps)()
 }

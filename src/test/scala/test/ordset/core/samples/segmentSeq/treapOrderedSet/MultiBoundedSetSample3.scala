@@ -20,11 +20,6 @@ class MultiBoundedSetSample3[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
   override def sequence: GenSegmentSeq = {
-    TreapOrderedSet.fromIterableUnsafe[Int, D](
-      ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`, 50 `](`, 60 `](`, 70 `)[`, 80 `)[`),
-      RandomUtil.intLazyList(seed),
-      complementary = false,
-      domainOps
-    )()
+    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, RandomUtil.intLazyList(seed), complementary, domainOps)()
   }
 }

@@ -20,10 +20,5 @@ class DegenerateSetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.degenerateSeq
 
   override def sequence: GenSegmentSeq =
-    TreapOrderedSet.fromIterableUnsafe[Int, D](
-      ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`, 30 `](`),
-      RandomUtil.intLazyList(seed),
-      complementary = false,
-      domainOps
-    )()
+    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, RandomUtil.intLazyList(seed), complementary, domainOps)()
 }
