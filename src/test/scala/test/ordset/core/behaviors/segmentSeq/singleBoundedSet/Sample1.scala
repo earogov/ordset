@@ -5,7 +5,7 @@ import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqFactories}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -13,7 +13,8 @@ import scala.language.postfixOps
 
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
-  with SegmentSeqAppendedTest[Int, D, Boolean] {
+  with SegmentSeqAppendedTest[Int, D, Boolean]
+  with SegmentSeqSlicedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
   override def sample: String = "1"
@@ -104,4 +105,44 @@ trait Sample1[D <: Domain[Int]]
       )
     }
   }
+
+  override def slicedCases: Seq[SegmentSeqSlicedTest.TestCase[Int, D, Boolean]] =
+    List(
+      SegmentSeqSlicedTest.TestCase(
+        -10`(`,
+        (true  forAll x) ::
+        Nil,
+        reference
+      ),
+      SegmentSeqSlicedTest.TestCase(
+        0`)`,
+        (true  forAll x) ::
+        Nil,
+        reference
+      ),
+      SegmentSeqSlicedTest.TestCase(
+        0`]`,
+        (true  forAll x) ::
+        Nil,
+        reference
+      ),
+      SegmentSeqSlicedTest.TestCase(
+        0`[`,
+        (true  forAll x) ::
+        Nil,
+        reference
+      ),
+      SegmentSeqSlicedTest.TestCase(
+        0`(`,
+        reference,
+        (false forAll x) ::
+        Nil
+      ),
+      SegmentSeqSlicedTest.TestCase(
+        10`)`,
+        reference,
+        (false forAll x) ::
+        Nil
+      )
+    )
 }

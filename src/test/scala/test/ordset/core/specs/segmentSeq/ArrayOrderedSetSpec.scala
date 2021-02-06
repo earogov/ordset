@@ -38,5 +38,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
   describe("Array based ordered set transformation operations") {
 
     it should behave like segmentSeqCanBeAppended(testSuite)
+
+    it should behave like segmentSeqCanBeSliced(testSuite)
   }
 }
