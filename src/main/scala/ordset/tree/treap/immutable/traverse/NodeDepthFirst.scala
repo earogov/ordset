@@ -8,6 +8,10 @@ import scala.annotation.tailrec
 
 object NodeDepthFirst {
 
+  /**
+   * Implements one step of depth first traverse.
+   * Precedence of left/right visited can be customized with `navigationFunc`.
+   */
   def defaultFunc[K, V, C <: NodeVisitContext[K, V]](
     navigationFunc: NodeNavigationFunc[K, V, C],
     evalFunc: NodeEvalFunc[K, V, C]
@@ -44,6 +48,10 @@ object NodeDepthFirst {
       traverse(tree, context.currentVisits)
     }
 
+  /**
+   * Same as [[defaultFunc]] but returns `dummy` node when child node is absent
+   * (and should be visited according to depth first order).
+   */
   def extendedFunc[K, V, C <: NodeVisitContext[K, V]](
     navigationFunc: NodeNavigationFunc[K, V, C],
     evalFunc: NodeEvalFunc[K, V, C],
@@ -78,15 +86,27 @@ object NodeDepthFirst {
 
   object Navigation {
 
+    /**
+     * Specifies traverse order: left children before right.
+     */
     def leftFirstFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
       LeftFirstInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
+    /**
+     * Specifies traverse order: right children before left.
+     */
     def leftOnlyFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
       LeftOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
+    /**
+     * Specifies traverse order: only left children.
+     */
     def rightFirstFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
       RightFirstInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
+    /**
+     * Specifies traverse order: only right children.
+     */
     def rightOnlyFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
       RightOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 

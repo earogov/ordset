@@ -7,6 +7,10 @@ import ordset.tree.treap.immutable.{NodeEvalFunc, NodeVisitContext, NodeVisitCon
 
 object NodeAside {
 
+  /**
+   * Moves to the the next key.
+   * If there is no next key in treap then current node is returned.
+   */
   def nextKeyFunc[K, V, C <: NodeVisitContext[K, V]](
     evalFunc: NodeEvalFunc[K, V, C]
   )(
@@ -27,6 +31,10 @@ object NodeAside {
           new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
       }
 
+  /**
+   * Moves to the the previous key.
+   * If there is no previous key in treap then current node is returned.
+   */
   def prevKeyFunc[K, V, C <: NodeVisitContext[K, V]](
     evalFunc: NodeEvalFunc[K, V, C]
   )(
@@ -47,6 +55,9 @@ object NodeAside {
           new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
       }
 
+  /**
+   * Moves to the minimal key in treap (the most left).
+   */
   def minKeyFunc[K, V, C](
     evalFunc: NodeEvalFunc[K, V, C]
   ): NodeTraverseFunc[K, V, C] =
@@ -60,6 +71,9 @@ object NodeAside {
           new NodeTraverseOutput(tree,newContext, BinaryTreeStep.None, stop = true)
       }
 
+  /**
+   * Moves to the maximal key in treap (the most right).
+   */
   def maxKeyFunc[K, V, C](
     evalFunc: NodeEvalFunc[K, V, C]
   ): NodeTraverseFunc[K, V, C] =

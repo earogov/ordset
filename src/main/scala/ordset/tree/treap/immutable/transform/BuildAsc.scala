@@ -141,11 +141,32 @@ import scala.annotation.tailrec
  *
  * =Performance=
  *
- * TODO
+ * During treap construction each new node is visited twice: first time when it is added to buffer list and second -
+ * when removed. So the total time is O(n) from the number of added nodes.
  *
  * =Usage=
  *
- * TODO
+ * 1. Add new noes to buffer.
+ * {{{
+ *
+ * val buffer =
+ *   BuildAsc.appendToBuffer(
+ *     Nil, newKey1, newPriority1, newValue1
+ *   )(
+ *     intOrd, boundOrd
+ *   )
+ * val buffer =
+ *   BuildAsc.appendToBuffer(
+ *     buffer, newKey2, newPriority2, newValue2
+ *   )(
+ *     intOrd, boundOrd
+ *   )
+ * }}}
+ * 2. Build treap from buffer.
+ * {{{
+ *
+ * val treap = BuildAsc.finalizeBuffer(buffer)
+ * }}}
  */
 object BuildAsc {
 

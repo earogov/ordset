@@ -48,7 +48,7 @@ object NodeUpward {
 
   /**
    * Applies [[defaultFunc]] in cycle until next key is reached.
-   * If there is no next key tree root is returned.
+   * If there is no next key upwards tree root is returned.
    */
   def foldToNextKey[K, V, C](
     node: ImmutableTreap.Node[K, V],
@@ -65,7 +65,7 @@ object NodeUpward {
 
   /**
    * Applies [[defaultFunc]] in cycle until previous key is reached.
-   * If there is no next key tree root is returned.
+   * If there is no previous key upwards tree root is returned.
    */
   def foldToPrevKey[K, V, C](
     node: ImmutableTreap.Node[K, V],

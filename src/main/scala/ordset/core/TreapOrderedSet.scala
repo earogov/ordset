@@ -80,11 +80,12 @@ object TreapOrderedSet {
               priorityIterator,
               "Size of priorities collection must be greater or equal to size of bounds collection."
             )
-            val buffer = BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
-              buf, bnd, priority, value
-            )(
-              intOrd, boundOrd
-            )
+            val buffer =
+              BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
+                buf, bnd, priority, value
+              )(
+                intOrd, boundOrd
+              )
             value = !value
             buffer
           }
