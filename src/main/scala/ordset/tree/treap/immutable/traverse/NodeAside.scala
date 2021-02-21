@@ -20,8 +20,7 @@ object NodeAside {
           val contextExtract = ContextExtract.foldAfter(tree.right, rightContext)(traverseLeftFunc)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Right, stop = true)
         case tree: ImmutableTreap.Node[K, V] =>
-          val traverseUpFunc = NodeUpward.defaultFunc(NodeUpward.StopPredicate.toNextKey, evalFunc)(contextOps)
-          val contextExtract = ContextExtract.foldAfter(tree, context)(traverseUpFunc)
+          val contextExtract = NodeUpward.foldToNextKey(tree, context, evalFunc)(contextOps)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Up, stop = true)
         case _ =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.None)
@@ -41,8 +40,7 @@ object NodeAside {
           val contextExtract = ContextExtract.foldAfter(tree.left, leftContext)(traverseRightFunc)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Left, stop = true)
         case tree: ImmutableTreap.Node[K, V] =>
-          val traverseUpFunc = NodeUpward.defaultFunc(NodeUpward.StopPredicate.toPrevKey, evalFunc)(contextOps)
-          val contextExtract = ContextExtract.foldAfter(tree, context)(traverseUpFunc)
+          val contextExtract = NodeUpward.foldToPrevKey(tree, context, evalFunc)(contextOps)
           new NodeTraverseOutput(contextExtract.tree, contextExtract.context, BinaryTreeStep.Up, stop = true)
         case _ =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.None)

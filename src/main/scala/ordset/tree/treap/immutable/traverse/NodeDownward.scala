@@ -3,7 +3,6 @@ package ordset.tree.treap.immutable.traverse
 import ordset.Order
 import ordset.tree.core.BinaryTreeStep
 import ordset.tree.core.fold.ContextExtract
-import ordset.tree.core.fold.ContextExtract.Output
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.NodeEvalFunc
 
@@ -52,7 +51,7 @@ object NodeDownward {
     evalFunc: NodeEvalFunc[K, V, C]
   )(
     implicit keyOrder: Order[KK]
-  ): Output[K, V, ImmutableTreap.Node, C] =
+  ): ContextExtract.Output[K, V, ImmutableTreap.Node, C] =
     ContextExtract.foldAfter(
       node,
       initContext
@@ -71,9 +70,9 @@ object NodeDownward {
     initContext: C,
     step: BinaryTreeStep.Type,
     evalFunc: NodeEvalFunc[K, V, C]
-  ): Output[K, V, ImmutableTreap.Node, C] = {
+  ): ContextExtract.Output[K, V, ImmutableTreap.Node, C] = {
     val traverseOutput = defaultFunc[K, V, C]((_, _) => step, evalFunc)(node, initContext)
-    Output(traverseOutput.tree, traverseOutput.context)
+    ContextExtract.Output(traverseOutput.tree, traverseOutput.context)
   }
 
   /**
@@ -102,7 +101,7 @@ object NodeDownward {
     evalFunc: NodeEvalFunc[K, V, C]
   )(
     implicit keyOrder: Order[KK]
-  ): Output[K, V, ImmutableTreap.Node, C] =
+  ): ContextExtract.Output[K, V, ImmutableTreap.Node, C] =
     ContextExtract.foldAfter(
       node,
       initContext
@@ -139,7 +138,7 @@ object NodeDownward {
     evalFunc: NodeEvalFunc[K, V, C]
   )(
     implicit keyOrder: Order[KK]
-  ): Output[K, V, ImmutableTreap.Node, C] =
+  ): ContextExtract.Output[K, V, ImmutableTreap.Node, C] =
     ContextExtract.foldAfter(
       node,
       initContext

@@ -34,15 +34,14 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     // But `NodeSearch.down` function can return either upper or lower bound
     // (or more precisely - upper bound of required segment or upper bound of previous segment).
     var contextExtract =
-      ContextExtract.foldAfter(
-        root,
-        TreeVisitStack.contextOps[Bound.Upper[E], W, ImmutableTreap.Node].getEmptyContext
-      )(
-        NodeDownward.defaultFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
-          NodeDownward.Navigation.defaultFunc[Bound.Upper[E], Bound[E], W](bound)(domainOps.boundOrd),
+      NodeDownward.foldDefault[Bound.Upper[E], Bound[E], W, NodeVisitContext[Bound.Upper[E], W]](
+          root,
+          TreeVisitStack.contextOps.getEmptyContext,
+          bound,
           TreeVisitStack.function
+        )(
+          domainOps.boundOrd
         )
-      )
     // Case 1: search key <= found node key
     //
     //    5  -                   A
@@ -78,16 +77,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       else {
         // Move upward to the next key.
         contextExtract =
-          ContextExtract.foldAfter(
+          NodeUpward.foldToNextKey[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
             contextExtract.tree,
-            contextExtract.context
+            contextExtract.context,
+            TreeVisitStack.function
           )(
-            NodeUpward.defaultFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
-              NodeUpward.StopPredicate.toNextKey,
-              TreeVisitStack.function
-            )(
-              TreeVisitStack.contextOps
-            )
+            TreeVisitStack.contextOps
           )
         TreapInnerSegment(contextExtract.tree, contextExtract.context)
       }
