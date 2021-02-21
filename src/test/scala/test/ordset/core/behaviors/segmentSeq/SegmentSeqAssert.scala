@@ -8,28 +8,28 @@ import ordset.util.IterableUtil
 trait SegmentSeqAssert[E, D <: Domain[E], V] {
 
   def assertSameBounds(
-    segment: Segment[E, D, V],
-    interval: Interval[E, D]
+    expected: Interval[E, D],
+    actual: Segment[E, D, V]
   ): Unit = {
-    interval match {
+    expected match {
       case i: Interval.WithLowerBound[E, D] =>
-        assert(segment.hasLowerBound, s"expected $segment has lower bound")
-        assert(segment.hasLowerBound(i.lowerBound), s"expected $segment has lower bound ${i.lowerBound}")
+        assert(actual.hasLowerBound, s"expected $actual has lower bound")
+        assert(actual.hasLowerBound(i.lowerBound), s"expected $actual has lower bound ${i.lowerBound}")
       case _ =>
-        assert(!segment.hasLowerBound, s"expected $segment does not have lower bound")
+        assert(!actual.hasLowerBound, s"expected $actual does not have lower bound")
     }
-    interval match {
+    expected match {
       case i: Interval.WithUpperBound[E, D] =>
-        assert(segment.hasUpperBound, s"expected $segment has upper bound")
-        assert(segment.hasUpperBound(i.upperBound), s"expected $segment has upper bound ${i.upperBound}")
+        assert(actual.hasUpperBound, s"expected $actual has upper bound")
+        assert(actual.hasUpperBound(i.upperBound), s"expected $actual has upper bound ${i.upperBound}")
       case _ =>
-        assert(!segment.hasUpperBound, s"expected $segment does not have upper bound")
+        assert(!actual.hasUpperBound, s"expected $actual does not have upper bound")
     }
   }
 
   def assertEqualSequences(
-    first: SegmentSeq[E, D, V],
-    second: SegmentSeq[E, D, V]
+    expected: SegmentSeq[E, D, V],
+    actual: SegmentSeq[E, D, V]
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -38,23 +38,24 @@ trait SegmentSeqAssert[E, D <: Domain[E], V] {
 
     assert(
       domainOps.domainHash.eqv(
-        first.domainOps.domain,
-        second.domainOps.domain
+        expected.domainOps.domain,
+        actual.domainOps.domain
       )
     )
     assert(
       IterableUtil.iteratorEq(
-        first.firstSegment.forwardIterator.map(_.intervalRelation),
-        second.firstSegment.forwardIterator.map(_.intervalRelation)
+        expected.firstSegment.forwardIterator.map(_.intervalRelation),
+        actual.firstSegment.forwardIterator.map(_.intervalRelation)
       )(
         domainOps.intervalRelationHash(valueHash)
-      )
+      ),
+      s"\nexpected: $expected\nactual  : $actual"
     )
   }
 
   def assertEqualSequences(
-    first: SegmentSeq[E, D, V],
-    second: Seq[IntervalRelation[E, D, V]]
+    expected: Seq[IntervalRelation[E, D, V]],
+    actual: SegmentSeq[E, D, V]
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -63,11 +64,12 @@ trait SegmentSeqAssert[E, D <: Domain[E], V] {
 
     assert(
       IterableUtil.iteratorEq(
-        first.firstSegment.forwardIterator.map(_.intervalRelation),
-        second.iterator
+        actual.firstSegment.forwardIterator.map(_.intervalRelation),
+        expected.iterator
       )(
         domainOps.intervalRelationHash(valueHash)
-      )
+      ),
+      s"\nexpected: $expected\nactual  : $actual"
     )
   }
 }

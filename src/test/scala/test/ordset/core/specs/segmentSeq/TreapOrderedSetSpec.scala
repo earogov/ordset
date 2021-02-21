@@ -3,11 +3,12 @@ package test.ordset.core.specs.segmentSeq
 import ordset.core.OrderedSet
 import ordset.core.domain.Domain
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.behaviors.segmentSeq.NavigationBehaviors
+import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.samples.segmentSeq.treapOrderedSet._
 
 class TreapOrderedSetSpec extends AnyFunSpec
-  with NavigationBehaviors[Int, Domain[Int], Boolean] {
+  with NavigationBehaviors[Int, Domain[Int], Boolean]
+  with TransformationBehaviors[Int, Domain[Int], Boolean] {
 
   import ordset.core.instances.Boolean._
   import ordset.core.instances.Int._
@@ -15,7 +16,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
-  private val testSuite = List(1, 10, 100, 1000, 10000).flatMap { seed =>
+  private val testSuite = Range(1, 20).flatMap { seed =>
     List(
       new EmptySetSample1[Dom](seed),
       new UniversalSetSample1[Dom](seed),
@@ -34,5 +35,10 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
 
     it should behave like segmentsHaveNextAndPrevIndicators(testSuite)
+  }
+
+  describe("Treap based ordered set transformation operations") {
+
+    it should behave like segmentSeqCanBeSliced(testSuite)
   }
 }

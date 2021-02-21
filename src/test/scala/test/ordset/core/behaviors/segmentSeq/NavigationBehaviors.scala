@@ -26,7 +26,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V]
         case expectedRel :: tail =>
           val actualRel = seg.intervalRelation
           assert(intervalRelHash.eqv(actualRel, expectedRel), s"expected: $expectedRel, actual: $actualRel")
-          assertSameBounds(seg, expectedRel.interval)
+          assertSameBounds(expectedRel.interval, seg)
           seg match {
             case seg: Segment.WithNext[E, D, V] => loop(seg.moveNext, tail)
             case _ => // end
@@ -42,7 +42,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V]
         case expectedRel :: tail =>
           val actualRel = seg.intervalRelation
           assert(intervalRelHash.eqv(actualRel, expectedRel), s"expected: $expectedRel, actual: $actualRel")
-          assertSameBounds(seg, expectedRel.interval)
+          assertSameBounds(expectedRel.interval, seg)
           seg match {
             case seg: Segment.WithPrev[E, D, V] => loop(seg.movePrev, tail)
             case _ => // end

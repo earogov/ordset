@@ -1,10 +1,10 @@
-package ordset.tree.treap.immutable.fold
+package ordset.tree.treap.immutable.transform
 
 import ordset.Order
 import ordset.tree.treap.Treap
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.mutable.MutableTreap
-import ordset.tree.treap.mutable.eval.{NodeStack => MutableNodeStack}
+import ordset.tree.treap.mutable.{NodeStack => MutableNodeStack}
 
 import scala.annotation.tailrec
 
@@ -163,7 +163,7 @@ object BuildAsc {
     val newNode = new MutableTreap.Node[K, V](newKey, newValue, newPriority)
     buffer match {
       case head :: tail =>
-        val cmp = Treap.nodePriorityCompare[K, KK, V](
+        val cmp = Treap.nodePriorityCompare[KK, V](
           newPriority, newKey,
           head.priority, head.key
         )(

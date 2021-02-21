@@ -4,12 +4,12 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.instances
 import ordset.tree.core.eval.TreeVisitStack
 import ordset.tree.core.fold.{CallTrace, ContextExtract}
-import ordset.tree.treap.immutable.fold.{SplitOutput, TreeMerge, TreeSplit}
-import ordset.tree.treap.immutable.traverse.{NodeDepthFirst, NodeSearch}
+import ordset.tree.treap.immutable.transform.TreeSplit
+import ordset.tree.treap.immutable.traverse.{NodeDepthFirst, NodeAside}
 import ordset.tree.core.{BinaryTreeVisit, Fold}
 import ordset.tree.treap.Treap
 import ordset.tree.treap.immutable.ImmutableTreap
-import ordset.tree.treap.immutable.eval.NodeVisitContext
+import ordset.tree.treap.immutable.NodeVisitContext
 import org.scalatest.funspec.AnyFunSpec
 
 // TODO implement unit tests for treap.
@@ -54,7 +54,7 @@ class ImmutableTreapSpec extends AnyFunSpec {
 //    )(
 //      NodeDepthFirst.standard(
 //        NodeDepthFirst.leftFirstNavigation,
-//        TreeVisitStack.function()
+//        TreeVisitStack.function
 //      ),
 //      CallTrace.toConsole
 //    )
@@ -67,7 +67,7 @@ class ImmutableTreapSpec extends AnyFunSpec {
 //        nodeA,
 //        TreeVisitStack.contextOps.getEmptyContext
 //      )(
-//        NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigation, TreeVisitStack.function())
+//        NodeDepthFirst.standard(NodeDepthFirst.leftOnlyNavigation, TreeVisitStack.function)
 //      )
 //
 //    val toConsole = CallTrace.toConsole[Int, String, ImmutableTreap.Node, NodeVisitContext[Int, String]]
@@ -80,7 +80,7 @@ class ImmutableTreapSpec extends AnyFunSpec {
 //        tree,
 //        context
 //      )(
-//        NodeSearch.nextKey(TreeVisitStack.function())
+//        NodeSearch.nextKey(TreeVisitStack.function)
 //      )
 //      context = currentExtract.context
 //      tree = currentExtract.tree
@@ -96,7 +96,7 @@ class ImmutableTreapSpec extends AnyFunSpec {
 //        tree,
 //        context
 //      )(
-//        NodeSearch.prevKey(TreeVisitStack.function())
+//        NodeSearch.prevKey(TreeVisitStack.function)
 //      )
 //      context = currentExtract.context
 //      tree = currentExtract.tree

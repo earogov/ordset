@@ -1,17 +1,17 @@
-package ordset.tree.treap.immutable.fold
+package ordset.tree.treap.immutable.transform
 
 import ordset.Order
 import ordset.tree.core.eval.TreeStack
 import ordset.tree.core.fold.ContextExtract
 import ordset.tree.treap.Treap
 import ordset.tree.treap.immutable.ImmutableTreap
-import ordset.tree.treap.immutable.eval.NodeStack
-import ordset.tree.treap.immutable.traverse.NodeSearch
+import ordset.tree.treap.immutable.NodeStack
+import ordset.tree.treap.immutable.traverse.NodeAside
 
 import scala.annotation.tailrec
 
 /**
- * [[TreeMerge.mergeFunc]] implements merge operation for two trees.
+ * Merge operation assembles two treaps into one.
  *
  * Precondition: max key of left tree `<` min key of right tree
  *
@@ -56,7 +56,7 @@ import scala.annotation.tailrec
  *       leftTree,
  *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
  *     )(
- *       NodeSearch.maxKey(TreeStack.function())
+ *       NodeSearch.maxKey(TreeStack.function)
  *     )
  * }}}
  *
@@ -74,7 +74,7 @@ import scala.annotation.tailrec
  *       rightTree,
  *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
  *     )(
- *       NodeSearch.minKey(TreeStack.function())
+ *       NodeSearch.minKey(TreeStack.function)
  *     )
  * }}}
  *
@@ -92,6 +92,9 @@ import scala.annotation.tailrec
  */
 object TreeMerge {
 
+  /**
+   * Returns function that implements one step of merge operation.
+   */
   @tailrec
   def mergeFunc[K, KK >: K, V](
     leftStack: NodeStack[K, V],
@@ -178,6 +181,9 @@ object TreeMerge {
       case _ => mergedTree
   }
 
+  /**
+   * Applies [[mergeFunc]] function to `leftNode` and `rightNode` (non empty) treaps.
+   */
   def foldNode[K, KK >: K, V](
     leftNode: ImmutableTreap.Node[K, V],
     rightNode: ImmutableTreap.Node[K, V]
@@ -189,7 +195,7 @@ object TreeMerge {
       leftNode,
       TreeStack.contextOps[K, V, ImmutableTreap.Node].getEmptyContext
     )(
-      NodeSearch.maxKey(TreeStack.function())
+      NodeAside.maxKeyFunc(TreeStack.function)
     )
     val leftStack = TreeStack.contextOps.addToStack(leftExtract.context, leftExtract.tree)
 
@@ -197,13 +203,16 @@ object TreeMerge {
       rightNode,
       TreeStack.contextOps[K, V, ImmutableTreap.Node].getEmptyContext
     )(
-      NodeSearch.minKey(TreeStack.function())
+      NodeAside.minKeyFunc(TreeStack.function)
     )
     val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
 
     mergeFunc[K, KK, V](leftStack, rightStack, ImmutableTreap.Empty)
   }
 
+  /**
+   * Applies [[mergeFunc]] function to `leftTree` and `rightTree` (possibly empty) treaps.
+   */
   def foldTreap[K, KK >: K, V](
     leftTree: ImmutableTreap[K, V],
     rightTree: ImmutableTreap[K, V]

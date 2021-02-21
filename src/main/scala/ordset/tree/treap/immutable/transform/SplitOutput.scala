@@ -1,4 +1,4 @@
-package ordset.tree.treap.immutable.fold
+package ordset.tree.treap.immutable.transform
 
 import ordset.tree.treap.immutable.ImmutableTreap
 
@@ -12,9 +12,11 @@ trait SplitOutput[K, V] {
 
   def withRightTree(tree: ImmutableTreap[K, V]): SplitOutput[K, V]
 
-  def withLeftParent(parent: ImmutableTreap.Node[K, V]): SplitOutput[K, V] = withLeftTree(parent.withRightTree(leftTree))
+  def withLeftParent(parent: ImmutableTreap.Node[K, V]): SplitOutput[K, V] =
+    withLeftTree(parent.withRightTree(leftTree))
 
-  def withRightParent(parent: ImmutableTreap.Node[K, V]): SplitOutput[K, V] = withRightTree(parent.withLeftTree(rightTree))
+  def withRightParent(parent: ImmutableTreap.Node[K, V]): SplitOutput[K, V] =
+    withRightTree(parent.withLeftTree(rightTree))
 
   override def toString: String = s"SplitOutput(leftTree: $leftTree, rightTree: $rightTree)"
 }

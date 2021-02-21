@@ -2,7 +2,7 @@ package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.tree.treap.immutable.ImmutableTreap
-import ordset.tree.treap.immutable.fold.BuildAsc
+import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
 import ordset.util.IterableUtil
 
@@ -14,6 +14,16 @@ class TreapOrderedSet[E, D <: Domain[E]] protected(
 )(
   implicit final override val domainOps: DomainOps[E, D]
 ) extends AbstractTreapSegmentSeq[E, D, Boolean] {
+
+  // Protected section -------------------------------------------------------- //
+  protected def consUniform(value: Boolean): SegmentSeq[E, D, Boolean] =
+    UniformOrderedSet.apply(value)
+
+  protected def consFromNode(
+    node: ImmutableTreap.Node[Bound.Upper[E], Boolean],
+    value: Boolean
+  ): SegmentSeq[E, D, Boolean] =
+    TreapOrderedSet.unchecked(node, value)
 
   @inline
   protected final override def isIncludedInSet(value: Boolean): Boolean = value

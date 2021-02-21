@@ -45,7 +45,7 @@ object TreeStack {
   /**
    * Create eval function for [[Context]].
    */
-  def function[K, V, Tree[KK, VV]](): EvalFunc[K, V, Tree] =
+  def function[K, V, Tree[KK, VV]]: EvalFunc[K, V, Tree] =
     EvalFunc.asInstanceOf[EvalFunc[K, V, Tree]]
 
   /**

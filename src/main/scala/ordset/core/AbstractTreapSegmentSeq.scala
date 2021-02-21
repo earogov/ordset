@@ -4,8 +4,9 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.tree.core.eval.TreeVisitStack
 import ordset.tree.core.fold.ContextExtract
 import ordset.tree.treap.immutable.ImmutableTreap
-import ordset.tree.treap.immutable.eval.NodeVisitContext
-import ordset.tree.treap.immutable.traverse.NodeSearch
+import ordset.tree.treap.immutable.NodeVisitContext
+import ordset.tree.treap.immutable.transform.{SplitOutput, TreeSplit}
+import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDownward, NodeUpward}
 
 // TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
@@ -33,15 +34,13 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     // But `NodeSearch.down` function can return either upper or lower bound
     // (or more precisely - upper bound of required segment or upper bound of previous segment).
     var contextExtract =
-      ContextExtract.foldAfter[Bound.Upper[E], W, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], W]](
+      ContextExtract.foldAfter(
         root,
-        TreeVisitStack.contextOps.getEmptyContext
+        TreeVisitStack.contextOps[Bound.Upper[E], W, ImmutableTreap.Node].getEmptyContext
       )(
-        NodeSearch.down[Bound.Upper[E], Bound[E], W, NodeVisitContext[Bound.Upper[E], W]](
-          bound,
-          TreeVisitStack.function[Bound.Upper[E], W, ImmutableTreap.Node]()
-        )(
-          domainOps.boundOrd
+        NodeDownward.defaultFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
+          NodeDownward.Navigation.defaultFunc[Bound.Upper[E], Bound[E], W](bound)(domainOps.boundOrd),
+          TreeVisitStack.function
         )
       )
     // Case 1: search key <= found node key
@@ -79,13 +78,13 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       else {
         // Move upward to the next key.
         contextExtract =
-          ContextExtract.foldAfter[Bound.Upper[E], W, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], W]](
+          ContextExtract.foldAfter(
             contextExtract.tree,
             contextExtract.context
           )(
-            NodeSearch.up[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
-              NodeSearch.UpwardStopPredicate.toNextKey,
-              TreeVisitStack.function()
+            NodeUpward.defaultFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
+              NodeUpward.StopPredicate.toNextKey,
+              TreeVisitStack.function
             )(
               TreeVisitStack.contextOps
             )
@@ -99,12 +98,23 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     super.getSegment(element)
 
   // Transformation ----------------------------------------------------------- //
-  // TODO: implement sequence transformations
-  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] = sliced(bound)._2
 
-  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] = sliced(bound)._1
 
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = {
+    val splitOutput =TreeSplit.foldNode[Bound.Upper[E], Bound[E], W](
+      root,
+      bound,
+      splitLeft = false,
+      SplitOutput.Mutable.Output.initial
+    )(
+      domainOps.boundOrd
+    )
+    val rightSeq = consFromTree(splitOutput.rightTree, lastValue)
+    val leftSeq = consFromTree(splitOutput.leftTree, rightSeq.firstSegment.value)
+    (leftSeq, rightSeq)
+  }
 
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
@@ -118,6 +128,26 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
 
   /** Value of last segment (without upper bound). */
   protected val lastValue: W
+
+  /**
+   * Creates uniform segment sequence (empty or universal).
+   *
+   * Note current class not supports empty and universal sets so other implementations should be used.
+   */
+  protected def consUniform(value: W): SegmentSeq[E, D, W]
+
+  /**
+   * Creates segment sequence from specified treap node.
+   */
+  protected def consFromNode(node: ImmutableTreap.Node[Bound.Upper[E], W], value: W): SegmentSeq[E, D, W]
+
+  /**
+   * Creates segment sequence from specified treap. If treap is empty, creates uniform sequence.
+   */
+  protected def consFromTree(tree: ImmutableTreap[Bound.Upper[E], W], value: W): SegmentSeq[E, D, W] = tree match {
+    case node: ImmutableTreap.Node[Bound.Upper[E], W] => consFromNode(node, value)
+    case _ => consUniform(value)
+  }
 
   /**
    * Returns `true` if segment with given value is considered to be included in set.
@@ -135,7 +165,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
         root,
         TreeVisitStack.contextOps.getEmptyContext
       )(
-        NodeSearch.minKey(TreeVisitStack.function())
+        NodeAside.minKeyFunc(TreeVisitStack.function)
       )
     TreapInitialSegment(contextExtract.tree, contextExtract.context)
   }
@@ -149,7 +179,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
         root,
         TreeVisitStack.contextOps.getEmptyContext
       )(
-        NodeSearch.maxKey(TreeVisitStack.function())
+        NodeAside.maxKeyFunc(TreeVisitStack.function)
       )
     TreapTerminalSegment(contextExtract.tree, contextExtract.context)
   }
@@ -166,8 +196,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
           segment.node,
           segment.context
         )(
-          NodeSearch.nextKey(
-            TreeVisitStack.function[Bound.Upper[E], W, ImmutableTreap.Node]()
+          NodeAside.nextKeyFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
+            TreeVisitStack.function
           )(
             TreeVisitStack.contextOps
           )
@@ -184,8 +214,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
         segment.node,
         segment.context
       )(
-        NodeSearch.prevKey(
-          TreeVisitStack.function[Bound.Upper[E], W, ImmutableTreap.Node]()
+        NodeAside.prevKeyFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
+          TreeVisitStack.function
         )(
           TreeVisitStack.contextOps
         )
@@ -238,8 +268,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
           node,
           context
         )(
-          NodeSearch.prevKey(
-            TreeVisitStack.function[Bound.Upper[E], W, ImmutableTreap.Node]()
+          NodeAside.prevKeyFunc[Bound.Upper[E], W, NodeVisitContext[Bound.Upper[E], W]](
+            TreeVisitStack.function
           )(
             TreeVisitStack.contextOps
           )

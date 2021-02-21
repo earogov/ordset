@@ -71,7 +71,7 @@ abstract class AbstractArraySegmentSeq[E, D <: Domain[E], W] extends AbstractInd
    *
    * Note current class not supports empty and universal sets so other implementations should be used.
    */
-  protected def consUniform(value: W) :SegmentSeq[E, D, W]
+  protected def consUniform(value: W): SegmentSeq[E, D, W]
 
   /**
    * Preconditions:

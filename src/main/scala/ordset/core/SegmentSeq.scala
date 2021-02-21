@@ -119,48 +119,44 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   // Transformation ----------------------------------------------------------- //
   /**
-   * Return sequence containing only those segments of original sequence that satisfy condition:
+   * Returns sequence containing upper bounds of segments that satisfy condition:
    * {{{
-   * upper bound of segment >= specified bound
+   * upper bound >= specified bound
    * }}}
-   * First value of output sequence equals to the value of original segment closest to `bound` and satisfying condition:
+   * Each upper bound brings to the output sequence value that was associated with it in original sequence.
    * {{{
-   * upper bound of segment >= specified bound
-   * }}}
-   * {{{
+   *
    * original:
-   *                    bound
-   *                      v
-   *   X--------|---------|--------|---------X
-   *        A       B         C         D          - values
+   *                     bound
+   *                       v
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
    *
    * original.takenAbove(bound):
    *
-   *   X------------------|--------|---------X
-   *            B             C         D          - values
+   *   X-------------------)[--------)[---------X
+   *            B               C         D        - values
    * }}}
    */
   def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W]
 
   /**
-   * Returns sequence containing only those segments of original sequence that satisfy condition:
+   * Returns sequence containing upper bounds of segments that satisfy condition:
    * {{{
-   * upper bound of segment < specified bound
+   * upper bound < specified bound
    * }}}
-   * Last value of output sequence equals to the value of original segment closest to `bound` and satisfying condition:
+   * Each upper bound brings to the output sequence value that was associated with it in original sequence.
    * {{{
-   * upper bound of segment >= specified bound
-   * }}}
-   * {{{
+   *
    * original:
-   *                    bound
-   *                      v
-   *   X--------|---------|--------|---------X
-   *        A       B         C         D          - values
+   *                     bound
+   *                       v
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
    *
    * original.takenBelow(bound):
    *
-   *   X--------|----------------------------X
+   *   X--------](------------------------------X
    *        A               B                      - values
    * }}}
    */
@@ -171,55 +167,64 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *
    * {{{
    * original:
-   *                    bound
-   *                      v
-   *   X--------|---------|--------|---------X
-   *        A       B         C         D          - values
+   *                     bound
+   *                       v
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
    *
    * original.sliced(bound)._1:
    *
-   *   X--------|----------------------------X
+   *   X--------](------------------------------X
    *        A               B                      - values
    *
    * original.sliced(bound)._2:
    *
-   *   X------------------|--------|---------X
-   *            B             C         D          - values
+   *   X-------------------)[--------)[---------X
+   *            B               C         D        - values
    * }}}
    */
   def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
 
   /**
    * Returns sequence containing:
-   * <tr>- all segments of original sequence except last; </tr>
-   * <tr>- segments of `other` sequence that satisfy condition:
+   * <tr>- upper bounds of all original segments except last;</tr>
+   * <tr>- upper bounds of `other` sequence that satisfy condition:
    * {{{
-   * upper bound of segment > upper bound of original's penultimate segment
+   * upper bound > upper bound of original's penultimate segment
    * }}}
-   * Note last segment of `other` is always appended as it has maximal upper bound.
+   * Each upper bound brings to the output sequence value that was associated with it
+   * in initial sequence (original or `other`).
+   * <tr>
+   * If original sequence does not have penultimate segment (sequence with single segment)
+   * then output sequence is equals to `other` sequence, i.e. all `other`'s upper bounds
+   * with its values should be moved to the output sequence.
+   * </tr>
    * {{{
    *
    * original:
-   *
-   *
-   *   X--------|---------|------------------X
-   *        A        B             C               - values
+   *              penultimate        last
+   *                   v              v
+   *   X--------](---------)[------------------X
+   *        A         B             C              - values
    *
    * other:
    *
-   *   X--------------|-------------|--------X
-   *           D             E          F          - values
+   *   X--------------)[-------------](--------X
+   *           D             E            F        - values
    *
    * original.appended(other):
    *
-   *   X--------|---------|---------|--------X
-   *        A        B         E        F          - values
+   *   X--------](---------)[--------](--------X
+   *        A         B          E        F        - values
    *
-   * }}}
+   *
    * Methods definitions provide invariant:
    * {{{
    *   original == original.takenBelow(bound) appended original.takenAbove(bound)
    * }}}
    */
   def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
+
+  override def toString: String =
+    SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: W) => v.toString)
 }

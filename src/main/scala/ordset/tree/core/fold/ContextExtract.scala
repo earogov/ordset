@@ -10,13 +10,13 @@ object ContextExtract {
     ExtractFunc.asInstanceOf[Fold.Func[K, V, Tree, C, Output[K, V, Tree, C]]]
 
   def foldBefore[K, V, Tree[KK, VV], C](
-    treap: Tree[K, V],
+    tree: Tree[K, V],
     initContext: C
   )(
     traverseFunc: Traverse.GenericFunc[K, V, Tree, C]
   ): Output[K, V, Tree, C] =
     Fold.before[K, V, Tree, C, Output[K, V, Tree, C]](
-      treap,
+      tree,
       initContext,
       null // function ignores `output` argument => `null` is safe
     )(
@@ -25,13 +25,13 @@ object ContextExtract {
     )
 
   def foldAfter[K, V, Tree[KK, VV], C](
-    treap: Tree[K, V],
+    tree: Tree[K, V],
     initContext: C,
   )(
     traverseFunc: Traverse.GenericFunc[K, V, Tree, C]
   ): Output[K, V, Tree, C] =
     Fold.after[K, V, Tree, C, Output[K, V, Tree, C]](
-      treap,
+      tree,
       initContext,
       null // function ignores `output` argument => `null` is safe
     )(

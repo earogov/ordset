@@ -18,7 +18,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
 
         it(s"should append $appendedCase to $sample") {
           val actual = sample.sequence.appended(appendedCase.appended)
-          assertEqualSequences(actual, appendedCase.expected)(sample.domainOps, valueHash)
+          assertEqualSequences(appendedCase.expected, actual)(sample.domainOps, valueHash)
         }
       }
   }
@@ -33,14 +33,14 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
 
         it(s"should slice $sample at bound ${slicedCase.bound}") {
           val actualBelow = sample.sequence.takenBelow(slicedCase.bound)
-          assertEqualSequences(actualBelow, slicedCase.expectedBelow)(sample.domainOps, valueHash)
+          assertEqualSequences(slicedCase.expectedBelow, actualBelow)(sample.domainOps, valueHash)
 
           val actualAbove = sample.sequence.takenAbove(slicedCase.bound)
-          assertEqualSequences(actualAbove, slicedCase.expectedAbove)(sample.domainOps, valueHash)
+          assertEqualSequences(slicedCase.expectedAbove, actualAbove)(sample.domainOps, valueHash)
 
           val actualSliced = sample.sequence.sliced(slicedCase.bound)
-          assertEqualSequences(actualSliced._1, slicedCase.expectedBelow)(sample.domainOps, valueHash)
-          assertEqualSequences(actualSliced._2, slicedCase.expectedAbove)(sample.domainOps, valueHash)
+          assertEqualSequences(slicedCase.expectedBelow, actualSliced._1)(sample.domainOps, valueHash)
+          assertEqualSequences(slicedCase.expectedAbove, actualSliced._2)(sample.domainOps, valueHash)
         }
       }
     }

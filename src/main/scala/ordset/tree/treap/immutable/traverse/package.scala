@@ -8,9 +8,9 @@ package object traverse {
 
   type NodeTraverseFunc[K, V, C] = Traverse.BinaryFunc[K, V, ImmutableTreap.Node, C]
 
-  type TreapNavigationFunc[K, V, C] = Navigation.BinaryFunc[K, V, ImmutableTreap, C]
+  type TreapNavigationFunc[K, V, -C] = Navigation.BinaryFunc[K, V, ImmutableTreap, C]
 
-  type NodeNavigationFunc[K, V, C] = Navigation.BinaryFunc[K, V, ImmutableTreap.Node, C]
+  type NodeNavigationFunc[K, V, -C] = Navigation.BinaryFunc[K, V, ImmutableTreap.Node, C]
 
   type TreapTraverseOutput[K, V, C] = Traverse.BinaryOutput[K, V, ImmutableTreap, C]
 

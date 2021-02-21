@@ -1,9 +1,9 @@
-package ordset.tree.treap.immutable
+package ordset.tree.treap
 
-import ordset.tree.core.Eval
+import ordset.tree.core.{Eval, Fold}
 import ordset.tree.core.eval.{TreeStack, TreeStackOps, TreeVisitStack}
 
-package object eval {
+package object immutable {
 
   // Tree stack
   type TreapStack[K, V] = TreeStack.Stack[K, V, ImmutableTreap]
@@ -39,4 +39,9 @@ package object eval {
   type TreapEvalFunc[K, V, C]  = Eval.BinaryFunc[K, V, ImmutableTreap, C]
 
   type NodeEvalFunc[K, V, C]  = Eval.BinaryFunc[K, V, ImmutableTreap.Node, C]
+
+  // Fold function
+  type TreapFoldFunc[K, V, C, R]  = Fold.Func[K, V, ImmutableTreap, C, R]
+
+  type NodeFoldFunc[K, V, C, R]  = Fold.Func[K, V, ImmutableTreap.Node, C, R]
 }

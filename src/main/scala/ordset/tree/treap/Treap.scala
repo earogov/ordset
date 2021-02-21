@@ -37,7 +37,7 @@ object Treap {
   def nodePriorityOrder[K, V](implicit keyOrder: Order[K]): NodePriorityOrder[K, V] =
     new NodePriorityOrder(ordset.core.instances.Int.intOrder, keyOrder)
 
-  def nodePriorityCompare[K, KK >: K, V](
+  def nodePriorityCompare[K, V](
     priority1: Int,
     key1: K,
     priority2: Int,
@@ -45,14 +45,14 @@ object Treap {
   )(
     implicit
     intOrder: Order[Int],
-    keyOrder: Order[KK]
+    keyOrder: Order[K]
   ): Int = {
     val cmp = intOrder.compare(priority1, priority2)
     if (cmp == 0) keyOrder.compare(key1, key2)
     else cmp
   }
 
-  def nodePriorityEq[K, KK >: K, V](
+  def nodePriorityEq[K, V](
     priority1: Int,
     key1: K,
     priority2: Int,
@@ -60,7 +60,7 @@ object Treap {
   )(
     implicit
     intOrder: Order[Int],
-    keyOrder: Order[KK]
+    keyOrder: Order[K]
   ): Boolean = {
     val eq = intOrder.eqv(priority1, priority2)
     if (eq) keyOrder.eqv(key1, key2)

@@ -18,6 +18,8 @@ object SetBuilderFormat { format =>
 
   val relationSeparator: String = "->"
 
+  val segmentSeparator: String = ","
+
   def lessSign(isInclusive: Boolean): String = if (isInclusive) "<=" else "<"
 
   def greaterSign(isInclusive: Boolean): String = if (isInclusive) ">=" else ">"
@@ -163,4 +165,29 @@ object SetBuilderFormat { format =>
     valueShow: Show[V]
   ): Show[Segment[E, D, V]] =
     Show.show(s => format.segment(s, elementShow.show, valueShow.show))
+
+  // Segment sequence --------------------------------------------------------- //
+  def segmentSeq[E, D <: Domain[E], V](
+    segmentSeq: SegmentSeq[E, D, V],
+    elementToStr: E => String,
+    valueToStr: V => String
+  ): String = {
+    val stringBuilder = new StringBuilder()
+    var addSeparator = false
+    stringBuilder.append(setBegin)
+    segmentSeq.firstSegment.forwardIterable.foreach { s =>
+      if (addSeparator) stringBuilder.append(s"$segmentSeparator ")
+      val rel = s.intervalRelation
+      stringBuilder.append(format.intervalRelation(rel.interval, rel.value, elementToStr, valueToStr))
+      addSeparator = true
+    }
+    stringBuilder.append(setEnd)
+    stringBuilder.result()
+  }
+
+  def segmentSeqShow[E, D <: Domain[E], V](
+    elementShow: Show[E],
+    valueShow: Show[V]
+  ): Show[SegmentSeq[E, D, V]] =
+    Show.show(s => format.segmentSeq(s, elementShow.show, valueShow.show))
 }
