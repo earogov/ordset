@@ -1,5 +1,7 @@
 .bsp
 .idea
+.idea_modules
+out
 null
 project/project/target
 project/target
