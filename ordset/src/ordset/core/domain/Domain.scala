@@ -24,9 +24,9 @@ object Domain {
     override val elementOrd: AscOrder[E],
   ) extends Domain[E] {
 
-    override implicit val intOrd: AscOrder[Int] = ordset.core.instances.Int.intAscOrder
+    override implicit val intOrd: AscOrder[Int] = ordset.core.instances.int.intAscOrder
 
-    override implicit val longOrd: AscOrder[Long] = ordset.core.instances.Long.longAscOrder
+    override implicit val longOrd: AscOrder[Long] = ordset.core.instances.long.longAscOrder
 
     override implicit val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd, intOrd)
   }

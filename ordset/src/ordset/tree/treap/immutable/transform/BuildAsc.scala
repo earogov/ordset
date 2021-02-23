@@ -159,7 +159,7 @@ import scala.annotation.tailrec
  *   BuildAsc.appendToBuffer(
  *     buffer, newKey2, newPriority2, newValue2
  *   )(
- *     intOrd, boundOrd
+ *     boundOrd
  *   )
  * }}}
  * 2. Build treap from buffer.
@@ -177,9 +177,7 @@ object BuildAsc {
     newPriority: Int,
     newValue: V
   )(
-    implicit
-    intOrder: Order[Int],
-    keyOrder: Order[KK]
+    implicit keyOrder: Order[KK]
   ): MutableNodeStack[K, V] = {
     val newNode = new MutableTreap.Node[K, V](newKey, newValue, newPriority)
     buffer match {
@@ -188,7 +186,7 @@ object BuildAsc {
           newPriority, newKey,
           head.priority, head.key
         )(
-          intOrder, keyOrder
+          keyOrder
         )
         if (cmp <= 0) {
           newNode.setLeftNode(head.getRightOrNull)
@@ -200,7 +198,7 @@ object BuildAsc {
           tail match {
             case second :: _ =>
               second.setRightNode(immutableHead)
-              appendToBuffer[K, KK, V](tail, newKey, newPriority, newValue)(intOrder, keyOrder)
+              appendToBuffer[K, KK, V](tail, newKey, newPriority, newValue)(keyOrder)
             case _ =>
               newNode.setLeftNode(immutableHead)
               tail.prepended(newNode)

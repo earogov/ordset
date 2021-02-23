@@ -6,7 +6,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class IntervalSpec extends AnyFunSpec {
 
-  import ordset.core.instances.Int._
+  import ordset.core.instances.int._
   import ordset.core.syntax.SetBuilderNotation._
 
   type Dom = Domain[Int]

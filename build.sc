@@ -25,6 +25,8 @@ object ordset extends ScalaModule {
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
 
+    override def moduleDeps = Seq(commonsRandom)
+
     override def ivyDeps = Agg(
       ivy"org.scalatest::scalatest:3.1.1"
     )

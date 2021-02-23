@@ -6,7 +6,7 @@ import test.ordset.core.Labels
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 abstract class TreapSegmentSeqSample[E, D <: Domain[E], W](
-  seed: Int
+  seed: Long
 )(
   implicit override val domainOps: DomainOps[E, D]
 ) extends SegmentSeqSample[E, D, W] {

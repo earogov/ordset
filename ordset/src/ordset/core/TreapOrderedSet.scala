@@ -1,10 +1,10 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.random.UnsafeUniformRandom
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
-import ordset.util.IterableUtil
 
 import java.util.NoSuchElementException
 
@@ -48,26 +48,30 @@ object TreapOrderedSet {
    *
    * Preconditions:
    *
-   * 1. Size of `priorities` collection must be greater or equal to size of `bounds` collection:
+   * 1. `bounds` collection is ordered according to `validationFunc`:
+   * {{{
+   *   validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
+   * }}}
    *
-   * priorities.size `>=` bounds.size
+   * Method is considered 'unsafe' because it throws exception if preconditions are violated.
    *
-   * 2. `bounds` collection is ordered according to `validationFunc`:
-   *
-   * validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
+   * @param bounds collection of upper bounds.
+   * @param random random number generator with uniform distribution. Generates priorities for treap nodes.
+   * @param complementary when `true`: first segment is included in set, second - excluded, etc;
+   *                      when `false`: first segment is excluded, second - included, etc.
+   * @param domainOps domain related functions.
+   * @param validationFunc validates ordering of `bounds`.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
   def fromIterableUnsafe[E, D <: Domain[E]](
     bounds: IterableOnce[Bound.Upper[E]],
-    priorities: IterableOnce[Int],
+    random: UnsafeUniformRandom,
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
     validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
   ): OrderedSet[E, D] = {
     val boundOrd = domainOps.domain.boundOrd
-    val intOrd = domainOps.domain.intOrd
-    val priorityIterator = priorities.iterator
     try {
       var value = complementary
       val buffer =
@@ -76,15 +80,11 @@ object TreapOrderedSet {
           validationFunc,
           List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]],
           (buf, bnd) => {
-            val priority =IterableUtil.nextOrThrowMsg(
-              priorityIterator,
-              "Size of priorities collection must be greater or equal to size of bounds collection."
-            )
             val buffer =
               BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
-                buf, bnd, priority, value
+                buf, bnd, random.nextInt(), value
               )(
-                intOrd, boundOrd
+                boundOrd
               )
             value = !value
             buffer
@@ -104,10 +104,10 @@ object TreapOrderedSet {
    * Returns ordered set factory.
    */
   def getFactory[E, D <: Domain[E]](
-    priorities: IterableOnce[Int],
+    random: UnsafeUniformRandom,
     domainOps: DomainOps[E, D]
   )(
     validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
   ): OrderedSetFactory[E, D] =
-    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, priorities, complementary, domainOps)(validationFunc)
+    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, random, complementary, domainOps)(validationFunc)
 }

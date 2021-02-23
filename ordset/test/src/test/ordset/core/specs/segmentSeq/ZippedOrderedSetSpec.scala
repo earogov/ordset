@@ -9,8 +9,8 @@ import test.ordset.core.samples.segmentSeq.zippedOrderedSet._
 class ZippedOrderedSetSpec extends AnyFunSpec
   with NavigationBehaviors[Int, Domain[Int], Boolean] {
 
-  import ordset.core.instances.Boolean._
-  import ordset.core.instances.Int._
+  import ordset.core.instances.boolean._
+  import ordset.core.instances.int._
 
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]

@@ -34,6 +34,8 @@ object Labels {
 
   def seed(s: Int): Label = Label(s"seed $s")
 
+  def seed(s: Long): Label = Label(s"seed $s")
+
   def seed(s: String): Label = Label(s"seed $s")
 
   def caseLabel(c: Int): Label = Label(s"case $c")

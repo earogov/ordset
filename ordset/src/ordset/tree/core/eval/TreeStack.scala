@@ -61,7 +61,7 @@ object TreeStack {
   implicit def contextShow[K, V, Tree[KK, VV]](
     implicit treeShow: Show[Tree[K, V]]
   ): Show[Context[K, V, Tree]] =
-    ordset.core.instances.List.listShow(treeShow)
+    ordset.instances.list.listShow(treeShow)
 
   /**
    * Implicit [[ContextOps]] instance for [[Context]].

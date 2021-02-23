@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.domain.Domain
 
 trait OrderedSetFactory[E, D <: Domain[E]] {
 

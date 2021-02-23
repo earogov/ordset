@@ -15,7 +15,7 @@ import org.scalatest.funspec.AnyFunSpec
 // TODO implement unit tests for treap.
 class ImmutableTreapSpec extends AnyFunSpec {
 
-  import ordset.core.instances.Int._
+  import ordset.core.instances.int._
 
   type Dom = Domain[Int]
 

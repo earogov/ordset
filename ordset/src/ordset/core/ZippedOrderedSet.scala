@@ -13,7 +13,7 @@ class ZippedOrderedSet[E, D <: Domain[E]](
 ) extends AbstractZippedSegmentSeq[E, D, Boolean] {
 
   @inline
-  override def valueEq: Eq[Boolean] = instances.Boolean.booleanHash
+  override def valueEq: Eq[Boolean] = ordset.instances.boolean.booleanHash
 
   @inline
   protected final override def operator(left: Boolean, right: Boolean): Boolean = operatorFunc(left, right)

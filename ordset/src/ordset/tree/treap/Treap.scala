@@ -35,7 +35,7 @@ object Treap {
   }
 
   def nodePriorityOrder[K, V](implicit keyOrder: Order[K]): NodePriorityOrder[K, V] =
-    new NodePriorityOrder(ordset.core.instances.Int.intOrder, keyOrder)
+    new NodePriorityOrder(keyOrder)
 
   def nodePriorityCompare[K, V](
     priority1: Int,
@@ -43,9 +43,7 @@ object Treap {
     priority2: Int,
     key2: K
   )(
-    implicit
-    intOrder: Order[Int],
-    keyOrder: Order[K]
+    implicit keyOrder: Order[K]
   ): Int = {
     val cmp = intOrder.compare(priority1, priority2)
     if (cmp == 0) keyOrder.compare(key1, key2)
@@ -58,9 +56,7 @@ object Treap {
     priority2: Int,
     key2: K
   )(
-    implicit
-    intOrder: Order[Int],
-    keyOrder: Order[K]
+    implicit keyOrder: Order[K]
   ): Boolean = {
     val eq = intOrder.eqv(priority1, priority2)
     if (eq) keyOrder.eqv(key1, key2)
@@ -68,14 +64,15 @@ object Treap {
   }
 
   final class NodePriorityOrder[K, V](
-    val intOrder: Order[Int],
     val keyOrder: Order[K]
   ) extends Order[Node[K, V]] {
 
     override def compare(x: Node[K, V], y: Node[K, V]): Int =
-      nodePriorityCompare(x.priority, x.key, y.priority, y.key)(intOrder, keyOrder)
+      nodePriorityCompare(x.priority, x.key, y.priority, y.key)(keyOrder)
 
     override def eqv(x: Node[K, V], y: Node[K, V]): Boolean =
-      nodePriorityEq(x.priority, x.key, y.priority, y.key)(intOrder, keyOrder)
+      nodePriorityEq(x.priority, x.key, y.priority, y.key)(keyOrder)
   }
+
+  private val intOrder = ordset.instances.int.intOrder
 }

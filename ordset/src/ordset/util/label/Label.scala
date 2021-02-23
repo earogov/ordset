@@ -34,9 +34,9 @@ object Label {
 
   implicit def defaultHash: Hash[Label] = DefaultOrder
 
-  lazy val defaultSetHash: Hash[Set[Label]] = ordset.core.instances.Set.setHash()
+  lazy val defaultSetHash: Hash[Set[Label]] = ordset.instances.set.setHash()
 
-  lazy val defaultSetShow: Show[Set[Label]] = ordset.core.instances.Set.setShow(defaultShow)
+  lazy val defaultSetShow: Show[Set[Label]] = ordset.instances.set.setShow(defaultShow)
 
   def customSetShow(
     prefix: String,
@@ -49,11 +49,11 @@ object Label {
     Show.show(iterableShow.show(_))
   }
 
-  lazy val defaultQueueOrder: Order[Queue[Label]] = ordset.core.instances.Queue.queueOrder
+  lazy val defaultQueueOrder: Order[Queue[Label]] = ordset.instances.queue.queueOrder
 
-  lazy val defaultQueueHash: Hash[Queue[Label]] = ordset.core.instances.Queue.queueHash
+  lazy val defaultQueueHash: Hash[Queue[Label]] = ordset.instances.queue.queueHash
 
-  lazy val defaultQueueShow: Show[Queue[Label]] = ordset.core.instances.Queue.queueShow
+  lazy val defaultQueueShow: Show[Queue[Label]] = ordset.instances.queue.queueShow
 
   def customQueueShow(
     prefix: String,
@@ -69,7 +69,7 @@ object Label {
   // Typeclasses -------------------------------------------------------------- //
   object DefaultShow extends Show[Label] {
 
-    import ordset.core.instances.String._
+    import ordset.instances.string._
 
     override def show(t: Label): String = stringShow.show(t.value)
   }
@@ -98,7 +98,7 @@ object Label {
 
   object DefaultOrder extends Order[Label] with Hash[Label] {
 
-    import ordset.core.instances.String._
+    import ordset.instances.string._
     import ordset.util.HashUtil._
 
     override lazy val toOrdering: Ordering[Label] = super.toOrdering

@@ -2,14 +2,14 @@ package test.ordset.core.samples.segmentSeq.treapOrderedSet
 
 import ordset.core.TreapOrderedSet
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.random.RandomUtil
+import ordset.random.commons.ApacheCommonsRng
 import ordset.util.label.Label
 import test.ordset.core.Labels
 
 import scala.language.postfixOps
 
 class UniversalSetSample1[D <: Domain[Int]](
-  seed: Int
+  seed: Long
 )(
   implicit override val domainOps: DomainOps[Int, D]
 ) extends TreapSegmentSeqSample[Int, D, Boolean](seed)
@@ -18,5 +18,5 @@ class UniversalSetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.universalSet
 
   override def sequence: GenSegmentSeq =
-    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, RandomUtil.intLazyList(seed), complementary, domainOps)()
+    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, ApacheCommonsRng.default(seed), complementary, domainOps)()
 }

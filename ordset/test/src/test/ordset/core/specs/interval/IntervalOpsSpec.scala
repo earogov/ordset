@@ -6,7 +6,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class IntervalOpsSpec extends AnyFunSpec {
   
-  import ordset.core.instances.Int._
+  import ordset.core.instances.int._
   import ordset.core.syntax.BoundSyntax._
   import ordset.core.syntax.SetBuilderNotation._
 
