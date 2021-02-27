@@ -3,23 +3,25 @@ package ordset.random.commons
 import org.apache.commons.rng.simple.RandomSource
 
 /**
- * Random seed factory based on [[org.apache.commons.rng.simple.RandomSource]].
+ * Random seed factory.
+ *
+ * The implementations are provided by [[org.apache.commons.rng.simple.RandomSource]].
  */
-class ApacheCommonsSeed {
+object CommonsSeedFactory {
 
   /**
    * Creates a number for use as a seed.
    *
    * @return a random number.
    */
-  def createInt: Int = RandomSource.createInt()
+  def createInt(): Int = RandomSource.createInt()
 
   /**
    * Creates a number for use as a seed.
    *
    * @return a random number.
    */
-  def createLong: Long = RandomSource.createLong()
+  def createLong(): Long = RandomSource.createLong()
 
   /**
    * Creates an array of numbers for use as a seed.
@@ -36,5 +38,4 @@ class ApacheCommonsSeed {
    * @return an array of `n` random numbers.
    */
   def createLongArray(n: Int): Array[Long] = RandomSource.createLongArray(n)
-
 }

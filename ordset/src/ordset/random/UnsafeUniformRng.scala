@@ -1,15 +1,15 @@
 package ordset.random
 
 /**
- * Generates random number sequences that follow a uniform distribution.
- * Adapter trait for external random generators libraries.
+ * Random numbers generator with uniform distribution.
+ * Adapter trait for generators from external libraries.
  *
  * Implementations are allowed to update internal state without synchronization.
- * So instances of [[UnsafeUniformRandom]] must be considered as <u>thread unsafe</u>.
+ * So instances of [[UnsafeUniformRng]] must be considered as <u>thread unsafe</u>.
  *
  * Trait adopted from the original interface org.apache.commons.rng.UniformRandomProvider.
  */
-trait UnsafeUniformRandom {
+trait UnsafeUniformRng {
   /**
    * Generates `byte` values and places them into a user-supplied array.
    * <p>

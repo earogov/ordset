@@ -2,9 +2,8 @@ package test.ordset.core.samples.segmentSeq.treapOrderedSet
 
 import ordset.core.TreapOrderedSet
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.random.commons.ApacheCommonsRng
 import ordset.util.label.Label
-import test.ordset.core.Labels
+import test.ordset.core.{Labels, TestRngUtil}
 
 import scala.language.postfixOps
 
@@ -18,6 +17,6 @@ class MultiBoundedSetSample3[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
   override def sequence: GenSegmentSeq = {
-    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, ApacheCommonsRng.default(seed), complementary, domainOps)()
+    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, TestRngUtil.defaultRng(seed), complementary, domainOps)()
   }
 }

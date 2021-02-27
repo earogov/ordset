@@ -1,7 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
-import ordset.random.UnsafeUniformRandom
+import ordset.random.UnsafeUniformRng
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
@@ -65,7 +65,7 @@ object TreapOrderedSet {
   @throws[SegmentSeqException]("if preconditions are violated")
   def fromIterableUnsafe[E, D <: Domain[E]](
     bounds: IterableOnce[Bound.Upper[E]],
-    random: UnsafeUniformRandom,
+    random: UnsafeUniformRng,
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
@@ -104,7 +104,7 @@ object TreapOrderedSet {
    * Returns ordered set factory.
    */
   def getFactory[E, D <: Domain[E]](
-    random: UnsafeUniformRandom,
+    random: UnsafeUniformRng,
     domainOps: DomainOps[E, D]
   )(
     validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc

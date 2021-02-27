@@ -2,9 +2,8 @@ package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.{ArrayOrderedSet, OrderedSetFactory, TreapOrderedSet}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.random.commons.ApacheCommonsRng
 import ordset.util.label.Label
-import test.ordset.core.Labels
+import test.ordset.core.{Labels, TestRngUtil}
 
 object SegmentSeqFactories {
 
@@ -13,6 +12,6 @@ object SegmentSeqFactories {
   ): List[(Set[Label], OrderedSetFactory[E, D])] =
     List(
       (Set(Labels.arrayOrderedSet), ArrayOrderedSet.getFactory(domainOps)()),
-      (Set(Labels.treapOrderedSet), TreapOrderedSet.getFactory(ApacheCommonsRng.default(1L), domainOps)())
+      (Set(Labels.treapOrderedSet), TreapOrderedSet.getFactory(TestRngUtil.defaultRng(), domainOps)())
     )
 }
