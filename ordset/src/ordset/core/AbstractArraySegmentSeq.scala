@@ -15,6 +15,7 @@ import scala.collection.immutable.ArraySeq
  * <tr>`bounds` collection MUST be non empty. </tr>
  */
 abstract class AbstractArraySegmentSeq[E, D <: Domain[E], W] extends AbstractIndexedSegmentSeq[E, D, W] {
+
   import ordset.array.SortedArraySearch._
 
   // Transformation ----------------------------------------------------------- //

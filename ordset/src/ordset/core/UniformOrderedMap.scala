@@ -1,12 +1,15 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.random.RngManager
 
 class UniformOrderedMap[E, D <: Domain[E], W](
   final override val value: W,
   final val inclusionFunc: W => Boolean
 )(
-  implicit final override val domainOps: DomainOps[E, D]
+  implicit
+  final override val domainOps: DomainOps[E, D],
+  final override val rngManager: RngManager
 ) extends AbstractUniformSegmentSeq[E, D, W] {
 
   @inline
@@ -19,7 +22,9 @@ object UniformOrderedMap {
     value: W,
     inclusionFunc: W => Boolean
   )(
-    implicit domainOps: DomainOps[E, D]
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
   ): UniformOrderedMap[E, D, W] =
-    new UniformOrderedMap[E, D, W](value, inclusionFunc)(domainOps)
+    new UniformOrderedMap[E, D, W](value, inclusionFunc)
 }

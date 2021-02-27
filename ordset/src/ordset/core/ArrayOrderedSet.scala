@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.array.SortedArraySearch
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.random.RngManager
 
 import scala.collection.immutable.ArraySeq
 
@@ -9,7 +10,9 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   final val bounds: ArraySeq[Bound.Upper[E]],
   final val complementary: Boolean
 )(
-  implicit final override val domainOps: DomainOps[E, D]
+  implicit
+  final override val domainOps: DomainOps[E, D],
+  final override val rngManager: RngManager
 ) extends AbstractArraySegmentSeq[E, D, Boolean] {
 
   import SortedArraySearch._
@@ -149,10 +152,12 @@ object ArrayOrderedSet {
     bounds: ArraySeq[Bound.Upper[E]],
     complementary: Boolean
   )(
-    implicit domainOps: DomainOps[E, D]
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
   ): OrderedSet[E, D] =
-    if (bounds.isEmpty) UniformOrderedSet(complementary)(domainOps)
-    else new ArrayOrderedSet[E, D](bounds, complementary)(domainOps)
+    if (bounds.isEmpty) UniformOrderedSet(complementary)
+    else new ArrayOrderedSet[E, D](bounds, complementary)
 
   /**
    * Creates ordered set from collection of upper bounds.
@@ -170,10 +175,12 @@ object ArrayOrderedSet {
     domainOps: DomainOps[E, D]
   )(
     validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+  )(
+    implicit rngManager: RngManager
   ): OrderedSet[E, D] = bounds match {
     case bounds: ArraySeq[Bound.Upper[E]] =>
       OrderValidationFunc.validateIterable(bounds, validationFunc)
-      unchecked(bounds, complementary)(domainOps)
+      unchecked(bounds, complementary)(domainOps, rngManager)
     case _ =>
       val boundsArraySeq =
         OrderValidationFunc.foldIterableAfter[Bound.Upper[E], ArraySeq[Bound.Upper[E]]](
@@ -182,7 +189,7 @@ object ArrayOrderedSet {
           ArraySeq.empty[Bound.Upper[E]],
           (seq, bnd) => seq.appended(bnd)
         )
-      unchecked(boundsArraySeq, complementary)(domainOps)
+      unchecked(boundsArraySeq, complementary)(domainOps, rngManager)
   }
 
   /**
@@ -192,6 +199,8 @@ object ArrayOrderedSet {
     domainOps: DomainOps[E, D]
   )(
     validationFunc: OrderValidationFunc[Bound.Upper[E]] =  domainOps.boundOrd.strictValidationFunc
+  )(
+    implicit rngManager: RngManager
   ): OrderedSetFactory[E, D] =
     (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(validationFunc)
 }

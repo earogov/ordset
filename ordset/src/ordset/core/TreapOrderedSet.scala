@@ -1,7 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
-import ordset.random.{RngManager, UnsafeUniformRng}
+import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
@@ -12,7 +12,9 @@ class TreapOrderedSet[E, D <: Domain[E]] protected(
   final override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
   final override val lastValue: Boolean
 )(
-  implicit final override val domainOps: DomainOps[E, D]
+  implicit
+  final override val domainOps: DomainOps[E, D],
+  final override val rngManager: RngManager
 ) extends AbstractTreapSegmentSeq[E, D, Boolean] {
 
   // Protected section -------------------------------------------------------- //
@@ -40,7 +42,9 @@ object TreapOrderedSet {
     root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     lastValue: Boolean
   )(
-    implicit domainOps: DomainOps[E, D]
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
   ): OrderedSet[E, D] = new TreapOrderedSet(root, lastValue)
 
   /**
@@ -56,11 +60,11 @@ object TreapOrderedSet {
    * Method is considered 'unsafe' because it throws exception if preconditions are violated.
    *
    * @param bounds collection of upper bounds.
-   * @param random random number generator with uniform distribution. Generates priorities for treap nodes.
    * @param complementary when `true`: first segment is included in set, second - excluded, etc;
    *                      when `false`: first segment is excluded, second - included, etc.
    * @param domainOps domain related functions.
    * @param validationFunc validates ordering of `bounds`.
+   * @param rngManager provides random numbers generator.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
   def fromIterableUnsafe[E, D <: Domain[E]](
@@ -94,8 +98,8 @@ object TreapOrderedSet {
         )
       val root = BuildAsc.finalizeBuffer(buffer)
       root match {
-        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => new TreapOrderedSet(r, value)(domainOps)
-        case _ => UniformOrderedSet(value)(domainOps)
+        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => new TreapOrderedSet(r, value)(domainOps, rngManager)
+        case _ => UniformOrderedSet(value)(domainOps, rngManager)
       }
     } catch {
       case e @ (_: NoSuchElementException | _: IllegalArgumentException) => throw SegmentSeqException(e)

@@ -1,6 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.random.RngManager
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -80,6 +81,8 @@ import scala.{specialized => sp}
 trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   implicit def domainOps: DomainOps[E, D]
+
+  implicit def rngManager: RngManager
 
   // Inspection --------------------------------------------------------------- //
   /** @return `true` if sequence is empty i.e. contains no elements. */

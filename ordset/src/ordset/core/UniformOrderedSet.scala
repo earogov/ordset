@@ -1,11 +1,14 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.random.RngManager
 
 class UniformOrderedSet[E, D <: Domain[E]](
   final override val value: Boolean
 )(
-  implicit final override val domainOps: DomainOps[E, D]
+  implicit
+  final override val domainOps: DomainOps[E, D],
+  final override val rngManager: RngManager
 ) extends AbstractUniformSegmentSeq[E, D, Boolean] {
 
   @inline
@@ -14,12 +17,26 @@ class UniformOrderedSet[E, D <: Domain[E]](
 
 object UniformOrderedSet {
 
-  def apply[E, D <: Domain[E]](value: Boolean)(implicit domainOps: DomainOps[E, D]): UniformOrderedSet[E, D] =
-    new UniformOrderedSet[E, D](value)(domainOps)
+  def apply[E, D <: Domain[E]](
+    value: Boolean
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    new UniformOrderedSet[E, D](value)
 
-  def empty[E, D <: Domain[E]](implicit domainOps: DomainOps[E, D]): UniformOrderedSet[E, D] =
-    new UniformOrderedSet[E, D](false)(domainOps)
+  def empty[E, D <: Domain[E]](
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    new UniformOrderedSet[E, D](false)
 
-  def universal[E, D <: Domain[E]](implicit domainOps: DomainOps[E, D]): UniformOrderedSet[E, D] =
-    new UniformOrderedSet[E, D](true)(domainOps)
+  def universal[E, D <: Domain[E]](
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    new UniformOrderedSet[E, D](true)
 }
