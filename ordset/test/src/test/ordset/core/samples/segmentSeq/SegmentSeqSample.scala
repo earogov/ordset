@@ -3,11 +3,14 @@ package test.ordset.core.samples.segmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.SetBuilderNotation.BoundBuilder
 import ordset.core.{Bound, IntervalRelation, SegmentSeq}
+import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
 
 abstract class SegmentSeqSample[E, D <: Domain[E], W](
-  implicit val domainOps: DomainOps[E, D]
+  implicit
+  val domainOps: DomainOps[E, D],
+  val rngManager: RngManager
 ) {
   def sample: String
 

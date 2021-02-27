@@ -45,7 +45,7 @@ trait Sample1[D <: Domain[Int]]
     Nil
 
   override def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[Int, D, Boolean]] = {
-    SegmentSeqFactories.getOrderedSetFactories(domainOps).flatMap { factoryTuple =>
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
         // X ......Seq1....... )[--false--)[-----true-----X

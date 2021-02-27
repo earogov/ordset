@@ -1,25 +1,18 @@
 package test.ordset.core
 
-import ordset.random.UnsafeUniformRng
-import ordset.random.commons.KISSRngFactory
+import ordset.random.RngManager
+import ordset.random.commons.{KISSSynchronizedRngManager, KISSThreadLocalRngManager}
 
 object TestRngUtil {
 
-  /**
-   * Don't use random seed for reproducibility of test.
-   */
-  def defaultRng(): UnsafeUniformRng =
-    KISSRngFactory.create(0xa19f0b2d0c48ea51L, 0x0e87fa311d2d0fL)
+  def defaultRngManager(seed: Long): RngManager = new KISSThreadLocalRngManager(seed, seed)
 
-  /**
-   * Don't use random seed for reproducibility of test.
-   */
-  def defaultRng(seed: Long): UnsafeUniformRng =
-    KISSRngFactory.create(seed, seed)
+  object Implicits {
 
-  /**
-   * Don't use random seed for reproducibility of test.
-   */
-  def defaultRng(seed1: Long, seed2: Long): UnsafeUniformRng =
-    KISSRngFactory.create(seed1, seed2)
+    /**
+     * Constant seeds are used for tests reproducibility.
+     */
+    implicit lazy val defaultRngManager: RngManager =
+      new KISSThreadLocalRngManager(0xa19f0b2d0c48ea51L, 0x0e87fa311d2d0fL)
+  }
 }

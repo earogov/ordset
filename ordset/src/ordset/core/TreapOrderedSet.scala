@@ -1,7 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
-import ordset.random.UnsafeUniformRng
+import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
@@ -65,12 +65,14 @@ object TreapOrderedSet {
   @throws[SegmentSeqException]("if preconditions are violated")
   def fromIterableUnsafe[E, D <: Domain[E]](
     bounds: IterableOnce[Bound.Upper[E]],
-    random: UnsafeUniformRng,
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc,
+  )(
+    implicit rngManager: RngManager
   ): OrderedSet[E, D] = {
+    val rng = rngManager.newUnsafeUniformRng()
     val boundOrd = domainOps.domain.boundOrd
     try {
       var value = complementary
@@ -82,7 +84,7 @@ object TreapOrderedSet {
           (buf, bnd) => {
             val buffer =
               BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
-                buf, bnd, random.nextInt(), value
+                buf, bnd, rng.nextInt(), value
               )(
                 boundOrd
               )
@@ -104,10 +106,11 @@ object TreapOrderedSet {
    * Returns ordered set factory.
    */
   def getFactory[E, D <: Domain[E]](
-    random: UnsafeUniformRng,
     domainOps: DomainOps[E, D]
   )(
     validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+  )(
+    implicit rngManager: RngManager
   ): OrderedSetFactory[E, D] =
-    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, random, complementary, domainOps)(validationFunc)
+    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(validationFunc)(rngManager)
 }

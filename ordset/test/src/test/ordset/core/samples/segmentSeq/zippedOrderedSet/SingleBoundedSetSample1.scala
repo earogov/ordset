@@ -3,6 +3,7 @@ package test.ordset.core.samples.segmentSeq.zippedOrderedSet
 import ordset.core.{ArrayOrderedSet, ZippedOrderedSet}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.BoundSyntax._
+import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
@@ -11,7 +12,9 @@ import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 class SingleBoundedSetSample1[D <: Domain[Int]](
-  implicit override val domainOps: DomainOps[Int, D]
+  implicit
+  override val domainOps: DomainOps[Int, D],
+  override val rngManager: RngManager
 ) extends SegmentSeqSample[Int, D, Boolean]
   with test.ordset.core.behaviors.segmentSeq.singleBoundedSet.Sample1[D] {
 

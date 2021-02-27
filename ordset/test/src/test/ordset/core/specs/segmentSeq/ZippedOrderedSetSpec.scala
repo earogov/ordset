@@ -11,6 +11,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
 
   import ordset.core.instances.boolean._
   import ordset.core.instances.int._
+  import test.ordset.core.TestRngUtil.Implicits._
 
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
