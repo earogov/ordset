@@ -166,13 +166,11 @@ import scala.annotation.tailrec
  * 1b. Or convert right front of existing tree into buffer and add new nodes there.
  * {{{
  *
- * val buffer =
- *   BuildAsc.rightFrontToBuffer(
- *     Nil, someNode
- *   )
+ * val buffer = BuildAsc.rightFrontToBuffer(someTree)
+ *
  * val buffer =
  *   BuildAsc.addToBuffer(
- *     buffer, newKey2, newPriority2, newValue2
+ *     buffer, newKey1, newPriority1, newValue1
  *   )(
  *     boundOrd
  *   )
@@ -201,12 +199,7 @@ object BuildAsc {
     val newNode = new MutableTreap.Node[K, V](newKey, newValue, newPriority)
     buffer match {
       case head :: tail =>
-        val cmp = Treap.nodePriorityCompare[KK, V](
-          newPriority, newKey,
-          head.priority, head.key
-        )(
-          keyOrder
-        )
+        val cmp = Treap.nodePriorityCompare[KK, V](newPriority, newKey, head.priority, head.key)(keyOrder)
         if (cmp <= 0) {
           newNode.setLeftNode(head.getRightOrNull)
           head.setRightNode(newNode)
@@ -229,24 +222,26 @@ object BuildAsc {
   }
 
   /**
-   * Adds right front of tree with root `node` to `buffer`.
+   * Converts right front of `tree` to buffer.
    */
-  @tailrec
-  def rightFrontToBuffer[K, V](
-    buffer: MutableNodeStack[K, V],
-    node: ImmutableTreap.Node[K, V]
-  ): MutableNodeStack[K, V] = {
-    val newNode = new MutableTreap.Node[K, V](node.key, node.value, node.priority)
-    newNode.setLeftNode(node.getLeftOrNull)
-    buffer match {
-      case _ :: second :: _ => second.setRightNode(newNode)
-      case _ => // nothing to do
+  def rightFrontToBuffer[K, V](tree: ImmutableTreap[K, V]): MutableNodeStack[K, V] = {
+    @tailrec
+    def loop(buffer: MutableNodeStack[K, V], node: ImmutableTreap.Node[K, V]): MutableNodeStack[K, V] = {
+      val newNode = new MutableTreap.Node[K, V](node.key, node.value, node.priority)
+      newNode.setLeftNode(node.getLeftOrNull)
+      buffer match {
+        case head :: _ => head.setRightNode(newNode)
+        case _ => // nothing to do
+      }
+      val newBuffer = buffer.prepended(newNode)
+      node match {
+        case node: ImmutableTreap.NodeWithRight[K, V] => loop(newBuffer, node.right)
+        case _ => newBuffer
+      }
     }
-    node match {
-      case node: ImmutableTreap.NodeWithRight[K, V] =>
-        rightFrontToBuffer[K, V](buffer.prepended(newNode), node.right)
-      case _ =>
-        buffer.prepended(newNode)
+    tree match {
+      case node: ImmutableTreap.Node[K, V] => loop(Nil, node)
+      case _ => Nil
     }
   }
 

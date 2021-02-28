@@ -338,13 +338,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
         else
           root
 
-      val initBuffer = originalRoot match {
-        case originalRoot: ImmutableTreap.Node[Bound.Upper[E], W] =>
-          BuildAsc.rightFrontToBuffer[Bound.Upper[E], W](Nil, originalRoot)
-        case _ =>
-          Nil
-      }
-      val buffer = appendedFirstSegment.forwardIterable().foldLeft(initBuffer) {
+      val buffer = appendedFirstSegment.forwardIterable().foldLeft(
+        BuildAsc.rightFrontToBuffer[Bound.Upper[E], W](originalRoot)
+      ) {
         (buf, seg) => seg match {
           case seg: Segment.WithNext[E, D, W] =>
             BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], W](buf, seg.upperBound, rng.nextInt(), seg.value)(ord)
