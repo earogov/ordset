@@ -122,12 +122,12 @@ import scala.collection.{AbstractIterable, AbstractIterator}
 sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segment =>
   import Segment._
 
-  def forwardIterable: Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
+  def forwardIterable(): Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
 
-    override def iterator: Iterator[Segment[E, D, V]] = forwardIterator
+    override def iterator: Iterator[Segment[E, D, V]] = forwardIterator()
   }
 
-  def forwardIterator: Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+  def forwardIterator(): Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
 
     private var current: Segment[E, D, V] = _
 
@@ -145,12 +145,12 @@ sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segme
     }
   }
 
-  def backwardIterable: Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
+  def backwardIterable(): Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
 
-    override def iterator: Iterator[Segment[E, D, V]] = backwardIterator
+    override def iterator: Iterator[Segment[E, D, V]] = backwardIterator()
   }
 
-  def backwardIterator: Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+  def backwardIterator(): Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
 
     private var current: Segment[E, D, V] = _
 

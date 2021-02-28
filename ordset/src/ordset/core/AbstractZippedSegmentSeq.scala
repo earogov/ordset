@@ -1,6 +1,5 @@
 package ordset.core
 
-import ordset.Eq
 import ordset.core.domain.{Domain, DomainOps}
 
 // TODO: class description.
@@ -55,9 +54,6 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
 
   /** Original sequence to which zipping is applied. */
   protected val right: SegmentSeq[E, D, W]
-
-  /** Equality typeclass for segments values. */
-  protected def valueEq: Eq[W]
 
   /**
    * Function combining values of `left` and `right` sequences and returning value of zipped sequence.

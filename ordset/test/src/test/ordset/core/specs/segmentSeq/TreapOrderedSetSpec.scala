@@ -17,7 +17,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
-  private val testSuite = Range(1, 20).flatMap { seed =>
+  private val testSuite = Range(1, 21).flatMap { seed =>
     List(
       new EmptySetSample1[Dom](seed),
       new UniversalSetSample1[Dom](seed),
@@ -39,6 +39,8 @@ class TreapOrderedSetSpec extends AnyFunSpec
   }
 
   describe("Treap based ordered set transformation operations") {
+
+    it should behave like segmentSeqCanBeAppended(testSuite)
 
     it should behave like segmentSeqCanBeSliced(testSuite)
   }

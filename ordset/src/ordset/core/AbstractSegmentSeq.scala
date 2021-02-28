@@ -19,7 +19,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E],  W] extends SegmentSeq[E, D
    * Get collection of upper bounds that not less then upper bound of specified segment.
    */
   protected def forwardUpperBoundsFromSegment(segment: Segment[E, D, W]): Iterable[Bound.Upper[E]] =
-    segment.forwardIterable.map {
+    segment.forwardIterable().map {
       case s: SegmentWithNext => s.upperBound
       case _ => null
     }.filterNot(_ == null)

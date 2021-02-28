@@ -21,7 +21,7 @@ object CallTrace {
   ): Fold.Func[K, V, Tree, C, Queue[String]] =
     (tree, context, queue) => queue.appended(makeString(tree, context, treeShow, contextShow))
 
-  // PRIVATE SECTION
+  // Private section ---------------------------------------------------------- //
   private def makeString[K, V, Tree[KK, VV], C](
     tree: Tree[K, V],
     context: C,

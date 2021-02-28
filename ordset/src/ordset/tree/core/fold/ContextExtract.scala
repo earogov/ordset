@@ -39,7 +39,7 @@ object ContextExtract {
       function[K, V, Tree, C]
     )
 
-  // PRIVATE SECTION
+  // Private section ---------------------------------------------------------- //
   private lazy val ExtractFunc: Fold.Func[Any, Any, Any, Any, Output[Any, Any, Any, Any]] =
     makeExtractFunc[Any, Any, Any, Any]
 

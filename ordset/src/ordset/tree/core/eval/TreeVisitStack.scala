@@ -89,7 +89,7 @@ object TreeVisitStack {
   implicit def contextOps[K, V, Tree[KK, VV]]: ContextOps[K, V, Tree, Context[K, V, Tree]] =
     ContextOps.asInstanceOf[ContextOps[K, V, Tree, Context[K, V, Tree]]]
 
-  // PRIVATE SECTION
+  // Private section ---------------------------------------------------------- //
   private lazy val ContextOps: ContextOps[Any, Any, Any, Context[Any, Any, Any]] =
     makeContextOps[Any, Any, Any]
 

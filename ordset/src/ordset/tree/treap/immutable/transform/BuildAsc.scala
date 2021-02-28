@@ -146,23 +146,39 @@ import scala.annotation.tailrec
  *
  * =Usage=
  *
- * 1. Add new noes to buffer.
+ * 1a. Add new nodes to empty buffer.
  * {{{
  *
  * val buffer =
- *   BuildAsc.appendToBuffer(
+ *   BuildAsc.addToBuffer(
  *     Nil, newKey1, newPriority1, newValue1
  *   )(
- *     intOrd, boundOrd
+ *     boundOrd
  *   )
  * val buffer =
- *   BuildAsc.appendToBuffer(
+ *   BuildAsc.addToBuffer(
  *     buffer, newKey2, newPriority2, newValue2
  *   )(
  *     boundOrd
  *   )
  * }}}
- * 2. Build treap from buffer.
+ *
+ * 1b. Or convert right front of existing tree into buffer and add new nodes there.
+ * {{{
+ *
+ * val buffer =
+ *   BuildAsc.rightFrontToBuffer(
+ *     Nil, someNode
+ *   )
+ * val buffer =
+ *   BuildAsc.addToBuffer(
+ *     buffer, newKey2, newPriority2, newValue2
+ *   )(
+ *     boundOrd
+ *   )
+ * }}}
+ *
+ * 2. Build new treap from buffer.
  * {{{
  *
  * val treap = BuildAsc.finalizeBuffer(buffer)
@@ -170,8 +186,11 @@ import scala.annotation.tailrec
  */
 object BuildAsc {
 
+  /**
+   * Creates new node with `newKey`, `newValue` and `newPriority` and adds it to `buffer`.
+   */
   @tailrec
-  def appendToBuffer[K, KK >: K, V](
+  def addToBuffer[K, KK >: K, V](
     buffer: MutableNodeStack[K, V],
     newKey: K,
     newPriority: Int,
@@ -198,7 +217,7 @@ object BuildAsc {
           tail match {
             case second :: _ =>
               second.setRightNode(immutableHead)
-              appendToBuffer[K, KK, V](tail, newKey, newPriority, newValue)(keyOrder)
+              addToBuffer[K, KK, V](tail, newKey, newPriority, newValue)(keyOrder)
             case _ =>
               newNode.setLeftNode(immutableHead)
               tail.prepended(newNode)
@@ -209,6 +228,31 @@ object BuildAsc {
     }
   }
 
+  /**
+   * Adds right front of tree with root `node` to `buffer`.
+   */
+  @tailrec
+  def rightFrontToBuffer[K, V](
+    buffer: MutableNodeStack[K, V],
+    node: ImmutableTreap.Node[K, V]
+  ): MutableNodeStack[K, V] = {
+    val newNode = new MutableTreap.Node[K, V](node.key, node.value, node.priority)
+    newNode.setLeftNode(node.getLeftOrNull)
+    buffer match {
+      case _ :: second :: _ => second.setRightNode(newNode)
+      case _ => // nothing to do
+    }
+    node match {
+      case node: ImmutableTreap.NodeWithRight[K, V] =>
+        rightFrontToBuffer[K, V](buffer.prepended(newNode), node.right)
+      case _ =>
+        buffer.prepended(newNode)
+    }
+  }
+
+  /**
+   * Builds new treap from `buffer`.
+   */
   @tailrec
   def finalizeBuffer[K, V](
     buffer: MutableNodeStack[K, V],

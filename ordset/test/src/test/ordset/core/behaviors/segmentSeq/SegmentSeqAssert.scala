@@ -44,8 +44,8 @@ trait SegmentSeqAssert[E, D <: Domain[E], V] {
     )
     assert(
       IterableUtil.iteratorEq(
-        expected.firstSegment.forwardIterator.map(_.intervalRelation),
-        actual.firstSegment.forwardIterator.map(_.intervalRelation)
+        expected.firstSegment.forwardIterator().map(_.intervalRelation),
+        actual.firstSegment.forwardIterator().map(_.intervalRelation)
       )(
         domainOps.intervalRelationHash(valueHash)
       ),
@@ -64,7 +64,7 @@ trait SegmentSeqAssert[E, D <: Domain[E], V] {
 
     assert(
       IterableUtil.iteratorEq(
-        actual.firstSegment.forwardIterator.map(_.intervalRelation),
+        actual.firstSegment.forwardIterator().map(_.intervalRelation),
         expected.iterator
       )(
         domainOps.intervalRelationHash(valueHash)

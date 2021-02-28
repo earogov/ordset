@@ -39,7 +39,7 @@ object TreeStack {
       }
 
     def addToStack(context: Context[K, V, Tree], tree: Tree[K, V]): Context[K, V, Tree] =
-      tree :: context
+      context.prepended(tree)
   }
 
   /**
@@ -69,7 +69,7 @@ object TreeStack {
   implicit def contextOps[K, V, Tree[KK, VV]]: ContextOps[K, V, Tree] =
     ContextOps.asInstanceOf[ContextOps[K, V, Tree]]
 
-  // PRIVATE SECTION
+  // Private section ---------------------------------------------------------- //
   private lazy val ContextOps: ContextOps[Any, Any, Any] = new ContextOps[Any, Any, Any] {}
 
   private lazy val EvalFunc: EvalFunc[Any, Any, Any] = makeEvalFunc(ContextOps)

@@ -1,7 +1,7 @@
 package test.ordset.core.samples.segmentSeq.zippedOrderedSet
 
-import ordset.core.{ArrayOrderedSet, ZippedOrderedSet}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.set.{ArrayOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
 import ordset.random.RngManager
 import ordset.util.label.Label

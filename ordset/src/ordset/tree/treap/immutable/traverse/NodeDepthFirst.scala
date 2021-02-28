@@ -110,7 +110,7 @@ object NodeDepthFirst {
     def rightOnlyFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
       RightOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
-    // PRIVATE SECTION
+    // Private section ---------------------------------------------------------- //
     private lazy val LeftFirstInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
       (_, context) =>
         if (BinaryTreeVisit.isLeftUnvisited(context.currentVisits)) BinaryTreeStep.Left

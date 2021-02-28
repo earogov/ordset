@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.Eq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
@@ -80,8 +81,13 @@ import scala.{specialized => sp}
  */
 trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
+  /** Domain operations. */
   implicit def domainOps: DomainOps[E, D]
 
+  /** Equality typeclass for segments values. */
+  implicit def valueEq: Eq[W]
+
+  /** Random numbers generator. */
   implicit def rngManager: RngManager
 
   // Inspection --------------------------------------------------------------- //

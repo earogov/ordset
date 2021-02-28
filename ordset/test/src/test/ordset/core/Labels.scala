@@ -1,7 +1,8 @@
 package test.ordset.core
 
 import ordset.Show
-import ordset.core.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedMap, UniformOrderedSet, ZippedOrderedSet}
+import ordset.core.map.UniformOrderedMap
+import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.util.label.Label
 
 object Labels {
@@ -18,15 +19,15 @@ object Labels {
 
   val universalSet: Label = Label("universal set")
 
-  val uniformOrderedSet: Label = Label(UniformOrderedSet.getClass.getSimpleName)
+  val uniformOrderedSet: Label = Label(classOf[UniformOrderedSet[_, _]].getSimpleName)
 
-  val uniformOrderedMap: Label = Label(UniformOrderedMap.getClass.getSimpleName)
+  val uniformOrderedMap: Label = Label(classOf[UniformOrderedMap[_, _, _]].getClass.getSimpleName)
 
-  val arrayOrderedSet: Label = Label(ArrayOrderedSet.getClass.getSimpleName)
+  val arrayOrderedSet: Label = Label(classOf[ArrayOrderedSet[_, _]].getSimpleName)
 
-  val treapOrderedSet: Label = Label(TreapOrderedSet.getClass.getSimpleName)
+  val treapOrderedSet: Label = Label(classOf[TreapOrderedSet[_, _]].getSimpleName)
 
-  val zippedOrderedSet: Label = Label(ZippedOrderedSet.getClass.getSimpleName)
+  val zippedOrderedSet: Label = Label(classOf[ZippedOrderedSet[_, _]].getSimpleName)
 
   def sample(n: Int): Label = Label(s"sample $n")
 

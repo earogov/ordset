@@ -1,7 +1,7 @@
 package test.ordset.core.samples.segmentSeq.treapOrderedSet
 
-import ordset.core.TreapOrderedSet
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.set.TreapOrderedSet
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.{Labels, TestRngUtil}

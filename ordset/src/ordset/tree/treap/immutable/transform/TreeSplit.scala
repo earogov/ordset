@@ -2,12 +2,10 @@ package ordset.tree.treap.immutable.transform
 
 import ordset.Order
 import ordset.tree.core.Fold
-import ordset.tree.core.eval.TreeVisitStack
-import ordset.tree.treap.immutable.ImmutableTreap
-import ordset.tree.treap.immutable.NodeVisitContext
-import ordset.tree.treap.immutable.NodeFoldFunc
-import ordset.tree.treap.immutable.traverse.NodeDownward.{Navigation, foldDefault}
+import ordset.tree.core.eval.TreeStack
+import ordset.tree.treap.immutable.traverse.NodeDownward.Navigation
 import ordset.tree.treap.immutable.traverse.{NodeDownward, NodeUpward}
+import ordset.tree.treap.immutable.{ImmutableTreap, NodeFoldFunc, NodeStackContext}
 
 /**
  * Split operation breaks initial treap into left and right subtrees at specified key.
@@ -190,30 +188,32 @@ object TreeSplit {
   ): SplitOutput[K, V] = {
     val contextExtract =
       if (splitLeft)
-        NodeDownward.foldForLeftSplit[K, KK, V, NodeVisitContext[K, V]](
+        NodeDownward.foldForLeftSplit[K, KK, V, NodeStackContext[K, V]](
           node,
-          TreeVisitStack.contextOps.getEmptyContext,
+          TreeStack.contextOps[K, V, ImmutableTreap.Node].getEmptyContext,
           key,
-          TreeVisitStack.function
+          TreeStack.function
         )
       else
-        NodeDownward.foldForRightSplit[K, KK, V, NodeVisitContext[K, V]](
+        NodeDownward.foldForRightSplit[K, KK, V, NodeStackContext[K, V]](
           node,
-          TreeVisitStack.contextOps.getEmptyContext,
+          TreeStack.contextOps[K, V, ImmutableTreap.Node].getEmptyContext,
           key,
-          TreeVisitStack.function
+          TreeStack.function
         )
     Fold.before(
       contextExtract.tree,
       contextExtract.context,
       initial
     )(
-      NodeUpward.defaultFunc(
+      NodeUpward.defaultFunc[K, V, NodeStackContext[K, V]](
         NodeUpward.StopPredicate.never,
-        TreeVisitStack.function
+        TreeStack.function
+      )(
+        TreeStack.contextOps
       ),
-      if (splitLeft) splitLeftFunc[K, KK, V, NodeVisitContext[K, V]](key)(keyOrder)
-      else splitRightFunc[K, KK, V, NodeVisitContext[K, V]](key)(keyOrder)
+      if (splitLeft) splitLeftFunc[K, KK, V, NodeStackContext[K, V]](key)(keyOrder)
+      else splitRightFunc[K, KK, V, NodeStackContext[K, V]](key)(keyOrder)
     )
   }
 

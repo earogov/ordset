@@ -123,7 +123,7 @@ object NodeUpward {
      */
     def always[K, V]: StopPredicate[K, V] = AlwaysInstance
 
-    // PRIVATE SECTION
+    // Private section ---------------------------------------------------------- //
     private lazy val NextKeyInstance: StopPredicate[Any, Any] = (parent, tree) => parent.hasLeftInstance(tree)
 
     private lazy val PrevKeyInstance: StopPredicate[Any, Any] = (parent, tree) => parent.hasRightInstance(tree)

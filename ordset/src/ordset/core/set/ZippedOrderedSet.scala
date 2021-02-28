@@ -1,7 +1,7 @@
-package ordset.core
+package ordset.core.set
 
-import ordset.Eq
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.{AbstractZippedSegmentSeq, OrderedSet}
 import ordset.random.RngManager
 
 class ZippedOrderedSet[E, D <: Domain[E]](
@@ -13,10 +13,8 @@ class ZippedOrderedSet[E, D <: Domain[E]](
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractZippedSegmentSeq[E, D, Boolean] {
-
-  @inline
-  override def valueEq: Eq[Boolean] = ordset.instances.boolean.booleanHash
+) extends AbstractZippedSegmentSeq[E, D, Boolean]
+  with OrderedSetCommons[E, D] {
 
   @inline
   protected final override def operator(left: Boolean, right: Boolean): Boolean = operatorFunc(left, right)

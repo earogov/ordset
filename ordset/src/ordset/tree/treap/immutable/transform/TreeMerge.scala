@@ -56,7 +56,7 @@ import scala.annotation.tailrec
  *       leftTree,
  *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
  *     )(
- *       NodeSearch.maxKey(TreeStack.function)
+ *       NodeAside.maxKeyFunc(TreeStack.function)
  *     )
  * }}}
  *
@@ -74,7 +74,7 @@ import scala.annotation.tailrec
  *       rightTree,
  *       TreeStack.contextOps[K, V, Treap.Node].getEmptyContext
  *     )(
- *       NodeSearch.minKey(TreeStack.function)
+ *       NodeAside.minKeyFunc(TreeStack.function)
  *     )
  * }}}
  *
@@ -84,25 +84,25 @@ import scala.annotation.tailrec
  *     val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
  * }}}
  *
- * 3. Apply [[TreeMerge.mergeFunc]] to the received stacks to build merged tree.
+ * 3. Apply [[TreeMerge.merge]] to the received stacks to build merged tree.
  *
  * {{{
- *     mergeFunc(leftStack, rightStack, Treap.Empty())
+ *     merge(leftStack, rightStack, Treap.Empty())
  * }}}
  */
 object TreeMerge {
 
   /**
-   * Returns function that implements one step of merge operation.
+   * Returns function that implements merge operation.
    */
   @tailrec
-  def mergeFunc[K, KK >: K, V](
+  def merge[K, KK >: K, V](
     leftStack: NodeStack[K, V],
     rightStack: NodeStack[K, V],
     mergedTree: ImmutableTreap[K, V]
   )(
     implicit priorityOrder: Order[Treap.Node[KK, V]]
-  ): ImmutableTreap[K, V] = {
+  ): ImmutableTreap[K, V] =
     (leftStack, rightStack) match {
       case (leftHead :: leftTail, rightHead :: rightTail) =>
         if (priorityOrder.compare(leftHead, rightHead) <= 0) {
@@ -113,7 +113,7 @@ object TreeMerge {
           // ...   mergedTree
           //         /   \
           //       ...   ...
-          mergeFunc[K, KK, V](leftTail, rightTail, rightHead.withLeftNode(leftHead.withRightTree(mergedTree)))
+          merge[K, KK, V](leftTail, rightTail, rightHead.withLeftNode(leftHead.withRightTree(mergedTree)))
         } else {
           //        leftHead
           //         /    \
@@ -122,7 +122,7 @@ object TreeMerge {
           //       mergedTree  ...
           //         /   \
           //       ...   ...
-          mergeFunc[K, KK, V](leftTail, rightTail, leftHead.withRightNode(rightHead.withLeftTree(mergedTree)))
+          merge[K, KK, V](leftTail, rightTail, leftHead.withRightNode(rightHead.withLeftTree(mergedTree)))
         }
       case (leftHead :: leftTail, _) =>
         //  leftHead   ...
@@ -130,25 +130,24 @@ object TreeMerge {
         // ...   mergedTree
         //         /   \
         //       ...   ...
-        mergeLeftFunc(leftTail, leftHead.withRightTree(mergedTree))
+        mergeLeft(leftTail, leftHead.withRightTree(mergedTree))
       case (_, rightHead :: rightTail) =>
         //             rightHead
         //              /    \
         //       mergedTree  ...
         //         /   \
         //       ...   ...
-        mergeRightFunc(rightTail, rightHead.withLeftTree(mergedTree))
+        mergeRight(rightTail, rightHead.withLeftTree(mergedTree))
       case _ =>
         mergedTree
     }
-  }
 
   /**
    * Same as
-   * {{{ mergeFunc(leftStack, Nil, mergedTree) }}}
+   * {{{ merge(leftStack, Nil, mergedTree) }}}
    */
   @tailrec
-  def mergeLeftFunc[K, V](
+  def mergeLeft[K, V](
     leftStack: NodeStack[K, V],
     mergedTree: ImmutableTreap[K, V]
   ): ImmutableTreap[K, V] =
@@ -158,16 +157,16 @@ object TreeMerge {
       // ...   mergedTree
       //         /   \
       //       ...   ...
-      case leftHead :: leftTail => mergeLeftFunc(leftTail, leftHead.withRightTree(mergedTree))
+      case leftHead :: leftTail => mergeLeft(leftTail, leftHead.withRightTree(mergedTree))
       case _ => mergedTree
     }
 
   /**
    * Same as
-   * {{{ mergeFunc(Nil, rightStack, mergedTree) }}}
+   * {{{ merge(Nil, rightStack, mergedTree) }}}
    */
   @tailrec
-  def mergeRightFunc[K, V](
+  def mergeRight[K, V](
     rightStack: NodeStack[K, V],
     mergedTree: ImmutableTreap[K, V]
   ): ImmutableTreap[K, V] =
@@ -177,14 +176,14 @@ object TreeMerge {
       //       mergedTree  ...
       //         /   \
       //       ...   ...
-      case rightHead :: rightTail => mergeRightFunc(rightTail, rightHead.withLeftTree(mergedTree))
+      case rightHead :: rightTail => mergeRight(rightTail, rightHead.withLeftTree(mergedTree))
       case _ => mergedTree
   }
 
   /**
-   * Applies [[mergeFunc]] function to `leftNode` and `rightNode` (non empty) treaps.
+   * Applies [[merge]] function to `leftNode` and `rightNode` (non empty) treaps.
    */
-  def foldNode[K, KK >: K, V](
+  def foldNodes[K, KK >: K, V](
     leftNode: ImmutableTreap.Node[K, V],
     rightNode: ImmutableTreap.Node[K, V]
   )(
@@ -207,13 +206,13 @@ object TreeMerge {
     )
     val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
 
-    mergeFunc[K, KK, V](leftStack, rightStack, ImmutableTreap.Empty)
+    merge[K, KK, V](leftStack, rightStack, ImmutableTreap.Empty)(priorityOrder)
   }
 
   /**
-   * Applies [[mergeFunc]] function to `leftTree` and `rightTree` (possibly empty) treaps.
+   * Applies [[merge]] function to `leftTree` and `rightTree` (possibly empty) treaps.
    */
-  def foldTreap[K, KK >: K, V](
+  def foldTreaps[K, KK >: K, V](
     leftTree: ImmutableTreap[K, V],
     rightTree: ImmutableTreap[K, V]
   )(
@@ -223,7 +222,7 @@ object TreeMerge {
       case leftNode: ImmutableTreap.Node[K, V] =>
         rightTree match {
           case rightNode: ImmutableTreap.Node[K, V] =>
-            foldNode[K, KK, V](leftNode, rightNode)(priorityOrder)
+            foldNodes[K, KK, V](leftNode, rightNode)(priorityOrder)
           case _ =>
             leftNode
       }

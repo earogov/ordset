@@ -1,6 +1,7 @@
-package ordset.core
+package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core._
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
@@ -15,7 +16,8 @@ class TreapOrderedSet[E, D <: Domain[E]] protected(
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractTreapSegmentSeq[E, D, Boolean] {
+) extends AbstractTreapSegmentSeq[E, D, Boolean]
+  with OrderedSetCommons[E, D]{
 
   // Protected section -------------------------------------------------------- //
   protected def consUniform(value: Boolean): SegmentSeq[E, D, Boolean] =
@@ -87,7 +89,7 @@ object TreapOrderedSet {
           List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]],
           (buf, bnd) => {
             val buffer =
-              BuildAsc.appendToBuffer[Bound.Upper[E], Bound[E], Boolean](
+              BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], Boolean](
                 buf, bnd, rng.nextInt(), value
               )(
                 boundOrd
