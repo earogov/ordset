@@ -16,6 +16,7 @@ class ZippedOrderedSet[E, D <: Domain[E]](
 ) extends AbstractZippedSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D] {
 
+  // Protected section -------------------------------------------------------- //
   @inline
   protected final override def operator(left: Boolean, right: Boolean): Boolean = operatorFunc(left, right)
 
@@ -24,9 +25,24 @@ class ZippedOrderedSet[E, D <: Domain[E]](
 
   @inline
   protected final override def isIncludedInSet(value: Boolean): Boolean = value
+
+  protected final override def cons(left: OrderedSet[E, D], right: OrderedSet[E, D]): OrderedSet[E, D] =
+    new ZippedOrderedSet(left, right, operatorFunc, invariantFunc)
 }
 
 object ZippedOrderedSet {
+
+  def create[E, D <: Domain[E]](
+    left: OrderedSet[E, D],
+    right: OrderedSet[E, D],
+    operatorFunc: (Boolean, Boolean) => Boolean,
+    invariantFunc: Boolean => Boolean
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): ZippedOrderedSet[E, D] =
+    new ZippedOrderedSet[E, D](left, right, operatorFunc, invariantFunc)
 
   def union[E, D <: Domain[E]](left: OrderedSet[E, D], right: OrderedSet[E, D])(
     implicit

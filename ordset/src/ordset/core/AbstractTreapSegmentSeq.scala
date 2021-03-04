@@ -346,11 +346,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
             BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], W](buf, seg.upperBound, rng.nextInt(), seg.value)(ord)
           case _ => buf
       }}
-      val newRoot = BuildAsc.finalizeBuffer(buffer)
-      newRoot match {
-        case root: ImmutableTreap.Node[Bound.Upper[E], W] => consFromNode(root, other.lastSegment.value)
-        case _ => consUniform(other.lastSegment.value)
-      }
+      consFromTree(BuildAsc.finalizeBuffer(buffer), other.lastSegment.value)
     }
   }
 

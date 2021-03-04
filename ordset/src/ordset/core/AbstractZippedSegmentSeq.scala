@@ -35,13 +35,17 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
-  // TODO: implement sequence transformations
-  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] =
+    cons(left.takenAbove(bound), right.takenAbove(bound))
 
-  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] = ???
+  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] =
+    cons(left.takenBelow(bound), right.takenBelow(bound))
 
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
+  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) =
+    (takenBelow(bound), takenAbove(bound))
 
+  // TODO implement `appended` method.
+  //  That's wrong: cons(left.appended(other), right.appended(other))
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
   // Protected section -------------------------------------------------------- //
@@ -72,6 +76,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    * I.e. input `value` is invariant if operator value doesn't depend on second argument.
    */
   protected def invariant(value: W): Boolean
+
+  /**
+   * Creates zipped segment sequence.
+   */
+  protected def cons(left: SegmentSeq[E, D, W], right: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
 
   /**
    * @return value assigned to zipped segment defined by `left` and `right` subsegments.
