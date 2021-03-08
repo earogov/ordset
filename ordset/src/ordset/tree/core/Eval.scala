@@ -26,5 +26,5 @@ object Eval {
       }
   }
 
-  private lazy val NoneInstance: Func[Any, Any, Any, Any, Any] = (_, context, _) => context
+  private lazy val NoneInstance: Func[Any, Any, [KK, VV] =>> Any, Any, Any] = (_, context, _) => context
 }

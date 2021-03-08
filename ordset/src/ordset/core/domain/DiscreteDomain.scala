@@ -1,7 +1,7 @@
 package ordset.core.domain
 
 import ordset.util.label.Label
-import ordset.{Discrete, Hash}
+import ordset.Hash
 
 trait DiscreteDomain[E, D <: Domain[E]] extends Domain.Wrapper[E, D] {
 

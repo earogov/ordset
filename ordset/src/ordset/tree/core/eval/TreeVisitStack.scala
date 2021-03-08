@@ -90,13 +90,13 @@ object TreeVisitStack {
     ContextOps.asInstanceOf[ContextOps[K, V, Tree, Context[K, V, Tree]]]
 
   // Private section ---------------------------------------------------------- //
-  private lazy val ContextOps: ContextOps[Any, Any, Any, Context[Any, Any, Any]] =
-    makeContextOps[Any, Any, Any]
+  private lazy val ContextOps: ContextOps[Any, Any, [KK, VV] =>> Any, Context[Any, Any, [KK, VV] =>> Any]] =
+    makeContextOps[Any, Any, [KK, VV] =>> Any]
 
-  private lazy val EvalFunc: EvalFunc[Any, Any, Any] =
+  private lazy val EvalFunc: EvalFunc[Any, Any, [KK, VV] =>> Any] =
     makeEvalFunc(ContextOps)
 
-  private def makeContextOps[K, V, Tree[KK, VV] >: Null]: ContextOps[K, V, Tree, Context[K, V, Tree]] =
+  private def makeContextOps[K, V, Tree[KK, VV]]: ContextOps[K, V, Tree, Context[K, V, Tree]] =
     new ContextOps[K, V, Tree, Context[K, V, Tree]] {
 
       override def getEmptyContext: Context[K, V, Tree] =
@@ -141,10 +141,10 @@ object TreeVisitStack {
           context.stack.prepended(new Element[K, V, Tree](tree, BinaryTreeVisit.addRightVisit(context.currentVisits)))
         )
 
-      private lazy val EmptyContext: Context[Any, Any, Any] = new Context(BinaryTreeVisit.None, Nil)
+      private lazy val EmptyContext: Context[Any, Any, [KK, VV] =>> Any] = new Context(BinaryTreeVisit.None, Nil)
     }
 
-  private def makeEvalFunc[K, V, Tree[KK, VV] >: Null](
+  private def makeEvalFunc[K, V, Tree[KK, VV]](
     contextOps: ContextOps[K, V, Tree, Context[K, V, Tree]]
   ): EvalFunc[K, V, Tree] =
     (tree, context, step) =>

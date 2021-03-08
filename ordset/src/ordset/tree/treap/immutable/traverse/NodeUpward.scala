@@ -1,5 +1,6 @@
 package ordset.tree.treap.immutable.traverse
 
+import ordset.tree.core.Traverse
 import ordset.tree.core.BinaryTreeStep
 import ordset.tree.core.fold.ContextExtract
 import ordset.tree.treap.immutable.ImmutableTreap
@@ -22,10 +23,10 @@ object NodeUpward {
       val parent = stackOps.getHeadTreeOrDefault(context, null)
       if (parent == null) {
         val newContext = evalFunc(tree, context, BinaryTreeStep.None)
-        new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
+        new Traverse.Output(tree, newContext, BinaryTreeStep.None, stop = true)
       } else {
         val newContext = evalFunc(tree, context, BinaryTreeStep.Up)
-        new NodeTraverseOutput(parent, newContext, BinaryTreeStep.Up, stop = stopPredicate(parent, tree))
+        new Traverse.Output(parent, newContext, BinaryTreeStep.Up, stop = stopPredicate(parent, tree))
       }
     }
 

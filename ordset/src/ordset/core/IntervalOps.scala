@@ -56,27 +56,27 @@ object IntervalOps {
   ) extends IntervalOps[E, D] {
 
     override def cross(x: Interval[E, D], y: Interval[E, D]): Interval[E, D] = x match {
-      case x: Interval.Empty[E, D] => x
-      case _: Interval.Universal[E, D] => y
-      case x: Interval.Greater[E, D] => y match {
-        case y: Interval.Empty[E, D] => y
-        case _: Interval.Universal[E, D] => x
-        case y: Interval.Greater[E, D] =>
+      case x: Interval.Empty[e, d] => x
+      case _: Interval.Universal[e, d] => y
+      case x: Interval.Greater[e, d] => y match {
+        case y: Interval.Empty[e, d] => y
+        case _: Interval.Universal[e, d] => x
+        case y: Interval.Greater[e, d] =>
           // x:      |--------------
           // y:  |------------------
           if (domainOps.boundOrd.lt(y.lowerBound, x.lowerBound)) x
           // x:      |--------------
           // y:          |----------
           else y
-        case y: Interval.WithUpperBound[E, D] =>
+        case y: Interval.WithUpperBound[e, d] =>
           // x:      |--------------
           // y: ?--|
           if (domainOps.boundOrd.lt(y.upperBound, x.lowerBound)) domainOps.interval.empty
           else y match {
             // x:      |------------
             // y: ---------|
-            case y: Interval.Less[E, D] => domainOps.interval(x.lowerBound, y.upperBound)
-            case y: Interval.Between[E, D] =>
+            case y: Interval.Less[e, d] => domainOps.interval(x.lowerBound, y.upperBound)
+            case y: Interval.Between[e, d] =>
               // x:      |----------
               // y:    |---|
               if (domainOps.boundOrd.lt(y.lowerBound, x.lowerBound)) domainOps.interval(x.lowerBound, y.upperBound)
@@ -85,25 +85,25 @@ object IntervalOps {
               else y
           }
       }
-      case x: Interval.Less[E, D] => y match {
-        case y: Interval.Empty[E, D] => y
-        case _: Interval.Universal[E, D] => x
-        case y: Interval.Less[E, D] =>
+      case x: Interval.Less[e, d] => y match {
+        case y: Interval.Empty[e, d] => y
+        case _: Interval.Universal[e, d] => x
+        case y: Interval.Less[e, d] =>
           // x: ---------|
           // y: --------------|
           if (domainOps.boundOrd.lt(x.upperBound, y.upperBound)) x
           // x: ---------|
           // y: -----|
           else y
-        case y: Interval.WithLowerBound[E, D] =>
+        case y: Interval.WithLowerBound[e, d] =>
           // x: ---------|
           // y:            |------?
           if (domainOps.boundOrd.lt(x.upperBound, y.lowerBound)) domainOps.interval.empty
           else y match {
             // x: ---------|
             // y:      |-----------
-            case y: Interval.Greater[E, D] => domainOps.interval(y.lowerBound, x.upperBound)
-            case y: Interval.Between[E, D] =>
+            case y: Interval.Greater[e, d] => domainOps.interval(y.lowerBound, x.upperBound)
+            case y: Interval.Between[e, d] =>
               // x: ---------|
               // y:        |---|
               if (domainOps.boundOrd.lt(x.upperBound, y.upperBound)) domainOps.interval(y.lowerBound, x.upperBound)
@@ -112,10 +112,10 @@ object IntervalOps {
               else y
           }
       }
-      case x: Interval.Between[E, D] => y match {
-        case y: Interval.Empty[E, D] => y
-        case _: Interval.Universal[E, D] => x
-        case y: Interval.Greater[E, D] =>
+      case x: Interval.Between[e, d] => y match {
+        case y: Interval.Empty[e, d] => y
+        case _: Interval.Universal[e, d] => x
+        case y: Interval.Greater[e, d] =>
           // x:       |-----|
           // y:   |----------------
           if (domainOps.boundOrd.lteqv(y.lowerBound, x.lowerBound)) x
@@ -125,7 +125,7 @@ object IntervalOps {
           // x:       |-----|
           // y:                |---
           else domainOps.interval.empty
-        case y: Interval.Less[E, D] =>
+        case y: Interval.Less[e, d] =>
           // x:       |-----|
           // y: ----------------|
           if (domainOps.boundOrd.lteqv(x.upperBound, y.upperBound)) x
@@ -135,7 +135,7 @@ object IntervalOps {
           // x:       |-----|
           // y: ----|
           else domainOps.interval.empty
-        case y: Interval.Between[E, D] =>
+        case y: Interval.Between[e, d] =>
           if (domainOps.boundOrd.lteqv(x.lowerBound, y.upperBound))
             if (domainOps.boundOrd.lteqv(y.lowerBound, x.lowerBound))
               // x:         |-----|
@@ -163,9 +163,9 @@ object IntervalOps {
     override def cutBelow(bound: Bound.Lower[E], x: Interval[E, D]): Interval[E, D] = x match {
       // cutBelow(x, bound) = cross(x, y) where
       // y = domainOps.interval(bound)
-      case x: Interval.Empty[E, D] => x
-      case _: Interval.Universal[E, D] => domainOps.interval(bound)
-      case x: Interval.Greater[E, D] =>
+      case x: Interval.Empty[e, d] => x
+      case _: Interval.Universal[e, d] => domainOps.interval(bound)
+      case x: Interval.Greater[e, d] =>
         //       bound
         // y:      |--------------
         // x:  |------------------
@@ -174,7 +174,7 @@ object IntervalOps {
         // y:      |--------------
         // x:          |----------
         else x
-      case x: Interval.WithUpperBound[E, D] =>
+      case x: Interval.WithUpperBound[e, d] =>
         //       bound
         // y:      |--------------
         // x: ?--|
@@ -183,8 +183,8 @@ object IntervalOps {
           //       bound
           // y:      |------------
           // x: ---------|
-          case x: Interval.Less[E, D] => domainOps.interval(bound, x.upperBound)
-          case x: Interval.Between[E, D] =>
+          case x: Interval.Less[e, d] => domainOps.interval(bound, x.upperBound)
+          case x: Interval.Between[e, d] =>
             //       bound
             // y:      |----------
             // x:    |---|
@@ -199,9 +199,9 @@ object IntervalOps {
     override def cutAbove(bound: Bound.Upper[E], x: Interval[E, D]): Interval[E, D] = x match {
       // cutAbove(x, bound) = cross(x, y) where
       // y = domainOps.interval(bound)
-      case x: Interval.Empty[E, D] => x
-      case _: Interval.Universal[E, D] => domainOps.interval(bound)
-      case x: Interval.Less[E, D] =>
+      case x: Interval.Empty[e, d] => x
+      case _: Interval.Universal[e, d] => domainOps.interval(bound)
+      case x: Interval.Less[e, d] =>
         //           bound
         // y: ---------|
         // x: --------------|
@@ -210,7 +210,7 @@ object IntervalOps {
         // y: ---------|
         // x: -----|
         else x
-      case x: Interval.WithLowerBound[E, D] =>
+      case x: Interval.WithLowerBound[e, d] =>
         //           bound
         // y: ---------|
         // x:            |------?
@@ -219,8 +219,8 @@ object IntervalOps {
           //           bound
           // y: ---------|
           // x:      |-----------
-          case x: Interval.Greater[E, D] => domainOps.interval(x.lowerBound, bound)
-          case x: Interval.Between[E, D] =>
+          case x: Interval.Greater[e, d] => domainOps.interval(x.lowerBound, bound)
+          case x: Interval.Between[e, d] =>
             //           bound
             // y: ---------|
             // x:        |---|

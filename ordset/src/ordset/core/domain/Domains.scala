@@ -1,7 +1,6 @@
 package ordset.core.domain
 
 import ordset.core.Interval
-import ordset.Discrete
 
 object Domains {
 

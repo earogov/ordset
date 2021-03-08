@@ -12,6 +12,14 @@ abstract class SegmentSeqSample[E, D <: Domain[E], W](
   val domainOps: DomainOps[E, D],
   val rngManager: RngManager
 ) {
+  type GenBound = Bound[E]
+  
+  type GenSegmentSeq = SegmentSeq[E, D, W]
+  
+  type GenIntervalRelation = IntervalRelation[E, D, W]
+
+  val x: BoundBuilder[E, D] = BoundBuilder[E, D](domainOps)
+  
   def sample: String
 
   def labels: Set[Label] = Set.empty + Labels.sample(sample)
@@ -25,11 +33,4 @@ abstract class SegmentSeqSample[E, D <: Domain[E], W](
   def reference: Seq[IntervalRelation[E, D, W]]
 
   override def toString: String = Labels.caseShow.show(labels)
-
-  // Protected section -------------------------------------------------------- //
-  protected type GenBound = Bound[E]
-  protected type GenSegmentSeq = SegmentSeq[E, D, W]
-  protected type GenIntervalRelation = IntervalRelation[E, D, W]
-
-  protected val x: BoundBuilder[E, D] = BoundBuilder[E, D](domainOps)
 }

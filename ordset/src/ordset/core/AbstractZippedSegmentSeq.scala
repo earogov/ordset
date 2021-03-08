@@ -231,7 +231,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
       var nextZipped: ZippedTuple = null
       var currZipped: ZippedTuple = ZippedTupleImpl(left, right)
       while (!stop) {
-        nextZipped = stepForwardZipper(ZippedTupleImpl, currZipped.left, currZipped.right)
+        nextZipped = stepForwardZipper(ZippedTupleImpl.apply, currZipped.left, currZipped.right)
         if (valueEq.neqv(currZipped.value, nextZipped.value)) {
           // We have found a bound, where operator change its value => return 'currZipped'.
           stop = true
@@ -277,7 +277,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
       var prevZipped: ZippedTuple = null
       var currZipped: ZippedTuple = ZippedTupleImpl(left, right)
       while (!stop) {
-        prevZipped = stepBackwardZipper(ZippedTupleImpl, currZipped.left, currZipped.right)
+        prevZipped = stepBackwardZipper(ZippedTupleImpl.apply, currZipped.left, currZipped.right)
         if (valueEq.neqv(currZipped.value, prevZipped.value)) {
           // We have found a bound, where operator change its value => return 'currZipped'.
           stop = true
@@ -508,7 +508,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    *                lower bound                upper bound
    * }}}
    */
-  protected sealed trait ZippedSegmentBase extends SegmentLike[E, D, W] with ZippedTuple {
+  protected sealed trait ZippedSegmentBase extends SegmentLike[E, D, W] with ZippedTuple { segment =>
 
     override def domainOps: DomainOps[E, D] = seq.domainOps
 
@@ -519,7 +519,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     override def moveToLast: LastSegment = lastSegment
 
     override def moveTo(bound: Bound[E]): GenSegment =
-      searchFrontZipper(generalFrontZipper, left.moveTo(bound), right.moveTo(bound))
+      searchFrontZipper(generalFrontZipper, segment.left.moveTo(bound), segment.right.moveTo(bound))
   }
 
   /**
@@ -569,7 +569,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    * 1. 'backForward' subsegment must have previous segment.
    *    This condition is equivalent to: zipped segment has previous segment.
    */
-  protected sealed trait ZippedSegmentWithPrev extends ZippedSegmentBase with SegmentWithPrev {
+  protected sealed trait ZippedSegmentWithPrev extends ZippedSegmentBase with SegmentWithPrev { segment =>
 
     def backBackward: GenSegment = back.backward
     // Cast is safe if precondition 1 is provided.
@@ -581,7 +581,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
       stepBackwardPrevGenZipper(withNextFrontZipper, backForward, backBackward)
 
     private lazy val back: Back = {
-      val backTuple = searchBackZipper(ZippedTupleImpl, left, right)
+      val backTuple = searchBackZipper(ZippedTupleImpl.apply, segment.left, segment.right)
       if (domainOps.segmentLowerOrd.compare(backTuple.left, backTuple.right) >= 0)
         Back(backTuple.right, backTuple.left)
       else

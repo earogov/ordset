@@ -40,8 +40,8 @@ object ContextExtract {
     )
 
   // Private section ---------------------------------------------------------- //
-  private lazy val ExtractFunc: Fold.Func[Any, Any, Any, Any, Output[Any, Any, Any, Any]] =
-    makeExtractFunc[Any, Any, Any, Any]
+  private lazy val ExtractFunc: Fold.Func[Any, Any, [KK, VV] =>> Any, Any, Output[Any, Any, [KK, VV] =>> Any, Any]] =
+    makeExtractFunc[Any, Any, [KK, VV] =>> Any, Any]
 
   private def makeExtractFunc[K, V, Tree[KK, VV], C]: Fold.Func[K, V, Tree, C, Output[K, V, Tree, C]] =
     (tree, context, _) => Output(tree, context)

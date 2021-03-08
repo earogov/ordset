@@ -27,9 +27,9 @@ object IntervalBuilder {
     val domainOps: DomainOps[E, D]
   ) extends IntervalBuilder[E, D] {
 
-    override lazy val empty: Interval.Empty[E, D] = Interval.Empty(domainOps)
+    override lazy val empty: Interval.Empty[E, D] = Interval.Empty()(domainOps)
 
-    override lazy val universal: Interval.Universal[E, D] = Interval.Universal(domainOps)
+    override lazy val universal: Interval.Universal[E, D] = Interval.Universal()(domainOps)
 
     override def apply(bound: Bound.Upper[E]): Interval.Less[E, D] =
       Interval.Less(bound)(domainOps)

@@ -58,11 +58,11 @@ object SetBuilderFormat { format =>
   }
 
   def interval[E, D <: Domain[E]](interval: Interval[E, D], elementToStr: E => String): String = interval match {
-    case _: Interval.Empty[E, D] => format.emptyInterval
-    case _: Interval.Universal[E, D] => format.universalInterval
-    case i: Interval.Greater[E, D] => format.lowerBoundedInterval(i, elementToStr)
-    case i: Interval.Less[E, D] => format.upperBoundedInterval(i, elementToStr)
-    case i: Interval.Between[E, D] => format.boundedInterval(i, elementToStr)
+    case _: Interval.Empty[e, d] => format.emptyInterval
+    case _: Interval.Universal[e, d] => format.universalInterval
+    case i: Interval.Greater[e, d] => format.lowerBoundedInterval(i, elementToStr)
+    case i: Interval.Less[e, d] => format.upperBoundedInterval(i, elementToStr)
+    case i: Interval.Between[e, d] => format.boundedInterval(i, elementToStr)
   }
 
   def intervalShow[E, D <: Domain[E]](elementShow: Show[E]): Show[Interval[E, D]] =

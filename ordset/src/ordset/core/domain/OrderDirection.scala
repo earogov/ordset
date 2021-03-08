@@ -21,7 +21,7 @@ object OrderDirection extends TaggedRaw[Boolean] { outer =>
 
   implicit val defaultHash: Hash[Type] = Hash.fromUniversalHashCode
 
-  implicit val defaultShow: Show[Type] = toString
+  implicit val defaultShow: Show[Type] = dir => outer.toString(dir)
 
   object Asc extends TaggedBase[Boolean, outer.Alias] {
 

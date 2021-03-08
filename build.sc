@@ -3,22 +3,16 @@ import scalalib._
 
 object ordset extends ScalaModule {
 
-  def scalaVersion = "2.13.4"
+  def scalaVersion = "3.0.0-RC1"
 
   override def scalacOptions = Seq(
-    "-Ymacro-annotations",
     "-language:implicitConversions",
     "-language:higherKinds",
     "-deprecation",
-    "-explaintypes",
-    "-opt:l:method",
-    "-Xlog-implicits",
-    //"-Xprint:typer"
   )
 
   override def ivyDeps = Agg(
-    ivy"org.typelevel::cats-core:2.0.0",
-    ivy"org.typelevel::cats-collections-core:0.9.0"
+    ivy"org.typelevel::cats-core:2.4.2",
   )
 
   object test extends Tests {
@@ -28,14 +22,14 @@ object ordset extends ScalaModule {
     override def moduleDeps = Seq(commonsRandom)
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.1.1"
+      ivy"org.scalatest::scalatest:3.2.5"
     )
   }
 }
 
 object commonsRandom extends ScalaModule {
 
-  def scalaVersion = "2.13.4"
+  def scalaVersion = "3.0.0-RC1"
 
   override def scalacOptions = Seq(
     "-language:implicitConversions",
@@ -55,7 +49,7 @@ object commonsRandom extends ScalaModule {
     def testFrameworks = Seq("org.scalatest.tools.Framework")
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.1.1"
+      ivy"org.scalatest::scalatest:3.2.5"
     )
   }
 }

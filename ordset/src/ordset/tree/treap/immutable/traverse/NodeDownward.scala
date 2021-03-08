@@ -1,6 +1,7 @@
 package ordset.tree.treap.immutable.traverse
 
 import ordset.Order
+import ordset.tree.core.Traverse
 import ordset.tree.core.BinaryTreeStep
 import ordset.tree.core.fold.ContextExtract
 import ordset.tree.treap.immutable.ImmutableTreap
@@ -22,22 +23,22 @@ object NodeDownward {
         case BinaryTreeStep.Right => tree match {
           case n: ImmutableTreap.NodeWithRight[K, V] =>
             val newContext = evalFunc(tree, context, step)
-            new NodeTraverseOutput(n.right, newContext, step, stop = false)
+            new Traverse.Output(n.right, newContext, step, stop = false)
           case _ =>
             val newContext = evalFunc(tree, context, BinaryTreeStep.None)
-            new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
+            new Traverse.Output(tree, newContext, BinaryTreeStep.None, stop = true)
         }
         case BinaryTreeStep.Left => tree match {
           case n: ImmutableTreap.NodeWithLeft[K, V] =>
             val newContext = evalFunc(tree, context, step)
-            new NodeTraverseOutput(n.left, newContext, step, stop = false)
+            new Traverse.Output(n.left, newContext, step, stop = false)
           case _ =>
             val newContext = evalFunc(tree, context, BinaryTreeStep.None)
-            new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
+            new Traverse.Output(tree, newContext, BinaryTreeStep.None, stop = true)
         }
         case _ =>
           val newContext = evalFunc(tree, context, BinaryTreeStep.None)
-          new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
+          new Traverse.Output(tree, newContext, BinaryTreeStep.None, stop = true)
       }
     }
 

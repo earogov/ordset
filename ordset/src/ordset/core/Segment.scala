@@ -226,7 +226,7 @@ object Segment {
     override def forwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, moveNext.forwardLazyList)
 
     override def interval: Interval[E, D] = this match {
-      case p: WithPrev[E, D, V] => domainOps.interval(p.lowerBound, upperBound)
+      case p: WithPrev[e, d, v] => domainOps.interval(p.lowerBound, upperBound)
       case _                    => domainOps.interval(upperBound)
     }
   }
@@ -251,7 +251,7 @@ object Segment {
     override def backwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, movePrev.backwardLazyList)
 
     override def interval: Interval[E, D] = this match {
-      case n: WithNext[E, D, V] => domainOps.interval(lowerBound, n.upperBound)
+      case n: WithNext[e, d, v] => domainOps.interval(lowerBound, n.upperBound)
       case _                    => domainOps.interval(lowerBound)
     }
   }
@@ -268,8 +268,8 @@ object Segment {
     override def moveToFirst: First[E, D, V] = this
 
     override def interval: Interval[E, D] = this match {
-      case n: WithNext[E, D, V] => domainOps.interval(n.upperBound)
-      case _ => domainOps.interval.universal
+      case n: WithNext[e, d, v] => domainOps.interval(n.upperBound)
+      case _                    => domainOps.interval.universal
     }
   }
 
@@ -285,8 +285,8 @@ object Segment {
     override def moveToLast: Last[E, D, V] = this
 
     override def interval: Interval[E, D] = this match {
-      case p: WithPrev[E, D, V] => domainOps.interval(p.lowerBound)
-      case _ => domainOps.interval.universal
+      case p: WithPrev[e, d, v] => domainOps.interval(p.lowerBound)
+      case _                    => domainOps.interval.universal
     }
   }
 
@@ -369,22 +369,30 @@ object Segment {
     override val label: Label = OrderLabels.SegmentByUpperBound
 
     override def compare(x: Segment[E, D, Any], y: Segment[E, D, Any]): Int = (x, y) match {
-      case (xn: WithNext[E, _, _], yn: WithNext[E, _, _]) => x.domainOps.boundOrd.compare(xn.upperBound, yn.upperBound)
-      case (_, _: WithNext[E, _, _]) => sign
-      case (_: WithNext[E, _, _], _) => invertedSign
-      case _ => 0
+      case (xn: WithNext[E, D, Any], yn: WithNext[E, D, Any]) => 
+        x.domainOps.boundOrd.compare(xn.upperBound, yn.upperBound)
+      case (_, _: WithNext[E, D, Any]) => 
+        sign
+      case (_: WithNext[E, D, Any], _) => 
+        invertedSign
+      case _ => 
+        0
     }
 
     override def hash(x: Segment[E, D, Any]): Int = x match {
-      case xn: WithNext[E, _, _] => product1Hash(x.domainOps.boundOrd.hash(xn.upperBound))
+      case xn: WithNext[E, D, Any] => product1Hash(x.domainOps.boundOrd.hash(xn.upperBound))
       case _ => product1Hash(x.hashCode())
     }
 
     override def eqv(x: Segment[E, D, Any], y: Segment[E, D, Any]): Boolean = (x, y) match {
-      case (xn: WithNext[E, _, _], yn: WithNext[E, _, _]) => x.domainOps.boundOrd.eqv(xn.upperBound, yn.upperBound)
-      case (_, _: WithNext[E, _, _]) => false
-      case (_: WithNext[E, _, _], _) => false
-      case _ => true
+      case (xn: WithNext[E, D, Any], yn: WithNext[E, D, Any]) => 
+        x.domainOps.boundOrd.eqv(xn.upperBound, yn.upperBound)
+      case (_, _: WithNext[E, D, Any]) => 
+        false
+      case (_: WithNext[E, D, Any], _) => 
+        false
+      case _ => 
+        true
     }
   }
 
@@ -397,22 +405,29 @@ object Segment {
     override def label: Label = OrderLabels.SegmentByLowerBound
 
     override def compare(x: Segment[E, D, Any], y: Segment[E, D, Any]): Int = (x, y) match {
-      case (xp: WithPrev[E, _, _], yp: WithPrev[E, _, _]) => x.domainOps.boundOrd.compare(xp.lowerBound, yp.lowerBound)
-      case (_, _: WithPrev[E, _, _]) => invertedSign
-      case (_: WithPrev[E, _, _], _) => sign
+      case (xp: WithPrev[E, D, Any], yp: WithPrev[E, D, Any]) => 
+        x.domainOps.boundOrd.compare(xp.lowerBound, yp.lowerBound)
+      case (_, _: WithPrev[E, D, Any]) => 
+        invertedSign
+      case (_: WithPrev[E, D, Any], _) => 
+        sign
       case _ => 0
     }
 
     override def hash(x: Segment[E, D, Any]): Int = x match {
-      case xn: WithPrev[E, _, _] => product1Hash(x.domainOps.boundOrd.hash(xn.lowerBound))
+      case xn: WithPrev[E, D, Any] => product1Hash(x.domainOps.boundOrd.hash(xn.lowerBound))
       case _ => product1Hash(x.hashCode())
     }
 
     override def eqv(x: Segment[E, D, Any], y: Segment[E, D, Any]): Boolean = (x, y) match {
-      case (xn: WithPrev[E, _, _], yn: WithPrev[E, _, _]) => x.domainOps.boundOrd.eqv(xn.lowerBound, yn.lowerBound)
-      case (_, _: WithPrev[E, _, _]) => false
-      case (_: WithPrev[E, _, _], _) => false
-      case _ => true
+      case (xn: WithPrev[E, D, Any], yn: WithPrev[E, D, Any]) => 
+        x.domainOps.boundOrd.eqv(xn.lowerBound, yn.lowerBound)
+      case (_, _: WithPrev[E, D, Any]) => 
+        false
+      case (_: WithPrev[E, D, Any], _) => 
+        false
+      case _ => 
+        true
     }
   }
 }

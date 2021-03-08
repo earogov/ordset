@@ -70,9 +70,9 @@ object TreeStack {
     ContextOps.asInstanceOf[ContextOps[K, V, Tree]]
 
   // Private section ---------------------------------------------------------- //
-  private lazy val ContextOps: ContextOps[Any, Any, Any] = new ContextOps[Any, Any, Any] {}
+  private lazy val ContextOps: ContextOps[Any, Any, [KK, VV] =>> Any] = new ContextOps[Any, Any, [KK, VV] =>> Any] {}
 
-  private lazy val EvalFunc: EvalFunc[Any, Any, Any] = makeEvalFunc(ContextOps)
+  private lazy val EvalFunc: EvalFunc[Any, Any, [KK, VV] =>> Any] = makeEvalFunc(ContextOps)
 
   private def makeEvalFunc[K, V, Tree[KK, VV]](
     contextOps: ContextOps[K, V, Tree]

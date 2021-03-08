@@ -233,7 +233,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     else TreapInnerSegment(contextExtract.tree, contextExtract.context)
   }
 
-  protected def appendedTreapSeq(other: AbstractTreapSegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
+  protected final def appendedTreapSeq(other: AbstractTreapSegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
     val originalPenultimateSegment = lastSegment.movePrev
 
     val appendedRoot =
@@ -312,7 +312,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     }
   }
 
-  protected def appendedSegmentSeq(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
+  protected final def appendedSegmentSeq(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
     val originalPenultimateSegment = lastSegment.movePrev
     if (other.isUniform)
       if (valueEq.eqv(originalPenultimateSegment.value, other.firstSegment.value))

@@ -1,5 +1,6 @@
 package ordset.tree.treap.immutable.traverse
 
+import ordset.tree.core.Traverse
 import ordset.tree.core.{BinaryTreeStep, BinaryTreeVisit}
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.{NodeEvalFunc, NodeVisitContext, NodeVisitContextOps}
@@ -25,24 +26,24 @@ object NodeDepthFirst {
         step match {
           case BinaryTreeStep.Left => tree match {
             case n: ImmutableTreap.NodeWithLeft[K, V] =>
-              new NodeTraverseOutput(n.left, evalFunc(tree, context, step), step, stop = false)
+              new Traverse.Output(n.left, evalFunc(tree, context, step), step, stop = false)
             case _ =>
               traverse(tree, BinaryTreeVisit.addLeftVisit(visits))
           }
           case BinaryTreeStep.Right => tree match {
             case n: ImmutableTreap.NodeWithRight[K, V] =>
-              new NodeTraverseOutput(n.right, evalFunc(tree, context, step), step, stop = false)
+              new Traverse.Output(n.right, evalFunc(tree, context, step), step, stop = false)
             case _ =>
               traverse(tree, BinaryTreeVisit.addRightVisit(visits))
           }
           case BinaryTreeStep.Up => context.stack match {
             case head :: _ =>
-              new NodeTraverseOutput(head.tree, evalFunc(tree, context, step), step, stop = false)
+              new Traverse.Output(head.tree, evalFunc(tree, context, step), step, stop = false)
             case _ =>
-              new NodeTraverseOutput(tree, evalFunc(tree, context, step), BinaryTreeStep.None, stop = true)
+              new Traverse.Output(tree, evalFunc(tree, context, step), BinaryTreeStep.None, stop = true)
           }
           case BinaryTreeStep.None =>
-            new NodeTraverseOutput(tree, evalFunc(tree, context, step), step, stop = true)
+            new Traverse.Output(tree, evalFunc(tree, context, step), step, stop = true)
         }
       }
       traverse(tree, context.currentVisits)
@@ -63,24 +64,24 @@ object NodeDepthFirst {
       step match {
         case BinaryTreeStep.Left => tree match {
           case n: ImmutableTreap.NodeWithLeft[K, V] =>
-            new NodeTraverseOutput(n.left, newContext, step, stop = false)
+            new Traverse.Output(n.left, newContext, step, stop = false)
           case _ =>
-            new NodeTraverseOutput(dummy, newContext, step, stop = false)
+            new Traverse.Output(dummy, newContext, step, stop = false)
         }
         case BinaryTreeStep.Right => tree match {
           case n: ImmutableTreap.NodeWithRight[K, V] =>
-            new NodeTraverseOutput(n.right, newContext, step, stop = false)
+            new Traverse.Output(n.right, newContext, step, stop = false)
           case _ =>
-            new NodeTraverseOutput(dummy, newContext, step, stop = false)
+            new Traverse.Output(dummy, newContext, step, stop = false)
         }
         case BinaryTreeStep.Up => context.stack match {
           case head :: _ =>
-            new NodeTraverseOutput(head.tree, newContext, step, stop = false)
+            new Traverse.Output(head.tree, newContext, step, stop = false)
           case _ =>
-            new NodeTraverseOutput(tree, newContext, BinaryTreeStep.None, stop = true)
+            new Traverse.Output(tree, newContext, BinaryTreeStep.None, stop = true)
         }
         case BinaryTreeStep.None =>
-          new NodeTraverseOutput(tree, newContext, step, stop = true)
+          new Traverse.Output(tree, newContext, step, stop = true)
       }
     }
 

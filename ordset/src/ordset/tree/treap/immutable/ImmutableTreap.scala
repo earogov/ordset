@@ -60,7 +60,7 @@ object ImmutableTreap {
     override def getRightOrNull: Treap.Node[K, V] = right
   }
 
-  final case object Empty extends ImmutableTreap[Nothing, Nothing] {
+ case object Empty extends ImmutableTreap[Nothing, Nothing] {
 
     override def isEmpty: Boolean = true
 

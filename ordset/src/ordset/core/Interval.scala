@@ -57,8 +57,9 @@ object Interval {
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
   }
 
-  case class Empty[E, D <: Domain[E]](
-    override val domainOps: DomainOps[E, D]
+  final case class Empty[E, D <: Domain[E]](
+  )(
+    implicit override val domainOps: DomainOps[E, D]
   ) extends Interval[E, D] {
 
     override def isEmpty: Boolean = true
@@ -66,8 +67,9 @@ object Interval {
     override def toString: String = SetBuilderFormat.emptyInterval
   }
 
-  case class Universal[E, D <: Domain[E]](
-    override val domainOps: DomainOps[E, D]
+  final case class Universal[E, D <: Domain[E]](
+  )(
+    implicit override val domainOps: DomainOps[E, D]
   ) extends NonEmpty[E, D] {
 
     override def isUniversal: Boolean = true
@@ -75,29 +77,29 @@ object Interval {
     override def toString: String = SetBuilderFormat.universalInterval
   }
 
-  case class Greater[@sp(spNum) E, D <: Domain[E]](
+  final case class Greater[@sp(spNum) E, D <: Domain[E]](
     override val lowerBound: Bound.Lower[E]
   )(
-    override val domainOps: DomainOps[E, D]
+    implicit override val domainOps: DomainOps[E, D]
   ) extends WithLowerBound[E, D] {
 
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, (e: E) => e.toString)
   }
 
-  case class Less[@sp(spNum) E, D <: Domain[E]](
+  final case class Less[@sp(spNum) E, D <: Domain[E]](
     override val upperBound: Bound.Upper[E]
   )(
-    override val domainOps: DomainOps[E, D]
+    implicit override val domainOps: DomainOps[E, D]
   ) extends WithUpperBound[E, D] {
 
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, (e: E) => e.toString)
   }
 
-  case class Between[@sp(spNum) E, D <: Domain[E]](
+  final case class Between[@sp(spNum) E, D <: Domain[E]](
     override val lowerBound: Bound.Lower[E],
     override val upperBound: Bound.Upper[E]
   )(
-    override val domainOps: DomainOps[E, D]
+    implicit override val domainOps: DomainOps[E, D]
   ) extends WithLowerBound[E, D] with WithUpperBound[E, D] {
 
     override def toString: String = SetBuilderFormat.boundedInterval(this, (e: E) => e.toString)
@@ -110,21 +112,41 @@ object Interval {
     import util.HashUtil._
 
     override def hash(x: Interval[E, D]): Int = x match {
-      case x: Empty[E, D]     => product1Hash(domainHash.hash(x.domainOps.domain))
-      case x: Universal[E, D] => product1Hash(domainHash.hash(x.domainOps.domain))
-      case Greater(l)         => product2Hash(boundHash.hash(l), domainHash.hash(x.domainOps.domain))
-      case Less(r)            => product2Hash(boundHash.hash(r), domainHash.hash(x.domainOps.domain))
-      case Between(l, r)      => product3Hash(boundHash.hash(l), boundHash.hash(r), domainHash.hash(x.domainOps.domain))
+      case x: Empty[e, d] => 
+        product1Hash(domainHash.hash(x.domainOps.domain))
+      case x: Universal[e, d] => 
+        product1Hash(domainHash.hash(x.domainOps.domain))
+      case x: Greater[e, d] => 
+        product2Hash(boundHash.hash(x.lowerBound), domainHash.hash(x.domainOps.domain))
+      case x: Less[e, d] => 
+        product2Hash(boundHash.hash(x.upperBound), domainHash.hash(x.domainOps.domain))
+      case x: Between[e, d] => 
+        product3Hash(boundHash.hash(x.lowerBound), boundHash.hash(x.upperBound), domainHash.hash(x.domainOps.domain))
     }
 
     override def eqv(x: Interval[E, D], y: Interval[E, D]): Boolean =
-      if (domainHash.eqv(x.domainOps.domain, y.domainOps.domain)) (x, y) match {
-        case (_: Empty[E, D], _: Empty[E, D])         => true
-        case (_: Universal[E, D], _: Universal[E, D]) => true
-        case (Greater(lx), Greater(ly))               => boundHash.eqv(lx, ly)
-        case (Less(rx), Less(ry))                     => boundHash.eqv(rx, ry)
-        case (Between(lx, rx), Between(ly, ry))       => boundHash.eqv(lx, ly) && boundHash.eqv(rx, ry)
-        case _                                        => false
+      if (domainHash.eqv(x.domainOps.domain, y.domainOps.domain)) x match {
+        case x: Empty[e, d] => y match {
+          case _: Empty[e, d] => true
+          case _ => false
+        }
+        case x: Universal[e, d] => y match {
+          case _: Universal[e, d] => true
+          case _ => false
+        }
+        case x: Greater[e, d] => y match {
+          case y: Greater[e, d] => boundHash.eqv(x.lowerBound: Bound.Lower[E], y.lowerBound)
+          case _ => false
+        }
+        case x: Less[e, d] => y match {
+          case y: Less[e, d] => boundHash.eqv(x.upperBound, y.upperBound)
+          case _ => false
+        }
+        case x: Between[e, d] => y match {
+          case y: Between[e, d] => 
+            boundHash.eqv(x.lowerBound, y.lowerBound) && boundHash.eqv(x.upperBound, y.upperBound)
+          case _ => false
+        }
       }
       else false
   }
