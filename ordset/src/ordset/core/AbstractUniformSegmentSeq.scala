@@ -53,6 +53,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
    */
   protected case object UniformSingleSegment extends SingleSegment {
 
+    override def sequence: SegmentSeq[E, D, W] = seq
+    
     override def domainOps: DomainOps[E, D] = seq.domainOps
 
     override def value: W = seq.value

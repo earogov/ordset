@@ -188,6 +188,8 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
     val ind: Int
 
+    override def sequence: SegmentSeq[E, D, W] = seq
+    
     override def domainOps: DomainOps[E, D] = seq.domainOps
 
     override def value: W = getSegmentValue(ind)

@@ -71,13 +71,20 @@ import scala.{specialized => sp}
  * Therefore transformation operations are defined in terms of upper bounds.
  * <tr></tr>
  *
- * Note that in all ordering relations of bounds (like bound1 `>` bound2 etc.) we assume:
+ * <h1>Notes</h1>
+ * 
+ * 1. In all ordering relations of bounds (like bound1 `>` bound2 etc.) we assume:
  * <tr>- upper bound of last segment has maximal value (equivalent to plus infinity);   </tr>
  * <tr>- lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
  * <tr>
  * These properties MUST be provided by implementations of [[DomainOps.segmentUpperOrd]] and
  * [[DomainOps.segmentLowerOrd]].
  * </tr>
+ * <tr></tr>
+ * 
+ * @tparam E type of element in ordered set
+ * @tparam D type of domain
+ * @tparam V type of value assigned to interval
  */
 trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 

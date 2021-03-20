@@ -510,6 +510,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
    */
   protected sealed trait ZippedSegmentBase extends SegmentLike[E, D, W] with ZippedTuple { segment =>
 
+    override def sequence: SegmentSeq[E, D, W] = seq
+    
     override def domainOps: DomainOps[E, D] = seq.domainOps
 
     override def isIncluded: Boolean = isIncludedInSet(value)

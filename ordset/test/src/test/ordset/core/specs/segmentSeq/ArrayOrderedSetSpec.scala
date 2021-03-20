@@ -24,6 +24,10 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     new MultiBoundedSetSample1[Dom],
     new DegenerateSetSample1[Dom]
   )
+  
+  private val patchedSuite = List(
+    new MultiBoundedSetSample1[Dom]
+  )
 
   describe("Array based ordered set navigation operations") {
 
@@ -41,5 +45,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeAppended(testSuite)
 
     it should behave like segmentSeqCanBeSliced(testSuite)
+    
+    it should behave like segmentCanBePatched(patchedSuite)
   }
 }

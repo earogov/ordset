@@ -127,7 +127,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   }
 
   // Protected section -------------------------------------------------------- //
-  protected final type TreapSegment = TreapSegmentBase with Segment[E, D, W]
+  protected final type TreapSegment = TreapSegmentBase with GenSegment
 
   /**
    * Treap of segments upper bounds.
@@ -359,6 +359,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
 
     val context: NodeVisitContext[Bound.Upper[E], W]
 
+    override def sequence: SegmentSeq[E, D, W] = seq
+    
     override def domainOps: DomainOps[E, D] = seq.domainOps
 
     override def value: W = node.value

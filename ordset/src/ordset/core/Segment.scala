@@ -107,21 +107,42 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  *
  * <tr><b>WithNext</b> - segment which has next segment. May be Initial or Inner.</tr>
  *
+ * <h1>Notes</h1>
+ * 
+ * 1. In all ordering relations of bounds (like bound1 `>` bound2 etc.) we assume:
+ * <tr>- upper bound of last segment has maximal value (equivalent to plus infinity);   </tr>
+ * <tr>- lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
+ * <tr>
+ * These properties MUST be provided by implementations of [[DomainOps.segmentUpperOrd]] and
+ * [[DomainOps.segmentLowerOrd]].
+ * </tr>
  * <tr></tr>
  *
+ * 2. Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
+ * also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this is
+ * the basic use case of segments.
+ * <tr></tr>
+ * 
  * @tparam E type of element in ordered set
  * @tparam D type of domain
  * @tparam V type of value assigned to interval
- *
- * <tr></tr>
- *
- * @note Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
- *       also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this is
- *       the basic use case of segments.
  */
-sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segment =>
+sealed trait Segment[E, D <: Domain[E], V] extends SegmentLike[E, D, V] { segment =>
   import Segment._
 
+  // Inspection --------------------------------------------------------------- //
+  def interval: Interval[E, D] = this match {
+    case s: Inner[E, D, V]    => domainOps.interval(s.lowerBound, s.upperBound)
+    case s: WithPrev[E, D, V] => domainOps.interval(s.lowerBound)
+    case s: WithNext[E, D, V] => domainOps.interval(s.upperBound)
+    case _                    => domainOps.interval.universal
+  }
+
+  def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
+  
+  override def toString: String = SetBuilderFormat.segment(this, (e: E) => e.toString, (v: V) => v.toString)
+
+  // Navigation --------------------------------------------------------------- //
   def forwardIterable(): Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
 
     override def iterator: Iterator[Segment[E, D, V]] = forwardIterator()
@@ -137,8 +158,8 @@ sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segme
       case null =>
         current = segment
         current
-      case n: WithNext[E, D, V] =>
-        current = n.moveNext
+      case s: WithNext[E, D, V] =>
+        current = s.moveNext
         current
       case _ =>
         throw new NoSuchElementException(s"Segment $current doesn't have next segment.")
@@ -160,8 +181,8 @@ sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segme
       case null =>
         current = segment
         current
-      case p: WithPrev[E, D, V] =>
-        current = p.movePrev
+      case s: WithPrev[E, D, V] =>
+        current = s.movePrev
         current
       case _ =>
         throw new NoSuchElementException(s"Segment $current doesn't have previous segment.")
@@ -169,25 +190,63 @@ sealed trait Segment[E, D <: Domain[E], +V] extends SegmentLike[E, D, V] { segme
   }
 
   def forwardLazyList: LazyList[Segment[E, D, V]] = this match {
-    case n: WithNext[E, D, V] => LazyList.cons(this, n.moveNext.forwardLazyList)
+    case s: WithNext[E, D, V] => LazyList.cons(this, s.moveNext.forwardLazyList)
     case _                    => LazyList.cons(this, LazyList.empty)
   }
 
   def backwardLazyList: LazyList[Segment[E, D, V]] = this match {
-    case n: WithPrev[E, D, V] => LazyList.cons(this, n.movePrev.backwardLazyList)
+    case s: WithPrev[E, D, V] => LazyList.cons(this, s.movePrev.backwardLazyList)
     case _                    => LazyList.cons(this, LazyList.empty)
   }
 
-  def interval: Interval[E, D] = this match {
-    case i: Inner[E, D, V]    => domainOps.interval(i.lowerBound, i.upperBound)
-    case p: WithPrev[E, D, V] => domainOps.interval(p.lowerBound)
-    case n: WithNext[E, D, V] => domainOps.interval(n.upperBound)
-    case _                    => domainOps.interval.universal
+  // Transformation ----------------------------------------------------------- //
+  /**
+   * Returns sequence containing:
+   * <tr>- upper bounds of original sequence that satisfy condition:</tr>
+   * {{{
+   *   upper bound < this.lowerBound OR upper bound > this.upperBound
+   * }}}
+   * <tr>- upper bounds of input sequence that satisfy condition:</tr>
+   * {{{
+   *   upper bound <= this.upperBound AND upper bound > this.lowerBound
+   * }}}
+   * Each upper bound brings to the output sequence value that was associated with it
+   * in initial sequence (original or `other`).
+   * {{{
+   *
+   * original sequence (this.sequence):
+   * 
+   *               current segment (this)
+   *                       v
+   *   X--------](------------------)[---------X
+   *        A    ^         B        ^     C        - values
+   *      this.lowerBound       this.upperBound
+   * 
+   * input sequence (other):
+   *
+   *   X---)[-----------)[---)[-----------)[---X
+   *     D        E        F        G        H     - values
+   *            
+   * this.patched(other):
+   * 
+   *   X--------](------)[---)[-----)[---------X
+   *        A       E      F     G        C        - values
+   * }}}
+   */
+  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+    case s: Inner[E, D, V] =>
+      val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
+      val patch = other.takenBelow(s.upperBound.flip)
+      originalLeft.appended(patch).appended(originalTail)
+    case s: WithNext[E, D, V] =>
+      val patch = other.takenBelow(s.upperBound.flip)
+      patch.appended(sequence)
+    case s: WithPrev[E, D, V] => 
+      val originalLeft = sequence.takenBelow(s.lowerBound)
+      originalLeft.appended(other)
+    case _ =>
+      other
   }
-
-  def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
-
-  override def toString: String = SetBuilderFormat.segment(this, (e: E) => e.toString, (v: V) => v.toString)
 }
 
 object Segment {
@@ -211,8 +270,9 @@ object Segment {
    *
    * @see [[Segment]]
    */
-  trait WithNext[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait WithNext[E, D <: Domain[E], V] extends Segment[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def hasNext: Boolean = true
 
     override def hasUpperBound: Boolean = true
@@ -221,13 +281,25 @@ object Segment {
 
     def upperBound: Bound.Upper[E]
 
+    override def interval: Interval[E, D] = this match {
+      case s: WithPrev[e, d, v] => domainOps.interval(s.lowerBound, upperBound)
+      case _                    => domainOps.interval(upperBound)
+    }
+    
+    // Navigation --------------------------------------------------------------- //
     def moveNext: WithPrev[E, D, V]
 
     override def forwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, moveNext.forwardLazyList)
 
-    override def interval: Interval[E, D] = this match {
-      case p: WithPrev[e, d, v] => domainOps.interval(p.lowerBound, upperBound)
-      case _                    => domainOps.interval(upperBound)
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: WithPrev[e, d, v] =>
+        val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
+        val patch = other.takenBelow(s.upperBound.flip)
+        originalLeft.appended(patch).appended(originalTail)
+      case _ =>
+        val patch = other.takenBelow(upperBound.flip)
+        patch.appended(sequence)
     }
   }
 
@@ -236,8 +308,9 @@ object Segment {
    *
    * @see [[Segment]]
    */
-  trait WithPrev[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait WithPrev[E, D <: Domain[E], V] extends Segment[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def hasPrev: Boolean = true
 
     override def hasLowerBound: Boolean = true
@@ -246,13 +319,25 @@ object Segment {
 
     def lowerBound: Bound.Lower[E]
 
+    override def interval: Interval[E, D] = this match {
+      case s: WithNext[e, d, v] => domainOps.interval(lowerBound, s.upperBound)
+      case _                    => domainOps.interval(lowerBound)
+    }
+    
+    // Navigation --------------------------------------------------------------- //
     def movePrev: WithNext[E, D, V]
 
     override def backwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, movePrev.backwardLazyList)
 
-    override def interval: Interval[E, D] = this match {
-      case n: WithNext[e, d, v] => domainOps.interval(lowerBound, n.upperBound)
-      case _                    => domainOps.interval(lowerBound)
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: WithNext[e, d, v] =>
+        val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
+        val patch = other.takenBelow(s.upperBound.flip)
+        originalLeft.appended(patch).appended(originalTail)
+      case _ =>
+        val originalLeft = sequence.takenBelow(lowerBound)
+        originalLeft.appended(other)
     }
   }
 
@@ -261,15 +346,25 @@ object Segment {
    *
    * @see [[Segment]]
    */
-  trait First[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait First[E, D <: Domain[E], V] extends Segment[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def isFirst: Boolean = true
 
     override def moveToFirst: First[E, D, V] = this
 
     override def interval: Interval[E, D] = this match {
-      case n: WithNext[e, d, v] => domainOps.interval(n.upperBound)
+      case s: WithNext[e, d, v] => domainOps.interval(s.upperBound)
       case _                    => domainOps.interval.universal
+    }
+
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: WithNext[e, d, v] =>
+        val patch = other.takenBelow(s.upperBound.flip)
+        patch.appended(sequence)
+      case _ =>
+        other
     }
   }
 
@@ -278,15 +373,25 @@ object Segment {
    *
    * @see [[Segment]]
    */
-  trait Last[E, D <: Domain[E], +V] extends Segment[E, D, V] {
+  trait Last[E, D <: Domain[E], V] extends Segment[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def isLast: Boolean = true
 
     override def moveToLast: Last[E, D, V] = this
 
     override def interval: Interval[E, D] = this match {
-      case p: WithPrev[e, d, v] => domainOps.interval(p.lowerBound)
+      case s: WithPrev[e, d, v] => domainOps.interval(s.lowerBound)
       case _                    => domainOps.interval.universal
+    }
+
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: WithPrev[e, d, v] =>
+        val originalLeft = sequence.takenBelow(s.lowerBound)
+        originalLeft.appended(other)
+      case _ =>
+        other
     }
   }
 
@@ -297,8 +402,9 @@ object Segment {
    * <tr>                                 </tr>
    * @see [[Segment]]
    */
-  trait Single[E, D <: Domain[E], +V] extends First[E, D, V] with Last[E, D, V] {
+  trait Single[E, D <: Domain[E], V] extends First[E, D, V] with Last[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def isSingle: Boolean = true
 
     override def moveTo(bound: Bound[E]): Segment[E, D, V] = this
@@ -307,6 +413,9 @@ object Segment {
 
     override def toString: String =
       SetBuilderFormat.singleSegment(this, (v: V) => v.toString)
+
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
   }
 
   /**
@@ -316,14 +425,21 @@ object Segment {
    * <tr>                                 </tr>
    * @see [[Segment]]
    */
-  trait Initial[E, D <: Domain[E], +V] extends WithNext[E, D, V] with First[E, D, V] {
+  trait Initial[E, D <: Domain[E], V] extends WithNext[E, D, V] with First[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def isInitial: Boolean = true
 
     override def interval: Interval[E, D] = domainOps.interval(upperBound)
 
     override def toString: String =
       SetBuilderFormat.initialSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val patch = other.takenBelow(upperBound.flip)
+      patch.appended(sequence)
+    }
   }
 
   /**
@@ -333,14 +449,21 @@ object Segment {
    * <tr>                               </tr>
    * @see [[Segment]]
    */
-  trait Terminal[E, D <: Domain[E], +V] extends WithPrev[E, D, V] with Last[E, D, V] {
+  trait Terminal[E, D <: Domain[E], V] extends WithPrev[E, D, V] with Last[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def isTerminal: Boolean = true
 
     override def interval: Interval[E, D] = domainOps.interval(lowerBound)
 
     override def toString: String =
       SetBuilderFormat.terminalSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val originalLeft = sequence.takenBelow(lowerBound)
+      originalLeft.appended(other)
+    }
   }
 
   /**
@@ -350,46 +473,54 @@ object Segment {
    * <tr>                               </tr>
    * @see [[Segment]]
    */
-  trait Inner[E, D <: Domain[E], +V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
+  trait Inner[E, D <: Domain[E], V] extends WithNext[E, D, V] with WithPrev[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
     override def isInner: Boolean = true
 
     override def interval: Interval[E, D] = domainOps.interval(lowerBound, upperBound)
 
     override def toString: String =
       SetBuilderFormat.innerSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+
+    // Transformation ----------------------------------------------------------- //
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val (originalLeft, originalTail) = sequence.sliced(lowerBound)
+      val patch = other.takenBelow(upperBound.flip)
+      originalLeft.appended(patch).appended(originalTail)
+    }
   }
 
   final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
     implicit dirValue: SingleValue[Dir]
-  ) extends DirectedOrder.Abstract[Segment[E, D, Any], Dir] {
+  ) extends DirectedOrder.Abstract[Segment[E, D, ?], Dir] {
 
     import util.HashUtil._
 
     override val label: Label = OrderLabels.SegmentByUpperBound
 
-    override def compare(x: Segment[E, D, Any], y: Segment[E, D, Any]): Int = (x, y) match {
-      case (xn: WithNext[E, D, Any], yn: WithNext[E, D, Any]) => 
-        x.domainOps.boundOrd.compare(xn.upperBound, yn.upperBound)
-      case (_, _: WithNext[E, D, Any]) => 
+    override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = (x, y) match {
+      case (x: WithNext[E, D, ?], y: WithNext[E, D, ?]) => 
+        x.domainOps.boundOrd.compare(x.upperBound, y.upperBound)
+      case (_, _: WithNext[E, D, ?]) => 
         sign
-      case (_: WithNext[E, D, Any], _) => 
+      case (_: WithNext[E, D, ?], _) => 
         invertedSign
       case _ => 
         0
     }
 
-    override def hash(x: Segment[E, D, Any]): Int = x match {
-      case xn: WithNext[E, D, Any] => product1Hash(x.domainOps.boundOrd.hash(xn.upperBound))
+    override def hash(x: Segment[E, D, ?]): Int = x match {
+      case x: WithNext[E, D, ?] => product1Hash(x.domainOps.boundOrd.hash(x.upperBound))
       case _ => product1Hash(x.hashCode())
     }
 
-    override def eqv(x: Segment[E, D, Any], y: Segment[E, D, Any]): Boolean = (x, y) match {
-      case (xn: WithNext[E, D, Any], yn: WithNext[E, D, Any]) => 
-        x.domainOps.boundOrd.eqv(xn.upperBound, yn.upperBound)
-      case (_, _: WithNext[E, D, Any]) => 
+    override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean = (x, y) match {
+      case (x: WithNext[E, D, ?], y: WithNext[E, D, ?]) => 
+        x.domainOps.boundOrd.eqv(x.upperBound, y.upperBound)
+      case (_, _: WithNext[E, D, ?]) => 
         false
-      case (_: WithNext[E, D, Any], _) => 
+      case (_: WithNext[E, D, ?], _) => 
         false
       case _ => 
         true
@@ -398,33 +529,33 @@ object Segment {
 
   final class LowerBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
     implicit dirValue: SingleValue[Dir]
-  ) extends DirectedOrder.Abstract[Segment[E, D, Any], Dir] {
+  ) extends DirectedOrder.Abstract[Segment[E, D, ?], Dir] {
 
     import util.HashUtil._
 
     override def label: Label = OrderLabels.SegmentByLowerBound
 
-    override def compare(x: Segment[E, D, Any], y: Segment[E, D, Any]): Int = (x, y) match {
-      case (xp: WithPrev[E, D, Any], yp: WithPrev[E, D, Any]) => 
-        x.domainOps.boundOrd.compare(xp.lowerBound, yp.lowerBound)
-      case (_, _: WithPrev[E, D, Any]) => 
+    override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = (x, y) match {
+      case (x: WithPrev[E, D, ?], y: WithPrev[E, D, ?]) => 
+        x.domainOps.boundOrd.compare(x.lowerBound, y.lowerBound)
+      case (_, _: WithPrev[E, D, ?]) => 
         invertedSign
-      case (_: WithPrev[E, D, Any], _) => 
+      case (_: WithPrev[E, D, ?], _) => 
         sign
       case _ => 0
     }
 
-    override def hash(x: Segment[E, D, Any]): Int = x match {
-      case xn: WithPrev[E, D, Any] => product1Hash(x.domainOps.boundOrd.hash(xn.lowerBound))
+    override def hash(x: Segment[E, D, ?]): Int = x match {
+      case x: WithPrev[E, D, ?] => product1Hash(x.domainOps.boundOrd.hash(x.lowerBound))
       case _ => product1Hash(x.hashCode())
     }
 
-    override def eqv(x: Segment[E, D, Any], y: Segment[E, D, Any]): Boolean = (x, y) match {
-      case (xn: WithPrev[E, D, Any], yn: WithPrev[E, D, Any]) => 
-        x.domainOps.boundOrd.eqv(xn.lowerBound, yn.lowerBound)
-      case (_, _: WithPrev[E, D, Any]) => 
+    override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean = (x, y) match {
+      case (x: WithPrev[E, D, ?], y: WithPrev[E, D, ?]) => 
+        x.domainOps.boundOrd.eqv(x.lowerBound, y.lowerBound)
+      case (_, _: WithPrev[E, D, ?]) => 
         false
-      case (_: WithPrev[E, D, Any], _) => 
+      case (_: WithPrev[E, D, ?], _) => 
         false
       case _ => 
         true

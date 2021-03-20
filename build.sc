@@ -1,4 +1,5 @@
 import mill._
+import mill.define.Command
 import scalalib._
 
 object ordset extends ScalaModule {
@@ -24,6 +25,16 @@ object ordset extends ScalaModule {
     override def ivyDeps = Agg(
       ivy"org.scalatest::scalatest:3.2.5"
     )
+
+    /**
+     * Run one test suite. For example:
+     * {{{
+     *   mill ordset.test.testOne test.ordset.core.specs.segmentSeq.ArrayOrderedSetSpec
+     * }}}
+     */
+    def testOne(args: String*): Command[Unit] = T.command {
+      super.runMain("org.scalatest.run", args: _*)
+    }
   }
 }
 

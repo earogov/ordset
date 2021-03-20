@@ -44,4 +44,19 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
         }
       }
     }
+    
+  def segmentCanBePatched(
+    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentPatchedTest[E, D, V]]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit =
+    samples.foreach { sample =>
+      sample.patchedCases.foreach { patchedCase =>
+        
+        it(s"should patch segment of $sample at bound ${patchedCase.bound} with $patchedCase") {
+          val actual = sample.sequence.getSegment(patchedCase.bound).patched(patchedCase.patch)
+          assertEqualSequences(patchedCase.expected, actual)(sample.domainOps, valueHash)
+        }
+      }
+    }
 }

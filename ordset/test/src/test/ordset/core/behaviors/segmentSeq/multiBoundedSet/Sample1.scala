@@ -5,7 +5,7 @@ import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentPatchedTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -14,7 +14,8 @@ import scala.language.postfixOps
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
   with SegmentSeqAppendedTest[Int, D, Boolean]
-  with SegmentSeqSlicedTest[Int, D, Boolean] {
+  with SegmentSeqSlicedTest[Int, D, Boolean]
+  with SegmentPatchedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
   override def sample: String = "1"
@@ -52,6 +53,7 @@ trait Sample1[D <: Domain[Int]]
         //                     30         40
         // appended:
         // X------------------false-----------------------X
+        //
         // result:
         // X ......Seq1....... )[----------false----------X
         //                     30
@@ -70,6 +72,7 @@ trait Sample1[D <: Domain[Int]]
         //                     30         40
         // appended:
         // X------------------true------------------------X
+        //
         // result:
         // X ......Seq1....... )[--false--)[-----true-----X
         //                     30         40
@@ -237,4 +240,32 @@ trait Sample1[D <: Domain[Int]]
         Nil
       ),
     )
+    
+  override def patchedCases: Seq[SegmentPatchedTest.TestCase[Int, D, Boolean]] =
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
+        //                               patched segment
+        // X ..Seq1.. )[-----true-----)[-----false------)[-----true-----X
+        //            20              30                40
+        // patch:
+        // X------false----)[-----true-----)[-f-](-----true-----](--f---X
+        //                 22              32   35              50
+        // result:
+        // X ..Seq1.. )[--------true-------)[-f-](--------true----------X
+        //            20                   32   35            
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("A"),
+          35`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(22 `)[`, 32 `)[`, 35 `](`, 50 `](`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  32) ::
+          (false forAll x >= 32 & x <= 35) ::
+          (true  forAll x >  35) ::
+          Nil
+        )
+      )
+    }
 }
