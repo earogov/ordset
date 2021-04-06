@@ -25,6 +25,8 @@ import scala.collection.Seq
  */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
+  import AbstractIndexedSegmentSeq._
+  
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = false
 
@@ -39,14 +41,14 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = bounds
 
-  final override def firstSegment: IndexedInitialSegment = IndexedInitialSegment()
+  final override def firstSegment: IndexedInitialSegment[E, D, W] = IndexedInitialSegment(this)
 
-  final override def lastSegment: IndexedTerminalSegment = IndexedTerminalSegment()
+  final override def lastSegment: IndexedTerminalSegment[E, D, W] = IndexedTerminalSegment(this)
 
-  final override def getSegment(bound: Bound[E]): IndexedSegmentBase with GenSegment =
+  final override def getSegment(bound: Bound[E]): IndexedSegmentBase[E, D, W] with GenSegment =
     makeSegment(searchSegmentFromBegin(bound))
 
-  final override def getSegment(element: E): IndexedSegmentBase with GenSegment =
+  final override def getSegment(element: E): IndexedSegmentBase[E, D, W] with GenSegment =
     getSegment(Bound.Upper.inclusive(element))
 
   // Protected section -------------------------------------------------------- //
@@ -152,10 +154,10 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * @return segment with index `ind`.
     */
-  protected final def makeSegment(ind: Int): IndexedSegmentBase with GenSegment =
-    if (ind <= 0)                     IndexedInitialSegment()
-    else if (ind >= lastSegmentIndex) IndexedTerminalSegment()
-    else                              IndexedInnerSegment(ind)
+  protected final def makeSegment(ind: Int): IndexedSegmentBase[E, D, W] with GenSegment =
+    if (ind <= 0)                     IndexedInitialSegment(this)
+    else if (ind >= lastSegmentIndex) IndexedTerminalSegment(this)
+    else                              IndexedInnerSegment(this, ind)
 
   /**
     * Preconditions:
@@ -164,8 +166,8 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * @return segment (which has previous segment) with index `ind`.
     */
-  protected final def makeSegmentWithPrev(ind: Int): IndexedSegmentWithPrev =
-    if (ind >= lastSegmentIndex) IndexedTerminalSegment() else IndexedInnerSegment(ind)
+  protected final def makeSegmentWithPrev(ind: Int): IndexedSegmentWithPrev[E, D, W] =
+    if (ind >= lastSegmentIndex) IndexedTerminalSegment(this) else IndexedInnerSegment(this, ind)
 
   /**
     * Preconditions:
@@ -174,83 +176,182 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * @return segment (which has next segment) with index `ind`.
     */
-  protected final def makeSegmentWithNext(ind: Int): IndexedSegmentWithNext =
-    if (ind <= 0) IndexedInitialSegment() else IndexedInnerSegment(ind)
-
-  /**
-    * Base trait for indexed sequence segments. It has either previous or next segment.
-    *
-    * Preconditions:
-    *
-    * 1. `0 <= ind <= bounds.length (last segment index)`.
-    */
-  protected sealed trait IndexedSegmentBase extends SegmentLike[E, D, W] {
-
-    val ind: Int
-
-    override def sequence: SegmentSeq[E, D, W] = seq
+  protected final def makeSegmentWithNext(ind: Int): IndexedSegmentWithNext[E, D, W] =
+    if (ind <= 0) IndexedInitialSegment(this) else IndexedInnerSegment(this, ind)
     
-    override def domainOps: DomainOps[E, D] = seq.domainOps
+//
+//  /**
+//    * Base trait for indexed sequence segments. It has either previous or next segment.
+//    *
+//    * Preconditions:
+//    *
+//    * 1. `0 <= ind <= bounds.length (last segment index)`.
+//    */
+//  protected sealed trait IndexedSegmentBase extends SegmentLike[E, D, W] {
+//
+//    val ind: Int
+//
+//    override def sequence: SegmentSeq[E, D, W] = seq
+//    
+//    override def domainOps: DomainOps[E, D] = seq.domainOps
+//
+//    override def value: W = getSegmentValue(ind)
+//
+//    override def isIncluded: Boolean = isIncludedInSet(ind)
+//
+//    override def moveToFirst: FirstSegment = IndexedInitialSegment()
+//
+//    override def moveToLast: LastSegment = IndexedTerminalSegment()
+//
+//    override def moveTo(bound: Bound[E]): GenSegment = makeSegment(searchSegmentFromIndex(ind, bound))
+//  }
+//
+//  /**
+//    * Segment which has next segment.
+//    *
+//    * Preconditions:
+//    *
+//    * 1. `0 <= ind < bounds.length (last segment index)`.
+//    */
+//  protected sealed trait IndexedSegmentWithNext extends IndexedSegmentBase with SegmentWithNext {
+//
+//    override def upperBound: Bound.Upper[E] = getUpperBound(ind)
+//
+//    override def moveNext: SegmentWithPrev = makeSegmentWithPrev(ind + 1)
+//  }
+//
+//  /**
+//    * Segment which has previous segment.
+//    *
+//    * Preconditions:
+//    *
+//    * 1. `1 <= ind <= bounds.length (last segment index)`.
+//    */
+//  protected sealed trait IndexedSegmentWithPrev extends IndexedSegmentBase with SegmentWithPrev {
+//
+//    override def lowerBound: Bound.Lower[E] = getLowerBound(ind)
+//
+//    override def movePrev: SegmentWithNext = makeSegmentWithNext(ind - 1)
+//  }
+//
+//  /** Initial segment of sequence. */
+//  protected sealed case class IndexedInitialSegment() extends IndexedSegmentWithNext with InitialSegment {
+//
+//    override val ind: Int = 0
+//  }
+//
+//  /** Terminal segment of sequence. */
+//  protected sealed case class IndexedTerminalSegment() extends IndexedSegmentWithPrev with TerminalSegment {
+//
+//    override val ind: Int = lastSegmentIndex
+//  }
+//
+//  /**
+//    * Inner segment of sequence. It has both previous and next segments.
+//    *
+//    * Preconditions:
+//    *
+//    * 1. `1 <= ind < bounds.length (last segment index)`.
+//    */
+//  protected sealed case class IndexedInnerSegment(
+//    override val ind: Int
+//  ) extends IndexedSegmentWithPrev with IndexedSegmentWithNext with InnerSegment
+}
 
-    override def value: W = getSegmentValue(ind)
+object AbstractIndexedSegmentSeq {
 
-    override def isIncluded: Boolean = isIncludedInSet(ind)
+  /**
+   * Base trait for indexed sequence segments. It has either previous or next segment.
+   *
+   * Preconditions:
+   *
+   * 1. `0 <= ind <= bounds.length (last segment index)`.
+   */
+  sealed trait IndexedSegmentBase[E, D <: Domain[E],  W] extends SegmentLike[E, D, W] {
 
-    override def moveToFirst: FirstSegment = IndexedInitialSegment()
+    val index: Int
 
-    override def moveToLast: LastSegment = IndexedTerminalSegment()
+    override val sequence: AbstractIndexedSegmentSeq[E, D, W]
 
-    override def moveTo(bound: Bound[E]): GenSegment = makeSegment(searchSegmentFromIndex(ind, bound))
+    override def domainOps: DomainOps[E, D] = sequence.domainOps
+
+    override def value: W = sequence.getSegmentValue(index)
+
+    override def isIncluded: Boolean = sequence.isIncludedInSet(index)
+
+    override def moveToFirst: IndexedInitialSegment[E, D, W] = IndexedInitialSegment(sequence)
+
+    override def moveToLast: IndexedTerminalSegment[E, D, W] = IndexedTerminalSegment(sequence)
+
+    override def moveTo(bound: Bound[E]): IndexedSegmentBase[E, D, W] with Segment[E, D, W] =
+      sequence.makeSegment(sequence.searchSegmentFromIndex(index, bound))
   }
 
   /**
-    * Segment which has next segment.
-    *
-    * Preconditions:
-    *
-    * 1. `0 <= ind < bounds.length (last segment index)`.
-    */
-  protected sealed trait IndexedSegmentWithNext extends IndexedSegmentBase with SegmentWithNext {
+   * Segment which has next segment.
+   *
+   * Preconditions:
+   *
+   * 1. `0 <= ind < bounds.length (last segment index)`.
+   */
+  sealed trait IndexedSegmentWithNext[E, D <: Domain[E],  W] 
+    extends IndexedSegmentBase[E, D, W] 
+      with Segment.WithNext[E, D, W] {
 
-    override def upperBound: Bound.Upper[E] = getUpperBound(ind)
+    override def upperBound: Bound.Upper[E] = sequence.getUpperBound(index)
 
-    override def moveNext: SegmentWithPrev = makeSegmentWithPrev(ind + 1)
+    override def moveNext: IndexedSegmentWithPrev[E, D, W] = sequence.makeSegmentWithPrev(index + 1)
   }
 
   /**
-    * Segment which has previous segment.
-    *
-    * Preconditions:
-    *
-    * 1. `1 <= ind <= bounds.length (last segment index)`.
-    */
-  protected sealed trait IndexedSegmentWithPrev extends IndexedSegmentBase with SegmentWithPrev {
+   * Segment which has previous segment.
+   *
+   * Preconditions:
+   *
+   * 1. `1 <= ind <= bounds.length (last segment index)`.
+   */
+  sealed trait IndexedSegmentWithPrev[E, D <: Domain[E],  W] 
+    extends IndexedSegmentBase[E, D, W]
+      with Segment.WithPrev[E, D, W] {
 
-    override def lowerBound: Bound.Lower[E] = getLowerBound(ind)
+    override def lowerBound: Bound.Lower[E] = sequence.getLowerBound(index)
 
-    override def movePrev: SegmentWithNext = makeSegmentWithNext(ind - 1)
+    override def movePrev: IndexedSegmentWithNext[E, D, W] = sequence.makeSegmentWithNext(index - 1)
   }
 
   /** Initial segment of sequence. */
-  protected sealed case class IndexedInitialSegment() extends IndexedSegmentWithNext with InitialSegment {
+  final case class IndexedInitialSegment[E, D <: Domain[E],  W](
+    override val sequence: AbstractIndexedSegmentSeq[E, D, W]
+  ) extends IndexedSegmentWithNext[E, D, W]
+    with Segment.Initial[E, D, W] {
 
-    override val ind: Int = 0
+    override val index: Int = 0
+
+    override def moveToFirst: IndexedInitialSegment[E, D, W] = this
   }
 
   /** Terminal segment of sequence. */
-  protected sealed case class IndexedTerminalSegment() extends IndexedSegmentWithPrev with TerminalSegment {
+  final case class IndexedTerminalSegment[E, D <: Domain[E],  W](
+    override val sequence: AbstractIndexedSegmentSeq[E, D, W]
+  ) extends IndexedSegmentWithPrev[E, D, W]
+    with Segment.Terminal[E, D, W] {
 
-    override val ind: Int = lastSegmentIndex
+    override val index: Int = sequence.lastSegmentIndex
+
+    override def moveToLast: IndexedTerminalSegment[E, D, W] = this
   }
 
   /**
-    * Inner segment of sequence. It has both previous and next segments.
-    *
-    * Preconditions:
-    *
-    * 1. `1 <= ind < bounds.length (last segment index)`.
-    */
-  protected sealed case class IndexedInnerSegment(
-    override val ind: Int
-  ) extends IndexedSegmentWithPrev with IndexedSegmentWithNext with InnerSegment
+   * Inner segment of sequence. It has both previous and next segments.
+   *
+   * Preconditions:
+   *
+   * 1. `1 <= ind < bounds.length (last segment index)`.
+   */
+  final case class IndexedInnerSegment[E, D <: Domain[E],  W](
+    override val sequence: AbstractIndexedSegmentSeq[E, D, W],
+    override val index: Int
+  ) extends IndexedSegmentWithPrev[E, D, W] 
+    with IndexedSegmentWithNext[E, D, W] 
+    with Segment.Inner[E, D, W]
 }

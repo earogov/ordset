@@ -2,8 +2,11 @@ package test.ordset.core.specs.interval
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.{Interval, IntervalBuilder}
+import org.junit.runner.RunWith
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 
+@RunWith(classOf[JUnitRunner])
 class IntervalSpec extends AnyFunSpec {
 
   import ordset.core.instances.int._

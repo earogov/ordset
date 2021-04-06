@@ -2,10 +2,13 @@ package test.ordset.util.label
 
 import ordset.{Hash, Order}
 import ordset.util.label.Label
+import org.junit.runner.RunWith
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 
 import scala.collection.immutable.Queue
 
+@RunWith(classOf[JUnitRunner])
 class LabelSpec extends AnyFunSpec {
 
   it("should have consistent equality checks") {

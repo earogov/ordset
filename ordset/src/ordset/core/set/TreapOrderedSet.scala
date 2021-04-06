@@ -55,10 +55,11 @@ object TreapOrderedSet {
    * Preconditions:
    *
    * 1. `bounds` collection is ordered according to `validationFunc`:
-   * {{{
+   * <tr>
    *   validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
-   * }}}
-   *
+   * </tr>
+   * <tr></tr>
+   * 
    * Method is considered 'unsafe' because it throws exception if preconditions are violated.
    *
    * @param bounds collection of upper bounds.

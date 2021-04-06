@@ -27,6 +27,78 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     case _ => appendedSegmentSeq(other)
   }
 
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, Boolean]): SegmentSeq[E, D, Boolean] = {
+    // original:
+    //                bound  originalBoundSegment
+    //                   )   /
+    // X--false---](---true---](-----false----X
+    //            0           1                   - bounds indexes
+    //      0            1             2          - segments indexes
+    //
+    // other:
+    //                      otherBoundsProvider.boundSegment
+    //                       /
+    // X--t--)[-------false------](---true----X
+    //       0                   1                - bounds indexes
+    //    0              1              2         - segments indexes
+    //
+    // original.appended(bound, other):
+    //
+    //                bound
+    //                   v
+    // X--false---](--t--)[--f---](---true----X
+    //            0      1       2                - bound indexes
+    //      0         1      2          3         - segments indexes
+    //
+    val upperBound = bound.provideUpper
+    val lowerBound = bound.provideLower
+
+    val originalBoundSegment = getSegment(upperBound)
+    
+    val otherBoundsProvider = other match {
+      case other: ArrayOrderedSet[E, D] => ArraySetBoundsProvider(other, lowerBound)
+      case _ => GeneralBoundsProvider(other, lowerBound)
+    }
+
+    val originalBoundMatch = originalBoundSegment match {
+      case s: Segment.WithNext[e, d, v] => domainOps.boundOrd.eqv(upperBound, s.upperBound)
+      case _ => false
+    }
+    val boundValuesMatch = valueEq.eqv(originalBoundSegment.value, otherBoundsProvider.boundSegment.value)
+
+    val originalCopyLen =
+      if (originalBoundMatch && !boundValuesMatch) originalBoundSegment.index + 1
+      else originalBoundSegment.index
+    
+    val otherCopyLen = otherBoundsProvider.copyLen
+
+    if (originalCopyLen == bounds.length && otherCopyLen == 0 && boundValuesMatch) {
+      this
+    } else {
+      val skipBound = originalBoundMatch || boundValuesMatch
+
+      val newBoundsLen =
+        if (skipBound) originalCopyLen + otherCopyLen
+        else originalCopyLen + otherCopyLen + 1
+
+      if (newBoundsLen == 0)
+        consUniform(originalBoundSegment.value)
+      else {
+        val newBoundsArray = new Array[Bound.Upper[E]](newBoundsLen)
+        if (originalCopyLen > 0) {
+          Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, originalCopyLen)
+        }
+        var nextInd = originalCopyLen
+        if (!skipBound) {
+          newBoundsArray(originalCopyLen) = upperBound
+          nextInd = nextInd + 1
+        }
+        otherBoundsProvider.copyToArray(newBoundsArray, nextInd)
+        new ArrayOrderedSet[E, D](ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
+      }
+    }
+  }
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def getSegmentValue(ind: Int): Boolean = isIncludedInSet(ind)
@@ -141,6 +213,44 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
         ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
       }
     }
+  }
+  
+  private sealed trait BoundsProvider() {
+
+    val boundSegment: GenSegment
+    
+    def copyLen: Int
+    
+    def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit
+  }
+  
+  private case class ArraySetBoundsProvider(
+    segmentSeq: ArrayOrderedSet[E, D],
+    bound: Bound.Lower[E]
+  ) extends BoundsProvider {
+    
+    override val boundSegment: AbstractIndexedSegmentSeq.IndexedSegmentBase[E, D, Boolean] with GenSegment = 
+      segmentSeq.getSegment(bound)
+    
+    override val copyLen: Int = segmentSeq.bounds.length - boundSegment.index
+    
+    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
+      if (copyLen > 0) Array.copy(segmentSeq.bounds.unsafeArray, boundSegment.index, arr, start, copyLen)
+  }
+  
+  private case class GeneralBoundsProvider(
+    segmentSeq: OrderedSet[E, D],
+    bound: Bound.Lower[E]
+  ) extends BoundsProvider {
+
+    override val boundSegment: GenSegment = segmentSeq.getSegment(bound)
+
+    private val copyBounds: (List[Bound.Upper[E]], Int) = SegmentSeqOps.getForwardBoundsList(boundSegment)
+
+    override def copyLen: Int = copyBounds._2
+
+    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
+      if (copyLen > 0) copyBounds._1.copyToArray(arr, start, copyLen)
   }
 }
 

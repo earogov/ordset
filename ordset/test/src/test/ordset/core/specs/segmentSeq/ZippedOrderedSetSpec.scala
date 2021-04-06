@@ -2,10 +2,13 @@ package test.ordset.core.specs.segmentSeq
 
 import ordset.core.OrderedSet
 import ordset.core.domain.Domain
+import org.junit.runner.RunWith
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.samples.segmentSeq.zippedOrderedSet._
 
+@RunWith(classOf[JUnitRunner])
 class ZippedOrderedSetSpec extends AnyFunSpec
   with NavigationBehaviors[Int, Domain[Int], Boolean]
   with TransformationBehaviors[Int, Domain[Int], Boolean] {
@@ -46,7 +49,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
 
   describe("Zipped ordered set transformation operations") {
 
-//    it should behave like segmentSeqCanBeAppended(transformSuite)
+//    it should behave like segmentSeqCanBeAppendedV0(transformSuite)
 //
 //    it should behave like segmentSeqCanBeSliced(transformSuite)
   }

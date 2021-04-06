@@ -233,20 +233,26 @@ sealed trait Segment[E, D <: Domain[E], V] extends SegmentLike[E, D, V] { segmen
    *        A       E      F     G        C        - values
    * }}}
    */
-  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-    case s: Inner[E, D, V] =>
-      val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
-      val patch = other.takenBelow(s.upperBound.flip)
-      originalLeft.appended(patch).appended(originalTail)
-    case s: WithNext[E, D, V] =>
-      val patch = other.takenBelow(s.upperBound.flip)
-      patch.appended(sequence)
-    case s: WithPrev[E, D, V] => 
-      val originalLeft = sequence.takenBelow(s.lowerBound)
-      originalLeft.appended(other)
-    case _ =>
-      other
-  }
+  // TODO implement `SegmentSeq.prepended` and then `Segment.patched`.
+  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+//    this match {
+//    case s: Inner[E, D, V] =>
+//      val nextLowerBound = s.upperBound.flip
+//      val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
+//      val originalRight = originalTail.takenAbove(nextLowerBound)
+//      val patch = other.takenBelow(nextLowerBound)
+//      originalLeft.appended(patch).appended(originalRight)
+//    case s: WithNext[E, D, V] =>
+//      val nextLowerBound = s.upperBound.flip
+//      val originalRight = sequence.takenAbove(nextLowerBound)
+//      val patch = other.takenBelow(nextLowerBound)
+//      patch.appended(originalRight)
+//    case s: WithPrev[E, D, V] => 
+//      val originalLeft = sequence.takenBelow(s.lowerBound)
+//      originalLeft.appended(other)
+//    case _ =>
+//      other
+//  }
 }
 
 object Segment {
@@ -292,15 +298,7 @@ object Segment {
     override def forwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, moveNext.forwardLazyList)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: WithPrev[e, d, v] =>
-        val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
-        val patch = other.takenBelow(s.upperBound.flip)
-        originalLeft.appended(patch).appended(originalTail)
-      case _ =>
-        val patch = other.takenBelow(upperBound.flip)
-        patch.appended(sequence)
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   /**
@@ -330,15 +328,7 @@ object Segment {
     override def backwardLazyList: LazyList[Segment[E, D, V]] = LazyList.cons(this, movePrev.backwardLazyList)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: WithNext[e, d, v] =>
-        val (originalLeft, originalTail) = sequence.sliced(s.lowerBound)
-        val patch = other.takenBelow(s.upperBound.flip)
-        originalLeft.appended(patch).appended(originalTail)
-      case _ =>
-        val originalLeft = sequence.takenBelow(lowerBound)
-        originalLeft.appended(other)
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   /**
@@ -359,13 +349,7 @@ object Segment {
     }
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: WithNext[e, d, v] =>
-        val patch = other.takenBelow(s.upperBound.flip)
-        patch.appended(sequence)
-      case _ =>
-        other
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   /**
@@ -386,13 +370,7 @@ object Segment {
     }
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: WithPrev[e, d, v] =>
-        val originalLeft = sequence.takenBelow(s.lowerBound)
-        originalLeft.appended(other)
-      case _ =>
-        other
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   /**
@@ -419,7 +397,7 @@ object Segment {
   }
 
   /**
-   * First segment of sequence with properties:
+   * Initial segment of sequence with properties:
    * <tr>- doesn't have previous segment; </tr>
    * <tr>- always has next segment.       </tr>
    * <tr>                                 </tr>
@@ -436,14 +414,11 @@ object Segment {
       SetBuilderFormat.initialSegment(this, (e: E) => e.toString, (v: V) => v.toString)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-      val patch = other.takenBelow(upperBound.flip)
-      patch.appended(sequence)
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   /**
-   * Last segment of sequence with properties:
+   * Terminal segment of sequence with properties:
    * <tr>- doesn't have next segment;   </tr>
    * <tr>- always has previous segment. </tr>
    * <tr>                               </tr>
@@ -460,10 +435,7 @@ object Segment {
       SetBuilderFormat.terminalSegment(this, (e: E) => e.toString, (v: V) => v.toString)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-      val originalLeft = sequence.takenBelow(lowerBound)
-      originalLeft.appended(other)
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   /**
@@ -484,11 +456,7 @@ object Segment {
       SetBuilderFormat.innerSegment(this, (e: E) => e.toString, (v: V) => v.toString)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-      val (originalLeft, originalTail) = sequence.sliced(lowerBound)
-      val patch = other.takenBelow(upperBound.flip)
-      originalLeft.appended(patch).appended(originalTail)
-    }
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
   final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(

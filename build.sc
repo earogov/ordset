@@ -23,7 +23,8 @@ object ordset extends ScalaModule {
     override def moduleDeps = Seq(commonsRandom)
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.5"
+      ivy"org.scalatest::scalatest:3.2.5",
+      ivy"org.scalatestplus::junit-4-13:3.2.5.0"
     )
 
     /**
@@ -60,7 +61,8 @@ object commonsRandom extends ScalaModule {
     def testFrameworks = Seq("org.scalatest.tools.Framework")
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.5"
+      ivy"org.scalatest::scalatest:3.2.5",
+      ivy"org.scalatestplus::junit-4-13:3.2.5.0"
     )
   }
 }

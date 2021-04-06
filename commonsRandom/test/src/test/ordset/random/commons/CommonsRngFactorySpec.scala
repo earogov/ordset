@@ -4,11 +4,14 @@ import ordset.random.commons.{CommonsRngFactory, KISSRngFactory}
 import org.apache.commons.rng.simple.RandomSource
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.random.commons.internal.TestRngUtil.{assertDifferentRng, assertSameRng, assertSaneRng}
+import org.junit.runner.RunWith
+import org.scalatestplus.junit.JUnitRunner
 
 /**
  * Current library is a thin wrapper for [[org.apache.commons.rng]].
  * We don't need here to check quality of random generators as it's already provided by underling implementation.
  */
+@RunWith(classOf[JUnitRunner])
 class CommonsRngFactorySpec extends AnyFunSpec {
 
   it("should create KISS random generator") {

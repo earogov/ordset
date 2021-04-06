@@ -8,30 +8,40 @@ import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
 /**
- * [[SegmentSeq]] is intended to encode ordered sets and maps of elements, such that^*1^:
+ * [[SegmentSeq]] encodes ordered sets and maps of elements, such that^*1^:
  * <tr>                                                                                     </tr>
- * <tr>1. {(-2, -1), [1], (5, 10]} - simple set of integers                                 </tr>
+ * <tr>1. {(-2, -1), [1], (5, 10]} - set of integers                                        </tr>
  * <tr>                                                                                     </tr>
- * <tr>2. {(2020-01-01, 2020-12-31], [2021-01-11, +inf)} - set of dates without upper bound </tr>
+ * <tr>2. {(-2.0, 0.0), (0.0, 10.0]} - set of real numbers                                  </tr>
  * <tr>                                                                                     </tr>
- * <tr>3. {(-inf, 0) -> B, [10, 20] -> A} - map integer -> string                           </tr>
+ * <tr>3. {(2020-01-01, 2020-12-31], [2021-01-11, +inf)} - set of dates without upper bound </tr>
  * <tr>                                                                                     </tr>
- * <tr>4. {(-inf, +inf) -> Z} - universal or unbounded map                                  </tr>
+ * <tr>4. {(-inf, 0) -> B, [10, 20] -> A} - map integer -> string                           </tr>
+ * <tr>                                                                                     </tr>
+ * <tr>5. {(-inf, +inf) -> Z} - universal or unbounded map                                  </tr>
  * <tr>                                                                                     </tr>
  * <tr>
  *   *1 - Default interval notation is used for inclusive/exclusive bounds.
  * </tr>
  * <tr></tr>
  *
- * We don't have here traditional empty map without any keys and values and even {{} -> Value} which maps
- * empty set to same value. Such objects can not be represented by [[SegmentSeq]].
- * <tr></tr>
- *
- * We can not directly enumerate all elements as for standard (unordered) sets and maps. Instead we describe them
- * as a sequence of segments - intervals of elements of type `E` with some value `W`. Order for type `E` is defined
+ * We can not explicitly enumerate all elements as for standard (unordered) sets and maps. Instead we describe ordered
+ * map as a sequence of segments - intervals of elements of type `E` with some value `W`. Order for type `E` is defined
  * by [[DomainOps]].
  * <tr></tr>
- *
+ * 
+ * Such objects as traditional empty maps (without any keys and values) and {{} -> Value} which maps empty set to some
+ * value can not be represented by [[SegmentSeq]]. Generally segment sequence is defined as
+ * <tr></tr>
+ * 
+ * {(l<sub>i</sub>, u<sub>i</sub>) -> v<sub>i</sub>} for i ∈ [1, N]
+ * <tr>where</tr>
+ * <tr>l<sub>i</sub> - lower bound of segment i;</tr>
+ * <tr>u<sub>i</sub> - upper bound of segment i;</tr>
+ * <tr>v<sub>i</sub> - value of segment i;</tr>
+ * <tr>N - number of segment in sequence.</tr>
+ * <tr></tr>
+ *  
  * All implementations of [[SegmentSeq]] MUST provide basic property:
  * <tr>1. <u>segments cover universal set without gaps and overlapping</u>.                 </tr>
  * <tr>                                                                                     </tr>
@@ -54,7 +64,7 @@ import scala.{specialized => sp}
  * }}}
  *
  * To define map to some type `V` one may accept `W` = `Option[V]`. Where `None` corresponds to segments that don't
- * belong to set. Consider example 3:
+ * belong to set. Consider example 4:
  * {{{
  *
  *      Segment 0           Segment 1          Segment 2             Segment 3
@@ -68,7 +78,6 @@ import scala.{specialized => sp}
  *
  * Because of segments are follow without gaps and overlapping it's enough to keep either upper or lower bound.
  * Generally upper bounds are stored and lower bounds are computed (by upper bounds of previous segments).
- * Therefore transformation operations are defined in terms of upper bounds.
  * <tr></tr>
  *
  * <h1>Notes</h1>
@@ -137,7 +146,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   /**
    * Returns sequence containing upper bounds of segments that satisfy condition:
    * {{{
-   * upper bound >= specified bound
+   * upper bound ≥ specified bound
    * }}}
    * Each upper bound brings to the output sequence value that was associated with it in original sequence.
    * {{{
@@ -157,16 +166,16 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W]
 
   /**
-   * Returns sequence containing upper bounds of segments that satisfy condition:
+   * Returns sequence containing lower bounds of segments that satisfy condition:
    * {{{
-   * upper bound < specified bound
+   * lower bound ≤ specified bound
    * }}}
-   * Each upper bound brings to the output sequence value that was associated with it in original sequence.
+   * Each lower bound brings to the output sequence value that was associated with it in original sequence.
    * {{{
    *
    * original:
-   *                     bound
-   *                       v
+   *            bound
+   *             v
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
@@ -183,8 +192,8 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *
    * {{{
    * original:
-   *                     bound
-   *                       v
+   *                 bound
+   *                   v
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
@@ -200,26 +209,21 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * }}}
    */
   def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
-
+  
   /**
    * Returns sequence containing:
    * <tr>- upper bounds of all original segments except last;</tr>
-   * <tr>- upper bounds of `other` sequence that satisfy condition:
+   * <tr>- upper bounds of `other` sequence that satisfy condition:</tr>
    * {{{
-   * upper bound > upper bound of original's penultimate segment
+   * upper bound > lower bound of original's last segment
    * }}}
    * Each upper bound brings to the output sequence value that was associated with it
    * in initial sequence (original or `other`).
-   * <tr>
-   * If original sequence does not have penultimate segment (sequence with single segment)
-   * then output sequence is equals to `other` sequence, i.e. all `other`'s upper bounds
-   * with its values should be moved to the output sequence.
-   * </tr>
    * {{{
    *
    * original:
-   *              penultimate        last
-   *                   v              v
+   *                                 last
+   *                                  v
    *   X--------](---------)[------------------X
    *        A         B             C              - values
    *
@@ -232,15 +236,81 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *
    *   X--------](---------)[--------](--------X
    *        A         B          E        F        - values
-   *
-   *
+   * }}}
    * Methods definitions provide invariant:
    * {{{
-   *   original == original.takenBelow(bound) appended original.takenAbove(bound)
+   *   original == original.takenBelow(bound).appended(original.takenAbove(bound))
    * }}}
    */
   def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
 
+  /**
+   * Returns sequence containing:
+   * <tr>- segments {(l,,i,, MIN(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
+   * <tr>- segments {(MAX(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` `bound`; </tr>
+   * </tr>
+   * <tr>where</tr>
+   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
+   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
+   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   * <tr>
+   *   U - upper bound operator, it act as identity if bound is upper and flips bound otherwise 
+   *   (see [[Bound.provideUpper]]);
+   * </tr>
+   * <tr>
+   *   L - lower bound operator, it act as identity if bound is lower and flips bound otherwise 
+   *   (see [[Bound.provideLower]]);
+   * </tr>
+   *
+   * {{{
+   * Example 1
+   * 
+   * original:
+   *                        bound
+   *                         [
+   *   X--------](-----------------)[-----------X
+   *        A              B               C       - values
+   *
+   * other:
+   *
+   *   X--------------)[-------------](--------X
+   *           C               D           E       - values
+   *           
+   * original.appended(bound, other):
+   * 
+   *                       bound
+   *                         v
+   *   X--------](----------)[-------)[---------X
+   *        A          B         D         E      - values
+   * }}}
+   * {{{
+   * Example 2
+   *
+   * original:
+   *                             bound
+   *                               )
+   *   X--------](-----------------)[-----------X
+   *        A              B               C       - values
+   *
+   * other:
+   *
+   *   X--------------)[-------------](--------X
+   *           C               D           E       - values
+   *
+   * original.appended(bound, other):
+   *
+   *                       bound
+   *                         v
+   *   X--------](-----------------)[](--------X
+   *        A              B        D      E      - values
+   * }}}
+   * Methods definitions provide invariant:
+   * {{{
+   *   original == original.takenBelow(bound).appended(bound, original.takenAbove(bound)) for any bound
+   * }}}
+   */
+  def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
+  
   override def toString: String =
     SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: W) => v.toString)
 }

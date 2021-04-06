@@ -3,10 +3,12 @@ package test.ordset.random.commons
 import ordset.random.commons.{KISSSynchronizedRngManager, KISSThreadLocalRngManager}
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.random.commons.internal.TestRngUtil.{genAsyncSamples, uniqueSamples}
-
+import org.junit.runner.RunWith
+import org.scalatestplus.junit.JUnitRunner
 import java.util.concurrent.{Executors, TimeUnit}
 import scala.concurrent.duration.Duration
 
+@RunWith(classOf[JUnitRunner])
 class KISSRngManagersSpec extends AnyFunSpec {
 
   private val sampleSize = 10

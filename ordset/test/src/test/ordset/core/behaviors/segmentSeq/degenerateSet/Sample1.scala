@@ -5,7 +5,7 @@ import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedV0Test, SegmentSeqFactories, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -13,7 +13,7 @@ import scala.language.postfixOps
 
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
-  with SegmentSeqAppendedTest[Int, D, Boolean]
+  with SegmentSeqAppendedV0Test[Int, D, Boolean]
   with SegmentSeqSlicedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
@@ -45,7 +45,7 @@ trait Sample1[D <: Domain[Int]]
     ( 0`]`, true  forAll x >= 0  & x <= 0 ) ::
     Nil
 
-  override def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[Int, D, Boolean]] = {
+  override def appendedV0Cases: Seq[SegmentSeqAppendedV0Test.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:           false      false
@@ -57,7 +57,7 @@ trait Sample1[D <: Domain[Int]]
         // result:            false
         // X ......Seq1....... )|(--true--)[-----false----X
         //                     20         30
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedV0Test.TestCase(
           factoryTuple._1 + Label("A"),
           factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = false),
           (false forAll x <  0) ::
@@ -78,7 +78,7 @@ trait Sample1[D <: Domain[Int]]
         // result:            false      false
         // X ......Seq1....... )|(--true--)|(-----true----X
         //                     20         30
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedV0Test.TestCase(
           factoryTuple._1 + Label("B"),
           factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
           reference
@@ -92,7 +92,7 @@ trait Sample1[D <: Domain[Int]]
         // result:            false      false
         // X ......Seq1....... )|(--true--)|(-tr-](-false-X
         //                     20         30
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedV0Test.TestCase(
           factoryTuple._1 + Label("C"),
           factoryTuple._2.buildUnsafe(ArraySeq(40 `](`), complementary = true),
           (false forAll x <  0) ::
@@ -117,7 +117,7 @@ trait Sample1[D <: Domain[Int]]
         // result:            false      false
         // X ......Seq1....... )|(--true--)|(-----true----X
         //                     20         30
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedV0Test.TestCase(
           factoryTuple._1 + Label("D"),
           factoryTuple._2.buildUnsafe(bounds, complementary),
           reference

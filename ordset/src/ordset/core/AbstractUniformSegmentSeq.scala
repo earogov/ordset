@@ -5,7 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
-  // Navigation --------------------------------------------------------------- //
+  // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !isIncludedInSet(value)
 
   final override def isUniversal: Boolean = isIncludedInSet(value)
@@ -34,8 +34,13 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
   final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
     (this, this)
-
+  
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
+
+  // TODO implement `appended`
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+//    if (valueEq.eqv(value, other.value)) this
+//    else ???
 
   // Protected section -------------------------------------------------------- //
   /** Value of single segment. */

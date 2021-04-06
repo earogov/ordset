@@ -126,6 +126,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     case _ => appendedSegmentSeq(other)
   }
 
+  // TODO implement `appended` method.
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+
   // Protected section -------------------------------------------------------- //
   protected final type TreapSegment = TreapSegmentBase with GenSegment
 

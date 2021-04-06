@@ -43,10 +43,13 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
 
   final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) =
     (takenBelow(bound), takenAbove(bound))
-
+  
   // TODO implement `appended` method.
   //  That's wrong: cons(left.appended(other), right.appended(other))
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+
+  // TODO implement `appended` method.
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
   // Protected section -------------------------------------------------------- //
   protected final type Zipper[S <: ZippedTuple] = (GenSegment, GenSegment) => S

@@ -8,20 +8,86 @@ import ordset.util.types.SingleValue
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
+/**
+ * Bound of [[Segment]] or [[Interval]]. Bounds are represented by 
+ * <tr>- some value of type `E`;</tr>
+ * <tr>- value inclusion indicator;</tr>
+ * <tr>- bound type: upper or lower.</tr>
+ *
+ * {{{
+ *  lower inclusive    upper inclusive
+ *       bound             bound
+ *        v                 v
+ *        [0--------------10](-------------)15
+ *                           ^             ^
+ *                  lower exclusive   upper exclusive
+ *                      bound              bound
+ * }}}
+ * 
+ * 
+ * @tparam E - type of element
+ */
 sealed trait Bound[@sp(spNum) +E] {
 
+  /**
+   * Returns bound value.
+   */
   def value: E
 
+  /**
+   * Returns `true` if bound is upper.
+   */
   def isUpper: Boolean
 
+  /**
+   * Returns `true` if bound is lower.
+   */
   def isLower: Boolean = !isUpper
 
+  /**
+   * Returns `true` if bound includes `value`.
+   */
   def isInclusive: Boolean
 
+  /**
+   * Returns `true` if bound doesn't include `value`.
+   */
   def isExclusive: Boolean = !isInclusive
 
+  /**
+   * Returns [[Bound.flip]] if bound is lower or bound itself otherwise.
+   */
+  def provideUpper: Bound.Upper[E]
+
+  /**
+   * Returns [[Bound.flip]] if bound is upper or bound itself otherwise.
+   */
+  def provideLower: Bound.Lower[E]
+
+  /**
+   * Let b1 is initial bound then b2 = b1.flip is such bound that:
+   * <tr>b2.value = b1.value</tr>
+   * <tr>b2.isInclusive = !b1.isInclusive</tr>
+   * <tr>b2.isUpper = !b1.isUpper</tr>
+   * {{{ 
+   *            bound                 bound
+   *             v                      v   
+   *   --------](--------       --------](--------
+   *          ^                          ^
+   *      bound.flip                 bound.flip 
+   * }}}
+   */
   def flip: Bound[E]
 
+  /**
+   * Returns
+   * <tr> 0 - if bound is inclusive;</tr>
+   * <tr> 1 - if bound is lower and exclusive;</tr>
+   * <tr>-1 - if bound is upper and exclusive.</tr>
+   * <tr></tr>
+   * 
+   * Offset defines bounds ordering when their values are equal.
+   */
   def offset: Int
 }
 
@@ -48,7 +114,11 @@ object Bound {
 
     override def isLower: Boolean = false
 
-    override def flip: Bound[E] = Lower(value, !isInclusive)
+    override def provideUpper: Bound.Upper[E] = this
+
+    override def provideLower: Bound.Lower[E] = this.flipUpper
+    
+    override def flip: Bound[E] = this.flipUpper
 
     def flipUpper: Lower[E] = Lower(value, !isInclusive)
 
@@ -76,7 +146,11 @@ object Bound {
 
     override def isLower: Boolean = true
 
-    override def flip: Bound[E] = Upper(value, !isInclusive)
+    override def provideUpper: Bound.Upper[E] = this.flipLower
+
+    override def provideLower: Bound.Lower[E] = this
+    
+    override def flip: Bound[E] = this.flipLower
 
     def flipLower: Upper[E] = Upper(value, !isInclusive)
 

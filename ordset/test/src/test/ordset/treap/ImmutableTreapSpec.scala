@@ -5,14 +5,17 @@ import ordset.core.instances
 import ordset.tree.core.eval.TreeVisitStack
 import ordset.tree.core.fold.{CallTrace, ContextExtract}
 import ordset.tree.treap.immutable.transform.TreeSplit
-import ordset.tree.treap.immutable.traverse.{NodeDepthFirst, NodeAside}
+import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDepthFirst}
 import ordset.tree.core.{BinaryTreeVisit, Fold}
 import ordset.tree.treap.Treap
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.NodeVisitContext
+import org.junit.runner.RunWith
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 
 // TODO implement unit tests for treap.
+@RunWith(classOf[JUnitRunner])
 class ImmutableTreapSpec extends AnyFunSpec {
 
   import ordset.core.instances.int._
