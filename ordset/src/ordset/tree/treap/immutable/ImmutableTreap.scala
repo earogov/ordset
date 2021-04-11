@@ -8,10 +8,10 @@ sealed trait ImmutableTreap[+K, +V] extends Treap[K, V]
 object ImmutableTreap {
 
   implicit def treapShow[K, V]: Show[ImmutableTreap[K, V]] =
-    ShowInstance.asInstanceOf[Show[ImmutableTreap[K, V]]]
+    showInstance.asInstanceOf[Show[ImmutableTreap[K, V]]]
 
   implicit def nodeShow[K, V]: Show[ImmutableTreap.Node[K, V]] =
-    ShowInstance.asInstanceOf[Show[ImmutableTreap.Node[K, V]]]
+    showInstance.asInstanceOf[Show[ImmutableTreap.Node[K, V]]]
 
   sealed trait Node[+K, +V] extends ImmutableTreap[K, V] with Treap.Node[K, V] {
 
@@ -157,5 +157,5 @@ object ImmutableTreap {
     override def toString: String = s"ImmutableTreap.NodeWithLeftRight(key: $key, priority: $priority, value: $value)"
   }
 
-  private lazy val ShowInstance: Show[ImmutableTreap[Any, Any]] = Show.fromToString
+  private lazy val showInstance: Show[ImmutableTreap[Any, Any]] = Show.fromToString
 }

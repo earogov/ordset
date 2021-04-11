@@ -1,6 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -11,6 +12,8 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
   
   def domainOps: DomainOps[E, D]
 
+  def valueOps: ValueOps[V]
+  
   def value: V
 
   def isIncluded: Boolean

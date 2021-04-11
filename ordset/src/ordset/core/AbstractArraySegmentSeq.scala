@@ -67,31 +67,6 @@ abstract class AbstractArraySegmentSeq[E, D <: Domain[E], W] extends AbstractInd
   // Protected section -------------------------------------------------------- //
   protected override val bounds: ArraySeq[Bound.Upper[E]]
 
-  /**
-   * Creates uniform segment sequence (empty or universal).
-   *
-   * Note current class not supports empty and universal sets so other implementations should be used.
-   */
-  protected def consUniform(value: W): SegmentSeq[E, D, W]
-
-  /**
-   * Preconditions:
-   *
-   * 1. `0 <= ind <= bounds.length - 1` (last bound index)
-   *
-   * Creates segment sequence from current keeping only upper bounds with index `>=` `ind`.
-   */
-  protected def consAbove(ind: Int): SegmentSeq[E, D, W]
-
-  /**
-   * Preconditions:
-   *
-   * 1. `0 <= ind <= bounds.length - 1` (last bound index)
-   *
-   * Creates segment sequence from current keeping only upper bounds with index `<=` `ind`.
-   */
-  protected def consBelow(ind: Int): SegmentSeq[E, D, W]
-
   protected override def searchSegmentFromBegin(bound: Bound[E]): Int = {
     val res = binSearchClosestNotLess[Bound[E]](
       bound, bounds

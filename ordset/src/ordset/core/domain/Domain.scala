@@ -9,7 +9,7 @@ trait Domain[E] extends DomainLike[E]
 object Domain {
 
   implicit def defaultDomain[E](implicit elementOrd: AscOrder[E]): Domain[E] =
-    Domains.ContinuousUnbounded(elementOrd)
+    Domains.continuousUnbounded(elementOrd)
 
   implicit def defaultHash[E](): Hash[Domain[E]] =
     defaultHashInstance.asInstanceOf[Hash[Domain[E]]]

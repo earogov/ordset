@@ -14,7 +14,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractArraySegmentSeq[E, D, Boolean]
+) extends AbstractArrayOrderedSet[E, D]
   with OrderedSetCommons[E, D] {
 
   import SortedArraySearch._
@@ -22,12 +22,12 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   validate()
 
   // Transformation ----------------------------------------------------------- //
-  final override def appended(other: SegmentSeq[E, D, Boolean]): SegmentSeq[E, D, Boolean] = other match {
+  final override def appended(other: OrderedSet[E, D]): OrderedSet[E, D] = other match {
     case other: ArrayOrderedSet[E, D] => appendedArraySet(other)
     case _ => appendedSegmentSeq(other)
   }
 
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, Boolean]): SegmentSeq[E, D, Boolean] = {
+  final override def appended(bound: Bound[E], other: OrderedSet[E, D]): OrderedSet[E, D] = {
     // original:
     //                bound  originalBoundSegment
     //                   )   /
@@ -64,7 +64,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
       case s: Segment.WithNext[e, d, v] => domainOps.boundOrd.eqv(upperBound, s.upperBound)
       case _ => false
     }
-    val boundValuesMatch = valueEq.eqv(originalBoundSegment.value, otherBoundsProvider.boundSegment.value)
+    val boundValuesMatch = valueOps.eqv(originalBoundSegment.value, otherBoundsProvider.boundSegment.value)
 
     val originalCopyLen =
       if (originalBoundMatch && !boundValuesMatch) originalBoundSegment.index + 1
@@ -104,9 +104,9 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   protected final override def getSegmentValue(ind: Int): Boolean = isIncludedInSet(ind)
 
   @inline
-  protected final def consUniform(value: Boolean) :SegmentSeq[E, D, Boolean] = UniformOrderedSet(value)
+  protected final def consUniform(value: Boolean): OrderedSet[E, D] = UniformOrderedSet(value)
 
-  protected final def consAbove(ind: Int): SegmentSeq[E, D, Boolean] = {
+  protected final def consAbove(ind: Int): OrderedSet[E, D] = {
     val newComplementary = getSegmentValue(ind)
     val len = bounds.length - ind
     val newBoundsArray = new Array[Bound.Upper[E]](len)
@@ -114,7 +114,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
   }
 
-  protected final def consBelow(ind: Int): SegmentSeq[E, D, Boolean] = {
+  protected final def consBelow(ind: Int): OrderedSet[E, D] = {
     val len = ind + 1
     val newBoundsArray = new Array[Bound.Upper[E]](len)
     Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, len)
@@ -122,7 +122,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   }
 
   // Private section ---------------------------------------------------------- //
-  private def appendedArraySet(other: ArrayOrderedSet[E, D]): SegmentSeq[E, D, Boolean] = {
+  private def appendedArraySet(other: ArrayOrderedSet[E, D]): OrderedSet[E, D] = {
     // original:
     //
     //      originalPenultimateVal
@@ -167,7 +167,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
       else other.getSegmentValue(otherStartInd)
 
     val originalCopyLen =
-      if (valueEq.eqv(originalPenultimateValue, appendedFirstValue)) bounds.length - 1
+      if (valueOps.eqv(originalPenultimateValue, appendedFirstValue)) bounds.length - 1
       else bounds.length
 
     val newBoundsLen = originalCopyLen + otherCopyLen
@@ -185,10 +185,10 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     }
   }
 
-  private def appendedSegmentSeq(other: SegmentSeq[E, D, Boolean]): SegmentSeq[E, D, Boolean] = {
+  private def appendedSegmentSeq(other: OrderedSet[E, D]): OrderedSet[E, D] = {
     val originalPenultimateValue = getPenultimateSegmentValue
     if (other.isUniform)
-      if (valueEq.eqv(originalPenultimateValue, other.firstSegment.value))
+      if (valueOps.eqv(originalPenultimateValue, other.firstSegment.value))
         if (bounds.length == 1) consUniform(complementary)
         else consBelow(lastBoundIndex - 1)
       else this
@@ -198,7 +198,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
       val (otherCopyList, otherCopyLen) = SegmentSeqOps.getForwardBoundsList(appendedFirstSegment)
 
       val originalCopyLen =
-        if (valueEq.eqv(originalPenultimateValue, appendedFirstSegment.value)) bounds.length - 1
+        if (valueOps.eqv(originalPenultimateValue, appendedFirstSegment.value)) bounds.length - 1
         else bounds.length
 
       val newBoundsLen = originalCopyLen + otherCopyLen

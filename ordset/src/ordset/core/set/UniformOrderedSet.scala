@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.AbstractUniformSegmentSeq
+import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, OrderedSet}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
@@ -13,6 +13,34 @@ class UniformOrderedSet[E, D <: Domain[E]](
 ) extends AbstractUniformSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D] {
 
+  // Transformation ----------------------------------------------------------- //
+  // TODO implement `appended`
+  final override def appended(bound: Bound[E], other: OrderedSet[E, D]): OrderedSet[E, D] = {
+    // original:
+    //                bound
+    //                   )
+    // X---------------false------------------X
+    //
+    // other:
+    //                      otherBoundSegment
+    //                       /
+    // X--f--)[--------true------](---false---X
+    //
+    // original.appended(bound, other):
+    //
+    // X-------false-----)[--tr--](---false---X
+    //                   ^
+    //                 bound
+    val lowerBound = bound.provideLower
+    val otherBoundSegment = other.getSegment(lowerBound)
+    if (valueOps.eqv(value, otherBoundSegment.value)) {
+      ???
+    } else {
+      ???
+    }
+  }
+
+  // Protected section -------------------------------------------------------- //  
   @inline
   protected final override def isIncludedInSet(value: Boolean): Boolean = value
 }

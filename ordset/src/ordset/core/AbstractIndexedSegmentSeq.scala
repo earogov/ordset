@@ -1,6 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 
 import scala.collection.Seq
 
@@ -91,6 +92,32 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     */
   protected def searchSegmentFromIndex(ind: Int, bound: Bound[E]): Int
 
+
+  /**
+   * Creates uniform segment sequence (empty or universal).
+   *
+   * Note current class not supports empty and universal sets so other implementations should be used.
+   */
+  protected def consUniform(value: W): SegmentSeq[E, D, W]
+
+  /**
+   * Preconditions:
+   *
+   * 1. `0 <= ind <= bounds.length - 1` (last bound index)
+   *
+   * Creates segment sequence from current keeping only upper bounds with index `>=` `ind`.
+   */
+  protected def consAbove(ind: Int): SegmentSeq[E, D, W]
+
+  /**
+   * Preconditions:
+   *
+   * 1. `0 <= ind <= bounds.length - 1` (last bound index)
+   *
+   * Creates segment sequence from current keeping only upper bounds with index `<=` `ind`.
+   */
+  protected def consBelow(ind: Int): SegmentSeq[E, D, W]
+  
   /**
    * @return value of first segment.
    */
@@ -178,7 +205,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     */
   protected final def makeSegmentWithNext(ind: Int): IndexedSegmentWithNext[E, D, W] =
     if (ind <= 0) IndexedInitialSegment(this) else IndexedInnerSegment(this, ind)
-    
+  
 //
 //  /**
 //    * Base trait for indexed sequence segments. It has either previous or next segment.
@@ -274,6 +301,8 @@ object AbstractIndexedSegmentSeq {
     override val sequence: AbstractIndexedSegmentSeq[E, D, W]
 
     override def domainOps: DomainOps[E, D] = sequence.domainOps
+
+    override def valueOps: ValueOps[W] = sequence.valueOps
 
     override def value: W = sequence.getSegmentValue(index)
 

@@ -20,8 +20,12 @@ trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
    * Ascending order of segments by their upper bounds.
    *
    * All order implementations MUST provide property:
-   * <tr>- Upper bound of last segment has maximal value (equivalent to plus infinity).   </tr>
-   * <tr>  I.e [[Segment.Last]] MUST be maximal segment according to this order.          </tr>
+   * <tr>
+   *   - upper bound of last segment has maximal value in domain 
+   *   (for unbounded domain it's equivalent to plus infinity).
+   * </tr>
+   * <tr></tr>
+   * I.e [[Segment.Last]] MUST be maximal segment according to this order.
    */
   implicit lazy val segmentUpperOrd: Segment.UpperBoundAscOrder[E, D] = Segment.upperBoundAscOrder
 
@@ -29,8 +33,12 @@ trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
    * Ascending order of segments by their lower bounds.
    *
    * All order implementations MUST provide property:
-   * <tr>- Lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
-   * <tr>  I.e [[Segment.First]] MUST be minimal segment according to this order.         </tr>
+   * <tr>
+   *   - lower bound of first segment has minimal value in domain 
+   *   (for unbounded domain it's equivalent to minus infinity). 
+   * </tr>
+   * <tr></tr>
+   * I.e [[Segment.First]] MUST be minimal segment according to this order.
    */
   implicit lazy val segmentLowerOrd: Segment.LowerBoundAscOrder[E, D] = Segment.lowerBoundAscOrder
 }

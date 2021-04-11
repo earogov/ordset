@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.tree.core.eval.{TreeStack, TreeVisitStack}
 import ordset.tree.core.fold.ContextExtract
@@ -260,7 +261,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
           )
         val appendedStack = TreeStack.contextOps.addToStack(appendedExtract.context, appendedExtract.tree)
 
-        if (valueEq.eqv(originalPenultimateSegment.value, appendedExtract.tree.value)) {
+        if (valueOps.eqv(originalPenultimateSegment.value, appendedExtract.tree.value)) {
           val originalRoot =
             TreeSplit.foldNode[Bound.Upper[E], Bound[E], W](
               root,
@@ -308,7 +309,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
           consFromTree(mergedRoot, other.lastValue)
         }
       case _ =>
-        if (valueEq.eqv(originalPenultimateSegment.value, other.lastValue))
+        if (valueOps.eqv(originalPenultimateSegment.value, other.lastValue))
           takenBelow(originalPenultimateSegment.upperBound)
         else
           this
@@ -318,7 +319,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   protected final def appendedSegmentSeq(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
     val originalPenultimateSegment = lastSegment.movePrev
     if (other.isUniform)
-      if (valueEq.eqv(originalPenultimateSegment.value, other.firstSegment.value))
+      if (valueOps.eqv(originalPenultimateSegment.value, other.firstSegment.value))
         takenBelow(originalPenultimateSegment.upperBound)
       else
         this
@@ -329,7 +330,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       val appendedFirstSegment = other.getSegment(originalPenultimateSegment.upperBound.flip)
 
       val originalRoot =
-        if (valueEq.eqv(originalPenultimateSegment.value, appendedFirstSegment.value))
+        if (valueOps.eqv(originalPenultimateSegment.value, appendedFirstSegment.value))
           TreeSplit.foldNode[Bound.Upper[E], Bound[E], W](
             root,
             originalPenultimateSegment.upperBound,
@@ -365,6 +366,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     override def sequence: SegmentSeq[E, D, W] = seq
     
     override def domainOps: DomainOps[E, D] = seq.domainOps
+    
+    override def valueOps: ValueOps[W] = seq.valueOps
 
     override def value: W = node.value
 

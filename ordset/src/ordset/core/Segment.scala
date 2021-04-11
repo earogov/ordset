@@ -200,6 +200,10 @@ sealed trait Segment[E, D <: Domain[E], V] extends SegmentLike[E, D, V] { segmen
   }
 
   // Transformation ----------------------------------------------------------- //
+  def takenAbove: SegmentSeq[E, D, V]
+  
+  def takenBelow: SegmentSeq[E, D, V]
+  
   /**
    * Returns sequence containing:
    * <tr>- upper bounds of original sequence that satisfy condition:</tr>

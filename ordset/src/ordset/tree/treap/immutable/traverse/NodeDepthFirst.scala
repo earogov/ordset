@@ -91,45 +91,45 @@ object NodeDepthFirst {
      * Specifies traverse order: left children before right.
      */
     def leftFirstFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
-      LeftFirstInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
+      leftFirstInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
     /**
      * Specifies traverse order: right children before left.
      */
     def leftOnlyFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
-      LeftOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
+      leftOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
     /**
      * Specifies traverse order: only left children.
      */
     def rightFirstFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
-      RightFirstInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
+      rightFirstInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
     /**
      * Specifies traverse order: only right children.
      */
     def rightOnlyFunc[K, V, C <: NodeVisitContext[K, V]]: NodeNavigationFunc[K, V, C] =
-      RightOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
+      rightOnlyInstance.asInstanceOf[NodeNavigationFunc[K, V, C]]
 
     // Private section ---------------------------------------------------------- //
-    private lazy val LeftFirstInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
+    private lazy val leftFirstInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
       (_, context) =>
         if (BinaryTreeVisit.isLeftUnvisited(context.currentVisits)) BinaryTreeStep.Left
         else if (BinaryTreeVisit.isRightUnvisited(context.currentVisits)) BinaryTreeStep.Right
         else BinaryTreeStep.Up
 
-    private lazy val LeftOnlyInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
+    private lazy val leftOnlyInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
       (_, context) =>
         if (BinaryTreeVisit.isLeftVisited(context.currentVisits)) BinaryTreeStep.None
         else BinaryTreeStep.Left
 
-    private lazy val RightFirstInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
+    private lazy val rightFirstInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
       (_, context) =>
         if (BinaryTreeVisit.isRightUnvisited(context.currentVisits)) BinaryTreeStep.Right
         else if (BinaryTreeVisit.isLeftUnvisited(context.currentVisits)) BinaryTreeStep.Left
         else BinaryTreeStep.Up
 
-    private lazy val RightOnlyInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
+    private lazy val rightOnlyInstance: NodeNavigationFunc[Any, Any, NodeVisitContext[Any, Any]] =
       (_, context) =>
         if (BinaryTreeVisit.isRightVisited(context.currentVisits)) BinaryTreeStep.None
         else BinaryTreeStep.Right

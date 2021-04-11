@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 
 // TODO: class description.
@@ -37,11 +38,6 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
 
-  // TODO implement `appended`
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
-//    if (valueEq.eqv(value, other.value)) this
-//    else ???
-
   // Protected section -------------------------------------------------------- //
   /** Value of single segment. */
   protected val value: W
@@ -61,6 +57,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     override def sequence: SegmentSeq[E, D, W] = seq
     
     override def domainOps: DomainOps[E, D] = seq.domainOps
+
+    override def valueOps: ValueOps[W] = seq.valueOps
 
     override def value: W = seq.value
 

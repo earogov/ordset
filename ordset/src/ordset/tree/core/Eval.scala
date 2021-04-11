@@ -9,7 +9,7 @@ object Eval {
   type GenericFunc[K, V, -Tree[KK, VV], C] = Func[K, V, Tree, C, Any]
 
   def none[K, V, Tree[KK, VV], C, S]: Func[K, V, Tree, C, S] =
-    NoneInstance.asInstanceOf[Func[K, V, Tree, C, S]]
+    noneInstance.asInstanceOf[Func[K, V, Tree, C, S]]
 
   implicit def toEvalOps[K, V, Tree[KK, VV], C, S](
     evalFunc: Func[K, V, Tree, C, S]
@@ -26,5 +26,5 @@ object Eval {
       }
   }
 
-  private lazy val NoneInstance: Func[Any, Any, [KK, VV] =>> Any, Any, Any] = (_, context, _) => context
+  private lazy val noneInstance: Func[Any, Any, [KK, VV] =>> Any, Any, Any] = (_, context, _) => context
 }

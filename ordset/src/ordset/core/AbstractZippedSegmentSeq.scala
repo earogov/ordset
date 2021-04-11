@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 
 // TODO: class description.
@@ -235,7 +236,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
       var currZipped: ZippedTuple = ZippedTupleImpl(left, right)
       while (!stop) {
         nextZipped = stepForwardZipper(ZippedTupleImpl.apply, currZipped.left, currZipped.right)
-        if (valueEq.neqv(currZipped.value, nextZipped.value)) {
+        if (valueOps.neqv(currZipped.value, nextZipped.value)) {
           // We have found a bound, where operator change its value => return 'currZipped'.
           stop = true
         } else {
@@ -281,7 +282,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
       var currZipped: ZippedTuple = ZippedTupleImpl(left, right)
       while (!stop) {
         prevZipped = stepBackwardZipper(ZippedTupleImpl.apply, currZipped.left, currZipped.right)
-        if (valueEq.neqv(currZipped.value, prevZipped.value)) {
+        if (valueOps.neqv(currZipped.value, prevZipped.value)) {
           // We have found a bound, where operator change its value => return 'currZipped'.
           stop = true
         } else {
@@ -516,6 +517,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     override def sequence: SegmentSeq[E, D, W] = seq
     
     override def domainOps: DomainOps[E, D] = seq.domainOps
+
+    override def valueOps: ValueOps[W] = seq.valueOps
 
     override def isIncluded: Boolean = isIncludedInSet(value)
 

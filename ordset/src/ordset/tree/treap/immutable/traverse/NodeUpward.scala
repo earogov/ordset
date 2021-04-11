@@ -107,30 +107,30 @@ object NodeUpward {
     /**
      * Returns `true` if next key is reached.
      */
-    def toNextKey[K, V]: StopPredicate[K, V] = NextKeyInstance
+    def toNextKey[K, V]: StopPredicate[K, V] = nextKeyInstance
 
     /**
      * Returns `true` if previous key is reached.
      */
-    def toPrevKey[K, V]: StopPredicate[K, V] = PrevKeyInstance
+    def toPrevKey[K, V]: StopPredicate[K, V] = prevKeyInstance
 
     /**
      * Never returns `true`.
      */
-    def never[K, V]: StopPredicate[K, V] = NeverInstance
+    def never[K, V]: StopPredicate[K, V] = neverInstance
 
     /**
      * Always returns `true`.
      */
-    def always[K, V]: StopPredicate[K, V] = AlwaysInstance
+    def always[K, V]: StopPredicate[K, V] = alwaysInstance
 
     // Private section ---------------------------------------------------------- //
-    private lazy val NextKeyInstance: StopPredicate[Any, Any] = (parent, tree) => parent.hasLeftInstance(tree)
+    private lazy val nextKeyInstance: StopPredicate[Any, Any] = (parent, tree) => parent.hasLeftInstance(tree)
 
-    private lazy val PrevKeyInstance: StopPredicate[Any, Any] = (parent, tree) => parent.hasRightInstance(tree)
+    private lazy val prevKeyInstance: StopPredicate[Any, Any] = (parent, tree) => parent.hasRightInstance(tree)
 
-    private lazy val NeverInstance: StopPredicate[Any, Any] = (_, _) => false
+    private lazy val neverInstance: StopPredicate[Any, Any] = (_, _) => false
 
-    private lazy val AlwaysInstance: StopPredicate[Any, Any] = (_, _) => true
+    private lazy val alwaysInstance: StopPredicate[Any, Any] = (_, _) => true
   }
 }

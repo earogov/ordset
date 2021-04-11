@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.Eq
+import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
@@ -34,11 +34,11 @@ import scala.{specialized => sp}
  * value can not be represented by [[SegmentSeq]]. Generally segment sequence is defined as
  * <tr></tr>
  * 
- * {(l<sub>i</sub>, u<sub>i</sub>) -> v<sub>i</sub>} for i ∈ [1, N]
+ * {(l,,i,,, u,,i,,) -> v,,i,,} for i ∈ [1, N]
  * <tr>where</tr>
- * <tr>l<sub>i</sub> - lower bound of segment i;</tr>
- * <tr>u<sub>i</sub> - upper bound of segment i;</tr>
- * <tr>v<sub>i</sub> - value of segment i;</tr>
+ * <tr>l,,i,, - lower bound of segment i and l,,1,, is the minimal bound of domain;</tr>
+ * <tr>u,,i,, - upper bound of segment i and u,,N,, is the maximal bound of domain;</tr>
+ * <tr>v,,i,, - value of segment i;</tr>
  * <tr>N - number of segment in sequence.</tr>
  * <tr></tr>
  *  
@@ -81,13 +81,16 @@ import scala.{specialized => sp}
  * <tr></tr>
  *
  * <h1>Notes</h1>
- * 
+ *
  * 1. In all ordering relations of bounds (like bound1 `>` bound2 etc.) we assume:
- * <tr>- upper bound of last segment has maximal value (equivalent to plus infinity);   </tr>
- * <tr>- lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
  * <tr>
- * These properties MUST be provided by implementations of [[DomainOps.segmentUpperOrd]] and
- * [[DomainOps.segmentLowerOrd]].
+ *   - upper bound of last segment has maximal value in domain (for unbounded domain it's equivalent to plus infinity);   
+ * </tr>
+ * <tr>
+ *   - lower bound of first segment has minimal value in domain (for unbounded domain it's equivalent to minus infinity). 
+ * </tr>
+ * <tr>
+ * These properties MUST be provided by implementations of [[DomainOps.segmentUpperOrd]] and [[DomainOps.segmentLowerOrd]].
  * </tr>
  * <tr></tr>
  * 
@@ -100,8 +103,8 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   /** Domain operations. */
   implicit def domainOps: DomainOps[E, D]
 
-  /** Equality typeclass for segments values. */
-  implicit def valueEq: Eq[W]
+  /** Value operations (equality type class, etc). */
+  implicit def valueOps: ValueOps[W]
 
   /** Random numbers generator. */
   implicit def rngManager: RngManager
@@ -144,16 +147,26 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   // Transformation ----------------------------------------------------------- //
   /**
-   * Returns sequence containing upper bounds of segments that satisfy condition:
+   * Returns sequence containing
+   * <tr>- segment (minBound, u,,1,,) -> v,,1,,</tr>
+   * <tr>- segments {i > 1: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which l,,i,, `≥` `bound`</tr> 
+   * <tr>where</tr>
+   * <tr>minBound - minimal bound of domain;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,;</tr>
+   * <tr>
+   *   S,,1,, - segment of original sequence for which l,,1,, `≤` U(`bound`) and u,,1,, `≥` U(`bound`);
+   * </tr>
+   * <tr>
+   *   U - upper bound operator, it act as identity if bound is upper and flips bound otherwise 
+   *   (see [[Bound.provideUpper]]).
+   * </tr>
    * {{{
-   * upper bound ≥ specified bound
-   * }}}
-   * Each upper bound brings to the output sequence value that was associated with it in original sequence.
-   * {{{
-   *
+   * 
    * original:
-   *                     bound
-   *                       v
+   *                 bound
+   *                   )
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
@@ -162,20 +175,34 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
    * }}}
+   * Method definition provides invariants:
+   * {{{
+   *   1. original.takenAbove(bound) == original.takenAbove(bound.flip) for any bound
+   * }}}
    */
   def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W]
 
   /**
-   * Returns sequence containing lower bounds of segments that satisfy condition:
-   * {{{
-   * lower bound ≤ specified bound
-   * }}}
-   * Each lower bound brings to the output sequence value that was associated with it in original sequence.
+   * Returns sequence containing
+   * <tr>- segments {i ∈ [1, N-1]: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which u,,i,, `≤` `bound`</tr>
+   * <tr>- segment (l,,N,,, maxBound) -> v,,N,,</tr>
+   * <tr>where</tr>
+   * <tr>maxBound - maximal bound of domain;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,;</tr>
+   * <tr>
+   *   S,,N,, - segment of original sequence for which l,,N,, `≤` L(`bound`) and u,,N,, `≥` L(`bound`);
+   * </tr>
+   * <tr>
+   *   L - lower bound operator, it act as identity if bound is lower and flips bound otherwise 
+   *   (see [[Bound.provideLower]]).
+   * </tr>
    * {{{
    *
    * original:
-   *            bound
-   *             v
+   *                 bound
+   *                   )
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
@@ -183,6 +210,10 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *
    *   X--------](------------------------------X
    *        A               B                      - values
+   * }}}
+   * Method definition provides invariants:
+   * {{{
+   *   1. original.takenBelow(bound) == original.takenBelow(bound.flip) for any bound
    * }}}
    */
    def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W]
@@ -193,7 +224,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * {{{
    * original:
    *                 bound
-   *                   v
+   *                   )
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
@@ -206,6 +237,10 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
+   * }}}
+   * Method definition provides invariants:
+   * {{{
+   *   1. original.sliced(bound) == original.sliced(bound.flip) for any bound
    * }}}
    */
   def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
@@ -248,7 +283,6 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * Returns sequence containing:
    * <tr>- segments {(l,,i,, MIN(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
    * <tr>- segments {(MAX(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` `bound`; </tr>
-   * </tr>
    * <tr>where</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
@@ -259,7 +293,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * </tr>
    * <tr>
    *   L - lower bound operator, it act as identity if bound is lower and flips bound otherwise 
-   *   (see [[Bound.provideLower]]);
+   *   (see [[Bound.provideLower]]).
    * </tr>
    *
    * {{{
@@ -294,19 +328,24 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *
    * other:
    *
-   *   X--------------)[-------------](--------X
-   *           C               D           E       - values
+   *   X--------------)[----------------](-----X
+   *           C               D            E      - values
    *
    * original.appended(bound, other):
    *
-   *                       bound
-   *                         v
-   *   X--------](-----------------)[](--------X
-   *        A              B        D      E      - values
+   *                             bound
+   *                               v
+   *   X--------](-----------------)[---](-----X
+   *        A              B          D     E     - values
    * }}}
-   * Methods definitions provide invariant:
+   * Methods definitions provide invariants:
    * {{{
-   *   original == original.takenBelow(bound).appended(bound, original.takenAbove(bound)) for any bound
+   *   1. original.appended(bound, seq) == original.appended(bound.flip, seq) 
+   *      for any bound and seq
+   * }}}
+   * {{{
+   *   2. original == original.takenBelow(bound).appended(bound, original.takenAbove(bound)) 
+   *      for any bound
    * }}}
    */
   def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
