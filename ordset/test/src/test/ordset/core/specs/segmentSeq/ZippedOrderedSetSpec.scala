@@ -36,7 +36,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     new DegenerateSetSample1[Dom]
   )
 
-  describe("Zipped ordered set navigation operations") {
+  describe("Zipped ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
 
@@ -47,7 +47,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsHaveNextAndPrevIndicators(testSuite)
   }
 
-  describe("Zipped ordered set transformation operations") {
+  describe("Zipped ordered set transformation operations:") {
 
 //    it should behave like segmentSeqCanBeAppendedV0(transformSuite)
 //

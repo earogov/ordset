@@ -6,6 +6,8 @@ import ordset.core.domain.{Domain, DomainOps}
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
+  import AbstractUniformSegmentSeq._
+  
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !isIncludedInSet(value)
 
@@ -20,13 +22,13 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = Iterable.empty
 
-  final override def firstSegment: UniformSingleSegment.type = UniformSingleSegment
+  final override def firstSegment: UniformSingleSegment[E, D, W] = segment
 
-  final override def lastSegment: UniformSingleSegment.type = UniformSingleSegment
+  final override def lastSegment: UniformSingleSegment[E, D, W] = segment
 
-  final override def getSegment(bound: Bound[E]): UniformSingleSegment.type = UniformSingleSegment
+  final override def getSegment(bound: Bound[E]): UniformSingleSegment[E, D, W] = segment
 
-  final override def getSegment(element: E): UniformSingleSegment.type = UniformSingleSegment
+  final override def getSegment(element: E): UniformSingleSegment[E, D, W] = segment
 
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, W] = this
@@ -39,6 +41,9 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
 
   // Protected section -------------------------------------------------------- //
+  /** Single segment instance. */
+  protected val segment: UniformSingleSegment[E, D, W] = new UniformSingleSegment(this)
+  
   /** Value of single segment. */
   protected val value: W
 
@@ -47,21 +52,29 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
    *
    * For example, if `W` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isIncludedInSet(value: W): Boolean
+  protected def isIncludedInSet(value: W): Boolean = valueOps.isIncluded(value)
+}
+
+object AbstractUniformSegmentSeq {
 
   /**
    * Single segment of sequence. It has no previous and next segments.
    */
-  protected case object UniformSingleSegment extends SingleSegment {
+  final case class UniformSingleSegment[E, D <: Domain[E], W](
+    override val sequence: AbstractUniformSegmentSeq[E, D, W]
+  ) extends Segment.Single[E, D, W] {
 
-    override def sequence: SegmentSeq[E, D, W] = seq
-    
-    override def domainOps: DomainOps[E, D] = seq.domainOps
+    // Inspection --------------------------------------------------------------- //
+    override def value: W = sequence.value
 
-    override def valueOps: ValueOps[W] = seq.valueOps
+    override def isIncluded: Boolean = sequence.isIncludedInSet(value)
 
-    override def value: W = seq.value
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: AbstractUniformSegmentSeq[E, D, W] = sequence
 
-    override def isIncluded: Boolean = isIncludedInSet(value)
+    override def takenBelow: AbstractUniformSegmentSeq[E, D, W] = sequence
+
+    override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) = 
+      (sequence, sequence)
   }
 }

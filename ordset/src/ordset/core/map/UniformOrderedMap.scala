@@ -1,7 +1,7 @@
 package ordset.core.map
 
 import ordset.core.value.ValueOps
-import ordset.core.AbstractUniformSegmentSeq
+import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
@@ -14,6 +14,8 @@ class UniformOrderedMap[E, D <: Domain[E], W](
   final override val rngManager: RngManager
 ) extends AbstractUniformSegmentSeq[E, D, W] {
 
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+  
   @inline
   protected final override def isIncludedInSet(value: W): Boolean = valueOps.isIncluded(value)
 }

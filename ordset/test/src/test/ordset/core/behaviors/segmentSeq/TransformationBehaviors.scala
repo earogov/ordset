@@ -47,15 +47,31 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
       sample.slicedCases.foreach { slicedCase =>
 
         it(s"should slice $sample at bound ${slicedCase.bound}") {
-          val actualBelow = sample.sequence.takenBelow(slicedCase.bound)
-          assertEqualSequences(slicedCase.expectedBelow, actualBelow)(sample.domainOps, valueHash)
+          // `sequence.takenBelow(bound)` should be correct
+          val actualBelow1 = sample.sequence.takenBelow(slicedCase.bound)
+          assertEqualSequences(slicedCase.expectedBelow, actualBelow1)(sample.domainOps, valueHash)
 
-          val actualAbove = sample.sequence.takenAbove(slicedCase.bound)
-          assertEqualSequences(slicedCase.expectedAbove, actualAbove)(sample.domainOps, valueHash)
+          // `sequence.takenAbove(bound)` should be correct
+          val actualAbove1 = sample.sequence.takenAbove(slicedCase.bound)
+          assertEqualSequences(slicedCase.expectedAbove, actualAbove1)(sample.domainOps, valueHash)
 
-          val actualSliced = sample.sequence.sliced(slicedCase.bound)
-          assertEqualSequences(slicedCase.expectedBelow, actualSliced._1)(sample.domainOps, valueHash)
-          assertEqualSequences(slicedCase.expectedAbove, actualSliced._2)(sample.domainOps, valueHash)
+          // `sequence.sliced(blound)` should be correct
+          val actualSliced1 = sample.sequence.sliced(slicedCase.bound)
+          assertEqualSequences(slicedCase.expectedBelow, actualSliced1._1)(sample.domainOps, valueHash)
+          assertEqualSequences(slicedCase.expectedAbove, actualSliced1._2)(sample.domainOps, valueHash)
+          
+          // `segment.takenBelow` should be correct
+          val actualBelow2 = sample.sequence.getSegment(slicedCase.bound).takenBelow
+          assertEqualSequences(slicedCase.expectedBelow, actualBelow2)(sample.domainOps, valueHash)
+
+          // `segment.takenAbove` should be correct
+          val actualAbove2 = sample.sequence.getSegment(slicedCase.bound).takenAbove
+          assertEqualSequences(slicedCase.expectedAbove, actualAbove2)(sample.domainOps, valueHash)
+
+          // `segment.sliced` should be correct
+          val actualSliced2 = sample.sequence.getSegment(slicedCase.bound).sliced
+          assertEqualSequences(slicedCase.expectedBelow, actualSliced2._1)(sample.domainOps, valueHash)
+          assertEqualSequences(slicedCase.expectedAbove, actualSliced2._2)(sample.domainOps, valueHash)
         }
       }
     }

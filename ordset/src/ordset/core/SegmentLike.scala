@@ -10,9 +10,9 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
 
   def sequence: SegmentSeq[E, D, V]
   
-  def domainOps: DomainOps[E, D]
+  def domainOps: DomainOps[E, D] = sequence.domainOps
 
-  def valueOps: ValueOps[V]
+  def valueOps: ValueOps[V] = sequence.valueOps
   
   def value: V
 

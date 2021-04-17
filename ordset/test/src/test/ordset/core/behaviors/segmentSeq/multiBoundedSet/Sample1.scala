@@ -359,18 +359,51 @@ trait Sample1[D <: Domain[Int]]
 
   override def slicedCases: Seq[SegmentSeqSlicedTest.TestCase[Int, D, Boolean]] =
     List(
+      // current:
+      //   bound
+      //     )
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X------------------false-----------------------X
+      //
+      // takenAbove:
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
       SegmentSeqSlicedTest.TestCase(
         -10`(`,
         (false forAll x) ::
         Nil,
         reference
       ),
+      // current:
+      //      bound
+      //        )
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X------------------false-----------------------X
+      //
+      // takenAbove:
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
       SegmentSeqSlicedTest.TestCase(
         0`)`,
         (false forAll x) ::
         Nil,
         reference
       ),
+      // current:
+      //                   bound
+      //                     [
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X---f--)[---t--)[-----------false--------------X
+      //        0       10
+      // takenAbove:
+      // X---------false--------)[---t--)[---f--)[---t--X
+      //                        20      30      40
       SegmentSeqSlicedTest.TestCase(
         15`[`,
         (false forAll x <  0) ::
@@ -383,6 +416,17 @@ trait Sample1[D <: Domain[Int]]
         (true  forAll x >= 40) ::
         Nil
       ),
+      // current:
+      //                      bound
+      //                        )
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X---f--)[---t--)[-----------false--------------X
+      //        0       10
+      // takenAbove:
+      // X---------false--------)[---t--)[---f--)[---t--X
+      //                        20      30      40
       SegmentSeqSlicedTest.TestCase(
         20`)`,
         (false forAll x <  0) ::
@@ -395,6 +439,17 @@ trait Sample1[D <: Domain[Int]]
         (true  forAll x >= 40) ::
         Nil
       ),
+      // current:
+      //                       bound
+      //                         ]
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X---f--)[---t--)[---f--)[---------true---------X
+      //        0       10      20
+      // takenAbove:
+      // X--------------true------------)[---f--)[---t--X
+      //                                30      40
       SegmentSeqSlicedTest.TestCase(
         20`]`,
         (false forAll x <  0) ::
@@ -407,6 +462,17 @@ trait Sample1[D <: Domain[Int]]
         (true  forAll x >= 40) ::
         Nil
       ),
+      // current:
+      //                        bound
+      //                          (
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X---f--)[---t--)[---f--)[---------true---------X
+      //        0       10      20
+      // takenAbove:
+      // X---------------true-----------)[---f--)[---t--X
+      //                                30      40
       SegmentSeqSlicedTest.TestCase(
         20`(`,
         (false forAll x <  0) ::
@@ -419,6 +485,17 @@ trait Sample1[D <: Domain[Int]]
         (true  forAll x >= 40) ::
         Nil
       ),
+      // current:
+      //                                      bound
+      //                                        )
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X---f--)[---t--)[---f--)[---t--)[----false-----X
+      //        0       10      20      30
+      // takenAbove:
+      // X-----------------false----------------)[---t--X
+      //                                        40
       SegmentSeqSlicedTest.TestCase(
         40`)`,
         (false forAll x <  0) ::
@@ -431,6 +508,17 @@ trait Sample1[D <: Domain[Int]]
         (true  forAll x >= 40) ::
         Nil
       ),
+      // current:
+      //                                           bound
+      //                                             [
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenBelow:
+      // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
+      //        0       10      20      30      40
+      // takenAbove:
+      // X---------------------true---------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         50`[`,
         reference,

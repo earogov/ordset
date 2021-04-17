@@ -30,7 +30,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
     )
   }
 
-  describe("Treap based ordered set navigation operations") {
+  describe("Treap based ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
 
@@ -41,7 +41,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsHaveNextAndPrevIndicators(testSuite)
   }
 
-  describe("Treap based ordered set transformation operations") {
+  describe("Treap based ordered set transformation operations:") {
 
     it should behave like segmentSeqCanBeAppendedV0(testSuite)
 

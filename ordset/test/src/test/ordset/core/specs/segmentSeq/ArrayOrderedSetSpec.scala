@@ -37,7 +37,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     new MultiBoundedSetSample1[Dom]
   )
 
-  describe("Array based ordered set navigation operations") {
+  describe("Array based ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
 
@@ -48,7 +48,7 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsHaveNextAndPrevIndicators(testSuite)
   }
 
-  describe("Array based ordered set transformation operations") {
+  describe("Array based ordered set transformation operations:") {
 
     it should behave like segmentSeqCanBeAppendedV0(testSuite)
 

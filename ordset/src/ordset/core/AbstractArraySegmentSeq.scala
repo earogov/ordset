@@ -18,52 +18,6 @@ abstract class AbstractArraySegmentSeq[E, D <: Domain[E], W] extends AbstractInd
 
   import ordset.array.SortedArraySearch._
 
-  // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] = {
-    val ind = binSearchClosestNotLess(
-      bound, bounds
-    )(
-      0, lastBoundIndex
-    )(
-      domainOps.boundOrd
-    )
-    // Drop whole current sequence and return last segment.
-    if (ind == NotFound) consUniform(getLastSegmentValue)
-    // Keep whole current sequence.
-    else if (ind == 0) this
-    // Copy sequence from index.
-    else consAbove(ind)
-  }
-
-  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] = {
-    val ind = binSearchClosestLess(
-      bound, bounds
-    )(
-      0, lastBoundIndex
-    )(
-      domainOps.boundOrd
-    )
-    // Drop whole current sequence and return first segment.
-    if (ind == NotFound) consUniform(getFirstSegmentValue)
-    // Keep whole current sequence.
-    else if (ind == lastBoundIndex) this
-    // Copy sequence from index.
-    else consBelow(ind)
-  }
-
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = {
-    val ind = binSearchClosestNotLess(
-      bound, bounds
-    )(
-      0, lastBoundIndex
-    )(
-      domainOps.boundOrd
-    )
-    if (ind == NotFound) (this, consUniform(getLastSegmentValue))
-    else if (ind == 0) (consUniform(getFirstSegmentValue), this)
-    else (consBelow(ind - 1), consAbove(ind))
-  }
-
   // Protected section -------------------------------------------------------- //
   protected override val bounds: ArraySeq[Bound.Upper[E]]
 

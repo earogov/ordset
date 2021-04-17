@@ -14,7 +14,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractArrayOrderedSet[E, D]
+) extends AbstractArraySegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D] {
 
   import SortedArraySearch._
@@ -104,21 +104,21 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   protected final override def getSegmentValue(ind: Int): Boolean = isIncludedInSet(ind)
 
   @inline
-  protected final def consUniform(value: Boolean): OrderedSet[E, D] = UniformOrderedSet(value)
+  protected final def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet(value)
 
-  protected final def consAbove(ind: Int): OrderedSet[E, D] = {
+  protected final def consAbove(ind: Int): ArrayOrderedSet[E, D] = {
     val newComplementary = getSegmentValue(ind)
     val len = bounds.length - ind
     val newBoundsArray = new Array[Bound.Upper[E]](len)
     Array.copy(bounds.unsafeArray, ind, newBoundsArray, 0, len)
-    ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
+    new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
   }
 
-  protected final def consBelow(ind: Int): OrderedSet[E, D] = {
+  protected final def consBelow(ind: Int): ArrayOrderedSet[E, D] = {
     val len = ind + 1
     val newBoundsArray = new Array[Bound.Upper[E]](len)
     Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, len)
-    ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
+    new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
   }
 
   // Private section ---------------------------------------------------------- //

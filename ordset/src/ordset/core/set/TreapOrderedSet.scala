@@ -16,17 +16,17 @@ class TreapOrderedSet[E, D <: Domain[E]] protected(
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractTreapOrderedSet[E, D]
+) extends AbstractTreapSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D]{
 
   // Protected section -------------------------------------------------------- //
-  protected def consUniform(value: Boolean): OrderedSet[E, D] =
+  protected def consUniform(value: Boolean): UniformOrderedSet[E, D] =
     UniformOrderedSet.apply(value)
 
   protected def consFromNode(
     node: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     value: Boolean
-  ): OrderedSet[E, D] =
+  ): TreapOrderedSet[E, D] =
     TreapOrderedSet.unchecked(node, value)
 
   @inline
@@ -47,7 +47,8 @@ object TreapOrderedSet {
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): OrderedSet[E, D] = new TreapOrderedSet(root, lastValue)
+  ): TreapOrderedSet[E, D] = 
+    new TreapOrderedSet(root, lastValue)
 
   /**
    * Creates ordered set from collection of upper bounds.

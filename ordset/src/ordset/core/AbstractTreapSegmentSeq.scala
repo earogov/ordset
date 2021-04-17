@@ -2,9 +2,11 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.tree.core.Fold
 import ordset.tree.core.eval.{TreeStack, TreeVisitStack}
 import ordset.tree.core.fold.ContextExtract
 import ordset.tree.treap.Treap
+import ordset.tree.treap.immutable.transform.TreeSplit.{splitLeftFunc, splitRightFunc}
 import ordset.tree.treap.immutable.transform.{BuildAsc, SplitOutput, TreeMerge, TreeSplit}
 import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDownward, NodeUpward}
 import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitContext}
@@ -12,6 +14,8 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitC
 // TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
+  import AbstractTreapSegmentSeq._
+  
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = false
 
@@ -26,11 +30,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = forwardUpperBoundsFromSegment(firstSegment)
 
-  final override lazy val firstSegment: TreapInitialSegment = makeInitialSegment()
+  final override lazy val firstSegment: TreapInitialSegment[E, D, W] = makeInitialSegment()
 
-  final override lazy val lastSegment: TreapTerminalSegment = makeTerminalSegment()
+  final override lazy val lastSegment: TreapTerminalSegment[E, D, W] = makeTerminalSegment()
 
-  final override def getSegment(bound: Bound[E]): TreapSegment = {
+  final override def getSegment(bound: Bound[E]): TreapSegmentBase[E, D, W] with GenSegment = {
     // We need to find upper bound of segment which contains input `bound`.
     // But `NodeSearch.down` function can return either upper or lower bound
     // (or more precisely - upper bound of required segment or upper bound of previous segment).
@@ -58,7 +62,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     if (domainOps.boundOrd.compare(bound, contextExtract.tree.key) <= 0) {
       // We can use reference equality for immutable tree.
       if (firstSegment.node.eq(contextExtract.tree)) firstSegment
-      else TreapInnerSegment(contextExtract.tree, contextExtract.context)
+      else TreapInnerSegment(this, contextExtract.tree, contextExtract.context)
     }
     // Case 2: search key > found node key
     //
@@ -85,7 +89,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
           )(
             TreeVisitStack.contextOps
           )
-        TreapInnerSegment(contextExtract.tree, contextExtract.context)
+        TreapInnerSegment(this, contextExtract.tree, contextExtract.context)
       }
     }
   }
@@ -131,8 +135,6 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
   // Protected section -------------------------------------------------------- //
-  protected final type TreapSegment = TreapSegmentBase with GenSegment
-
   /**
    * Treap of segments upper bounds.
    */
@@ -146,12 +148,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
    *
    * Note current class not supports empty and universal sets so other implementations should be used.
    */
-  protected def consUniform(value: W): SegmentSeq[E, D, W]
+  protected def consUniform(value: W): AbstractUniformSegmentSeq[E, D, W]
 
   /**
    * Creates segment sequence from specified treap node.
    */
-  protected def consFromNode(node: ImmutableTreap.Node[Bound.Upper[E], W], value: W): SegmentSeq[E, D, W]
+  protected def consFromNode(node: ImmutableTreap.Node[Bound.Upper[E], W], value: W): AbstractTreapSegmentSeq[E, D, W]
 
   /**
    * Creates segment sequence from specified treap. If treap is empty, creates uniform sequence.
@@ -171,7 +173,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   /**
    * @return initial segment of sequence.
    */
-  protected final def makeInitialSegment(): TreapInitialSegment = {
+  protected final def makeInitialSegment(): TreapInitialSegment[E, D, W] = {
     val contextExtract =
       ContextExtract.foldAfter[Bound.Upper[E], W, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], W]](
         root,
@@ -179,13 +181,13 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       )(
         NodeAside.minKeyFunc(TreeVisitStack.function)
       )
-    TreapInitialSegment(contextExtract.tree, contextExtract.context)
+    TreapInitialSegment(this, contextExtract.tree, contextExtract.context)
   }
 
   /**
    * @return terminal segment of sequence.
    */
-  protected final def makeTerminalSegment(): TreapTerminalSegment = {
+  protected final def makeTerminalSegment(): TreapTerminalSegment[E, D, W] = {
     val contextExtract =
       ContextExtract.foldAfter[Bound.Upper[E], W, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], W]](
         root,
@@ -193,13 +195,13 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       )(
         NodeAside.maxKeyFunc(TreeVisitStack.function)
       )
-    TreapTerminalSegment(contextExtract.tree, contextExtract.context)
+    TreapTerminalSegment(this, contextExtract.tree, contextExtract.context)
   }
 
   /**
    * @return segment which follows after input segment.
    */
-  protected final def makeSegmentWithPrev(segment: TreapSegmentWithNext): TreapSegmentWithPrev =
+  protected final def makeSegmentWithPrev(segment: TreapSegmentWithNext[E, D, W]): TreapSegmentWithPrev[E, D, W] =
     // We can use reference equality for immutable tree.
     if (lastSegment.node.eq(segment.node)) lastSegment
     else {
@@ -214,13 +216,13 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
             TreeVisitStack.contextOps
           )
         )
-      TreapInnerSegment(contextExtract.tree, contextExtract.context)
+      TreapInnerSegment(this, contextExtract.tree, contextExtract.context)
     }
 
   /**
    * @return segment which follows before input segment.
    */
-  protected final def makeSegmentWithNext(segment: TreapSegmentWithPrev): TreapSegmentWithNext = {
+  protected final def makeSegmentWithNext(segment: TreapSegmentWithPrev[E, D, W]): TreapSegmentWithNext[E, D, W] = {
     val contextExtract =
       ContextExtract.foldAfter[Bound.Upper[E], W, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], W]](
         segment.node,
@@ -234,7 +236,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       )
     // We can use reference equality for immutable tree.
     if (firstSegment.node.eq(contextExtract.tree)) firstSegment
-    else TreapInnerSegment(contextExtract.tree, contextExtract.context)
+    else TreapInnerSegment(this, contextExtract.tree, contextExtract.context)
   }
 
   protected final def appendedTreapSeq(other: AbstractTreapSegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
@@ -353,48 +355,57 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       consFromTree(BuildAsc.finalizeBuffer(buffer), other.lastSegment.value)
     }
   }
+}
 
+object AbstractTreapSegmentSeq {
+  
   /**
    * Base trait for non single segments. It has either previous segment or next.
    */
-  protected sealed trait TreapSegmentBase extends SegmentLike[E, D, W] {
+  sealed trait TreapSegmentBase[E, D <: Domain[E], W] extends SegmentLike[E, D, W] {
 
+    // Inspection --------------------------------------------------------------- //
     val node: ImmutableTreap.Node[Bound.Upper[E], W]
 
     val context: NodeVisitContext[Bound.Upper[E], W]
 
-    override def sequence: SegmentSeq[E, D, W] = seq
+    override val sequence: AbstractTreapSegmentSeq[E, D, W]
     
-    override def domainOps: DomainOps[E, D] = seq.domainOps
-    
-    override def valueOps: ValueOps[W] = seq.valueOps
-
     override def value: W = node.value
 
-    override def isIncluded: Boolean = isIncludedInSet(value)
+    override def isIncluded: Boolean = sequence.isIncludedInSet(value)
 
-    override def moveToFirst: FirstSegment = firstSegment
+    // Navigation --------------------------------------------------------------- //
+    override def moveToFirst: TreapInitialSegment[E, D, W] = sequence.firstSegment
 
-    override def moveToLast: LastSegment = lastSegment
+    override def moveToLast: TreapTerminalSegment[E, D, W] = sequence.lastSegment
 
-    override def moveTo(bound: Bound[E]): GenSegment = getSegment(bound)
+    override def moveTo(bound: Bound[E]): TreapSegmentBase[E, D, W] with Segment[E, D, W] = 
+      sequence.getSegment(bound)
   }
 
   /**
    * Segment which has next segment.
    */
-  protected sealed trait TreapSegmentWithNext extends TreapSegmentBase with SegmentWithNext {
+  sealed trait TreapSegmentWithNext[E, D <: Domain[E], W] 
+    extends TreapSegmentBase[E, D, W]
+      with Segment.WithNext[E, D, W] {
 
+    // Inspection --------------------------------------------------------------- //
     override def upperBound: Bound.Upper[E] = node.key
 
-    override def moveNext: TreapSegmentWithPrev = makeSegmentWithPrev(this)
+    // Navigation --------------------------------------------------------------- //
+    override def moveNext: TreapSegmentWithPrev[E, D, W] = sequence.makeSegmentWithPrev(this)
   }
 
   /**
    * Segment which has previous segment.
    */
-  protected sealed trait TreapSegmentWithPrev extends TreapSegmentBase with SegmentWithPrev {
+  sealed trait TreapSegmentWithPrev[E, D <: Domain[E], W] 
+    extends TreapSegmentBase[E, D, W] 
+      with Segment.WithPrev[E, D, W] {
 
+    // Inspection --------------------------------------------------------------- //
     override lazy val lowerBound: Bound.Lower[E] = {
       val contextExtract =
         ContextExtract.foldAfter[Bound.Upper[E], W, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], W]](
@@ -410,50 +421,143 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
       contextExtract.tree.key.flipUpper
     }
 
-    override def movePrev: TreapSegmentWithNext = makeSegmentWithNext(this)
+    // Navigation --------------------------------------------------------------- //
+    override def movePrev: TreapSegmentWithNext[E, D, W] = sequence.makeSegmentWithNext(this)
   }
 
   /**
    * Initial segment of sequence.
-   *
+   * 
+   * @param sequence treap based segment sequence.
    * @param node treap node defining segment upper bound.
-   * @param context path from treap root to current `node`.
+   * @param context path from treap root to `node`.
    */
-  protected sealed case class TreapInitialSegment(
+  final case class TreapInitialSegment[E, D <: Domain[E], W] (
+    override val sequence: AbstractTreapSegmentSeq[E, D, W],
     override val node: ImmutableTreap.Node[Bound.Upper[E], W],
     override val context: NodeVisitContext[Bound.Upper[E], W]
-  ) extends TreapSegmentWithNext with InitialSegment
+  ) extends TreapSegmentWithNext[E, D, W]  
+    with Segment.Initial[E, D, W] {
 
-  /**
-   * Inner segment of sequence.
-   *
-   * @param node treap node defining segment upper bound.
-   * @param context path from treap root to current `node`.
-   */
-  protected sealed case class TreapInnerSegment(
-    override val node: ImmutableTreap.Node[Bound.Upper[E], W],
-    override val context: NodeVisitContext[Bound.Upper[E], W]
-  ) extends TreapSegmentWithNext with TreapSegmentWithPrev with InnerSegment
+    // Navigation --------------------------------------------------------------- //
+    override def moveToFirst: TreapInitialSegment[E, D, W] = this
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: AbstractTreapSegmentSeq[E, D, W] = sequence
+
+    override def takenBelow: AbstractUniformSegmentSeq[E, D, W] = sequence.consUniform(value)
+
+    override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractTreapSegmentSeq[E, D, W]) =
+      (takenBelow, takenAbove)
+  }
 
   /**
    * Terminal segment of sequence.
    *
+   * @param sequence treap based segment sequence.
    * @param node treap node defining segment <u>lower</u> bound.
-   * @param context path from treap root to current `node`.
+   * @param context path from treap root to `node`.
    */
-  protected sealed case class TreapTerminalSegment(
+  final case class TreapTerminalSegment[E, D <: Domain[E], W](
+    override val sequence: AbstractTreapSegmentSeq[E, D, W],
     override val node: ImmutableTreap.Node[Bound.Upper[E], W],
     override val context: NodeVisitContext[Bound.Upper[E], W]
-  ) extends TreapSegmentWithPrev with TerminalSegment {
+  ) extends TreapSegmentWithPrev[E, D, W]
+    with Segment.Terminal[E, D, W] {
 
-    override def domainOps: DomainOps[E, D] = seq.domainOps
-
-    override def value: W = lastValue
+    // Inspection --------------------------------------------------------------- //
+    override def value: W = sequence.lastValue
 
     override lazy val lowerBound: Bound.Lower[E] = node.key.flipUpper
 
-    override def movePrev: TreapSegmentWithNext =
-      if (root.isLeaf) TreapInitialSegment(node, context)
-      else TreapInnerSegment(node, context)
+    // Navigation --------------------------------------------------------------- //
+    override def moveToLast: TreapTerminalSegment[E, D, W] = this
+    
+    override def movePrev: TreapSegmentWithNext[E, D, W] =
+      if (sequence.root.isLeaf) TreapInitialSegment(sequence, node, context)
+      else TreapInnerSegment(sequence, node, context)
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: AbstractUniformSegmentSeq[E, D, W] = sequence.consUniform(value)
+
+    override def takenBelow: AbstractTreapSegmentSeq[E, D, W] = sequence
+
+    override def sliced: (AbstractTreapSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
+      (takenBelow, takenAbove)
+  }
+  
+  /**
+   * Inner segment of sequence.
+   *
+   * @param sequence treap based segment sequence.
+   * @param node treap node defining segment upper bound.
+   * @param context path from treap root to `node`.
+   */
+  final case class TreapInnerSegment[E, D <: Domain[E], W](
+    override val sequence: AbstractTreapSegmentSeq[E, D, W],
+    override val node: ImmutableTreap.Node[Bound.Upper[E], W],
+    override val context: NodeVisitContext[Bound.Upper[E], W]
+  ) extends TreapSegmentWithNext[E, D, W]   
+    with TreapSegmentWithPrev[E, D, W]  
+    with Segment.Inner[E, D, W] {
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: AbstractTreapSegmentSeq[E, D, W] = sliced._2
+
+    override def takenBelow: AbstractTreapSegmentSeq[E, D, W] = sliced._1
+
+    override def sliced: (AbstractTreapSegmentSeq[E, D, W], AbstractTreapSegmentSeq[E, D, W]) = {
+      // Generally we cann't just fold `context` of current node with split function.
+      // Before we need to move down to get correct stack for split operation.
+      //                                           
+      //                                            segment
+      //                                          |         |    ↙
+      //                                          |         |  ↙
+      //                                          |        node  -  split will be wrong if we just move upward
+      //                                          |       ↙ |  ↘    from current node and apply split function
+      //                                          |    ↙    |     ↘
+      //   insteed we need to move upward   -   left        |       right
+      //   from some child node to get          child       |       child
+      //   correct split                          |         | 
+      //                                        lower      upper
+      //                                        bound      bound
+      val contextExtract =
+        NodeDownward.foldForRightSplit[Bound.Upper[E], Bound[E], W, NodeStackContext[Bound.Upper[E], W]](
+          node,
+          context.stack.map(_.tree),
+          upperBound,
+          TreeStack.function
+        )(
+          domainOps.boundOrd
+        )
+      val splitFunc = 
+        TreeSplit.splitRightFunc[Bound.Upper[E], Bound[E], W, NodeStackContext[Bound.Upper[E], W]](
+          upperBound
+        )(
+          domainOps.boundOrd
+        )
+      val splitOutput =
+        Fold.before(
+          contextExtract.tree,
+          contextExtract.context,
+          SplitOutput.Mutable.Output.initial
+        )(
+          NodeUpward.defaultFunc[Bound.Upper[E], W, NodeStackContext[Bound.Upper[E], W]](
+            NodeUpward.StopPredicate.never,
+            TreeStack.function
+          )(
+            TreeStack.contextOps
+          ),
+          splitFunc
+        )
+      // Segment is inner => `splitOutput.rightTree` and `splitOutput.leftTree` have at least one bound =>
+      // they are not empty trees => cast is safe.
+      val rightNode = splitOutput.rightTree.asInstanceOf[ImmutableTreap.Node[Bound.Upper[E], W]]
+      val leftNode = splitOutput.leftTree.asInstanceOf[ImmutableTreap.Node[Bound.Upper[E], W]]
+      
+      val rightSeq = sequence.consFromNode(rightNode, sequence.lastValue)
+      val leftSeq = sequence.consFromNode(leftNode, rightSeq.firstSegment.value)
+      (leftSeq, rightSeq)
+    }
   }
 }

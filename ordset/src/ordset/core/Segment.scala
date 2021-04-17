@@ -200,24 +200,108 @@ sealed trait Segment[E, D <: Domain[E], V] extends SegmentLike[E, D, V] { segmen
   }
 
   // Transformation ----------------------------------------------------------- //
-  def takenAbove: SegmentSeq[E, D, V]
-  
-  def takenBelow: SegmentSeq[E, D, V]
+  /**
+   * Returns sequence containing
+   * <tr>- segment (minBound, u,,1,,) -> v,,1,,</tr>
+   * <tr>- segments {i > 1: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,1,,</tr> 
+   * <tr>where</tr>
+   * <tr>minBound - minimal bound of domain;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,;</tr>
+   * <tr>S,,1,, - current segment;</tr>
+   * {{{
+   * Example 1
+   *
+   * original:
+   *                segment
+   *                   v
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
+   *
+   * segment.takenAbove:
+   *
+   *   X-------------------)[--------)[---------X
+   *            B               C         D        - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. sequence.getSegment(bound).takenAbove == sequence.takenAbove(bound) 
+   *   for any bound
+   *
+   *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove) 
+   *   for any bound such that segment.contains(bound) == true
+   * }}}
+   */
+  def takenAbove: SegmentSeq[E, D, V] = ???
+
+  /**
+   * Returns sequence containing
+   * <tr>- segments {i ∈ [1, N-1]: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
+   * <tr>- segment (l,,N,,, maxBound) -> v,,N,,</tr>
+   * <tr>where</tr>
+   * <tr>maxBound - maximal bound of domain;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,;</tr>
+   * <tr>S,,N,, - current segment;</tr>
+   * {{{
+   * Example 1
+   *
+   * original:
+   *                segment
+   *                   v
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
+   *
+   * segment.takenBelow:
+   *
+   *   X--------](------------------------------X
+   *        A               B                      - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. sequence.getSegment(bound).takenBelow == sequence.takenBelow(bound) 
+   *   for any bound
+   *
+   *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove) 
+   *   for any bound such that segment.contains(bound) == true
+   * }}}
+   */
+  def takenBelow: SegmentSeq[E, D, V] = ???
+
+  /**
+   * Returns tuple of sequences: ([[takenBelow]], [[takenAbove]]).
+   *
+   * {{{
+   * original:
+   *                segment
+   *                   v
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
+   *
+   * segement.sliced._1:
+   *
+   *   X--------](------------------------------X
+   *        A               B                      - values
+   *
+   * segement.sliced._2:
+   *
+   *   X-------------------)[--------)[---------X
+   *            B               C         D        - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. sequence.getSegment(bound).sliced == sequence.sliced(bound) 
+   *   for any bound
+   *
+   *   2. segment.sequence == segment.sliced._1.appended(bound, segment.sliced._2) 
+   *   for any bound such that segment.contains(bound) == true
+   * }}}
+   */
+  def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = (takenBelow, takenAbove)
   
   /**
-   * Returns sequence containing:
-   * <tr>- upper bounds of original sequence that satisfy condition:</tr>
-   * {{{
-   *   upper bound < this.lowerBound OR upper bound > this.upperBound
-   * }}}
-   * <tr>- upper bounds of input sequence that satisfy condition:</tr>
-   * {{{
-   *   upper bound <= this.upperBound AND upper bound > this.lowerBound
-   * }}}
-   * Each upper bound brings to the output sequence value that was associated with it
-   * in initial sequence (original or `other`).
-   * {{{
-   *
    * original sequence (this.sequence):
    * 
    *               current segment (this)
@@ -353,6 +437,8 @@ object Segment {
     }
 
     // Transformation ----------------------------------------------------------- //
+    override def takenAbove: SegmentSeq[E, D, V] = sequence
+    
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
@@ -374,6 +460,8 @@ object Segment {
     }
 
     // Transformation ----------------------------------------------------------- //
+    override def takenBelow: SegmentSeq[E, D, V] = sequence
+    
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
   }
 
@@ -389,7 +477,7 @@ object Segment {
     // Inspection --------------------------------------------------------------- //
     override def isSingle: Boolean = true
 
-    override def moveTo(bound: Bound[E]): Segment[E, D, V] = this
+    override def moveTo(bound: Bound[E]): Single[E, D, V] = this
 
     override def interval: Interval[E, D] = domainOps.interval.universal
 

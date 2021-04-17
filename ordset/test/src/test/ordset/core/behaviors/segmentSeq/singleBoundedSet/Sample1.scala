@@ -109,35 +109,101 @@ trait Sample1[D <: Domain[Int]]
   override def slicedCases: Seq[SegmentSeqSlicedTest.TestCase[Int, D, Boolean]] =
     List(
       SegmentSeqSlicedTest.TestCase(
+        // current:
+        //         bound
+        //           (
+        // X--------true---------](--------false----------X
+        //                       0
+        // takenBelow:
+        // X-------------------true-----------------------X
+        //
+        // takenAbove:
+        // X--------true---------](--------false----------X
+        //                       0
         -10`(`,
         (true  forAll x) ::
         Nil,
         reference
       ),
+      // current:
+      //                    bound
+      //                      )
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenBelow:
+      // X-------------------true-----------------------X
+      //
+      // takenAbove:
+      // X--------true---------](--------false----------X
+      //                       0
       SegmentSeqSlicedTest.TestCase(
         0`)`,
         (true  forAll x) ::
         Nil,
         reference
       ),
+      // current:
+      //                     bound
+      //                       ]
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenBelow:
+      // X-------------------true-----------------------X
+      //
+      // takenAbove:
+      // X--------true---------](--------false----------X
+      //                       0
       SegmentSeqSlicedTest.TestCase(
         0`]`,
         (true  forAll x) ::
         Nil,
         reference
       ),
+      // current:
+      //                     bound
+      //                       [
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenBelow:
+      // X-------------------true-----------------------X
+      //
+      // takenAbove:
+      // X--------true---------](--------false----------X
+      //                       0
       SegmentSeqSlicedTest.TestCase(
         0`[`,
         (true  forAll x) ::
         Nil,
         reference
       ),
+      // current:
+      //                      bound
+      //                        (
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenBelow:
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenAbove:
+      // X-------------------false----------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         0`(`,
         reference,
         (false forAll x) ::
         Nil
       ),
+      // current:
+      //                              bound
+      //                                )
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenBelow:
+      // X--------true---------](--------false----------X
+      //                       0
+      // takenAbove:
+      // X-------------------false----------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         10`)`,
         reference,

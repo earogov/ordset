@@ -149,20 +149,17 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   /**
    * Returns sequence containing
    * <tr>- segment (minBound, u,,1,,) -> v,,1,,</tr>
-   * <tr>- segments {i > 1: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which l,,i,, `≥` `bound`</tr> 
+   * <tr>- segments {i > 1: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,1,,</tr> 
    * <tr>where</tr>
    * <tr>minBound - minimal bound of domain;</tr>
    * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
    * <tr>v,,i,, - value of segment S,,i,,;</tr>
    * <tr>
-   *   S,,1,, - segment of original sequence for which l,,1,, `≤` U(`bound`) and u,,1,, `≥` U(`bound`);
-   * </tr>
-   * <tr>
-   *   U - upper bound operator, it act as identity if bound is upper and flips bound otherwise 
-   *   (see [[Bound.provideUpper]]).
+   *   S,,1,, - segment of original sequence for which l,,1,, `≤` `bound` and u,,1,, `≥` `bound`;
    * </tr>
    * {{{
+   * Example 1
    * 
    * original:
    *                 bound
@@ -175,16 +172,34 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
    * }}}
-   * Method definition provides invariants:
    * {{{
-   *   1. original.takenAbove(bound) == original.takenAbove(bound.flip) for any bound
+   * Example 2
+   *
+   * original:
+   *                     bound
+   *                       )
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
+   *
+   * original.takenAbove(bound):
+   *
+   *   X-------------------)[--------)[---------X
+   *            B               C         D        - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. sequence.takenAbove(bound) == sequence.getSegment(bound).takenAbove 
+   *   for any bound
+   *   
+   *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
+   *   for any bound
    * }}}
    */
   def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W]
 
   /**
    * Returns sequence containing
-   * <tr>- segments {i ∈ [1, N-1]: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which u,,i,, `≤` `bound`</tr>
+   * <tr>- segments {i ∈ [1, N-1]: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
    * <tr>- segment (l,,N,,, maxBound) -> v,,N,,</tr>
    * <tr>where</tr>
    * <tr>maxBound - maximal bound of domain;</tr>
@@ -192,13 +207,10 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
    * <tr>v,,i,, - value of segment S,,i,,;</tr>
    * <tr>
-   *   S,,N,, - segment of original sequence for which l,,N,, `≤` L(`bound`) and u,,N,, `≥` L(`bound`);
-   * </tr>
-   * <tr>
-   *   L - lower bound operator, it act as identity if bound is lower and flips bound otherwise 
-   *   (see [[Bound.provideLower]]).
+   *   S,,N,, - segment of original sequence for which l,,N,, `≤` `bound` and u,,N,, `≥` `bound`;
    * </tr>
    * {{{
+   * Example 1
    *
    * original:
    *                 bound
@@ -211,9 +223,27 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *   X--------](------------------------------X
    *        A               B                      - values
    * }}}
-   * Method definition provides invariants:
    * {{{
-   *   1. original.takenBelow(bound) == original.takenBelow(bound.flip) for any bound
+   * Example 2
+   *
+   * original:
+   *            bound
+   *             (
+   *   X--------](---------)[--------)[---------X
+   *        A         B         C         D        - values
+   *
+   * original.takenBelow(bound):
+   *
+   *   X--------](------------------------------X
+   *        A               B                      - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. sequence.takenBelow(bound) == sequence.getSegment(bound).takenBelow 
+   *   for any bound
+   *   
+   *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
+   *   for any bound
    * }}}
    */
    def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W]
@@ -238,9 +268,13 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
    * }}}
-   * Method definition provides invariants:
+   * Methods definitions provide invariants:
    * {{{
-   *   1. original.sliced(bound) == original.sliced(bound.flip) for any bound
+   *   1. sequence.sliced(bound) == sequence.getSegment(bound).sliced 
+   *   for any bound
+   *   
+   *   2. sequence == sequence.sliced(bound)._1.appended(bound, sequence.sliced(bound)._2) 
+   *   for any bound
    * }}}
    */
   def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
@@ -281,18 +315,18 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   /**
    * Returns sequence containing:
-   * <tr>- segments {(l,,i,, MIN(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
-   * <tr>- segments {(MAX(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` `bound`; </tr>
+   * <tr>- segments {(l,,i,, min(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
+   * <tr>- segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` `bound`; </tr>
    * <tr>where</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
    * <tr>v,,i,, - value of segment i in sequence;      </tr>
    * <tr>
-   *   U - upper bound operator, it act as identity if bound is upper and flips bound otherwise 
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise 
    *   (see [[Bound.provideUpper]]);
    * </tr>
    * <tr>
-   *   L - lower bound operator, it act as identity if bound is lower and flips bound otherwise 
+   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
    *   (see [[Bound.provideLower]]).
    * </tr>
    *
@@ -340,12 +374,8 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. original.appended(bound, seq) == original.appended(bound.flip, seq) 
-   *      for any bound and seq
-   * }}}
-   * {{{
-   *   2. original == original.takenBelow(bound).appended(bound, original.takenAbove(bound)) 
-   *      for any bound
+   *   1. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
+   *   for any bound
    * }}}
    */
   def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]

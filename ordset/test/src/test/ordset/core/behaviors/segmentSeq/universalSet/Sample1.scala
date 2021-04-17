@@ -99,21 +99,65 @@ trait Sample1[D <: Domain[Int]]
 
   override def slicedCases: Seq[SegmentSeqSlicedTest.TestCase[Int, D, Boolean]] =
     List(
+      // current: 
+      //                     bound
+      //                       )
+      // X------------------true------------------------X
+      //
+      // takenBelow:
+      // X------------------true------------------------X
+      // 
+      // takenAbove:
+      // X------------------true------------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         0`)`,
         reference,
         reference
       ),
+      // current: 
+      //                     bound
+      //                       ]
+      // X------------------true------------------------X
+      //
+      // takenBelow:
+      // X------------------true------------------------X
+      // 
+      // takenAbove:
+      // X------------------true------------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         0`]`,
         reference,
         reference
       ),
+      // current: 
+      //                     bound
+      //                       [
+      // X------------------true------------------------X
+      //
+      // takenBelow:
+      // X------------------true------------------------X
+      // 
+      // takenAbove:
+      // X------------------true------------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         0`[`,
         reference,
         reference
       ),
+      // current: 
+      //                     bound
+      //                       (
+      // X------------------true------------------------X
+      //
+      // takenBelow:
+      // X------------------true------------------------X
+      // 
+      // takenAbove:
+      // X------------------true------------------------X
+      //
       SegmentSeqSlicedTest.TestCase(
         0`(`,
         reference,
