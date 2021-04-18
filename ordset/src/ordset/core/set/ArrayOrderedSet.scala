@@ -22,11 +22,6 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   validate()
 
   // Transformation ----------------------------------------------------------- //
-  final override def appended(other: OrderedSet[E, D]): OrderedSet[E, D] = other match {
-    case other: ArrayOrderedSet[E, D] => appendedArraySet(other)
-    case _ => appendedSegmentSeq(other)
-  }
-
   final override def appended(bound: Bound[E], other: OrderedSet[E, D]): OrderedSet[E, D] = {
     // original:
     //                bound  originalBoundSegment
@@ -119,99 +114,6 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   }
 
   // Private section ---------------------------------------------------------- //
-  private def appendedArraySet(other: ArrayOrderedSet[E, D]): OrderedSet[E, D] = {
-    // original:
-    //
-    //      originalPenultimateVal
-    //           v
-    // false    true      false
-    // -----](-------](-------------X
-    //               ^
-    //        originalLastBound
-    //
-    // other:
-    //
-    //        appendedFirstVal
-    //             v
-    //           true        false
-    // -------------------)[--------X
-    //                    ^
-    //   bound with otherStartInd
-    //
-    // If originalPenultimateVal == appendedFirstVal segment with originalLastBound must be dropped!
-    //
-    // original.appended(other):
-    //
-    // false      true       false
-    // -----](------------)[--------X
-
-    val originalLastBound = bounds(lastBoundIndex)
-    val originalPenultimateValue = getPenultimateSegmentValue
-
-    val otherStartInd = binSearchClosestGreater[Bound[E]](
-      originalLastBound, other.bounds
-    )(
-      0, other.bounds.length - 1
-    )(
-      domainOps.boundOrd
-    )
-    val otherCopyLen =
-      if (otherStartInd == NotFound) 0
-      else other.bounds.length - otherStartInd
-
-    val appendedFirstValue =
-      if (otherStartInd == NotFound) other.getLastSegmentValue
-      else other.getSegmentValue(otherStartInd)
-
-    val originalCopyLen =
-      if (valueOps.eqv(originalPenultimateValue, appendedFirstValue)) bounds.length - 1
-      else bounds.length
-
-    val newBoundsLen = originalCopyLen + otherCopyLen
-    if (newBoundsLen == 0)
-      consUniform(appendedFirstValue)
-    else {
-      val newBoundsArray = new Array[Bound.Upper[E]](newBoundsLen)
-      if (originalCopyLen > 0) {
-        Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, originalCopyLen)
-      }
-      if (otherCopyLen > 0) {
-        Array.copy(other.bounds.unsafeArray, otherStartInd, newBoundsArray, originalCopyLen, otherCopyLen)
-      }
-      new ArrayOrderedSet[E, D](ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
-    }
-  }
-
-  private def appendedSegmentSeq(other: OrderedSet[E, D]): OrderedSet[E, D] = {
-    val originalPenultimateValue = getPenultimateSegmentValue
-    if (other.isUniform)
-      if (valueOps.eqv(originalPenultimateValue, other.firstSegment.value))
-        if (bounds.length == 1) consUniform(complementary)
-        else consBelow(lastBoundIndex - 1)
-      else this
-    else {
-      val appendedFirstSegment = other.getSegment(bounds(lastBoundIndex).flip)
-
-      val (otherCopyList, otherCopyLen) = SegmentSeqOps.getForwardBoundsList(appendedFirstSegment)
-
-      val originalCopyLen =
-        if (valueOps.eqv(originalPenultimateValue, appendedFirstSegment.value)) bounds.length - 1
-        else bounds.length
-
-      val newBoundsLen = originalCopyLen + otherCopyLen
-      if (newBoundsLen == 0)
-        consUniform(appendedFirstSegment.value)
-      else {
-        val newBoundsArray = new Array[Bound.Upper[E]](newBoundsLen)
-        if (originalCopyLen > 0) {
-          Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, originalCopyLen)
-        }
-        otherCopyList.copyToArray(newBoundsArray, originalCopyLen, otherCopyLen)
-        ArrayOrderedSet.unchecked(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
-      }
-    }
-  }
-  
   private sealed trait BoundsProvider() {
 
     val boundSegment: GenSegment

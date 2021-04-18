@@ -8,21 +8,6 @@ import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 trait TransformationBehaviors[E, D <: Domain[E], V]
   extends SegmentSeqAssert[E, D, V] { this: AnyFunSpec =>
 
-  def segmentSeqCanBeAppendedV0(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqAppendedV0Test[E, D, V]]
-  )(
-    implicit valueHash: Hash[V]
-  ): Unit =
-    samples.foreach { sample =>
-      sample.appendedV0Cases.foreach { appendedCase =>
-
-        it(s"should append (v0) $appendedCase to $sample") {
-          val actual = sample.sequence.appended(appendedCase.appended)
-          assertEqualSequences(appendedCase.expected, actual)(sample.domainOps, valueHash)
-        }
-      }
-    }
-
   def segmentSeqCanBeAppended(
     samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqAppendedTest[E, D, V]]
   )(

@@ -48,9 +48,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   }
 
   describe("Zipped ordered set transformation operations:") {
-
-//    it should behave like segmentSeqCanBeAppendedV0(transformSuite)
-//
+    
 //    it should behave like segmentSeqCanBeSliced(transformSuite)
   }
 }

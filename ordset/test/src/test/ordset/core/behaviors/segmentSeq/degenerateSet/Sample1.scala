@@ -5,15 +5,15 @@ import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedV0Test, SegmentSeqFactories, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 trait Sample1[D <: Domain[Int]]
-  extends SegmentMoveToBoundTest[Int, D, Boolean] 
-    with SegmentSeqAppendedV0Test[Int, D, Boolean] 
+  extends SegmentMoveToBoundTest[Int, D, Boolean]
+    with SegmentSeqAppendedTest[Int, D, Boolean]
     with SegmentSeqSlicedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
@@ -45,82 +45,120 @@ trait Sample1[D <: Domain[Int]]
     ( 0`]`, true  forAll x >= 0  & x <= 0 ) ::
     Nil
 
-  override def appendedV0Cases: Seq[SegmentSeqAppendedV0Test.TestCase[Int, D, Boolean]] = {
+  override def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
-        // current:           false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
-        // appended:
-        // X------------------false-----------------------X
+        // current:
+        //       bound
+        //         )
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
         //
-        // result:            false
-        // X ......Seq1....... )|(--true--)[-----false----X
-        //                     20         30
-        SegmentSeqAppendedV0Test.TestCase(
-          factoryTuple._1 + Label("A"),
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = false),
+        // appended:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A1"),
+          0`)`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0`)[`, 10`)[`, 35`)[`), complementary = false),
           (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  35) ::
+          (true  forAll x >= 35) ::
+          Nil
+        ),
+        // current:
+        //          bound
+        //           (
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
+        //
+        // appended:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A2"),
+          0`(`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0`)[`, 10`)[`, 35`)[`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  35) ::
+          (true  forAll x >= 35) ::
+          Nil
+        ),
+        // current:
+        //                           bound
+        //                             ]
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
+        //
+        // appended:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //        true
+        // X---f---)|(---f---)[---t---)[----false----)[-t-X
+        //          0        10       20             35
+        //
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A3"),
+          20`]`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0`)[`, 10`)[`, 35`)[`), complementary = false),
+          (false forAll x < 0) ::
           (true  forAll x >= 0  & x <= 0) ::
           (false forAll x >  0  & x <  10) ::
           (true  forAll x >= 10 & x <  20) ::
-          (false forAll x >= 20 & x <= 20) ::
-          (true  forAll x >  20 & x <  30) ::
-          (false forAll x >= 30 ) ::
+          (false forAll x >= 20 & x <  35) ::
+          (true  forAll x >= 35) ::
           Nil
         ),
-        // current:           false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
-        // appended:
-        // X-------------------true-----------------------X
+        // current:
+        //                           bound
+        //                             [
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
         //
-        // result:            false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
-        SegmentSeqAppendedV0Test.TestCase(
-          factoryTuple._1 + Label("B"),
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
-          reference
-        ),
-        // current:           false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
         // appended:
-        // X-------------------true--------------](-false-X
-        //                                       40
-        // result:            false      false
-        // X ......Seq1....... )|(--true--)|(-tr-](-false-X
-        //                     20         30
-        SegmentSeqAppendedV0Test.TestCase(
-          factoryTuple._1 + Label("C"),
-          factoryTuple._2.buildUnsafe(ArraySeq(40 `](`), complementary = true),
-          (false forAll x <  0) ::
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //        true
+        // X---f---)|(---f---)[---t---)[----false----)[-t-X
+        //          0        10       20             35
+        //
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A4"),
+          20`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0`)[`, 10`)[`, 35`)[`), complementary = false),
+          (false forAll x < 0) ::
           (true  forAll x >= 0  & x <= 0) ::
           (false forAll x >  0  & x <  10) ::
           (true  forAll x >= 10 & x <  20) ::
-          (false forAll x >= 20 & x <= 20) ::
-          (true  forAll x >  20 & x <  30) ::
-          (false forAll x >= 30 & x <= 30) ::
-          (true  forAll x >  30 & x <= 40) ::
-          (false forAll x >  40) ::
+          (false forAll x >= 20 & x <  35) ::
+          (true  forAll x >= 35) ::
           Nil
-        ),
-        // current:           false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
-        //
-        // appended:          false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
-        //
-        // result:            false      false
-        // X ......Seq1....... )|(--true--)|(-----true----X
-        //                     20         30
-        SegmentSeqAppendedV0Test.TestCase(
-          factoryTuple._1 + Label("D"),
-          factoryTuple._2.buildUnsafe(bounds, complementary),
-          reference
         )
       )
     }

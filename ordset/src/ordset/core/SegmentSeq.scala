@@ -132,6 +132,9 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   /** @return `true` if sequence contains `element`. */
   def contains(element: E): Boolean = contains(Bound.Upper.inclusive(element))
 
+  override def toString: String =
+    SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: W) => v.toString)
+  
   // Navigation --------------------------------------------------------------- //
   /**
    * @return collection of all upper bounds.
@@ -283,40 +286,6 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * }}}
    */
   def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
-  
-  /**
-   * Returns sequence containing:
-   * <tr>- upper bounds of all original segments except last;</tr>
-   * <tr>- upper bounds of `other` sequence that satisfy condition:</tr>
-   * {{{
-   * upper bound > lower bound of original's last segment
-   * }}}
-   * Each upper bound brings to the output sequence value that was associated with it
-   * in initial sequence (original or `other`).
-   * {{{
-   *
-   * original:
-   *                                 last
-   *                                  v
-   *   X--------](---------)[------------------X
-   *        A         B             C              - values
-   *
-   * other:
-   *
-   *   X--------------)[-------------](--------X
-   *           D             E            F        - values
-   *
-   * original.appended(other):
-   *
-   *   X--------](---------)[--------](--------X
-   *        A         B          E        F        - values
-   * }}}
-   * Methods definitions provide invariant:
-   * {{{
-   *   original == original.takenBelow(bound).appended(original.takenAbove(bound))
-   * }}}
-   */
-  def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
 
   /**
    * Returns sequence containing:
@@ -384,7 +353,4 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
    * }}}
    */
   def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
-  
-  override def toString: String =
-    SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: W) => v.toString)
 }

@@ -31,10 +31,10 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   final override def lastSegment: ZippedSegmentBase[E, D, W] with LastSegment =
     lastFrontZipper(left.lastSegment, right.lastSegment)
 
-  final override def getSegment(bound: Bound[E]): ZippedSegmentBase[E, D, W] with GenSegment =
+  final override def getSegment(bound: Bound[E]): Segment[E, D, W] with ZippedSegmentBase[E, D, W] =
     searchFrontZipper(generalFrontZipper, left.getSegment(bound), right.getSegment(bound))
 
-  final override def getSegment(element: E): ZippedSegmentBase[E, D, W] with GenSegment =
+  final override def getSegment(element: E): Segment[E, D, W] with ZippedSegmentBase[E, D, W] =
     getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
@@ -47,11 +47,6 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) =
     (takenBelow(bound), takenAbove(bound))
   
-  // TODO implement `appended` method.
-  //  That's wrong: cons(left.appended(other), right.appended(other))
-  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
-
-  // TODO implement `appended` method.
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
 
   // Protected section -------------------------------------------------------- //
@@ -124,7 +119,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
   protected final def generalFrontZipper(
     left: GenSegment, 
     right: GenSegment
-  ): ZippedSegmentBase[E, D, W] with GenSegment =
+  ): Segment[E, D, W] with ZippedSegmentBase[E, D, W] =
     if (firstSegmentInstance.isRepresentedBy(left, right)) firstSegmentInstance
     else withPrevFrontZipper(left, right)
 
@@ -619,8 +614,8 @@ object AbstractZippedSegmentSeq {
    * 'frontBackward' and 'frontForward' are the same two subsegments which are ordered by their upper bound.
    */
   sealed trait ZippedSegmentWithNext[E, D <: Domain[E], W]  
-    extends ZippedSegmentBase[E, D, W]
-      with Segment.WithNext[E, D, W] {
+    extends Segment.WithNext[E, D, W]
+      with ZippedSegmentBase[E, D, W] {
 
     def frontBackward: Segment.WithNext[E, D, W]
     def frontForward: Segment[E, D, W]
@@ -668,8 +663,8 @@ object AbstractZippedSegmentSeq {
    *    This condition is equivalent to: zipped segment has previous segment.
    */
   sealed trait ZippedSegmentWithPrev[E, D <: Domain[E], W] 
-    extends ZippedSegmentBase[E, D, W]
-      with Segment.WithPrev[E, D, W] {
+    extends Segment.WithPrev[E, D, W]
+      with ZippedSegmentBase[E, D, W] {
 
     def backBackward: Segment[E, D, W] = back.backward
     // Cast is safe if precondition 1 is provided.
@@ -705,8 +700,8 @@ object AbstractZippedSegmentSeq {
     override val sequence: AbstractZippedSegmentSeq[E, D, W],
     override val frontBackward: Segment.WithNext[E, D, W], 
     override val frontForward: Segment[E, D, W]
-  ) extends ZippedSegmentWithNext[E, D, W] 
-    with Segment.Initial[E, D, W] {
+  ) extends Segment.Initial[E, D, W]
+    with ZippedSegmentWithNext[E, D, W] {
 
     override def left: Segment[E, D, W] = frontBackward
     override def right: Segment[E, D, W] = frontForward
@@ -723,8 +718,8 @@ object AbstractZippedSegmentSeq {
     override val sequence: AbstractZippedSegmentSeq[E, D, W],
     override val left: Segment.Last[E, D, W], 
     override val right: Segment.Last[E, D, W]
-  ) extends ZippedSegmentWithPrev[E, D, W] 
-    with Segment.Terminal[E, D, W] {
+  ) extends Segment.Terminal[E, D, W]
+    with ZippedSegmentWithPrev[E, D, W] {
 
     override def isRepresentedBy(left: Segment[E, D, W], right: Segment[E, D, W]): Boolean = 
       left.isLast && right.isLast
@@ -742,9 +737,9 @@ object AbstractZippedSegmentSeq {
     override val sequence: AbstractZippedSegmentSeq[E, D, W],
     override val frontBackward: Segment.WithNext[E, D, W], 
     override val frontForward: Segment[E, D, W]
-  ) extends ZippedSegmentWithPrev[E, D, W] 
-    with ZippedSegmentWithNext[E, D, W]
-    with Segment.Inner[E, D, W] {
+  ) extends Segment.Inner[E, D, W]
+    with ZippedSegmentWithPrev[E, D, W]
+    with ZippedSegmentWithNext[E, D, W] {
 
     override def left: Segment[E, D, W] = frontBackward
     override def right: Segment[E, D, W] = frontForward
@@ -759,8 +754,8 @@ object AbstractZippedSegmentSeq {
     override val sequence: AbstractZippedSegmentSeq[E, D, W],
     override val left: Segment.Last[E, D, W], 
     override val right: Segment.Last[E, D, W]
-  ) extends ZippedSegmentBase[E, D, W]
-    with Segment.Single[E, D, W] {
+  ) extends Segment.Single[E, D, W]
+    with ZippedSegmentBase[E, D, W] {
 
     override def isRepresentedBy(left: Segment[E, D, W], right: Segment[E, D, W]): Boolean = 
       left.isLast && right.isLast

@@ -46,10 +46,10 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
 
   final override def lastSegment: IndexedTerminalSegment[E, D, W] = IndexedTerminalSegment(this)
 
-  final override def getSegment(bound: Bound[E]): IndexedSegmentBase[E, D, W] with GenSegment =
+  final override def getSegment(bound: Bound[E]): Segment[E, D, W] with IndexedSegmentBase[E, D, W] =
     makeSegment(searchSegmentFromBegin(bound))
 
-  final override def getSegment(element: E): IndexedSegmentBase[E, D, W] with GenSegment =
+  final override def getSegment(element: E): Segment[E, D, W] with IndexedSegmentBase[E, D, W] =
     getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
@@ -203,7 +203,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     *
     * @return segment with index `ind`.
     */
-  protected final def makeSegment(ind: Int): IndexedSegmentBase[E, D, W] with GenSegment =
+  protected final def makeSegment(ind: Int): Segment[E, D, W] with IndexedSegmentBase[E, D, W] =
     if (ind <= 0)                     IndexedInitialSegment(this)
     else if (ind >= lastSegmentIndex) IndexedTerminalSegment(this)
     else                              IndexedInnerSegment(this, ind)
@@ -273,8 +273,8 @@ object AbstractIndexedSegmentSeq {
    * 1. `0 <= ind < bounds.length (last segment index)`.
    */
   sealed trait IndexedSegmentWithNext[E, D <: Domain[E],  W] 
-    extends IndexedSegmentBase[E, D, W] 
-      with Segment.WithNext[E, D, W] {
+    extends Segment.WithNext[E, D, W]
+      with IndexedSegmentBase[E, D, W] {
 
     // Inspection --------------------------------------------------------------- //
     override def upperBound: Bound.Upper[E] = sequence.getUpperBound(index)
@@ -296,8 +296,8 @@ object AbstractIndexedSegmentSeq {
    * 1. `1 <= ind <= bounds.length (last segment index)`.
    */
   sealed trait IndexedSegmentWithPrev[E, D <: Domain[E],  W] 
-    extends IndexedSegmentBase[E, D, W]
-      with Segment.WithPrev[E, D, W] {
+    extends Segment.WithPrev[E, D, W]
+      with IndexedSegmentBase[E, D, W] {
 
     // Inspection --------------------------------------------------------------- //
     override def lowerBound: Bound.Lower[E] = sequence.getLowerBound(index)
@@ -314,8 +314,8 @@ object AbstractIndexedSegmentSeq {
   /** Initial segment of sequence. */
   final case class IndexedInitialSegment[E, D <: Domain[E],  W](
     override val sequence: AbstractIndexedSegmentSeq[E, D, W]
-  ) extends IndexedSegmentWithNext[E, D, W]
-    with Segment.Initial[E, D, W] {
+  ) extends Segment.Initial[E, D, W]
+    with IndexedSegmentWithNext[E, D, W] {
 
     // Inspection --------------------------------------------------------------- //
     override val index: Int = 0
@@ -335,8 +335,8 @@ object AbstractIndexedSegmentSeq {
   /** Terminal segment of sequence. */
   final case class IndexedTerminalSegment[E, D <: Domain[E],  W](
     override val sequence: AbstractIndexedSegmentSeq[E, D, W]
-  ) extends IndexedSegmentWithPrev[E, D, W]
-    with Segment.Terminal[E, D, W] {
+  ) extends Segment.Terminal[E, D, W]
+    with IndexedSegmentWithPrev[E, D, W] {
 
     // Inspection --------------------------------------------------------------- //
     override val index: Int = sequence.lastSegmentIndex
@@ -363,9 +363,9 @@ object AbstractIndexedSegmentSeq {
   final case class IndexedInnerSegment[E, D <: Domain[E],  W](
     override val sequence: AbstractIndexedSegmentSeq[E, D, W],
     override val index: Int
-  ) extends IndexedSegmentWithPrev[E, D, W] 
-    with IndexedSegmentWithNext[E, D, W] 
-    with Segment.Inner[E, D, W] {
+  ) extends Segment.Inner[E, D, W]
+    with IndexedSegmentWithPrev[E, D, W]
+    with IndexedSegmentWithNext[E, D, W] {
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: AbstractIndexedSegmentSeq[E, D, W] = sequence.consAbove(index)

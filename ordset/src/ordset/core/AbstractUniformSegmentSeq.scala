@@ -39,8 +39,6 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
     (this, this)
   
-  final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
-
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
     val lowerBound = bound.provideLower
     
