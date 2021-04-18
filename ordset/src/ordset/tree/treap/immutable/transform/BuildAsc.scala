@@ -186,6 +186,13 @@ object BuildAsc {
 
   /**
    * Creates new node with `newKey`, `newValue` and `newPriority` and adds it to `buffer`.
+   *
+   * Warning!
+   *
+   * Although new buffer instance is returned, state of input `buffer` is modified:
+   * children of mutable nodes in buffer are changed during method execution.
+   * Commonly after method invocation one should drop old `buffer` and proceed
+   * with new one.
    */
   @tailrec
   def addToBuffer[K, KK >: K, V](

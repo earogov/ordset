@@ -96,7 +96,7 @@ import scala.{specialized => sp}
  * 
  * @tparam E type of element in ordered set
  * @tparam D type of domain
- * @tparam V type of value assigned to interval
+ * @tparam W type of value assigned to interval
  */
 trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 

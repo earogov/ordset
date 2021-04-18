@@ -188,16 +188,19 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     
     val boundOrd = domainOps.boundOrd
     val rng = rngManager.newUnsafeUniformRng()
-    val buffer = BuildAsc.rightFrontToBuffer(getRoot(originalLeftSequence))
-    if (!skipBound) {
-      BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], W](
-        buffer, upperBound, rng.nextInt(), originalBoundSegment.value
-      )(
-        boundOrd
-      )
-    }
+
+    val originalBuffer = BuildAsc.rightFrontToBuffer(getRoot(originalLeftSequence))
+    val buffer =
+      if (skipBound) originalBuffer
+      else
+        BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], W](
+          originalBuffer, upperBound, rng.nextInt(), originalBoundSegment.value
+        )(
+          boundOrd
+        )
+
     val leftRoot = BuildAsc.finalizeBuffer(buffer)
-    
+
     leftRoot match {
       case leftRoot: ImmutableTreap.Node[Bound.Upper[E], W] =>
         if (otherBoundSegment.isLast) consFromNode(leftRoot, otherBoundSegment.value)
