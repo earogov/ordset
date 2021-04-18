@@ -44,7 +44,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     //
     // original.appended(bound, other):
     //
-    //                bound
+    //                 bound
     //                   v
     // X--false---](--t--)[--f---](---true----X
     //            0      1       2                - bound indexes
@@ -60,11 +60,8 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
       case _ => GeneralBoundsProvider(other, lowerBound)
     }
 
-    val originalBoundMatch = originalBoundSegment match {
-      case s: Segment.WithNext[e, d, v] => domainOps.boundOrd.eqv(upperBound, s.upperBound)
-      case _ => false
-    }
-    val boundValuesMatch = valueOps.eqv(originalBoundSegment.value, otherBoundsProvider.boundSegment.value)
+    val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)
+    val boundValuesMatch = originalBoundSegment.hasValue(otherBoundsProvider.boundSegment.value)
 
     val originalCopyLen =
       if (originalBoundMatch && !boundValuesMatch) originalBoundSegment.index + 1

@@ -13,9 +13,9 @@ import scala.language.postfixOps
 
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
-  with SegmentSeqAppendedV0Test[Int, D, Boolean]
-  with SegmentSeqAppendedTest[Int, D, Boolean]
-  with SegmentSeqSlicedTest[Int, D, Boolean] {
+    with SegmentSeqAppendedV0Test[Int, D, Boolean]
+    with SegmentSeqAppendedTest[Int, D, Boolean]
+    with SegmentSeqSlicedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
   override def sample: String = "1"

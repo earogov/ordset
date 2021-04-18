@@ -98,11 +98,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     super.getSegment(element)
 
   // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] = sliced(bound)._2
+  final override def takenAbove(bound: Bound[E]): TreapSegmentSeq[E, D, W] = sliced(bound)._2
 
-  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] = sliced(bound)._1
+  final override def takenBelow(bound: Bound[E]): TreapSegmentSeq[E, D, W] = sliced(bound)._1
 
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = {
+  final override def sliced(bound: Bound[E]): (TreapSegmentSeq[E, D, W], TreapSegmentSeq[E, D, W]) = {
     val ord = domainOps.boundOrd
     if (ord.compare(bound, firstSegment.upperBound) <= 0) {
       (consUniform(firstSegment.value), this)
@@ -130,9 +130,101 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     case other: AbstractTreapSegmentSeq[E, D, W] => appendedTreapSeq(other)
     case _ => appendedSegmentSeq(other)
   }
+  
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
+    
+    // CASE 1                                              // CASE 2
+    //                                                     //
+    // original:                                           // original:
+    //                bound  originalBoundSegment          // originalBoundSegment  bound  
+    //                   )   /                             //                \       ]
+    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X
+    //                                                     //
+    // other:                                              // other:
+    //                      otherBoundSegment              //                      otherBoundSegment
+    //                       /                             //                       /
+    // X--t--)[-------false------](---true----X            // X--t--)[-------false------](---true----X
+    //                                                     //
+    // original.appended(bound, other):                    // original.appended(bound, other):
+    //                                                     //
+    //                 bound                               //                      bound
+    //                   v                                 //                        v
+    // X--false---](--t--)[--f---](---true----X            // X--false---](---true---](f](---true----X
+    
+    // CASE 3                                              // CASE 4                                 
+    //                                                     //                                          
+    // original:                                           // original:                                
+    //                bound  originalBoundSegment          // originalBoundSegment  bound
+    //                   )   /                             //                \       ]               
+    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X 
+    //                                                     //                                          
+    // other:                                              // other:                                   
+    //                      otherBoundSegment              //                      otherBoundSegment   
+    //                       /                             //                       /                  
+    // X--f--)[--------true------](---false---X            // X--f--)[--------true------](---false---X 
+    //                                                     //                                          
+    // original.appended(bound, other):                    // original.appended(bound, other):         
+    //                                                     //                                          
+    // X--false---](----true-----](---false---X            // X--false---](----true-----](---false---X 
+    
+    val upperBound = bound.provideUpper
+    val lowerBound = bound.provideLower
 
-  // TODO implement `appended` method.
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = ???
+    val originalBoundSegment = getSegment(upperBound)
+    val otherBoundSegment = other.getSegment(lowerBound)
+
+    val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)
+    val boundValuesMatch = originalBoundSegment.hasValue(otherBoundSegment.value)
+    val skipBound = originalBoundMatch || boundValuesMatch
+    
+    val originalLeftSequence: TreapSegmentSeq[E, D, W] =
+      if (originalBoundMatch && !boundValuesMatch)
+        originalBoundSegment match {
+          case s: TreapSegmentWithNext[E, D, W] => s.moveNext.takenBelow
+          // `originalBoundMatch` == `true` => `originalBoundSegment` has upper bound => impossible to get here
+          case _ => throw new AssertionError("Unreachable case: next segment expected.")
+        }
+      else originalBoundSegment.takenBelow
+    
+    val boundOrd = domainOps.boundOrd
+    val rng = rngManager.newUnsafeUniformRng()
+    val buffer = BuildAsc.rightFrontToBuffer(getRoot(originalLeftSequence))
+    if (!skipBound) {
+      BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], W](
+        buffer, upperBound, rng.nextInt(), originalBoundSegment.value
+      )(
+        boundOrd
+      )
+    }
+    val leftRoot = BuildAsc.finalizeBuffer(buffer)
+    
+    leftRoot match {
+      case leftRoot: ImmutableTreap.Node[Bound.Upper[E], W] =>
+        if (otherBoundSegment.isLast) consFromNode(leftRoot, otherBoundSegment.value)
+        else otherBoundSegment match {
+          case otherBoundSegment: TreapSegmentWithNext[E, D, W] =>
+            val rightSequence = otherBoundSegment.takenAbove
+            val mergedRoot = TreeMerge.foldNodes(leftRoot, rightSequence.root)(Treap.nodePriorityOrder(boundOrd))
+            consFromNode(mergedRoot, rightSequence.lastSegment.value)
+          case _ =>
+            val buffer = otherBoundSegment.forwardIterable().foldLeft(
+              BuildAsc.rightFrontToBuffer[Bound.Upper[E], W](leftRoot)
+            ) {
+              (buf, seg) => seg match {
+                case seg: Segment.WithNext[E, D, W] =>
+                  BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], W](
+                    buf, seg.upperBound, rng.nextInt(), seg.value
+                  )(
+                    boundOrd
+                  )
+                case _ => buf
+              }
+            }
+            consFromTree(BuildAsc.finalizeBuffer(buffer), other.lastSegment.value)
+        }
+      case _ => otherBoundSegment.takenAbove
+    }
+  }
 
   // Protected section -------------------------------------------------------- //
   /**
@@ -148,7 +240,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
    *
    * Note current class not supports empty and universal sets so other implementations should be used.
    */
-  protected def consUniform(value: W): AbstractUniformSegmentSeq[E, D, W]
+  protected def consUniform(value: W): UniformSegmentSeq[E, D, W]
 
   /**
    * Creates segment sequence from specified treap node.
@@ -158,10 +250,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
   /**
    * Creates segment sequence from specified treap. If treap is empty, creates uniform sequence.
    */
-  protected def consFromTree(tree: ImmutableTreap[Bound.Upper[E], W], value: W): SegmentSeq[E, D, W] = tree match {
-    case node: ImmutableTreap.Node[Bound.Upper[E], W] => consFromNode(node, value)
-    case _ => consUniform(value)
-  }
+  protected def consFromTree(tree: ImmutableTreap[Bound.Upper[E], W], value: W): TreapSegmentSeq[E, D, W] = 
+    tree match {
+      case node: ImmutableTreap.Node[Bound.Upper[E], W] => consFromNode(node, value)
+      case _ => consUniform(value)
+    }
 
   /**
    * Returns `true` if segment with given value is considered to be included in set.
@@ -238,7 +331,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
     if (firstSegment.node.eq(contextExtract.tree)) firstSegment
     else TreapInnerSegment(this, contextExtract.tree, contextExtract.context)
   }
-
+  
   protected final def appendedTreapSeq(other: AbstractTreapSegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
     val originalPenultimateSegment = lastSegment.movePrev
 
@@ -359,6 +452,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSe
 
 object AbstractTreapSegmentSeq {
   
+  def getRoot[E, D <: Domain[E], W](seq: TreapSegmentSeq[E, D, W]): ImmutableTreap[Bound.Upper[E], W] = seq match {
+    case s: AbstractTreapSegmentSeq[E, D, W] => s.root
+    case s: UniformSegmentSeq[E, D, W] => ImmutableTreap.Empty
+  }
+  
   /**
    * Base trait for non single segments. It has either previous segment or next.
    */
@@ -382,6 +480,13 @@ object AbstractTreapSegmentSeq {
 
     override def moveTo(bound: Bound[E]): TreapSegmentBase[E, D, W] with Segment[E, D, W] = 
       sequence.getSegment(bound)
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: TreapSegmentSeq[E, D, W]
+
+    override def takenBelow: TreapSegmentSeq[E, D, W]
+
+    override def sliced: (TreapSegmentSeq[E, D, W], TreapSegmentSeq[E, D, W])
   }
 
   /**
@@ -396,6 +501,11 @@ object AbstractTreapSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def moveNext: TreapSegmentWithPrev[E, D, W] = sequence.makeSegmentWithPrev(this)
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: AbstractTreapSegmentSeq[E, D, W]
+
+    override def sliced: (TreapSegmentSeq[E, D, W], AbstractTreapSegmentSeq[E, D, W])
   }
 
   /**
@@ -423,6 +533,11 @@ object AbstractTreapSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def movePrev: TreapSegmentWithNext[E, D, W] = sequence.makeSegmentWithNext(this)
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenBelow: AbstractTreapSegmentSeq[E, D, W]
+
+    override def sliced: (AbstractTreapSegmentSeq[E, D, W], TreapSegmentSeq[E, D, W])
   }
 
   /**

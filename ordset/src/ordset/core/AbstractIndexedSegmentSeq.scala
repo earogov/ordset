@@ -53,21 +53,21 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
     getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W] = {
+  final override def takenAbove(bound: Bound[E]): IndexedSegmentSeq[E, D, W] = {
     val ind = searchSegmentFromBegin(bound)
     if (ind == 0) this
     else if (ind == lastSegmentIndex) consUniform(getSegmentValue(ind))
     else consAbove(ind)
   }
 
-  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W] = {
+  final override def takenBelow(bound: Bound[E]): IndexedSegmentSeq[E, D, W] = {
     val ind = searchSegmentFromBegin(bound)
     if (ind == 0) consUniform(getSegmentValue(ind))
     else if (ind == lastSegmentIndex) this
     else consBelow(ind - 1)
   }
 
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = {
+  final override def sliced(bound: Bound[E]): (IndexedSegmentSeq[E, D, W], IndexedSegmentSeq[E, D, W]) = {
     val ind = searchSegmentFromBegin(bound)
     if (ind == 0) (consUniform(getSegmentValue(ind)), this)
     else if (ind == lastSegmentIndex) (this, consUniform(getSegmentValue(ind)))
@@ -120,7 +120,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  W] extends Abstract
    *
    * Note current class not supports empty and universal sets so other implementations should be used.
    */
-  protected def consUniform(value: W): AbstractUniformSegmentSeq[E, D, W]
+  protected def consUniform(value: W): UniformSegmentSeq[E, D, W]
 
   /**
    * Preconditions:
@@ -256,6 +256,13 @@ object AbstractIndexedSegmentSeq {
 
     override def moveTo(bound: Bound[E]): IndexedSegmentBase[E, D, W] with Segment[E, D, W] =
       sequence.makeSegment(sequence.searchSegmentFromIndex(index, bound))
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: IndexedSegmentSeq[E, D, W]
+
+    override def takenBelow: IndexedSegmentSeq[E, D, W]
+
+    override def sliced: (IndexedSegmentSeq[E, D, W], IndexedSegmentSeq[E, D, W])
   }
 
   /**
@@ -274,6 +281,11 @@ object AbstractIndexedSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def moveNext: IndexedSegmentWithPrev[E, D, W] = sequence.makeSegmentWithPrev(index + 1)
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: AbstractIndexedSegmentSeq[E, D, W]
+
+    override def sliced: (IndexedSegmentSeq[E, D, W], AbstractIndexedSegmentSeq[E, D, W])
   }
 
   /**
@@ -292,6 +304,11 @@ object AbstractIndexedSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def movePrev: IndexedSegmentWithNext[E, D, W] = sequence.makeSegmentWithNext(index - 1)
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenBelow: AbstractIndexedSegmentSeq[E, D, W]
+
+    override def sliced: (AbstractIndexedSegmentSeq[E, D, W], IndexedSegmentSeq[E, D, W])
   }
 
   /** Initial segment of sequence. */
@@ -308,9 +325,9 @@ object AbstractIndexedSegmentSeq {
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: AbstractIndexedSegmentSeq[E, D, W] = sequence
-    
+
     override def takenBelow: AbstractUniformSegmentSeq[E, D, W] = sequence.consUniform(value)
-    
+
     override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractIndexedSegmentSeq[E, D, W]) =
       (takenBelow, takenAbove)
   }
@@ -354,7 +371,7 @@ object AbstractIndexedSegmentSeq {
     override def takenAbove: AbstractIndexedSegmentSeq[E, D, W] = sequence.consAbove(index)
 
     override def takenBelow: AbstractIndexedSegmentSeq[E, D, W] = sequence.consBelow(index - 1)
-    
+
     override def sliced: (AbstractIndexedSegmentSeq[E, D, W], AbstractIndexedSegmentSeq[E, D, W]) =
       (takenBelow, takenAbove)
   }

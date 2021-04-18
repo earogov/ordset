@@ -510,11 +510,12 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], W] extends AbstractSe
     if (invariant(backward.value)) zipper(forward.moveTo(backward.lowerBound).asInstanceOf[SegmentWithNext], backward)
     else zipper(forward.movePrev, backward)
 
-  protected final def throwSegmentIsEitherLastOrHasNext: Nothing =
-    throw new IllegalArgumentException("Unreachable case: segment is either last or has next segment.")
+  protected final def throwSegmentIsEitherLastOrHasNext: Nothing = {
+    throw new AssertionError("Unreachable case: segment is either last or has next segment.")
+  }
 
   protected final def throwSegmentIsEitherFirstOrHasPrev: Nothing =
-    throw new IllegalArgumentException("Unreachable case: segment is either first or has previous segment.")
+    throw new AssertionError("Unreachable case: segment is either first or has previous segment.")
 }
 
 object AbstractZippedSegmentSeq {
@@ -602,6 +603,13 @@ object AbstractZippedSegmentSeq {
         left.moveTo(bound), 
         right.moveTo(bound)
       )
+
+    // Transformation ----------------------------------------------------------- //
+    override def takenAbove: SegmentSeq[E, D, W] = ???
+
+    override def takenBelow: SegmentSeq[E, D, W] = ???
+
+    override def sliced: (SegmentSeq[E, D, W], SegmentSeq[E, D, W]) = ???
   }
 
   /**

@@ -1,7 +1,7 @@
 package ordset.core.set
 
-import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, OrderedSet}
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, OrderedSet, SegmentSeq, TreapSegmentSeq}
+import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.random.RngManager
 
 class UniformOrderedSet[E, D <: Domain[E]](
@@ -14,35 +14,22 @@ class UniformOrderedSet[E, D <: Domain[E]](
   with OrderedSetCommons[E, D] {
 
   // Transformation ----------------------------------------------------------- //
-  // TODO implement `appended`
-  final override def appended(bound: Bound[E], other: OrderedSet[E, D]): OrderedSet[E, D] = {
-    // original:
-    //                bound
-    //                   )
-    // X---------------false------------------X
-    //
-    // other:
-    //                      otherBoundSegment
-    //                       /
-    // X--f--)[--------true------](---false---X
-    //
-    // original.appended(bound, other):
-    //
-    // X-------false-----)[--tr--](---false---X
-    //                   ^
-    //                 bound
-    val lowerBound = bound.provideLower
-    val otherBoundSegment = other.getSegment(lowerBound)
-    if (valueOps.eqv(value, otherBoundSegment.value)) {
-      ???
-    } else {
-      ???
-    }
-  }
 
   // Protected section -------------------------------------------------------- //  
   @inline
   protected final override def isIncludedInSet(value: Boolean): Boolean = value
+
+  protected final override def consBounded(bound: Bound[E], lastValue: Boolean): OrderedSet[E, D] =
+    if (valueOps.eqv(value, lastValue)) 
+      this
+    else
+      TreapOrderedSet.fromIterableUnsafe(
+        List(bound.provideUpper), value, domainOps
+      )(
+        OrderValidationFunc.alwaysTrue
+      )(
+        rngManager
+      )
 }
 
 object UniformOrderedSet {

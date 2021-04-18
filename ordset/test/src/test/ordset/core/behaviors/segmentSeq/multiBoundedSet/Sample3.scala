@@ -7,7 +7,7 @@ import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
 import test.ordset.core.Labels
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedV0Test, SegmentSeqFactories, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqAppendedV0Test, SegmentSeqFactories, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -15,8 +15,9 @@ import scala.language.postfixOps
 
 trait Sample3[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
-  with SegmentSeqAppendedV0Test[Int, D, Boolean]
-  with SegmentSeqSlicedTest[Int, D, Boolean] {
+    with SegmentSeqAppendedV0Test[Int, D, Boolean]
+    with SegmentSeqAppendedTest[Int, D, Boolean]
+    with SegmentSeqSlicedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
   override def sample: String = "3"
@@ -220,6 +221,32 @@ trait Sample3[D <: Domain[Int]]
           (true  forAll x >  84 & x <  86) ::
           (false forAll x >= 86 & x <= 86) ::
           (true  forAll x >  86) ::
+          Nil
+        )
+      )
+    }
+  }
+
+  override def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
+        //  bound
+        //    ]
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--)[--f--)[--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // appended:
+        // X-----------------------------false----------------------------------X
+        //
+        // result:
+        // X-----------------------------false----------------------------------X
+        //                
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A1"),
+          -10`]`,
+          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = false),
+          (false forAll x) ::
           Nil
         )
       )

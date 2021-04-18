@@ -18,6 +18,7 @@ package object core {
 
   type SegmentOrderWithDir[E, D <: Domain[E],  +Dir <: OrderDir] = DirectedOrder[Segment[E, D, Any], Dir]
 
+  
   type SetSegment[E, D <: Domain[E]] = Segment[E, D, Boolean]
 
   type SetSegmentWithPrev[E, D <: Domain[E]] = Segment.WithPrev[E, D, Boolean]
@@ -29,6 +30,15 @@ package object core {
   type SetSegmentSingle[E, D <: Domain[E]] = Segment.Single[E, D, Boolean]
 
   type SetIntervalRelation[E, D <: Domain[E]] = IntervalRelation[E, D, Boolean]
-
+  
   type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
+  
+  
+  type UniformSegmentSeq[E, D <: Domain[E], W] = AbstractUniformSegmentSeq[E, D, W]
+  
+  type IndexedSegmentSeq[E, D <: Domain[E], W] = AbstractIndexedSegmentSeq[E, D, W] | UniformSegmentSeq[E, D, W]
+
+  type TreapSegmentSeq[E, D <: Domain[E], W] = AbstractTreapSegmentSeq[E, D, W] | UniformSegmentSeq[E, D, W]
+  
+  type ZippedSegmentSeq[E, D <: Domain[E], W] = AbstractZippedSegmentSeq[E, D, W]
 }

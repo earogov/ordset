@@ -9,4 +9,7 @@ trait OrderedSetCommons[E, D <: Domain[E]] {
 
   @inline
   final override def valueOps: ValueOps[Boolean] = ValueOps.booleanValueOps
+  
+  @inline
+  final override def isSet: Boolean = true
 }

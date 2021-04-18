@@ -117,10 +117,15 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   def isUniversal: Boolean
 
   /**
-   * @return `true` sequence is empty or universal, i.e has single segment.
+   * @return `true` if sequence is empty or universal, i.e has single segment.
    */
   def isUniform: Boolean
 
+  /**
+   * @return `true` if sequence represents ordered set, i.e. `W` is `Boolean`. 
+   */
+  def isSet: Boolean
+  
   /** @return `true` if sequence contains `bound`. */
   def contains(bound: Bound[E]): Boolean
 

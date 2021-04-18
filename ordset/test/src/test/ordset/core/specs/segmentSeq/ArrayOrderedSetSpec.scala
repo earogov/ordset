@@ -29,13 +29,13 @@ class ArrayOrderedSetSpec extends AnyFunSpec
   )
 
   private val appendedSuite = List(
-    new EmptySetSample1[Dom]
-    //new MultiBoundedSetSample1[Dom]
-  )
-
-  private val patchedSuite = List(
+    new EmptySetSample1[Dom],
     new MultiBoundedSetSample1[Dom]
   )
+
+//  private val patchedSuite = List(
+//    new MultiBoundedSetSample1[Dom]
+//  )
 
   describe("Array based ordered set navigation operations:") {
 
@@ -56,6 +56,6 @@ class ArrayOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentSeqCanBeSliced(testSuite)
 
-    it should behave like segmentCanBePatched(patchedSuite)
+    //it should behave like segmentCanBePatched(patchedSuite)
   }
 }

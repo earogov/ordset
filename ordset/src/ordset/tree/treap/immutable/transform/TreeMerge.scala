@@ -188,7 +188,7 @@ object TreeMerge {
     rightNode: ImmutableTreap.Node[K, V]
   )(
     implicit priorityOrder: Order[Treap.Node[KK, V]]
-  ): ImmutableTreap[K, V] = {
+  ): ImmutableTreap.Node[K, V] = {
 
     val leftExtract = ContextExtract.foldAfter(
       leftNode,
@@ -206,7 +206,8 @@ object TreeMerge {
     )
     val rightStack = TreeStack.contextOps.addToStack(rightExtract.context, rightExtract.tree)
 
-    merge[K, KK, V](leftStack, rightStack, ImmutableTreap.Empty)(priorityOrder)
+    // both `leftStack` and `rightStack` are non-empty => result tree is non-empty => cast is safe
+    merge[K, KK, V](leftStack, rightStack, ImmutableTreap.Empty)(priorityOrder).asInstanceOf[ImmutableTreap.Node[K, V]]
   }
 
   /**

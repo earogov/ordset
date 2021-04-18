@@ -1,13 +1,14 @@
 package ordset.core
 
 import ordset.core.value.ValueOps
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.set.TreapOrderedSet
 
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
 
   import AbstractUniformSegmentSeq._
-  
+
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !isIncludedInSet(value)
 
@@ -40,10 +41,22 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
   
   final override def appended(other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = other
 
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
+    val lowerBound = bound.provideLower
+    
+    val otherBoundSegment = other.getSegment(lowerBound)
+
+    val leftSequence = consBounded(bound, otherBoundSegment.value)
+    val rightSequence = otherBoundSegment.takenAbove
+    
+    if (leftSequence.isUniform) rightSequence
+    else leftSequence.appended(bound, rightSequence)
+  }
+
   // Protected section -------------------------------------------------------- //
   /** Single segment instance. */
   protected val segment: UniformSingleSegment[E, D, W] = new UniformSingleSegment(this)
-  
+
   /** Value of single segment. */
   protected val value: W
 
@@ -53,6 +66,26 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends Abstract
    * For example, if `W` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
   protected def isIncludedInSet(value: W): Boolean = valueOps.isIncluded(value)
+
+  /**
+   * Creates segment sequence:
+   * <tr>(minBound, U(bound)) -> `this.value`</tr>
+   * <tr>(L(bound), maxBound) -> `lastValue`</tr>
+   * <tr>where</tr>
+   * <tr>minBound - minimal bound of domain;</tr>
+   * <tr>maxBound - maximal bound of domain;</tr>
+   * <tr>
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise 
+   *   (see [[Bound.provideUpper]]);
+   * </tr>
+   * <tr>
+   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
+   *   (see [[Bound.provideLower]]).
+   * </tr>
+   * <tr></tr>
+   * If `this.value` and `lastValue` are equals returns current uniform sequence (bound in result sequence is dropped).
+   */
+  protected def consBounded(bound: Bound[E], lastValue: W): SegmentSeq[E, D, W]
 }
 
 object AbstractUniformSegmentSeq {
@@ -74,7 +107,7 @@ object AbstractUniformSegmentSeq {
 
     override def takenBelow: AbstractUniformSegmentSeq[E, D, W] = sequence
 
-    override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) = 
+    override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
       (sequence, sequence)
   }
 }

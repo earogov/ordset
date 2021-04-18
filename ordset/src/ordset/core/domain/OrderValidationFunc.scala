@@ -18,6 +18,10 @@ trait OrderValidationFunc[-E] extends ((E, E) => Boolean) {
 
 object OrderValidationFunc {
 
+  lazy val alwaysTrue: OrderValidationFunc[Any] = (_, _) => true
+
+  lazy val alwaysFalse: OrderValidationFunc[Any] = (_, _) => false
+  
   /**
    * @return `true` if all `elements` follow according to required order:
    *

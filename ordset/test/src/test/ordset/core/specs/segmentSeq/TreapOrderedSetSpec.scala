@@ -20,6 +20,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
+  // Range(1, 21)
   private val testSuite = Range(1, 21).flatMap { seed =>
     List(
       new EmptySetSample1[Dom](seed),
@@ -30,6 +31,14 @@ class TreapOrderedSetSpec extends AnyFunSpec
     )
   }
 
+  // Range(1, 21)
+  private val appendedSuite = Range(1, 2).flatMap { seed =>
+    List(
+      new EmptySetSample1[Dom](seed),
+      new MultiBoundedSetSample3[Dom](seed),
+    )
+  }
+  
   describe("Treap based ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
@@ -45,6 +54,8 @@ class TreapOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentSeqCanBeAppendedV0(testSuite)
 
+    it should behave like segmentSeqCanBeAppended(appendedSuite)
+    
     it should behave like segmentSeqCanBeSliced(testSuite)
   }
 }
