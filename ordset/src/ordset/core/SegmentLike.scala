@@ -263,10 +263,9 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
    * }}}
    */
   def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = self match {
-    case s: Segment.Inner[E, D] =>
-
-    case s: Segment.WithNext[E, D] => ???
-    case s: Segment.WithPrev[E, D] => ???
+    case s: Segment.Inner[E, D, V] => ???
+    case s: Segment.WithNext[E, D, V] => ???
+    case s: Segment.WithPrev[E, D, V] => ???
     case _ => other
   }
 
