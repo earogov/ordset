@@ -60,11 +60,11 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
   override def toString: String = SetBuilderFormat.segment(self, (e: E) => e.toString, (v: V) => v.toString)
   
   // Navigation --------------------------------------------------------------- //
-  def moveToFirst: Segment.First[E, D, V]
+  def moveToFirst: Segment.First[E, D, V] = sequence.firstSegment
 
-  def moveToLast: Segment.Last[E, D, V]
+  def moveToLast: Segment.Last[E, D, V] = sequence.lastSegment
 
-  def moveTo(bound: Bound[E]): Segment[E, D, V]
+  def moveTo(bound: Bound[E]): Segment[E, D, V] = sequence.getSegment(bound)
 
   def forwardIterable(): Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
 
@@ -125,16 +125,15 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing
-   * <tr>- segment (minBound, u,,1,,) -> v,,1,,</tr>
-   * <tr>- segments {i > 1: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,1,,</tr> 
+   * <tr>- segment (minBound, u,,0,,) -> v,,0,,</tr>
+   * <tr>- segments {i > 0: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,0,,</tr>
    * <tr>where</tr>
    * <tr>minBound - minimal bound of domain;</tr>
    * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
    * <tr>v,,i,, - value of segment S,,i,,;</tr>
-   * <tr>S,,1,, - current segment;</tr>
+   * <tr>S,,0,, - current segment.</tr>
    * {{{
-   * Example 1
    *
    * original:
    *                segment
@@ -160,16 +159,15 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
 
   /**
    * Returns sequence containing
-   * <tr>- segments {i ∈ [1, N-1]: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
+   * <tr>- segments {i ∈ [0, N-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
    * <tr>- segment (l,,N,,, maxBound) -> v,,N,,</tr>
    * <tr>where</tr>
    * <tr>maxBound - maximal bound of domain;</tr>
    * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
    * <tr>v,,i,, - value of segment S,,i,,;</tr>
-   * <tr>S,,N,, - current segment;</tr>
+   * <tr>S,,N,, - current segment.</tr>
    * {{{
-   * Example 1
    *
    * original:
    *                segment
@@ -195,8 +193,8 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
 
   /**
    * Returns tuple of sequences: ([[takenBelow]], [[takenAbove]]).
-   *
    * {{{
+   *
    * original:
    *                segment
    *                   v
@@ -222,30 +220,55 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
    *   for any bound such that segment.contains(bound) == true
    * }}}
    */
-  def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
+  def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = (takenBelow, takenAbove)
 
   /**
-   * original sequence (this.sequence):
+   * Returns sequence containing
+   * <tr>
+   *   - segments {i ∈ [0, L-1]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of original sequence for which u,,i,, `<` `lowerBound`
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [L, M-1]: (max(lowerBound, l,,i,,), min(upperBound, u,,i,,)) -> v,,i,,}
+   *   of `other` sequence for which l,,i,, `≤` upperBound and u,,i,, `≥` lowerBound
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [M, N-1]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of original sequence for which l,,i,, `>` upperBound
+   * </tr>
+   * <tr>where</tr>
+   * <tr>lowerBound - lower bound of current segment;</tr>
+   * <tr>upperBound - upper bound of current segment;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,.</tr>
    * {{{
    *
-   *               current segment (this)
+   *   original:
+   *                    segment
    *                       v
    *   X--------](------------------)[---------X
    *        A    ^         B        ^     C        - values
-   *      this.lowerBound       this.upperBound
+   *         lowerBound         upperBound
    *
-   * input sequence (other):
+   * other:
    *
    *   X---)[-----------)[---)[-----------)[---X
    *     D        E        F        G        H     - values
    *
-   * this.patched(other):
+   * segment.patched(other):
    *
    *   X--------](------)[---)[-----)[---------X
    *        A       E      F     G        C        - values
    * }}}
    */
-  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = self match {
+    case s: Segment.Inner[E, D] =>
+
+    case s: Segment.WithNext[E, D] => ???
+    case s: Segment.WithPrev[E, D] => ???
+    case _ => other
+  }
 
   // Protected section -------------------------------------------------------- //
   protected def self: Segment[E, D, V]

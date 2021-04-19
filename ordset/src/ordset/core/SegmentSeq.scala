@@ -156,15 +156,15 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing
-   * <tr>- segment (minBound, u,,1,,) -> v,,1,,</tr>
-   * <tr>- segments {i > 1: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,1,,</tr> 
+   * <tr>- segment (minBound, u,,0,,) -> v,,0,,</tr>
+   * <tr>- segments {i > 0: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,0,,</tr> 
    * <tr>where</tr>
    * <tr>minBound - minimal bound of domain;</tr>
    * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
    * <tr>v,,i,, - value of segment S,,i,,;</tr>
    * <tr>
-   *   S,,1,, - segment of original sequence for which l,,1,, `≤` `bound` and u,,1,, `≥` `bound`;
+   *   S,,0,, - segment of original sequence for which l,,0,, `≤` `bound` and u,,0,, `≥` `bound`;
    * </tr>
    * {{{
    * Example 1
@@ -207,7 +207,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   /**
    * Returns sequence containing
-   * <tr>- segments {i ∈ [1, N-1]: (l,,i,, u,,i,,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
+   * <tr>- segments {i ∈ [0, N-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
    * <tr>- segment (l,,N,,, maxBound) -> v,,N,,</tr>
    * <tr>where</tr>
    * <tr>maxBound - maximal bound of domain;</tr>
@@ -289,7 +289,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   /**
    * Returns sequence containing:
-   * <tr>- segments {(l,,i,, min(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
+   * <tr>- segments {(l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
    * <tr>- segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` `bound`; </tr>
    * <tr>where</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>

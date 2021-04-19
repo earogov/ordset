@@ -506,18 +506,23 @@ object AbstractTreapSegmentSeq {
     override def sliced: (AbstractTreapSegmentSeq[E, D, W], AbstractTreapSegmentSeq[E, D, W]) = {
       // Generally we cann't just fold `context` of current node with split function.
       // Before we need to move down to get correct stack for split operation.
-      //                                           
-      //                                            segment
-      //                                          |         |    ↙
-      //                                          |         |  ↙
-      //                                          |        node  -  split will be wrong if we just move upward
-      //                                          |       ↙ |  ↘    from current node and apply split function
-      //                                          |    ↙    |     ↘
-      //   insteed we need to move upward   -   left        |       right
-      //   from some child node to get          child       |       child
-      //   correct split                          |         | 
-      //                                        lower      upper
-      //                                        bound      bound
+      //
+      // If for example `A` is a current node then we need to move down to `C`.
+      // The result stack will contain nodes `B`, `A`, ... And now we can move upward
+      // and fold received stack with the split function.
+      //
+      //    7  -                             ↙
+      //    6  -                         A
+      //    5  -                    ↙    |  ↘
+      //    4  -              ↙                ↘
+      //    3  -         B               |       D
+      //    2  -             ↘
+      //    1  -         |       C       |       |
+      //         |-------|-------|-------|-------|
+      //         1       2       3       4       5
+      //                         ^   ^   ^
+      //            lower bound _|   |   |_ upper bound
+      //                          segment
       val contextExtract =
         NodeDownward.foldForRightSplit[Bound.Upper[E], Bound[E], W, NodeStackContext[Bound.Upper[E], W]](
           node,
