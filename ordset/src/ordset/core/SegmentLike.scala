@@ -220,7 +220,7 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
    *   for any bound such that segment.contains(bound) == true
    * }}}
    */
-  def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = (takenBelow, takenAbove)
+  def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
 
   /**
    * Returns sequence containing
