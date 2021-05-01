@@ -26,7 +26,7 @@ import scala.{specialized => sp}
  * <tr></tr>
  *
  * We can not explicitly enumerate all elements as for standard (unordered) sets and maps. Instead we describe ordered
- * map as a sequence of segments - intervals of elements of type `E` with some value `W`. Order for type `E` is defined
+ * map as a sequence of segments - intervals of elements of type `E` with some value `V`. Order for type `E` is defined
  * by [[DomainOps]].
  * <tr></tr>
  * 
@@ -49,7 +49,7 @@ import scala.{specialized => sp}
  * <tr>2. <u>adjacent segment have different values</u>.                                    </tr>
  * <tr>                                                                                     </tr>
  *
- * To define ordered set we assume `W` = `Boolean` and consider it as a 'inclusion in set' flag.
+ * To define ordered set we assume `V` = `Boolean` and consider it as a 'inclusion in set' flag.
  * Then example 1 will look like:
  * {{{
  *
@@ -63,7 +63,7 @@ import scala.{specialized => sp}
  * Unbounded               Value `W` (inclusion in set)                   Unbounded
  * }}}
  *
- * To define map to some type `V` one may accept `W` = `Option[V]`. Where `None` corresponds to segments that don't
+ * To define map to some type `W` one may accept `V` = `Option[W]`. Where `None` corresponds to segments that don't
  * belong to set. Consider example 4:
  * {{{
  *
@@ -72,7 +72,7 @@ import scala.{specialized => sp}
  * X----------------)[-----------------)[------------------](---------------------X
  *      Some(B)             None              Some(A)                 None
  *                                              ^                       ^
- *         Value `W` (segment is included in set with value `A`)        |
+ *         Value `V` (segment is included in set with value `A`)        |
  *                                                                  not included
  * }}}
  *
@@ -96,17 +96,17 @@ import scala.{specialized => sp}
  * 
  * @tparam E type of element in ordered set
  * @tparam D type of domain
- * @tparam W type of value assigned to interval
+ * @tparam V type of value assigned to interval
  * @tparam S type of additional segment state
  */
-trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
+trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   // Inspection --------------------------------------------------------------- //
   /** Domain operations. */
   implicit def domainOps: DomainOps[E, D]
 
   /** Value operations (equality type class, etc). */
-  implicit def valueOps: ValueOps[W]
+  implicit def valueOps: ValueOps[V]
 
   /** Random numbers generator. */
   implicit def rngManager: RngManager
@@ -134,7 +134,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
   def contains(element: E): Boolean = contains(Bound.Upper.inclusive(element))
 
   override def toString: String =
-    SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: W) => v.toString)
+    SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: V) => v.toString)
   
   // Navigation --------------------------------------------------------------- //
   /**
@@ -143,16 +143,16 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
   def upperBounds: Iterable[Bound.Upper[E]]
 
   /** @return first segment of sequence. */
-  def firstSegment: SegmentT.First[E, D, W, S] with S
+  def firstSegment: SegmentT.First[E, D, V, S] with S
 
   /** @return last segment of sequence. */
-  def lastSegment: SegmentT.Last[E, D, W, S] with S
+  def lastSegment: SegmentT.Last[E, D, V, S] with S
 
   /** @return segment which contains specified `bound`. */
-  def getSegment(bound: Bound[E]): SegmentT[E, D, W, S] with S
+  def getSegment(bound: Bound[E]): SegmentT[E, D, V, S] with S
 
   /** @return segment which contains specified `element`. */
-  def getSegment(element: E): SegmentT[E, D, W, S] with S = getSegment(Bound.Upper.inclusive(element))
+  def getSegment(element: E): SegmentT[E, D, V, S] with S = getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   /**
@@ -204,7 +204,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
    *   for any bound
    * }}}
    */
-  def takenAbove(bound: Bound[E]): SegmentSeq[E, D, W]
+  def takenAbove(bound: Bound[E]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing
@@ -255,7 +255,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
    *   for any bound
    * }}}
    */
-   def takenBelow(bound: Bound[E]): SegmentSeq[E, D, W]
+   def takenBelow(bound: Bound[E]): SegmentSeq[E, D, V]
 
   /**
    * Returns tuple of sequences: ([[takenBelow]], [[takenAbove]]).
@@ -286,7 +286,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
    *   for any bound
    * }}}
    */
-  def sliced(bound: Bound[E]): (SegmentSeq[E, D, W], SegmentSeq[E, D, W])
+  def sliced(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
 
   /**
    * Returns sequence containing:
@@ -353,5 +353,5 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
    *   for any bound
    * }}}
    */
-  def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W]
+  def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 }

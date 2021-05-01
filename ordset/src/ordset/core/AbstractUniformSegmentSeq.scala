@@ -5,8 +5,8 @@ import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.core.set.TreapOrderedSet
 
 // TODO: class description.
-abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W]
-  extends AbstractSegmentSeq[E, D, W, AbstractUniformSegmentSeq.UniformSingleSegment[E, D, W]] {
+abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
+  extends AbstractSegmentSeq[E, D, V, AbstractUniformSegmentSeq.UniformSingleSegment[E, D, V]] {
   seq =>
 
   import AbstractUniformSegmentSeq._
@@ -25,23 +25,23 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W]
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = Iterable.empty
 
-  final override def firstSegment: UniformSingleSegment[E, D, W] = segment
+  final override def firstSegment: UniformSingleSegment[E, D, V] = segment
 
-  final override def lastSegment: UniformSingleSegment[E, D, W] = segment
+  final override def lastSegment: UniformSingleSegment[E, D, V] = segment
 
-  final override def getSegment(bound: Bound[E]): UniformSingleSegment[E, D, W] = segment
+  final override def getSegment(bound: Bound[E]): UniformSingleSegment[E, D, V] = segment
 
-  final override def getSegment(element: E): UniformSingleSegment[E, D, W] = segment
+  final override def getSegment(element: E): UniformSingleSegment[E, D, V] = segment
 
   // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, W] = this
+  final override def takenAbove(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, V] = this
 
-  final override def takenBelow(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, W] = this
+  final override def takenBelow(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, V] = this
 
-  final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
+  final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
     (this, this)
   
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, W]): SegmentSeq[E, D, W] = {
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val lowerBound = bound.provideLower
     
     val otherBoundSegment = other.getSegment(lowerBound)
@@ -55,17 +55,17 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W]
 
   // Protected section -------------------------------------------------------- //
   /** Single segment instance. */
-  protected val segment: UniformSingleSegment[E, D, W] = new UniformSingleSegment(this)
+  protected val segment: UniformSingleSegment[E, D, V] = new UniformSingleSegment(this)
 
   /** Value of single segment. */
-  protected val value: W
+  protected val value: V
 
   /**
    * Returns `true` if segment with given value is considered to be included in set.
    *
-   * For example, if `W` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
+   * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isIncludedInSet(value: W): Boolean = valueOps.isIncluded(value)
+  protected def isIncludedInSet(value: V): Boolean = valueOps.isIncluded(value)
 
   /**
    * Creates segment sequence:
@@ -85,7 +85,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W]
    * <tr></tr>
    * If `this.value` and `lastValue` are equals returns current uniform sequence (bound in result sequence is dropped).
    */
-  protected def consBounded(bound: Bound[E], lastValue: W): SegmentSeq[E, D, W]
+  protected def consBounded(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V]
 }
 
 object AbstractUniformSegmentSeq {
@@ -93,31 +93,31 @@ object AbstractUniformSegmentSeq {
   /**
    * Single segment of sequence. It has no previous and next segments.
    */
-  final case class UniformSingleSegment[E, D <: Domain[E], W](
-    override val sequence: AbstractUniformSegmentSeq[E, D, W]
-  ) extends SegmentT.Single[E, D, W, UniformSingleSegment[E, D, W]] {
+  final case class UniformSingleSegment[E, D <: Domain[E], V](
+    override val sequence: AbstractUniformSegmentSeq[E, D, V]
+  ) extends SegmentT.Single[E, D, V, UniformSingleSegment[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
-    override def value: W = sequence.value
+    override def value: V = sequence.value
 
     override def isIncluded: Boolean = sequence.isIncludedInSet(value)
 
     // Navigation --------------------------------------------------------------- //
-    override def moveToFirst: UniformSingleSegment[E, D, W] = this
+    override def moveToFirst: UniformSingleSegment[E, D, V] = this
 
-    override def moveToLast: UniformSingleSegment[E, D, W] = this
+    override def moveToLast: UniformSingleSegment[E, D, V] = this
 
-    override def moveTo(bound: Bound[E]): UniformSingleSegment[E, D, W] = this
+    override def moveTo(bound: Bound[E]): UniformSingleSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: AbstractUniformSegmentSeq[E, D, W] = sequence
+    override def takenAbove: AbstractUniformSegmentSeq[E, D, V] = sequence
 
-    override def takenBelow: AbstractUniformSegmentSeq[E, D, W] = sequence
+    override def takenBelow: AbstractUniformSegmentSeq[E, D, V] = sequence
 
-    override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
+    override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
       (sequence, sequence)
 
     // Protected section -------------------------------------------------------- //
-    protected override def self: UniformSingleSegment[E, D, W] = this
+    protected override def self: UniformSingleSegment[E, D, V] = this
   }
 }

@@ -5,7 +5,7 @@
 //import java.util.concurrent.atomic.AtomicReference
 //import javax.swing.UIDefaults.LazyValue
 //
-//abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
+//abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V] extends AbstractSegmentSeq[E, D, V] { seq =>
 //
 //  /**
 //   * {{{
@@ -19,9 +19,9 @@
 //   */
 //
 //  // Protected section -------------------------------------------------------- //
-//  protected final type MasterValue = AbstractLazyTreapSegmentSeq.MasterValue[E, D, W]
-//  protected final type EagerValue = AbstractLazyTreapSegmentSeq.EagerValue[E, D, W]
-//  protected final type LazySegmentSeq = AbstractLazyTreapSegmentSeq.LazySegmentSeq[E, D, W]
+//  protected final type MasterValue = AbstractLazyTreapSegmentSeq.MasterValue[E, D, V]
+//  protected final type EagerValue = AbstractLazyTreapSegmentSeq.EagerValue[E, D, V]
+//  protected final type LazySegmentSeq = AbstractLazyTreapSegmentSeq.LazySegmentSeq[E, D, V]
 //  
 //  protected final type MasterSegment = Segment[E, D, MasterValue]
 //  protected final type MasterSegmentWithPrev = Segment.WithPrev[E, D, MasterValue]
@@ -43,12 +43,12 @@
 ////      case masterSegment: SegmentWithNext =>
 ////        val next = masterSegment.moveNext
 ////        next.value match {
-////          case nextValue: EagerValue[E, D, W] => ???
-////          case nextValue: LazySegmentSeq[E, D, W] => ???  
+////          case nextValue: EagerValue[E, D, V] => ???
+////          case nextValue: LazySegmentSeq[E, D, V] => ???  
 ////        }
 ////      case _ => ???
 //  
-//  protected sealed trait OutputSegmentBase extends SegmentLike[E, D, W] {
+//  protected sealed trait OutputSegmentBase extends SegmentLike[E, D, V] {
 //
 //    val masterSegment: MasterSegment
 //  }
@@ -64,15 +64,15 @@
 //
 //object AbstractLazyTreapSegmentSeq {
 //
-//  sealed trait MasterValue[E, D <: Domain[E], W]
+//  sealed trait MasterValue[E, D <: Domain[E], V]
 //  
-//  trait EagerValue[E, D <: Domain[E], W] extends MasterValue[E, D, W] {
+//  trait EagerValue[E, D <: Domain[E], V] extends MasterValue[E, D, V] {
 //    
-//    def get(): W
+//    def get(): V
 //  }
 //  
-//  trait LazySegmentSeq[E, D <: Domain[E], W] extends MasterValue[E, D, W] {
+//  trait LazySegmentSeq[E, D <: Domain[E], V] extends MasterValue[E, D, V] {
 //    
-//    def eval(): SegmentSeq[E, D, W]
+//    def eval(): SegmentSeq[E, D, V]
 //  }
 //}

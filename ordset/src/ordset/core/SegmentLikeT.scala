@@ -11,11 +11,11 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   
   // Inspection --------------------------------------------------------------- //
   def sequence: SegmentSeqT[E, D, V, S]
-  
+
   def domainOps: DomainOps[E, D] = sequence.domainOps
 
   def valueOps: ValueOps[V] = sequence.valueOps
-  
+
   def value: V
 
   def isIncluded: Boolean
@@ -33,7 +33,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
 
   def hasValue(v: V): Boolean = valueOps.eqv(value, v)
-  
+
   def isFirst: Boolean = false
 
   def isLast: Boolean = false
@@ -56,7 +56,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
 
   override def toString: String = SetBuilderFormat.segment(self, (e: E) => e.toString, (v: V) => v.toString)
-  
+
   // Navigation --------------------------------------------------------------- //
   def moveToFirst: SegmentT.First[E, D, V, S] with S = sequence.firstSegment
 
@@ -79,7 +79,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
       case null =>
         current = self
         current
-      case s: SegmentT.WithNext[E, D, V, S] =>
+      case s: SegmentT.WithNext[E, D, V, S] @unchecked =>
         current = s.moveNext
         current
       case _ =>
@@ -102,7 +102,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
       case null =>
         current = self
         current
-      case s: SegmentT.WithPrev[E, D, V, S] =>
+      case s: SegmentT.WithPrev[E, D, V, S] @unchecked =>
         current = s.movePrev
         current
       case _ =>
@@ -119,7 +119,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     case s: SegmentT.WithPrev[E, D, V, S] => LazyList.cons(self, s.movePrev.backwardLazyList)
     case _                                => LazyList.cons(self, LazyList.empty)
   }
-  
+
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing
@@ -146,10 +146,10 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.getSegment(bound).takenAbove == sequence.takenAbove(bound) 
+   *   1. sequence.getSegment(bound).takenAbove == sequence.takenAbove(bound)
    *   for any bound
    *
-   *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove) 
+   *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove)
    *   for any bound such that segment.contains(bound) == true
    * }}}
    */
@@ -180,10 +180,10 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.getSegment(bound).takenBelow == sequence.takenBelow(bound) 
+   *   1. sequence.getSegment(bound).takenBelow == sequence.takenBelow(bound)
    *   for any bound
    *
-   *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove) 
+   *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove)
    *   for any bound such that segment.contains(bound) == true
    * }}}
    */
@@ -211,10 +211,10 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.getSegment(bound).sliced == sequence.sliced(bound) 
+   *   1. sequence.getSegment(bound).sliced == sequence.sliced(bound)
    *   for any bound
    *
-   *   2. segment.sequence == segment.sliced._1.appended(bound, segment.sliced._2) 
+   *   2. segment.sequence == segment.sliced._1.appended(bound, segment.sliced._2)
    *   for any bound such that segment.contains(bound) == true
    * }}}
    */

@@ -6,21 +6,21 @@ import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.core.set.TreapOrderedSet
 import ordset.random.RngManager
 
-class UniformOrderedMap[E, D <: Domain[E], W](
-  final override val value: W
+class UniformOrderedMap[E, D <: Domain[E], V](
+  final override val value: V
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
-  final override val valueOps: ValueOps[W],
+  final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
-) extends AbstractUniformSegmentSeq[E, D, W] 
-  with OrderedMapCommons[E, D, W] {
+) extends AbstractUniformSegmentSeq[E, D, V] 
+  with OrderedMapCommons[E, D, V] {
 
   // Protected section -------------------------------------------------------- //  
   @inline
-  protected final override def isIncludedInSet(value: W): Boolean = valueOps.isIncluded(value)
+  protected final override def isIncludedInSet(value: V): Boolean = valueOps.isIncluded(value)
 
-  protected final override def consBounded(bound: Bound[E], lastValue: W): SegmentSeq[E, D, W] =
+  protected final override def consBounded(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V] =
     if (valueOps.eqv(value, lastValue))
       this
     else {
