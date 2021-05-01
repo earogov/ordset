@@ -17,6 +17,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 ) extends AbstractArraySegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D] {
 
+  import AbstractIndexedSegmentSeq._
   import SortedArraySearch._
 
   validate()
@@ -116,7 +117,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
   // Private section ---------------------------------------------------------- //
   private sealed trait BoundsProvider() {
 
-    val boundSegment: GenSegment
+    val boundSegment: Segment[E, D, Boolean]
     
     def copyLen: Int
     
@@ -128,7 +129,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     bound: Bound.Lower[E]
   ) extends BoundsProvider {
     
-    override val boundSegment: AbstractIndexedSegmentSeq.IndexedSegmentBase[E, D, Boolean] with GenSegment = 
+    override val boundSegment: IndexedSegment[E, D, Boolean] =
       segmentSeq.getSegment(bound)
     
     override val copyLen: Int = segmentSeq.bounds.length - boundSegment.index
@@ -142,7 +143,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     bound: Bound.Lower[E]
   ) extends BoundsProvider {
 
-    override val boundSegment: GenSegment = segmentSeq.getSegment(bound)
+    override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegment(bound)
 
     private val copyBounds: (List[Bound.Upper[E]], Int) = SegmentSeqOps.getForwardBoundsList(boundSegment)
 

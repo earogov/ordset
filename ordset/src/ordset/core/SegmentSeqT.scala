@@ -8,7 +8,7 @@ import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
 /**
- * [[SegmentSeq]] encodes ordered sets and maps of elements, such that^*1^:
+ * Segment sequence encodes ordered sets and maps of elements, such that^*1^:
  * <tr>                                                                                     </tr>
  * <tr>1. {(-2, -1), [1], (5, 10]} - set of integers                                        </tr>
  * <tr>                                                                                     </tr>
@@ -31,7 +31,7 @@ import scala.{specialized => sp}
  * <tr></tr>
  * 
  * Such objects as traditional empty maps (without any keys and values) and {{} -> Value} which maps empty set to some
- * value can not be represented by [[SegmentSeq]]. Generally segment sequence is defined as
+ * value can not be represented by segment sequence. Generally it's defined as
  * <tr></tr>
  * 
  * {(l,,i,,, u,,i,,) -> v,,i,,} for i ∈ [1, N]
@@ -42,7 +42,7 @@ import scala.{specialized => sp}
  * <tr>N - number of segment in sequence.</tr>
  * <tr></tr>
  *  
- * All implementations of [[SegmentSeq]] MUST provide basic property:
+ * All implementations of segment sequence MUST provide basic property:
  * <tr>1. <u>segments cover universal set without gaps and overlapping</u>.                 </tr>
  * <tr>                                                                                     </tr>
  * Also for performance reasons implementations SHOULD provide property:
@@ -97,9 +97,11 @@ import scala.{specialized => sp}
  * @tparam E type of element in ordered set
  * @tparam D type of domain
  * @tparam W type of value assigned to interval
+ * @tparam S type of additional segment state
  */
-trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
+trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W, +S] {
 
+  // Inspection --------------------------------------------------------------- //
   /** Domain operations. */
   implicit def domainOps: DomainOps[E, D]
 
@@ -108,8 +110,7 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
 
   /** Random numbers generator. */
   implicit def rngManager: RngManager
-
-  // Inspection --------------------------------------------------------------- //
+  
   /** @return `true` if sequence is empty i.e. contains no elements. */
   def isEmpty: Boolean
 
@@ -142,16 +143,16 @@ trait SegmentSeq[@sp(spNum) E, D <: Domain[E], @sp(Boolean) W] {
   def upperBounds: Iterable[Bound.Upper[E]]
 
   /** @return first segment of sequence. */
-  def firstSegment: Segment.First[E, D, W]
+  def firstSegment: SegmentT.First[E, D, W, S] with S
 
   /** @return last segment of sequence. */
-  def lastSegment: Segment.Last[E, D, W]
+  def lastSegment: SegmentT.Last[E, D, W, S] with S
 
   /** @return segment which contains specified `bound`. */
-  def getSegment(bound: Bound[E]): Segment[E, D, W]
+  def getSegment(bound: Bound[E]): SegmentT[E, D, W, S] with S
 
   /** @return segment which contains specified `element`. */
-  def getSegment(element: E): Segment[E, D, W] = getSegment(Bound.Upper.inclusive(element))
+  def getSegment(element: E): SegmentT[E, D, W, S] with S = getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   /**

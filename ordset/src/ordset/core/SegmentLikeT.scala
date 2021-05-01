@@ -7,12 +7,10 @@ import scala.Specializable.{AllNumeric => spNum}
 import scala.collection.{AbstractIterable, AbstractIterator}
 import scala.{specialized => sp}
 
-trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
-
-  import Segment._
+trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   
   // Inspection --------------------------------------------------------------- //
-  def sequence: SegmentSeq[E, D, V]
+  def sequence: SegmentSeqT[E, D, V, S]
   
   def domainOps: DomainOps[E, D] = sequence.domainOps
 
@@ -49,10 +47,10 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
   def isTerminal: Boolean = false
 
   def interval: Interval[E, D] = this match {
-    case s: Inner[E, D, V]    => domainOps.interval(s.lowerBound, s.upperBound)
-    case s: WithPrev[E, D, V] => domainOps.interval(s.lowerBound)
-    case s: WithNext[E, D, V] => domainOps.interval(s.upperBound)
-    case _                    => domainOps.interval.universal
+    case s: Segment.Inner[E, D, V]    => domainOps.interval(s.lowerBound, s.upperBound)
+    case s: Segment.WithPrev[E, D, V] => domainOps.interval(s.lowerBound)
+    case s: Segment.WithNext[E, D, V] => domainOps.interval(s.upperBound)
+    case _                            => domainOps.interval.universal
   }
 
   def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
@@ -60,28 +58,28 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
   override def toString: String = SetBuilderFormat.segment(self, (e: E) => e.toString, (v: V) => v.toString)
   
   // Navigation --------------------------------------------------------------- //
-  def moveToFirst: Segment.First[E, D, V] = sequence.firstSegment
+  def moveToFirst: SegmentT.First[E, D, V, S] with S = sequence.firstSegment
 
-  def moveToLast: Segment.Last[E, D, V] = sequence.lastSegment
+  def moveToLast: SegmentT.Last[E, D, V, S] with S = sequence.lastSegment
 
-  def moveTo(bound: Bound[E]): Segment[E, D, V] = sequence.getSegment(bound)
+  def moveTo(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegment(bound)
 
-  def forwardIterable(): Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
+  def forwardIterable(): Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
 
-    override def iterator: Iterator[Segment[E, D, V]] = forwardIterator()
+    override def iterator: Iterator[SegmentT[E, D, V, S] with S] = forwardIterator()
   }
 
-  def forwardIterator(): Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+  def forwardIterator(): Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
-    private var current: Segment[E, D, V] = _
+    private var current: SegmentT[E, D, V, S] with S = _
 
     override def hasNext: Boolean = current == null || !current.isLast
 
-    override def next(): Segment[E, D, V] = current match {
+    override def next(): SegmentT[E, D, V, S] with S = current match {
       case null =>
         current = self
         current
-      case s: WithNext[E, D, V] =>
+      case s: SegmentT.WithNext[E, D, V, S] =>
         current = s.moveNext
         current
       case _ =>
@@ -89,22 +87,22 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
     }
   }
 
-  def backwardIterable(): Iterable[Segment[E, D, V]] = new AbstractIterable[Segment[E, D, V]] {
+  def backwardIterable(): Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
 
-    override def iterator: Iterator[Segment[E, D, V]] = backwardIterator()
+    override def iterator: Iterator[SegmentT[E, D, V, S] with S] = backwardIterator()
   }
 
-  def backwardIterator(): Iterator[Segment[E, D, V]] = new AbstractIterator[Segment[E, D, V]] {
+  def backwardIterator(): Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
-    private var current: Segment[E, D, V] = _
+    private var current: SegmentT[E, D, V, S] with S = _
 
     override def hasNext: Boolean = current == null || !current.isFirst
 
-    override def next(): Segment[E, D, V] = current match {
+    override def next(): SegmentT[E, D, V, S] with S = current match {
       case null =>
         current = self
         current
-      case s: WithPrev[E, D, V] =>
+      case s: SegmentT.WithPrev[E, D, V, S] =>
         current = s.movePrev
         current
       case _ =>
@@ -112,14 +110,14 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
     }
   }
 
-  def forwardLazyList: LazyList[Segment[E, D, V]] = this match {
-    case s: WithNext[E, D, V] => LazyList.cons(self, s.moveNext.forwardLazyList)
-    case _                    => LazyList.cons(self, LazyList.empty)
+  def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = this match {
+    case s: SegmentT.WithNext[E, D, V, S] => LazyList.cons(self, s.moveNext.forwardLazyList)
+    case _                                => LazyList.cons(self, LazyList.empty)
   }
 
-  def backwardLazyList: LazyList[Segment[E, D, V]] = this match {
-    case s: WithPrev[E, D, V] => LazyList.cons(self, s.movePrev.backwardLazyList)
-    case _                    => LazyList.cons(self, LazyList.empty)
+  def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = this match {
+    case s: SegmentT.WithPrev[E, D, V, S] => LazyList.cons(self, s.movePrev.backwardLazyList)
+    case _                                => LazyList.cons(self, LazyList.empty)
   }
   
   // Transformation ----------------------------------------------------------- //
@@ -262,13 +260,14 @@ trait SegmentLike[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V] {
    *        A       E      F     G        C        - values
    * }}}
    */
-  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = self match {
-    case s: Segment.Inner[E, D, V] => ???
-    case s: Segment.WithNext[E, D, V] => ???
-    case s: Segment.WithPrev[E, D, V] => ???
-    case _ => other
-  }
+  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+//    self match {
+//    case s: Segment.Inner[E, D, V] => ???
+//    case s: Segment.WithNext[E, D, V] => ???
+//    case s: Segment.WithPrev[E, D, V] => ???
+//    case _ => other
+//  }
 
   // Protected section -------------------------------------------------------- //
-  protected def self: Segment[E, D, V]
+  protected def self: SegmentT[E, D, V, S] with S
 }

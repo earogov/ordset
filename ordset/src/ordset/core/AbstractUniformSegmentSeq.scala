@@ -5,7 +5,9 @@ import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.core.set.TreapOrderedSet
 
 // TODO: class description.
-abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W] extends AbstractSegmentSeq[E, D, W] { seq =>
+abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  W]
+  extends AbstractSegmentSeq[E, D, W, AbstractUniformSegmentSeq.UniformSingleSegment[E, D, W]] {
+  seq =>
 
   import AbstractUniformSegmentSeq._
 
@@ -93,12 +95,19 @@ object AbstractUniformSegmentSeq {
    */
   final case class UniformSingleSegment[E, D <: Domain[E], W](
     override val sequence: AbstractUniformSegmentSeq[E, D, W]
-  ) extends Segment.Single[E, D, W] {
+  ) extends SegmentT.Single[E, D, W, UniformSingleSegment[E, D, W]] {
 
     // Inspection --------------------------------------------------------------- //
     override def value: W = sequence.value
 
     override def isIncluded: Boolean = sequence.isIncludedInSet(value)
+
+    // Navigation --------------------------------------------------------------- //
+    override def moveToFirst: UniformSingleSegment[E, D, W] = this
+
+    override def moveToLast: UniformSingleSegment[E, D, W] = this
+
+    override def moveTo(bound: Bound[E]): UniformSingleSegment[E, D, W] = this
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: AbstractUniformSegmentSeq[E, D, W] = sequence
@@ -107,5 +116,8 @@ object AbstractUniformSegmentSeq {
 
     override def sliced: (AbstractUniformSegmentSeq[E, D, W], AbstractUniformSegmentSeq[E, D, W]) =
       (sequence, sequence)
+
+    // Protected section -------------------------------------------------------- //
+    protected override def self: UniformSingleSegment[E, D, W] = this
   }
 }

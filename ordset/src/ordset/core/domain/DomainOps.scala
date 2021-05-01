@@ -1,7 +1,7 @@
 package ordset.core.domain
 
 import ordset.Hash
-import ordset.core.{Interval, IntervalBuilder, IntervalOps, IntervalRelation, Segment}
+import ordset.core.{Interval, IntervalBuilder, IntervalOps, IntervalRelation, SegmentT}
 
 trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
 
@@ -27,7 +27,7 @@ trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
    * <tr></tr>
    * I.e [[Segment.Last]] MUST be maximal segment according to this order.
    */
-  implicit lazy val segmentUpperOrd: Segment.UpperBoundAscOrder[E, D] = Segment.upperBoundAscOrder
+  implicit lazy val segmentUpperOrd: SegmentT.UpperBoundAscOrder[E, D] = SegmentT.upperBoundAscOrder
 
   /**
    * Ascending order of segments by their lower bounds.
@@ -40,7 +40,7 @@ trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
    * <tr></tr>
    * I.e [[Segment.First]] MUST be minimal segment according to this order.
    */
-  implicit lazy val segmentLowerOrd: Segment.LowerBoundAscOrder[E, D] = Segment.lowerBoundAscOrder
+  implicit lazy val segmentLowerOrd: SegmentT.LowerBoundAscOrder[E, D] = SegmentT.lowerBoundAscOrder
 }
 
 object DomainOps {

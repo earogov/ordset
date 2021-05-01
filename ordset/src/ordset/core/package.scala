@@ -19,6 +19,11 @@ package object core {
   type SegmentOrderWithDir[E, D <: Domain[E],  +Dir <: OrderDir] = DirectedOrder[Segment[E, D, Any], Dir]
 
   
+  type Segment[E, D <: Domain[E], V] = SegmentT[E, D, V, Any]
+  
+  type SegmentSeq[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
+  
+  
   type SetSegment[E, D <: Domain[E]] = Segment[E, D, Boolean]
 
   type SetSegmentWithPrev[E, D <: Domain[E]] = Segment.WithPrev[E, D, Boolean]
