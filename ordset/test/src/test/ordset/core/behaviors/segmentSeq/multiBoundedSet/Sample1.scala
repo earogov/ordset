@@ -412,31 +412,145 @@ trait Sample1[D <: Domain[Int]]
       ),
     )
     
-  override def patchedCases: Seq[SegmentPatchedTest.TestCase[Int, D, Boolean]] = Nil
-//    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
-//      List(
-//        // current:
-//        //                               patched segment
-//        // X ..Seq1.. )[-----true-----)[-----false------)[-----true-----X
-//        //            20              30                40
-//        // patch:
-//        // X------false----)[-----true-----)[-f-](-----true-----](--f---X
-//        //                 22              32   35              50
-//        // result:
-//        // X ..Seq1.. )[--------true-------)[-f-](--------true----------X
-//        //            20                   32   35            
-//        SegmentPatchedTest.TestCase(
-//          factoryTuple._1 + Label("A"),
-//          35`[`,
-//          factoryTuple._2.buildUnsafe(ArraySeq(22 `)[`, 32 `)[`, 35 `](`, 50 `](`), complementary = false),
-//          (false forAll x <  0) ::
-//          (true  forAll x >= 0  & x <  10) ::
-//          (false forAll x >= 10 & x <  20) ::
-//          (true  forAll x >= 20 & x <  32) ::
-//          (false forAll x >= 32 & x <= 35) ::
-//          (true  forAll x >  35) ::
-//          Nil
-//        )
-//      )
-//    }
+  override def patchedCases: Seq[SegmentPatchedTest.TestCase[Int, D, Boolean]] =
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
+        // patched segment
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //            0           10          20          30          40
+        // patch:
+        // X-f--)[---true---)[-----------------------false------------------------X
+        //      -5          5
+        // result:
+        // X-f--)[------true------)[-----f----)[-----t----)[-----f----)[-----t----X
+        //      -5                10          20          30          40
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("A1"),
+          -5`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(-5 `)[`, 5 `)[`), complementary = false),
+          (false forAll x <  -5) ::
+          (true  forAll x >= -5 & x < 10) ::
+          (false forAll x >= 10 & x < 20) ::
+          (true  forAll x >= 20 & x < 30) ::
+          (false forAll x >= 30 & x < 40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        ),
+        // current:
+        // patched segment
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //            0           10          20          30          40
+        // patch:
+        // X-t--)[--false---)[-----------------------true-------------------------X
+        //      -5          5
+        // result:
+        // X-t--)[-f--)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //      -5    0           10          20          30          40
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("A2"),
+          -5`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(-5 `)[`, 5 `)[`), complementary = true),
+          (true  forAll x <  -5) ::
+          (false forAll x >= -5 & x < 0) ::
+          (true  forAll x >=  0 & x < 10) ::
+          (false forAll x >= 10 & x < 20) ::
+          (true  forAll x >= 20 & x < 30) ::
+          (false forAll x >= 30 & x < 40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        ),
+        // current:
+        //                                               patched segment
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //            0           10          20          30          40
+        // patch:
+        // X---------------false-----------------)[---true---)[-f-](---true---](f-X
+        //                                       22          32   35          50
+        // result:
+        // X-----f----)[-----t----)[-----f----)[------t------)[-f-](---true---](f-X
+        //            0           10          20             32   35          50
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("B1"),
+          35`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(22 `)[`, 32 `)[`, 35 `](`, 50 `](`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  32) ::
+          (false forAll x >= 32 & x <= 35) ::
+          (true  forAll x >  35) ::
+          Nil
+        ),
+        // current:
+        //                                               patched segment
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //            0           10          20          30          40
+        // patch:
+        // X---------------true------------------)[---false--)[-t-](---false--](t-X
+        //                                       22          32   35          50
+        // result:
+        // X-----f----)[-----t----)[-----f----)[-----t----)[f)[-t-](f-)[-----t----X
+        //            0           10          20          30 32   35  40
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("B2"),
+          35`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(22 `)[`, 32 `)[`, 35 `](`, 50 `](`), complementary = true),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <  32) ::
+          (true  forAll x >= 32 & x <= 35) ::
+          (false forAll x >  35 & x <  40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        ),
+        // current:
+        //                                                            patched segment
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //            0           10          20          30          40
+        // patch:
+        // X---------------true------------------)[----------false--------)[-true--X
+        //                                       22                       42
+        // result:
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----false----)[-true--X
+        //            0           10          20          30              42
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("C1"),
+          100`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(22 `)[`, 42 `)[`), complementary = true),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <  42) ::
+          (true  forAll x >= 42) ::
+          Nil
+        ),
+        // current:
+        //                                                            patched segment
+        // X-----f----)[-----t----)[-----f----)[-----t----)[-----f----)[-----t----X
+        //            0           10          20          30          40
+        // patch:
+        // X---------------false-----------------)[----------true---------)[-false-X
+        //                                       22                       42
+        // result:
+        // X-----f----)[-----t----)[-----f----)[-----t----)[--false---)[t-)[-false-X
+        //            0           10          20          30              42
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("C2"),
+          100`[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(22 `)[`, 42 `)[`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <  40) ::
+          (true  forAll x >= 40 & x <  42) ::
+          (false forAll x >= 42) ::
+          Nil
+        )
+      )
+    }
 }

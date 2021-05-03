@@ -7,7 +7,7 @@ import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
 import test.ordset.core.Labels
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentPatchedTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -16,7 +16,8 @@ import scala.language.postfixOps
 trait Sample3[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
     with SegmentSeqAppendedTest[Int, D, Boolean]
-    with SegmentSeqSlicedTest[Int, D, Boolean] {
+    with SegmentSeqSlicedTest[Int, D, Boolean]
+    with SegmentPatchedTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean] =>
 
   override def sample: String = "3"
@@ -579,5 +580,125 @@ trait Sample3[D <: Domain[Int]]
         Nil
       )
     )
+  }
+
+  override def patchedCases: Seq[SegmentPatchedTest.TestCase[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
+        // patched segment
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // patch:
+        // X----------------------------false-----------------------------------X
+        //
+        // result:
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("A1"),
+          -5 `[`,
+          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = false),
+          reference
+        ),
+        // current:
+        // patched segment
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // patch:
+        // X-----------------------------true-----------------------------------X
+        //
+        // result:
+        // X----true----)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //              10     20     30     40     50     60     70     80
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("A2"),
+          -5 `[`,
+          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
+          (true  forAll x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <  40) ::
+          (true  forAll x >= 40 & x <= 50) ::
+          (false forAll x >  50 & x <= 60) ::
+          (true  forAll x >  60 & x <  70) ::
+          (false forAll x >= 70 & x <  80) ::
+          (true  forAll x >= 80) ::
+          Nil
+        ),
+        // current:
+        // patched segment
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // patch:
+        // X-------------true-------------](-----------------false--------------X
+        //                                35
+        // result:
+        // X--f--)[--t--)[--f--)[----t----](f)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20         35 40     50     60     70     80
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("B1"),
+          35 `[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(35 `](`), complementary = true),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <= 35) ::
+          (false forAll x >  35 & x <  40) ::
+          (true  forAll x >= 40 & x <= 50) ::
+          (false forAll x >  50 & x <= 60) ::
+          (true  forAll x >  60 & x <  70) ::
+          (false forAll x >= 70 & x <  80) ::
+          (true  forAll x >= 80) ::
+          Nil
+        ),
+        // current:
+        // patched segment
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // patch:
+        // X-----------------------------true----------------------------)[--f--X
+        //                                                               80
+        // result:
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[---false----X
+        //       0      10     20     30     40     50     60     70
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("C1"),
+          85 `[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(80 `)[`), complementary = true),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <  40) ::
+          (true  forAll x >= 40 & x <= 50) ::
+          (false forAll x >  50 & x <= 60) ::
+          (true  forAll x >  60 & x <  70) ::
+          (false forAll x >= 70) ::
+          Nil
+        ),
+        // current:
+        // patched segment
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // patch:
+        // X-----------------------------false---------------------------)[--t--X
+        //                                                               80
+        // result:
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        SegmentPatchedTest.TestCase(
+          factoryTuple._1 + Label("C2"),
+          85 `[`,
+          factoryTuple._2.buildUnsafe(ArraySeq(80 `)[`), complementary = false),
+          reference
+        )
+      )
+    }
   }
 }

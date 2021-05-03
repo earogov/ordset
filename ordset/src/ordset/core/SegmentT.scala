@@ -161,8 +161,10 @@ object SegmentT {
     def upperBound: Bound.Upper[E]
 
     override def interval: Interval[E, D] = this match {
-      case s: Segment.WithPrev[_, _, _] => domainOps.interval(s.lowerBound, upperBound)
-      case _                            => domainOps.interval(upperBound)
+      case s: Segment.WithPrev[_, _, _] =>
+        domainOps.interval(s.lowerBound, upperBound)
+      case _ =>
+        domainOps.interval(upperBound)
     }
     
     // Navigation --------------------------------------------------------------- //
@@ -172,7 +174,12 @@ object SegmentT {
       LazyList.cons(self, moveNext.forwardLazyList)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: Segment.WithPrev[_, _, _] =>
+        s.movePrev.appended(other).appended(upperBound, sequence)
+      case _ =>
+        other.appended(upperBound, sequence)
+    }
   }
 
   /**
@@ -190,8 +197,10 @@ object SegmentT {
     def lowerBound: Bound.Lower[E]
 
     override def interval: Interval[E, D] = this match {
-      case s: Segment.WithNext[_, _, _] => domainOps.interval(lowerBound, s.upperBound)
-      case _                            => domainOps.interval(lowerBound)
+      case s: Segment.WithNext[_, _, _] =>
+        domainOps.interval(lowerBound, s.upperBound)
+      case _ =>
+        domainOps.interval(lowerBound)
     }
     
     // Navigation --------------------------------------------------------------- //
@@ -201,7 +210,12 @@ object SegmentT {
       LazyList.cons(self, movePrev.backwardLazyList)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: Segment.WithNext[_, _, _] =>
+        movePrev.appended(other).appended(s.upperBound, sequence)
+      case _ =>
+        movePrev.appended(other)
+    }
   }
 
   /**
@@ -215,8 +229,10 @@ object SegmentT {
     override def isFirst: Boolean = true
     
     override def interval: Interval[E, D] = this match {
-      case s: Segment.WithNext[_, _, _] => domainOps.interval(s.upperBound)
-      case _                            => domainOps.interval.universal
+      case s: Segment.WithNext[_, _, _] =>
+        domainOps.interval(s.upperBound)
+      case _ =>
+        domainOps.interval.universal
     }
 
     override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = 
@@ -228,7 +244,12 @@ object SegmentT {
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: SegmentSeq[E, D, V] = sequence
     
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: Segment.WithNext[_, _, _] =>
+        other.appended(s.upperBound, sequence)
+      case _ =>
+        other
+    }
 
     // Protected section -------------------------------------------------------- //
     protected override def self: SegmentT.First[E, D, V, S] with S
@@ -245,8 +266,10 @@ object SegmentT {
     override def isLast: Boolean = true
     
     override def interval: Interval[E, D] = this match {
-      case s: Segment.WithPrev[_, _, _] => domainOps.interval(s.lowerBound)
-      case _                            => domainOps.interval.universal
+      case s: Segment.WithPrev[_, _, _] =>
+        domainOps.interval(s.lowerBound)
+      case _ =>
+        domainOps.interval.universal
     }
 
     override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = 
@@ -258,7 +281,12 @@ object SegmentT {
     // Transformation ----------------------------------------------------------- //
     override def takenBelow: SegmentSeq[E, D, V] = sequence
     
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+      case s: Segment.WithPrev[_, _, _] =>
+        s.movePrev.appended(other)
+      case _ =>
+        other
+    }
 
     // Protected section -------------------------------------------------------- //
     protected override def self: SegmentT.Last[E, D, V, S] with S
@@ -316,7 +344,8 @@ object SegmentT {
     override def moveToFirst: SegmentT.Initial[E, D, V, S] with S = self
     
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+      other.appended(upperBound, sequence)
 
     // Protected section -------------------------------------------------------- //
     protected override def self: SegmentT.Initial[E, D, V, S] with S
@@ -343,7 +372,8 @@ object SegmentT {
     override def moveToLast: SegmentT.Terminal[E, D, V, S] with S = self
     
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+      movePrev.appended(other)
 
     // Protected section -------------------------------------------------------- //
     protected override def self: SegmentT.Terminal[E, D, V, S] with S
@@ -367,7 +397,8 @@ object SegmentT {
       SetBuilderFormat.innerSegment(this, (e: E) => e.toString, (v: V) => v.toString)
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+      movePrev.appended(other).appended(upperBound, sequence)
   }
 
   final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(

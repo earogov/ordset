@@ -25,6 +25,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
       new EmptySetSample1[Dom](seed),
       new UniversalSetSample1[Dom](seed),
       new SingleBoundedSetSample1[Dom](seed),
+      new MultiBoundedSetSample1[Dom](seed),
       new MultiBoundedSetSample3[Dom](seed),
       new DegenerateSetSample1[Dom](seed)
     )
@@ -46,5 +47,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeAppended(testSuite)
     
     it should behave like segmentSeqCanBeSliced(testSuite)
+
+    it should behave like segmentCanBePatched(testSuite)
   }
 }

@@ -362,14 +362,12 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *        A       E      F     G        C        - values
    * }}}
    */
-  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
-//    self match {
-//    case s: Segment.Inner[E, D, V] =>
-//      s.
-//    case s: Segment.WithNext[E, D, V] => ???
-//    case s: Segment.WithPrev[E, D, V] => ???
-//    case _ => other
-//  }
+  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
+    case s: Segment.Inner[E, D, V]    => s.movePrev.appended(other).appended(s.upperBound, sequence)
+    case s: Segment.WithNext[E, D, V] => other.appended(s.upperBound, sequence)
+    case s: Segment.WithPrev[E, D, V] => s.movePrev.appended(other)
+    case _                            => other
+  }
 
   // Protected section -------------------------------------------------------- //
   protected def self: SegmentT[E, D, V, S] with S
