@@ -20,10 +20,12 @@ class TreapOrderedSet[E, D <: Domain[E]] protected(
   with OrderedSetCommons[E, D]{
 
   // Protected section -------------------------------------------------------- //
-  protected def consUniform(value: Boolean): UniformOrderedSet[E, D] =
+  @inline
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =
     UniformOrderedSet.apply(value)
 
-  protected def consFromNode(
+  @inline
+  protected final override def consFromNode(
     node: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     value: Boolean
   ): TreapOrderedSet[E, D] =

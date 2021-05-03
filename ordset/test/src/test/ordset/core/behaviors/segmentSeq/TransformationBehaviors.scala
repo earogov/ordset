@@ -2,6 +2,7 @@ package test.ordset.core.behaviors.segmentSeq
 
 import ordset.Hash
 import ordset.core.domain.Domain
+import ordset.core.Segment
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
@@ -17,8 +18,20 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
       sample.appendedCases.foreach { appendedCase =>
 
         it(s"should append $appendedCase to $sample after bound ${appendedCase.bound}") {
-          val actual = sample.sequence.appended(appendedCase.bound, appendedCase.appended)
-          assertEqualSequences(appendedCase.expected, actual)(sample.domainOps, valueHash)
+          // `sequence.appended(bound, otherSeq)` should be correct
+          val actual1 = sample.sequence.appended(appendedCase.bound, appendedCase.appended)
+          assertEqualSequences(appendedCase.expected, actual1)(sample.domainOps, valueHash)
+
+          // `segment.appened(otherSeq)` should be correct
+          val boundSegment = sample.sequence.getSegment(appendedCase.bound)
+          val actual2 = boundSegment.appended(appendedCase.appended)
+          boundSegment match {
+            case s: Segment.WithNext[E, D, V] =>
+              val expected = sample.sequence.appended(s.upperBound, appendedCase.appended)
+              assertEqualSequences(expected, actual2)(sample.domainOps, valueHash)
+            case _ =>
+              assertEqualSequences(sample.sequence, actual2)(sample.domainOps, valueHash)
+          }
         }
       }
     }

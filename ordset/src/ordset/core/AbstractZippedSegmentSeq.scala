@@ -23,7 +23,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], V]
   final override def contains(bound: Bound[E]): Boolean =
     isIncludedInSet(getSegmentValue(left.getSegment(bound), right.getSegment(bound)))
 
-  final override def contains(element: E): Boolean = super.contains(element)
+  final override def containsElement(element: E): Boolean = super.containsElement(element)
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = forwardUpperBoundsFromSegment(firstSegment)
@@ -35,7 +35,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], V]
   final override def getSegment(bound: Bound[E]): ZippedSegment[E, D, V] =
     searchFrontZipper(generalFrontZipper, left.getSegment(bound), right.getSegment(bound))
 
-  final override def getSegment(element: E): ZippedSegment[E, D, V] = getSegment(Bound.Upper.inclusive(element))
+  final override def getSegmentForElement(element: E): ZippedSegment[E, D, V] = getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, V] =

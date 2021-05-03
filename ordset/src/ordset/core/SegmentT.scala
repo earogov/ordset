@@ -156,8 +156,6 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def hasNext: Boolean = true
 
-    override def hasUpperBound: Boolean = true
-
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
 
     def upperBound: Bound.Upper[E]
@@ -186,8 +184,6 @@ object SegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def hasPrev: Boolean = true
-
-    override def hasLowerBound: Boolean = true
 
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
 

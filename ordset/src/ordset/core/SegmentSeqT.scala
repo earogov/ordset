@@ -131,7 +131,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def contains(bound: Bound[E]): Boolean
 
   /** @return `true` if sequence contains `element`. */
-  def contains(element: E): Boolean = contains(Bound.Upper.inclusive(element))
+  def containsElement(element: E): Boolean = contains(Bound.Upper.inclusive(element))
 
   override def toString: String =
     SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: V) => v.toString)
@@ -152,7 +152,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def getSegment(bound: Bound[E]): SegmentT[E, D, V, S] with S
 
   /** @return segment which contains specified `element`. */
-  def getSegment(element: E): SegmentT[E, D, V, S] with S = getSegment(Bound.Upper.inclusive(element))
+  def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   /**
@@ -290,14 +290,19 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   /**
    * Returns sequence containing:
-   * <tr>- segments {(l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `<` `bound`; </tr>
-   * <tr>- segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` `bound`; </tr>
+   * <tr>
+   *   - segments {i ∈ [0, M]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
+   *   of original sequence for which l,,i,, `<` `bound`;
+   * <tr>
+   *   - segments {i ∈ [M+1, N]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
+   *   of `other` sequence for which u,,i,, `>` `bound`;
+   * </tr>
    * <tr>where</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
    * <tr>v,,i,, - value of segment i in sequence;      </tr>
    * <tr>
-   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise 
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
    * </tr>
    * <tr>
@@ -349,8 +354,15 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
+   *   1. sequence.appended(upperBound, other) == sequence.getSegment(upperBound).appended(other)
+   *   for any upper bound in sequence, i.e. for `upperBound` such that:
+   *   sequence.getSegment(upperBound).hasUpperBound(upperBound) == true
+   *   
+   *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound))
    *   for any bound
+   *   
+   *   3. sequence.appended(bound, other) == sequence.appended(bound.flip, other)
+   *   for any bound and `other` sequence
    * }}}
    */
   def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]

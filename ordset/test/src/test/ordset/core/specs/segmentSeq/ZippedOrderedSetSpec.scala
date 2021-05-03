@@ -44,7 +44,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
 
-    it should behave like segmentsHaveNextAndPrevIndicators(testSuite)
+    it should behave like segmentsHaveNavigationIndicators(testSuite)
   }
 
   describe("Zipped ordered set transformation operations:") {

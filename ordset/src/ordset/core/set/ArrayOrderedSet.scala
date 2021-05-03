@@ -22,8 +22,34 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 
   validate()
 
-  // Transformation ----------------------------------------------------------- //
-  final override def appended(bound: Bound[E], other: OrderedSet[E, D]): OrderedSet[E, D] = {
+  // Protected section -------------------------------------------------------- //
+  @inline
+  protected final override def getSegmentValue(ind: Int): Boolean = isIncludedInSet(ind)
+
+  @inline
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet(value)
+
+  protected final override def consAbove(ind: Int): ArrayOrderedSet[E, D] = {
+    val newComplementary = getSegmentValue(ind)
+    val len = bounds.length - ind
+    val newBoundsArray = new Array[Bound.Upper[E]](len)
+    Array.copy(bounds.unsafeArray, ind, newBoundsArray, 0, len)
+    new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
+  }
+
+  protected final override def consBelow(ind: Int): ArrayOrderedSet[E, D] = {
+    val len = ind + 1
+    val newBoundsArray = new Array[Bound.Upper[E]](len)
+    Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, len)
+    new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
+  }
+
+  protected final override def appendedInternal(
+    bound: Bound[E],
+    segmentFunc: Bound.Upper[E] => IndexedSegment[E, D, Boolean],
+    other: OrderedSet[E, D]
+  ): IndexedSegmentSeq[E, D, Boolean] = {
+
     // original:
     //                bound  originalBoundSegment
     //                   )   /
@@ -49,8 +75,8 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     val upperBound = bound.provideUpper
     val lowerBound = bound.provideLower
 
-    val originalBoundSegment = getSegment(upperBound)
-    
+    val originalBoundSegment = segmentFunc(upperBound)
+
     val otherBoundsProvider = other match {
       case other: ArrayOrderedSet[E, D] => ArraySetBoundsProvider(other, lowerBound)
       case _ => GeneralBoundsProvider(other, lowerBound)
@@ -62,7 +88,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     val originalCopyLen =
       if (originalBoundMatch && !boundValuesMatch) originalBoundSegment.index + 1
       else originalBoundSegment.index
-    
+
     val otherCopyLen = otherBoundsProvider.copyLen
 
     if (originalCopyLen == bounds.length && otherCopyLen == 0 && boundValuesMatch) {
@@ -90,28 +116,6 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
         new ArrayOrderedSet[E, D](ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
       }
     }
-  }
-
-  // Protected section -------------------------------------------------------- //
-  @inline
-  protected final override def getSegmentValue(ind: Int): Boolean = isIncludedInSet(ind)
-
-  @inline
-  protected final def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet(value)
-
-  protected final def consAbove(ind: Int): ArrayOrderedSet[E, D] = {
-    val newComplementary = getSegmentValue(ind)
-    val len = bounds.length - ind
-    val newBoundsArray = new Array[Bound.Upper[E]](len)
-    Array.copy(bounds.unsafeArray, ind, newBoundsArray, 0, len)
-    new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), newComplementary)
-  }
-
-  protected final def consBelow(ind: Int): ArrayOrderedSet[E, D] = {
-    val len = ind + 1
-    val newBoundsArray = new Array[Bound.Upper[E]](len)
-    Array.copy(bounds.unsafeArray, 0, newBoundsArray, 0, len)
-    new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
   }
 
   // Private section ---------------------------------------------------------- //

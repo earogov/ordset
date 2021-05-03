@@ -7,26 +7,6 @@ import ordset.util.IterableUtil
 
 trait SegmentSeqAssert[E, D <: Domain[E], V] {
 
-  def assertSameBounds(
-    expected: Interval[E, D],
-    actual: Segment[E, D, V]
-  ): Unit = {
-    expected match {
-      case i: Interval.WithLowerBound[E, D] =>
-        assert(actual.hasLowerBound, s"expected $actual has lower bound")
-        assert(actual.hasLowerBound(i.lowerBound), s"expected $actual has lower bound ${i.lowerBound}")
-      case _ =>
-        assert(!actual.hasLowerBound, s"expected $actual does not have lower bound")
-    }
-    expected match {
-      case i: Interval.WithUpperBound[E, D] =>
-        assert(actual.hasUpperBound, s"expected $actual has upper bound")
-        assert(actual.hasUpperBound(i.upperBound), s"expected $actual has upper bound ${i.upperBound}")
-      case _ =>
-        assert(!actual.hasUpperBound, s"expected $actual does not have upper bound")
-    }
-  }
-
   def assertEqualSequences(
     expected: SegmentSeq[E, D, V],
     actual: SegmentSeq[E, D, V]

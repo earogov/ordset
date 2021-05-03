@@ -10,42 +10,85 @@ import scala.{specialized => sp}
 trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   
   // Inspection --------------------------------------------------------------- //
+
+  /** Sequence to which segment belongs. */
   def sequence: SegmentSeqT[E, D, V, S]
 
+  /** Domain operations. */
   def domainOps: DomainOps[E, D] = sequence.domainOps
 
+  /** Value operations (equality type class, etc). */
   def valueOps: ValueOps[V] = sequence.valueOps
 
+  /** Value associated with segment. */
   def value: V
 
+  /**
+   * Returns `true` if elements of segment are included in set represented by `sequence`.
+   * {{{
+   *
+   * sequence:
+   *
+   *        true            false             true             - segment.isIncluded
+   * X---------------)[--------------](----------------X
+   *      segment0       segment1          segment2
+   *
+   * set represented by sequence:
+   *
+   * X---------------)                (----------------X
+   * }}}
+   */
   def isIncluded: Boolean
 
+  /** @return `true` if `bound` is between segment bounds. */
+  def contains(bound: Bound[E]): Boolean = this match {
+    case s: Segment.Inner[E, D, V] =>
+      domainOps.boundOrd.lteqv(s.lowerBound, bound) && domainOps.boundOrd.gteqv(s.upperBound, bound)
+    case s: Segment.WithPrev[E, D, V] =>
+      domainOps.boundOrd.lteqv(s.lowerBound, bound)
+    case s: Segment.WithNext[E, D, V] =>
+      domainOps.boundOrd.gteqv(s.upperBound, bound)
+    case _ =>
+      true
+  }
+
+  /** @return `true` if `element` is between segment bounds. */
+  def containsElement(element: E): Boolean = contains(Bound.Upper.inclusive(element))
+
+  /** @return `true` if there is next segment after current. */
   def hasNext: Boolean = false
 
+  /** @return `true` if there is previous segment before current. */
   def hasPrev: Boolean = false
 
-  def hasUpperBound: Boolean = false
-
-  def hasLowerBound: Boolean = false
-
+  /** @return `true` if segment has specified upper bound. */
   def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
+  /** @return `true` if segment has specified lower bound. */
   def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
 
+  /** @return `true` if segment has specified value. */
   def hasValue(v: V): Boolean = valueOps.eqv(value, v)
 
+  /** @return `true` if segment is [[SegmentT.First]]. */
   def isFirst: Boolean = false
 
+  /** @return `true` if segment is [[SegmentT.Last]]. */
   def isLast: Boolean = false
 
+  /** @return `true` if segment is [[SegmentT.Inner]]. */
   def isInner: Boolean = false
 
+  /** @return `true` if segment is [[SegmentT.Single]]. */
   def isSingle: Boolean = false
 
+  /** @return `true` if segment is [[SegmentT.Initial]]. */
   def isInitial: Boolean = false
 
+  /** @return `true` if segment is [[SegmentT.Terminal]]. */
   def isTerminal: Boolean = false
 
+  /** @return interval that corresponds to the segment in given domain. */
   def interval: Interval[E, D] = this match {
     case s: Segment.Inner[E, D, V]    => domainOps.interval(s.lowerBound, s.upperBound)
     case s: Segment.WithPrev[E, D, V] => domainOps.interval(s.lowerBound)
@@ -53,22 +96,29 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     case _                            => domainOps.interval.universal
   }
 
+  /** @return tuple of segment value and interval that corresponds to the segment in given domain. */
   def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
 
   override def toString: String = SetBuilderFormat.segment(self, (e: E) => e.toString, (v: V) => v.toString)
 
   // Navigation --------------------------------------------------------------- //
+
+  /** @return first segment of sequence. */
   def moveToFirst: SegmentT.First[E, D, V, S] with S = sequence.firstSegment
 
+  /** @return last segment of sequence. */
   def moveToLast: SegmentT.Last[E, D, V, S] with S = sequence.lastSegment
 
+  /** @return segment which contains specified bound. */
   def moveTo(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegment(bound)
 
+  /** @return [[Iterable]] of all next segments of sequence starting from current. */
   def forwardIterable(): Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
 
     override def iterator: Iterator[SegmentT[E, D, V, S] with S] = forwardIterator()
   }
 
+  /** @return [[Iterator]] of all next segments of sequence starting from current. */
   def forwardIterator(): Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
     private var current: SegmentT[E, D, V, S] with S = _
@@ -87,11 +137,13 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     }
   }
 
+  /** @return [[Iterable]] of all previous segments of sequence starting from current. */
   def backwardIterable(): Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
 
     override def iterator: Iterator[SegmentT[E, D, V, S] with S] = backwardIterator()
   }
 
+  /** @return [[Iterator]] of all previous segments of sequence starting from current. */
   def backwardIterator(): Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
     private var current: SegmentT[E, D, V, S] with S = _
@@ -110,11 +162,13 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     }
   }
 
+  /** @return [[LazyList]] of all next segments of sequence starting from current. */
   def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = this match {
     case s: SegmentT.WithNext[E, D, V, S] => LazyList.cons(self, s.moveNext.forwardLazyList)
     case _                                => LazyList.cons(self, LazyList.empty)
   }
 
+  /** @return [[LazyList]] of all previous segments of sequence starting from current. */
   def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = this match {
     case s: SegmentT.WithPrev[E, D, V, S] => LazyList.cons(self, s.movePrev.backwardLazyList)
     case _                                => LazyList.cons(self, LazyList.empty)
@@ -223,8 +277,56 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns sequence containing
    * <tr>
+   *   - segments {i ∈ [0, M]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of original sequence for which u,,i,, `≤` upperBound
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [M+1, N]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of `other` sequence for which l,,i,, `>` upperBound
+   * </tr>
+   * <tr>where</tr>
+   * <tr>lowerBound - lower bound of current segment;</tr>
+   * <tr>upperBound - upper bound of current segment;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * {{{
+   *
+   * original:
+   *       segment
+   *          v
+   *   X--------](------------------)[---------X
+   *        A   ^          B              C        - values
+   *        upperBound
+   *
+   * other:
+   *
+   *   X---)[-----------)[---)[-----------)[---X
+   *     D        E        F        G        H     - values
+   *
+   * segment.appended(other):
+   *
+   *   X--------](------)[---)[-----------)[---X
+   *        A        E     F        G        H     - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. If segment has next segment:
+   *   segment.appended(other) == segment.sequence.appended(segment.upperBound, other)
+   *   for any `other` sequence
+   *
+   *   2. If segment is last:
+   *   segment.appended(other) == segment.sequence
+   *   for any `other` sequence
+   * }}}
+   */
+  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+  /**
+   * Returns sequence containing
+   * <tr>
    *   - segments {i ∈ [0, L-1]: (l,,i,,, u,,i,,) -> v,,i,,}
-   *   of original sequence for which u,,i,, `<` `lowerBound`
+   *   of original sequence for which u,,i,, `<` lowerBound
    * </tr>
    * <tr>
    *   - segments {i ∈ [L, M-1]: (max(lowerBound, l,,i,,), min(upperBound, u,,i,,)) -> v,,i,,}
@@ -242,7 +344,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>v,,i,, - value of segment S,,i,,.</tr>
    * {{{
    *
-   *   original:
+   * original:
    *                    segment
    *                       v
    *   X--------](------------------)[---------X
@@ -262,7 +364,8 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    */
   def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 //    self match {
-//    case s: Segment.Inner[E, D, V] => ???
+//    case s: Segment.Inner[E, D, V] =>
+//      s.
 //    case s: Segment.WithNext[E, D, V] => ???
 //    case s: Segment.WithPrev[E, D, V] => ???
 //    case _ => other

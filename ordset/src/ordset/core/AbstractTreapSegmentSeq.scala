@@ -27,7 +27,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
   final override def contains(bound: Bound[E]): Boolean = getSegment(bound).isIncluded
 
-  final override def contains(element: E): Boolean = super.contains(element)
+  final override def containsElement(element: E): Boolean = super.containsElement(element)
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = forwardUpperBoundsFromSegment(firstSegment)
@@ -96,7 +96,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  final override def getSegment(element: E): TreapSegment[E, D, V] = super.getSegment(element)
+  final override def getSegmentForElement(element: E): TreapSegment[E, D, V] = super.getSegmentForElement(element)
 
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliced(bound)._2
@@ -127,103 +127,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
   
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-    
-    // CASE 1                                              // CASE 2
-    //                                                     //
-    // original:                                           // original:
-    //                bound  originalBoundSegment          // originalBoundSegment  bound  
-    //                   )   /                             //                \       ]
-    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X
-    //                                                     //
-    // other:                                              // other:
-    //                      otherBoundSegment              //                      otherBoundSegment
-    //                       /                             //                       /
-    // X--t--)[-------false------](---true----X            // X--t--)[-------false------](---true----X
-    //                                                     //
-    // original.appended(bound, other):                    // original.appended(bound, other):
-    //                                                     //
-    //                 bound                               //                      bound
-    //                   v                                 //                        v
-    // X--false---](--t--)[--f---](---true----X            // X--false---](---true---](f](---true----X
-    
-    // CASE 3                                              // CASE 4                                 
-    //                                                     //                                          
-    // original:                                           // original:                                
-    //                bound  originalBoundSegment          // originalBoundSegment  bound
-    //                   )   /                             //                \       ]               
-    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X 
-    //                                                     //                                          
-    // other:                                              // other:                                   
-    //                      otherBoundSegment              //                      otherBoundSegment   
-    //                       /                             //                       /                  
-    // X--f--)[--------true------](---false---X            // X--f--)[--------true------](---false---X 
-    //                                                     //                                          
-    // original.appended(bound, other):                    // original.appended(bound, other):         
-    //                                                     //                                          
-    // X--false---](----true-----](---false---X            // X--false---](----true-----](---false---X 
-    
-    val upperBound = bound.provideUpper
-    val lowerBound = bound.provideLower
-
-    val originalBoundSegment = getSegment(upperBound)
-    val otherBoundSegment = other.getSegment(lowerBound)
-
-    val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)
-    val boundValuesMatch = originalBoundSegment.hasValue(otherBoundSegment.value)
-    val skipBound = originalBoundMatch || boundValuesMatch
-    
-    val originalLeftSequence: TreapSegmentSeq[E, D, V] =
-      if (originalBoundMatch && !boundValuesMatch)
-        originalBoundSegment match {
-          case s: TreapSegmentWithNext[E, D, V] => s.moveNext.takenBelow
-          // `originalBoundMatch` == `true` => `originalBoundSegment` has upper bound => impossible to get here
-          case _ => throw new AssertionError("Unreachable case: next segment expected.")
-        }
-      else originalBoundSegment.takenBelow
-    
-    val boundOrd = domainOps.boundOrd
-    val rng = rngManager.newUnsafeUniformRng()
-
-    val originalBuffer = BuildAsc.rightFrontToBuffer(getRoot(originalLeftSequence))
-    val buffer =
-      if (skipBound) originalBuffer
-      else
-        BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
-          originalBuffer, upperBound, rng.nextInt(), originalBoundSegment.value
-        )(
-          boundOrd
-        )
-
-    val leftRoot = BuildAsc.finalizeBuffer(buffer)
-
-    leftRoot match {
-      case leftRoot: ImmutableTreap.Node[Bound.Upper[E], V] =>
-        if (otherBoundSegment.isLast) consFromNode(leftRoot, otherBoundSegment.value)
-        else otherBoundSegment match {
-          case otherBoundSegment: TreapSegmentWithNext[E, D, V] =>
-            val rightSequence = otherBoundSegment.takenAbove
-            val mergedRoot = TreeMerge.foldNodes(leftRoot, rightSequence.root)(Treap.nodePriorityOrder(boundOrd))
-            consFromNode(mergedRoot, rightSequence.lastSegment.value)
-          case _ =>
-            val buffer = otherBoundSegment.forwardIterable().foldLeft(
-              BuildAsc.rightFrontToBuffer[Bound.Upper[E], V](leftRoot)
-            ) {
-              (buf, seg) => seg match {
-                case seg: Segment.WithNext[E, D, V] =>
-                  BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
-                    buf, seg.upperBound, rng.nextInt(), seg.value
-                  )(
-                    boundOrd
-                  )
-                case _ => buf
-              }
-            }
-            consFromTree(BuildAsc.finalizeBuffer(buffer), other.lastSegment.value)
-        }
-      case _ => otherBoundSegment.takenAbove
-    }
-  }
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+    appendedInternal(bound, getSegment, other)
 
   // Protected section -------------------------------------------------------- //
   /**
@@ -256,11 +161,122 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
 
   /**
+   * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
+   * at `bound` for current sequence.
+   *
+   * Default variant is to search segment at bound:
+   * {{{
+   * segmentFunc = getSegment
+   * }}}
+   * But if segment is already known one may perform this optimization:
+   * {{{
+   * `segmentFunc` = () => someSegment
+   * }}}
+   */
+  protected def appendedInternal(
+    bound: Bound[E],
+    segmentFunc: Bound.Upper[E] => TreapSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
+  ): TreapSegmentSeq[E, D, V] = {
+
+    // CASE 1                                              // CASE 2
+    //                                                     //
+    // original:                                           // original:
+    //                bound  originalBoundSegment          // originalBoundSegment  bound
+    //                   )   /                             //                \       ]
+    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X
+    //                                                     //
+    // other:                                              // other:
+    //                      otherBoundSegment              //                      otherBoundSegment
+    //                       /                             //                       /
+    // X--t--)[-------false------](---true----X            // X--t--)[-------false------](---true----X
+    //                                                     //
+    // original.appended(bound, other):                    // original.appended(bound, other):
+    //                                                     //
+    //                 bound                               //                      bound
+    //                   v                                 //                        v
+    // X--false---](--t--)[--f---](---true----X            // X--false---](---true---](f](---true----X
+
+    // CASE 3                                              // CASE 4
+    //                                                     //
+    // original:                                           // original:
+    //                bound  originalBoundSegment          // originalBoundSegment  bound
+    //                   )   /                             //                \       ]
+    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X
+    //                                                     //
+    // other:                                              // other:
+    //                      otherBoundSegment              //                      otherBoundSegment
+    //                       /                             //                       /
+    // X--f--)[--------true------](---false---X            // X--f--)[--------true------](---false---X
+    //                                                     //
+    // original.appended(bound, other):                    // original.appended(bound, other):
+    //                                                     //
+    // X--false---](----true-----](---false---X            // X--false---](----true-----](---false---X
+
+    val upperBound = bound.provideUpper
+    val lowerBound = bound.provideLower
+
+    val originalBoundSegment = segmentFunc(upperBound)
+    val otherBoundSegment = other.getSegment(lowerBound)
+
+    val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)
+    val boundValuesMatch = originalBoundSegment.hasValue(otherBoundSegment.value)
+    val skipBound = originalBoundMatch || boundValuesMatch
+
+    val originalLeftSequence: TreapSegmentSeq[E, D, V] =
+      if (originalBoundMatch && !boundValuesMatch)
+        originalBoundSegment match {
+          case s: TreapSegmentWithNext[E, D, V] => s.moveNext.takenBelow
+          // `originalBoundMatch` == `true` => `originalBoundSegment` has upper bound => impossible to get here
+          case _ => throw new AssertionError("Unreachable case: next segment expected.")
+        }
+      else originalBoundSegment.takenBelow
+
+    val boundOrd = domainOps.boundOrd
+    val rng = rngManager.newUnsafeUniformRng()
+
+    val originalBuffer = BuildAsc.rightFrontToBuffer(getRoot(originalLeftSequence))
+    val buffer =
+      if (skipBound) originalBuffer
+      else
+        BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
+          originalBuffer, upperBound, rng.nextInt(), originalBoundSegment.value
+        )(
+          boundOrd
+        )
+
+    val leftRoot = BuildAsc.finalizeBuffer(buffer)
+
+    if (otherBoundSegment.isLast) consFromTree(leftRoot, otherBoundSegment.value)
+    else otherBoundSegment match {
+      case otherBoundSegment: TreapSegmentWithNext[E, D, V] =>
+        val rightSequence = otherBoundSegment.takenAbove
+        val mergedRoot = TreeMerge.foldTreaps(leftRoot, rightSequence.root)(Treap.nodePriorityOrder(boundOrd))
+        consFromTree(mergedRoot, rightSequence.lastSegment.value)
+      case _ =>
+        val buffer = otherBoundSegment.forwardIterable().foldLeft(
+          BuildAsc.rightFrontToBuffer[Bound.Upper[E], V](leftRoot)
+        ) {
+          (buf, seg) => seg match {
+            case seg: Segment.WithNext[E, D, V] =>
+              BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
+                buf, seg.upperBound, rng.nextInt(), seg.value
+              )(
+                boundOrd
+              )
+            case _ => buf
+          }
+        }
+        consFromTree(BuildAsc.finalizeBuffer(buffer), other.lastSegment.value)
+    }
+  }
+
+  /**
    * Returns `true` if segment with given value is considered to be included in set.
    *
    * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isIncludedInSet(value: V): Boolean
+  protected def isIncludedInSet(value: V): Boolean = valueOps.isIncluded(value)
 
   /**
    * @return initial segment of sequence.
@@ -372,6 +388,11 @@ object AbstractTreapSegmentSeq {
     override def takenBelow: TreapSegmentSeq[E, D, V]
 
     override def sliced: (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V])
+
+    override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
+      // Default implementation for last segment. Must be overridden if segment has next segment.
+      sequence
+    }
   }
 
   /**
@@ -391,6 +412,9 @@ object AbstractTreapSegmentSeq {
     override def takenAbove: AbstractTreapSegmentSeq[E, D, V]
 
     override def sliced: (TreapSegmentSeq[E, D, V], AbstractTreapSegmentSeq[E, D, V])
+
+    override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+      sequence.appendedInternal(upperBound, _ => this, other)
   }
 
   /**

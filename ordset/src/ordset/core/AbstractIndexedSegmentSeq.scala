@@ -39,7 +39,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
   final override def contains(bound: Bound[E]): Boolean = isIncludedInSet(searchSegmentFromBegin(bound))
 
-  final override def contains(element: E): Boolean = super.contains(element)
+  final override def containsElement(element: E): Boolean = super.containsElement(element)
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = bounds
@@ -51,7 +51,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   final override def getSegment(bound: Bound[E]): IndexedSegment[E, D, V] =
     makeSegment(searchSegmentFromBegin(bound))
 
-  final override def getSegment(element: E): IndexedSegment[E, D, V] =
+  final override def getSegmentForElement(element: E): IndexedSegment[E, D, V] =
     getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
@@ -75,6 +75,10 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     else if (ind == lastSegmentIndex) (this, consUniform(getSegmentValue(ind)))
     else (consBelow(ind - 1), consAbove(ind))
   }
+
+  // Transformation ----------------------------------------------------------- //
+  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
+    appendedInternal(bound, getSegment, other)
   
   // Protected section -------------------------------------------------------- //
   /**
@@ -141,19 +145,32 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    * Creates segment sequence from current keeping only upper bounds with index `<=` `ind`.
    */
   protected def consBelow(ind: Int): AbstractIndexedSegmentSeq[E, D, V]
-  
+
+  /**
+   * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
+   * at `bound` for current sequence.
+   *
+   * Default variant is to search segment at bound:
+   * {{{
+   * segmentFunc = getSegment
+   * }}}
+   * But if segment is already known one may perform this optimization:
+   * {{{
+   * `segmentFunc` = () => someSegment
+   * }}}
+   */
+  protected def appendedInternal(
+    bound: Bound[E],
+    segmentFunc: Bound.Upper[E] => IndexedSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
+  ): IndexedSegmentSeq[E, D, V]
+
   /**
    * @return value of first segment.
    */
   @inline
   protected final def getFirstSegmentValue: V = getSegmentValue(0)
-
-  /**
-   * @return value of penultimate segment.
-   */
-  @inline
-  protected final def getPenultimateSegmentValue: V = getSegmentValue(lastBoundIndex)
-
+  
   /**
    * @return value of last segment.
    */
@@ -269,6 +286,11 @@ object AbstractIndexedSegmentSeq {
     override def takenBelow: IndexedSegmentSeq[E, D, V]
 
     override def sliced: (IndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
+
+    override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
+      // Default implementation for last segment. Must be overridden if segment has next segment.
+      sequence
+    }
   }
 
   /**
@@ -292,6 +314,9 @@ object AbstractIndexedSegmentSeq {
     override def takenAbove: AbstractIndexedSegmentSeq[E, D, V]
 
     override def sliced: (IndexedSegmentSeq[E, D, V], AbstractIndexedSegmentSeq[E, D, V])
+
+    override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
+      sequence.appendedInternal(upperBound, _ => this, other)
   }
 
   /**

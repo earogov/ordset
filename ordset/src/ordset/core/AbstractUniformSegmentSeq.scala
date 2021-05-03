@@ -20,7 +20,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   final override def contains(bound: Bound[E]): Boolean = isUniversal
 
-  final override def contains(element: E): Boolean = isUniversal
+  final override def containsElement(element: E): Boolean = isUniversal
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = Iterable.empty
@@ -31,7 +31,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   final override def getSegment(bound: Bound[E]): UniformSingleSegment[E, D, V] = segment
 
-  final override def getSegment(element: E): UniformSingleSegment[E, D, V] = segment
+  final override def getSegmentForElement(element: E): UniformSingleSegment[E, D, V] = segment
 
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, V] = this
@@ -116,6 +116,8 @@ object AbstractUniformSegmentSeq {
 
     override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
       (sequence, sequence)
+
+    override def appended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
 
     // Protected section -------------------------------------------------------- //
     protected override def self: UniformSingleSegment[E, D, V] = this
