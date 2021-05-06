@@ -5,15 +5,15 @@ import ordset.core.{AbstractZippedSegmentSeq, OrderedSet}
 import ordset.random.RngManager
 
 class ZippedOrderedSet[E, D <: Domain[E]](
-  override final val left: OrderedSet[E, D],
-  override final val right: OrderedSet[E, D],
+  override final val firstSeq: OrderedSet[E, D],
+  override final val secondSeq: OrderedSet[E, D],
   final val operatorFunc: (Boolean, Boolean) => Boolean,
   final val invariantFunc: Boolean => Boolean
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractZippedSegmentSeq[E, D, Boolean]
+) extends AbstractZippedSegmentSeq[E, D, Boolean, Boolean, Boolean]
   with OrderedSetCommons[E, D] {
 
   // Protected section -------------------------------------------------------- //
@@ -21,7 +21,10 @@ class ZippedOrderedSet[E, D <: Domain[E]](
   protected final override def operator(left: Boolean, right: Boolean): Boolean = operatorFunc(left, right)
 
   @inline
-  protected final override def invariant(value: Boolean): Boolean = invariantFunc(value)
+  protected final override def firstInvariant(value: Boolean): Boolean = invariantFunc(value)
+
+  @inline
+  protected final override def secondInvariant(value: Boolean): Boolean = invariantFunc(value)
 
   @inline
   protected final override def isIncludedInSet(value: Boolean): Boolean = value

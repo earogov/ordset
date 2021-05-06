@@ -39,11 +39,11 @@ package object core {
   type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
   
   
-  type UniformSegmentSeq[E, D <: Domain[E], W] = AbstractUniformSegmentSeq[E, D, W]
+  type UniformSegmentSeq[E, D <: Domain[E], V] = AbstractUniformSegmentSeq[E, D, V]
   
-  type IndexedSegmentSeq[E, D <: Domain[E], W] = AbstractIndexedSegmentSeq[E, D, W] | UniformSegmentSeq[E, D, W]
+  type IndexedSegmentSeq[E, D <: Domain[E], V] = AbstractIndexedSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
 
-  type TreapSegmentSeq[E, D <: Domain[E], W] = AbstractTreapSegmentSeq[E, D, W] | UniformSegmentSeq[E, D, W]
+  type TreapSegmentSeq[E, D <: Domain[E], V] = AbstractTreapSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
   
-  type ZippedSegmentSeq[E, D <: Domain[E], W] = AbstractZippedSegmentSeq[E, D, W]
+  type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V] = AbstractZippedSegmentSeq[E, D, U1, U2, V]
 }

@@ -131,7 +131,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def contains(bound: Bound[E]): Boolean
 
   /** @return `true` if sequence contains `element`. */
-  def containsElement(element: E): Boolean = contains(Bound.Upper.inclusive(element))
+  def containsElement(element: E): Boolean = 
+    contains(Bound.Upper.inclusive(element))
 
   override def toString: String =
     SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: V) => v.toString)
@@ -152,7 +153,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def getSegment(bound: Bound[E]): SegmentT[E, D, V, S] with S
 
   /** @return segment which contains specified `element`. */
-  def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = getSegment(Bound.Upper.inclusive(element))
+  def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = 
+    getSegment(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   /**
