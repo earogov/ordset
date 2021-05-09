@@ -32,7 +32,7 @@ class TreapOrderedSet[E, D <: Domain[E]] protected(
     TreapOrderedSet.unchecked(node, value)
 
   @inline
-  protected final override def isIncludedInSet(value: Boolean): Boolean = value
+  protected final override def isValueIncluded(value: Boolean): Boolean = value
 }
 
 object TreapOrderedSet {
@@ -40,7 +40,7 @@ object TreapOrderedSet {
   /**
    * Creates ordered set from treap node (see [[AbstractSegmentSeq]]).
    *
-   * Validation of treap invariants (key and priorities order) is not applied.
+   * Validation of treap invariants (keys and priorities order) is not applied.
    */
   def unchecked[E, D <: Domain[E]](
     root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
@@ -59,7 +59,7 @@ object TreapOrderedSet {
    *
    * 1. `bounds` collection is ordered according to `validationFunc`:
    * <tr>
-   *   validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
+   *   validationFunc(bounds,,i-1,,, bounds,,i,,) == true for each i in [1, bounds.size - 1]
    * </tr>
    * <tr></tr>
    * 
@@ -104,8 +104,10 @@ object TreapOrderedSet {
         )
       val root = BuildAsc.finalizeBuffer(buffer)
       root match {
-        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => new TreapOrderedSet(r, value)(domainOps, rngManager)
-        case _ => UniformOrderedSet(value)(domainOps, rngManager)
+        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => 
+          TreapOrderedSet.unchecked(r, value)(domainOps, rngManager)
+        case _ => 
+          UniformOrderedSet(value)(domainOps, rngManager)
       }
     } catch {
       case e @ (_: NoSuchElementException | _: IllegalArgumentException) => throw SegmentSeqException(e)

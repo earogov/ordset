@@ -20,10 +20,15 @@ package object core {
 
   
   type Segment[E, D <: Domain[E], V] = SegmentT[E, D, V, Any]
-  
+
+
   type SegmentSeq[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
-  
-  
+
+  type OrderedMap[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
+
+  type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
+
+
   type SetSegment[E, D <: Domain[E]] = Segment[E, D, Boolean]
 
   type SetSegmentWithPrev[E, D <: Domain[E]] = Segment.WithPrev[E, D, Boolean]
@@ -35,9 +40,7 @@ package object core {
   type SetSegmentSingle[E, D <: Domain[E]] = Segment.Single[E, D, Boolean]
 
   type SetIntervalRelation[E, D <: Domain[E]] = IntervalRelation[E, D, Boolean]
-  
-  type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
-  
+
   
   type UniformSegmentSeq[E, D <: Domain[E], V] = AbstractUniformSegmentSeq[E, D, V]
   

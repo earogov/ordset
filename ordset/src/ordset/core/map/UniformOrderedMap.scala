@@ -18,7 +18,7 @@ class UniformOrderedMap[E, D <: Domain[E], V](
 
   // Protected section -------------------------------------------------------- //  
   @inline
-  protected final override def isIncludedInSet(value: V): Boolean = valueOps.isIncluded(value)
+  protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 
   protected final override def consBounded(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V] =
     if (valueOps.eqv(value, lastValue))
@@ -31,13 +31,13 @@ class UniformOrderedMap[E, D <: Domain[E], V](
 
 object UniformOrderedMap {
 
-  def apply[E, D <: Domain[E], W](
-    value: W
+  def apply[E, D <: Domain[E], V](
+    value: V
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueOps: ValueOps[W],
+    valueOps: ValueOps[V],
     rngManager: RngManager
-  ): UniformOrderedMap[E, D, W] =
-    new UniformOrderedMap[E, D, W](value)
+  ): UniformOrderedMap[E, D, V] =
+    new UniformOrderedMap[E, D, V](value)
 }

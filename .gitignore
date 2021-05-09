@@ -5,6 +5,7 @@
 .vscode/*
 .metals/*
 out/*
+lib/*
 null/*
 project/project/target/*
 project/target/*

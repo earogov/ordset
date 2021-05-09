@@ -12,21 +12,21 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
   
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean =
-    firstSegmentInstance.isSingle && !isIncludedInSet(firstSegmentInstance.value)
+    firstSegmentInstance.isSingle && !isValueIncluded(firstSegmentInstance.value)
 
   final override def isUniversal: Boolean =
-    firstSegmentInstance.isSingle && isIncludedInSet(firstSegmentInstance.value)
+    firstSegmentInstance.isSingle && isValueIncluded(firstSegmentInstance.value)
 
   final override def isUniform: Boolean =
     firstSegmentInstance.isSingle
 
   final override def contains(bound: Bound[E]): Boolean =
-    isIncludedInSet(getSegmentValue(firstSeq.getSegment(bound), secondSeq.getSegment(bound)))
+    isValueIncluded(getSegmentValue(firstSeq.getSegment(bound), secondSeq.getSegment(bound)))
 
   final override def containsElement(element: E): Boolean = super.containsElement(element)
 
   // Navigation --------------------------------------------------------------- //
-  final override def upperBounds: Iterable[Bound.Upper[E]] = forwardUpperBoundsFromSegment(firstSegment)
+  final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
 
   final override def firstSegment: ZippedFirstSegment[E, D, U1, U2, V] = firstSegmentInstance
 
@@ -94,12 +94,12 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
    *
    * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isIncludedInSet(value: V): Boolean
+  protected def isValueIncluded(value: V): Boolean
 
   /**
    * Creates zipped segment sequence.
    */
-  protected def cons(left: SegmentSeq[E, D, U1], right: SegmentSeq[E, D, U2]): SegmentSeq[E, D, V]
+  protected def cons(first: SegmentSeq[E, D, U1], second: SegmentSeq[E, D, U2]): SegmentSeq[E, D, V]
 
   /**
    * First segment of sequence. It's either initial ot single.
@@ -108,6 +108,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
     searchFrontZipper(firstFrontZipper, firstSeq.firstSegment, secondSeq.firstSegment)
 
   /**
+   * Preconditions:
+   *
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
+   *
    * @return value assigned to zipped segment defined by `left` and `right` subsegments.
    * For sets it returns 'belongs to set' indicator (`Boolean`).
    * For maps `E` -> `W` it returns `Option[W]` where `None` means that segment doesn't belong to set.
@@ -127,6 +132,10 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
   }
 
   /**
+   * Preconditions:
+   *
+   * 1. `segment` belongs to `firstSeq` or `secondSeq` sequence.
+   *
    * @return `true` if `segment` value is invariant. It restores type of segment value (`U1` or `U2`) and calls either
    * [[firstInvariant]] or [[secondInvariant]] function.
    */
@@ -141,6 +150,10 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
   }
 
   /**
+   * Preconditions:
+   *
+   * 1. `segment` belongs to `firstSeq` or `secondSeq` sequence.
+   *
    * Restores segment value type if segment belongs to [[firstSeq]], otherwise returns `null`.
    */
   protected final def castSegmentToFirstSeq(segment: Segment[E, D, ? <: U1 | U2]): Segment[E, D, U1] | Null = {
@@ -150,6 +163,10 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
   }
 
   /**
+   * Preconditions:
+   *
+   * 1. `segment` belongs to `firstSeq` or `secondSeq` sequence.
+   *
    * Restores segment value type if segment belongs to [[secondSeq]], otherwise returns `null`.
    */
   protected final def castSegmentToSecondSeq(segment: Segment[E, D, ? <: U1 | U2]): Segment[E, D, U2] | Null = {
@@ -161,9 +178,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
   /**
    * Preconditions:
    *
-   * 1. `left` and `right` are just labels for subsegments, they don't have to correspond to
-   *    `left` and `right` original sequences. `left` subsegment may belong to `right` sequence
-   *     and vice versa. The only requirement is subsegments must belong to different sequences.
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
    *
    * 2. `left` and `right` subsegments must define front bound of zipped segment
    *     (operator must change its value for next pair of subsegments).
@@ -182,8 +198,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
    *
    * 1. All preconditions of [[generalFrontZipper]] method.
    *
-   * 2. `left` and `right` subsegment must belong to first zipped segment. I.e. they must define
-   *    its front bound.
+   * 2. `left` and `right` subsegment must belong to first zipped segment.
+   *    I.e. they must define its front bound.
    *
    * @return first zipped segment for `left` and `right` subsegments.
    */
@@ -193,9 +209,9 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
   ): ZippedFirstSegment[E, D, U1, U2, V] =
     (left, right) match {
       case (ln: Segment.WithNext[E, D, ? <: U1 | U2], rn: Segment.WithNext[E, D, ? <: U1 | U2]) =>
-        if (domainOps.boundOrd.compare(ln.upperBound, rn.upperBound) >= 0) 
+        if (domainOps.boundOrd.compare(ln.upperBound, rn.upperBound) >= 0)
           ZippedInitialSegment[E, D, U1, U2, V](this, rn, ln)
-        else                                                               
+        else
           ZippedInitialSegment[E, D, U1, U2, V](this, ln, rn)
       case (ln: Segment.WithNext[E, D, ? <: U1 | U2], _) =>
         ZippedInitialSegment[E, D, U1, U2, V](this, ln, right)
@@ -203,7 +219,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
         ZippedInitialSegment[E, D, U1, U2, V](this, rn, left)
       case (ll: Segment.Last[E, D, ? <: U1 | U2], rl: Segment.Last[E, D, ? <: U1 | U2]) =>
         ZippedSingleSegment[E, D, U1, U2, V](this, ll, rl)
-      case _ => 
+      case _ =>
         throwSegmentMustBeLastOrWithNext(left, right) // just to remove warning
     }
 
@@ -215,7 +231,6 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
    * 2. `left` and `right` must be last segments of original sequences.
    *
    * @return last zipped segment for `left` and `right` subsegments.
-   *
    */
   protected final def lastFrontZipper(
     left: Segment.Last[E, D, ? <: U1 | U2],
@@ -291,6 +306,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
     (left: Segment[E, D, ? <: U1 | U2], right: Segment[E, D, ? <: U1 | U2]) => composed(supplied, left, right)
 
   /**
+   * Preconditions:
+   *
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
+   *
    * Starting from `left` and `right` subsegments function moves forward (getting next pairs of subsegments) until
    * meets change of the operator value. In that case it stops and builds zipped segment with `zipper` function
    * for last pair of subsegments before value change.
@@ -339,6 +359,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
     }
 
   /**
+   * Preconditions:
+   *
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
+   *
    * Starting from `left` and `right` subsegments function moves backward (getting previous pairs of subsegments) until
    * meets change of the operator value. In that case it stops and builds zipped segment with `zipper` function
    * for last pair of subsegments before value change.
@@ -387,6 +412,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
     }
 
   /**
+   * Preconditions:
+   *
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
+   *
    * Starting from `left` and `right` subsegments function get next pair of subsegments and builds zipped segment
    * with `zipper` function.
    *
@@ -414,6 +444,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V]
     }
 
   /**
+   * Preconditions:
+   *
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
+   *
    * Starting from `left` and `right` subsegments function get previous pair of subsegments and builds zipped segment
    * with `zipper` function.
    *
@@ -612,15 +647,17 @@ object AbstractZippedSegmentSeq {
   /**
    * Pair of subsegments of original sequences.
    *
-   * `left` and `right` are just labels for subsegments,
-   * they don't have to correspond to `left` and `right` original sequences. `left` subsegment may belong to
-   * `right` sequence and vice versa. The only requirement is subsegments must belong to different sequences.
+   * Preconditions:
+   *
+   * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
+   *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
    */
   sealed trait ZippedTuple[E, D <: Domain[E], U1, U2, V] {
 
     def sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V]
-    
+
     def left: Segment[E, D, ? <: U1 | U2]
+
     def right: Segment[E, D, ? <: U1 | U2]
 
     /** @return `true` if subsegments of tuple correspond to input `left` and `right`.
@@ -633,6 +670,26 @@ object AbstractZippedSegmentSeq {
       else                                false
     }
 
+    def firstSeqSegment: Segment[E, D, U1] = {
+      var segment = sequence.castSegmentToFirstSeq(left)
+      if (segment != null) segment
+      else {
+        segment = sequence.castSegmentToFirstSeq(right)
+        if (segment != null) segment
+        else sequence.throwSegmentMustBelongToOriginalSeqs(left, right)
+      }
+    }
+
+    def secondSeqSegment: Segment[E, D, U2] = {
+      var segment = sequence.castSegmentToSecondSeq(left)
+      if (segment != null) segment
+      else {
+        segment = sequence.castSegmentToSecondSeq(right)
+        if (segment != null) segment
+        else sequence.throwSegmentMustBelongToOriginalSeqs(left, right)
+      }
+    }
+
     lazy val value: V = sequence.getSegmentValue(left, right)
   }
 
@@ -641,9 +698,9 @@ object AbstractZippedSegmentSeq {
     override val left: Segment[E, D, ? <: U1 | U2],
     override val right: Segment[E, D, ? <: U1 | U2]
   ) extends ZippedTuple[E, D, U1, U2, V]
-  
+
   object ZippedTupleImpl {
-    
+
     def zipper[E, D <: Domain[E], U1, U2, V](
       sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V]
     ): (Segment[E, D, ? <: U1 | U2], Segment[E, D, ? <: U1 | U2]) => ZippedTuple[E, D, U1, U2, V] =
@@ -654,7 +711,8 @@ object AbstractZippedSegmentSeq {
    * Base trait for zipped segments.
    *
    * Upper and lower bounds of zipped segments are defined by change of the operator value.
-   * Zipped segments are represented by 'left' and 'right' subsegments which must specify the upper bound.
+   * Zipped segments are represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must specify the upper bound.
    * {{{
    *
    *                                      left
@@ -680,8 +738,10 @@ object AbstractZippedSegmentSeq {
 
     // Inspection --------------------------------------------------------------- //
     override def sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V]
-    
-    override def isIncluded: Boolean = sequence.isIncludedInSet(value)
+
+    override def isIncluded: Boolean = sequence.isValueIncluded(value)
+
+    override def firstSeqSegment: Segment[E, D, U1] = super.firstSeqSegment
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: ZippedFirstSegment[E, D, U1, U2, V] = sequence.firstSegment
@@ -706,8 +766,9 @@ object AbstractZippedSegmentSeq {
   /**
    * Zipped segment with next segment.
    *
-   * Segment is represented by 'left' and 'right' subsegments which must specify the upper bound.
-   * 'frontBackward' and 'frontForward' are the same two subsegments which are ordered by their upper bound.
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must specify the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments 
+   * which are ordered by their upper bound.
    */
   sealed trait ZippedSegmentWithNext[E, D <: Domain[E], U1, U2, V]
     extends SegmentT.WithNext[E, D, V, ZippedSegmentBase[E, D, U1, U2, V]]
@@ -734,7 +795,9 @@ object AbstractZippedSegmentSeq {
   /**
    * Zipped segment with previous segment.
    *
-   * Segment is represented by 'left' and 'right' subsegments which must specify the upper bound.
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must specify the upper bound.
+   * 
    * Lower bound is defined by 'backBackward' and 'backForward' subsegments and is searched lazily.
    * 'backBackward' and 'backForward' subsegments are ordered by their lower bound.
    * {{{
@@ -794,8 +857,9 @@ object AbstractZippedSegmentSeq {
   /**
    * Initial segment of zipped sequence.
    *
-   * Segment is represented by 'left' and 'right' subsegments which must specify the upper bound.
-   * 'frontBackward' and 'frontForward' are the same two subsegments which are ordered by their upper bound.
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must specify the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments 
+   * which are ordered by their upper bound.
    */
   final case class ZippedInitialSegment[E, D <: Domain[E], U1, U2, V] (
     override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V],
@@ -818,7 +882,8 @@ object AbstractZippedSegmentSeq {
   /**
    * Terminal segment of zipped sequence.
    *
-   * Segment is represented by 'left' and 'right' subsegments which must be last segments of original sequences.
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must be last segments of original sequences.
    */
   final case class ZippedTerminalSegment[E, D <: Domain[E], U1, U2, V] (
     override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V],
@@ -841,8 +906,9 @@ object AbstractZippedSegmentSeq {
   /**
    * Inner segment of zipped sequence.
    *
-   * Segment is represented by 'left' and 'right' subsegments which must specify the upper bound.
-   * 'frontBackward' and 'frontForward' are the same two subsegments which are ordered by their upper bound.
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must specify the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments 
+   * which are ordered by their upper bound.
    */
   final case class ZippedInnerSegment[E, D <: Domain[E], U1, U2, V](
     override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V],
@@ -863,7 +929,8 @@ object AbstractZippedSegmentSeq {
   /**
    * Single segment of zipped sequence.
    *
-   * Segment is represented by 'left' and 'right' subsegments which must be last segments of original sequences.
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * which must be last segments of original sequences.
    */
   final case class ZippedSingleSegment[E, D <: Domain[E], U1, U2, V](
     override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V],

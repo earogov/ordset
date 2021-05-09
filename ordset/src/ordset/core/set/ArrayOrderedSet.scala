@@ -24,7 +24,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 
   // Protected section -------------------------------------------------------- //
   @inline
-  protected final override def getSegmentValue(ind: Int): Boolean = isIncludedInSet(ind)
+  protected final override def getSegmentValue(ind: Int): Boolean = isValueIncluded(ind)
 
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet(value)
@@ -149,7 +149,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 
     override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegment(bound)
 
-    private val copyBounds: (List[Bound.Upper[E]], Int) = SegmentSeqOps.getForwardBoundsList(boundSegment)
+    private val copyBounds: (List[Bound.Upper[E]], Int) = SegmentSeqOps.getForwardUpperBoundsList(boundSegment)
 
     override def copyLen: Int = copyBounds._2
 

@@ -37,7 +37,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
   final override def isUniform: Boolean = false
 
-  final override def contains(bound: Bound[E]): Boolean = isIncludedInSet(searchSegmentFromBegin(bound))
+  final override def contains(bound: Bound[E]): Boolean = isValueIncluded(searchSegmentFromBegin(bound))
 
   final override def containsElement(element: E): Boolean = super.containsElement(element)
 
@@ -187,7 +187,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    *
    */
   @inline
-  protected final def isIncludedInSet(ind: Int): Boolean = complementary ^ ((ind & 0x00000001) == 0x00000001)
+  protected final def isValueIncluded(ind: Int): Boolean = complementary ^ ((ind & 0x00000001) == 0x00000001)
 
   /**
     * Preconditions:
@@ -270,7 +270,7 @@ object AbstractIndexedSegmentSeq {
 
     override def value: V = sequence.getSegmentValue(index)
 
-    override def isIncluded: Boolean = sequence.isIncludedInSet(index)
+    override def isIncluded: Boolean = sequence.isValueIncluded(index)
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: IndexedInitialSegment[E, D, V] = IndexedInitialSegment(sequence)

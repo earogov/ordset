@@ -123,7 +123,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def isUniform: Boolean
 
   /**
-   * @return `true` if sequence represents ordered set, i.e. `W` is `Boolean`. 
+   * @return `true` if sequence represents ordered set, i.e. iff `V` is `Boolean`. 
    */
   def isSet: Boolean
   
@@ -141,7 +141,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * @return collection of all upper bounds.
    */
-  def upperBounds: Iterable[Bound.Upper[E]]
+  def upperBounds: Iterable[Bound.Upper[E]] = SegmentSeqOps.getForwardUpperBoundsIterable(firstSegment)
 
   /** @return first segment of sequence. */
   def firstSegment: SegmentT.First[E, D, V, S] with S

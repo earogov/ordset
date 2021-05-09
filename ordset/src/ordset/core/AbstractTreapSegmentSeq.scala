@@ -30,7 +30,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   final override def containsElement(element: E): Boolean = super.containsElement(element)
 
   // Navigation --------------------------------------------------------------- //
-  final override def upperBounds: Iterable[Bound.Upper[E]] = forwardUpperBoundsFromSegment(firstSegment)
+  final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
 
   final override lazy val firstSegment: TreapInitialSegment[E, D, V] = makeInitialSegment()
 
@@ -276,7 +276,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    *
    * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isIncludedInSet(value: V): Boolean = valueOps.isIncluded(value)
+  protected def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 
   /**
    * @return initial segment of sequence.
@@ -373,7 +373,7 @@ object AbstractTreapSegmentSeq {
     
     override def value: V = node.value
 
-    override def isIncluded: Boolean = sequence.isIncludedInSet(value)
+    override def isIncluded: Boolean = sequence.isValueIncluded(value)
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: TreapInitialSegment[E, D, V] = sequence.firstSegment

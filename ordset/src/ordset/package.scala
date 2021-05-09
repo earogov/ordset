@@ -99,5 +99,17 @@ package object ordset {
       implicit def setShow[T](implicit ev: Show[T]): Show[Set[T]] =
         cats.instances.set.catsStdShowForSet
     }
+
+    object tuple2 {
+
+      implicit def tuple2Order[T1, T2](implicit ev1: Order[T1], ev2: Order[T2]): Order[Tuple2[T1, T2]] =
+        kernel.instances.tuple.catsKernelStdOrderForTuple2
+
+      implicit def tuple2Hash[T1, T2](implicit ev1: Hash[T1], ev2: Hash[T2]): Hash[Tuple2[T1, T2]] =
+        kernel.instances.tuple.catsKernelStdHashForTuple2
+
+      implicit def tuple2Show[T1, T2](implicit ev1: Show[T1], ev2: Show[T2]): Show[Tuple2[T1, T2]] =
+        cats.instances.tuple.catsStdShowForTuple2
+    }
   }
 }

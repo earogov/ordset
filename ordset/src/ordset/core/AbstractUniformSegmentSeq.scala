@@ -12,9 +12,9 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   import AbstractUniformSegmentSeq._
 
   // Inspection --------------------------------------------------------------- //
-  final override def isEmpty: Boolean = !isIncludedInSet(value)
+  final override def isEmpty: Boolean = !isValueIncluded(value)
 
-  final override def isUniversal: Boolean = isIncludedInSet(value)
+  final override def isUniversal: Boolean = isValueIncluded(value)
 
   final override def isUniform: Boolean = true
 
@@ -65,7 +65,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    *
    * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isIncludedInSet(value: V): Boolean = valueOps.isIncluded(value)
+  protected def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 
   /**
    * Creates segment sequence:
@@ -100,7 +100,7 @@ object AbstractUniformSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def value: V = sequence.value
 
-    override def isIncluded: Boolean = sequence.isIncludedInSet(value)
+    override def isIncluded: Boolean = sequence.isValueIncluded(value)
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: UniformSingleSegment[E, D, V] = this

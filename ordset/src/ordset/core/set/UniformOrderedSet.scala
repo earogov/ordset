@@ -17,7 +17,7 @@ class UniformOrderedSet[E, D <: Domain[E]](
 
   // Protected section -------------------------------------------------------- //  
   @inline
-  protected final override def isIncludedInSet(value: Boolean): Boolean = value
+  protected final override def isValueIncluded(value: Boolean): Boolean = value
 
   protected final override def consBounded(bound: Bound[E], lastValue: Boolean): OrderedSet[E, D] =
     if (valueOps.eqv(value, lastValue)) 
