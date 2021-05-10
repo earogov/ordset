@@ -1,7 +1,7 @@
 package ordset.core.map
 
 import ordset.core.domain.Domain
-import ordset.core.{Bound, OrderedMap, SegmentSeqException}
+import ordset.core.{Bound, SegmentSeqException}
 
 trait OrderedMapFactory[E, D <: Domain[E], V] {
 

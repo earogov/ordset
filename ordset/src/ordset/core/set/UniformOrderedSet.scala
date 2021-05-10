@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.{AbstractUniformSegmentSeq, Bound, OrderedSet, SegmentSeq, TreapSegmentSeq}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, TreapSegmentSeq}
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.random.RngManager
 

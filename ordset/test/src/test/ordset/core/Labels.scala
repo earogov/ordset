@@ -27,7 +27,7 @@ object Labels {
 
   val treapOrderedSet: Label = Label(classOf[TreapOrderedSet[_, _]].getSimpleName)
 
-  val zippedOrderedSet: Label = Label(classOf[ZippedOrderedSet[_, _]].getSimpleName)
+  val zippedOrderedSet: Label = Label(classOf[ZippedOrderedSet[_, _, _, _]].getSimpleName)
 
   def sample(n: Int): Label = Label(s"sample $n")
 

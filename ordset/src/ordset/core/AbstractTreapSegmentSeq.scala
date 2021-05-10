@@ -393,6 +393,13 @@ object AbstractTreapSegmentSeq {
       // Default implementation for last segment. Must be overridden if segment has next segment.
       sequence
     }
+    
+//    override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = this match {
+//      case s: Segment.Inner[E, D, V]    => s.movePrev.appended(other).appended(s.upperBound, sequence)
+//      case s: Segment.WithNext[E, D, V] => other.appended(s.upperBound, sequence)
+//      case s: Segment.WithPrev[E, D, V] => s.movePrev.appended(other)
+//      case _                            => other
+//    }
   }
 
   /**
@@ -415,6 +422,8 @@ object AbstractTreapSegmentSeq {
 
     override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
       sequence.appendedInternal(upperBound, _ => this, other)
+
+//    override def patched(other: SegmentSeq[E, D, V]): AbstractTreapSegmentSeq[E, D, V]
   }
 
   /**
@@ -447,6 +456,8 @@ object AbstractTreapSegmentSeq {
     override def takenBelow: AbstractTreapSegmentSeq[E, D, V]
 
     override def sliced: (AbstractTreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V])
+
+//    override def patched(other: SegmentSeq[E, D, V]): AbstractTreapSegmentSeq[E, D, V]
   }
 
   /**
@@ -470,7 +481,7 @@ object AbstractTreapSegmentSeq {
 
     override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractTreapSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
-
+      
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: TreapInitialSegment[E, D, V] = this
 

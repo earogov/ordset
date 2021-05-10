@@ -21,25 +21,7 @@ package object core {
   
   type Segment[E, D <: Domain[E], V] = SegmentT[E, D, V, Any]
 
-
   type SegmentSeq[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
-
-  type OrderedMap[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
-
-  type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
-
-
-  type SetSegment[E, D <: Domain[E]] = Segment[E, D, Boolean]
-
-  type SetSegmentWithPrev[E, D <: Domain[E]] = Segment.WithPrev[E, D, Boolean]
-
-  type SetSegmentWithNext[E, D <: Domain[E]] = Segment.WithNext[E, D, Boolean]
-
-  type SetSegmentInner[E, D <: Domain[E]] = Segment.Inner[E, D, Boolean]
-
-  type SetSegmentSingle[E, D <: Domain[E]] = Segment.Single[E, D, Boolean]
-
-  type SetIntervalRelation[E, D <: Domain[E]] = IntervalRelation[E, D, Boolean]
 
   
   type UniformSegmentSeq[E, D <: Domain[E], V] = AbstractUniformSegmentSeq[E, D, V]
@@ -48,5 +30,5 @@ package object core {
 
   type TreapSegmentSeq[E, D <: Domain[E], V] = AbstractTreapSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
   
-  type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V] = AbstractZippedSegmentSeq[E, D, U1, U2, V]
+  type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2] = AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 }

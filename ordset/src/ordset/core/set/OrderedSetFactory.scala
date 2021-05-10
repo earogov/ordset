@@ -1,7 +1,7 @@
 package ordset.core.set
 
 import ordset.core.domain.Domain
-import ordset.core.{Bound, OrderedSet, SegmentSeqException}
+import ordset.core.{Bound, SegmentSeqException}
 
 trait OrderedSetFactory[E, D <: Domain[E]] {
 

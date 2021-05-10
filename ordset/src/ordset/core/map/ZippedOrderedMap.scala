@@ -1,14 +1,13 @@
 package ordset.core.map
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.ZippedOrderedSet
 import ordset.core.value.ValueOps
 import ordset.core.{AbstractZippedSegmentSeq, SegmentSeq}
 import ordset.random.RngManager
 
-class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V](
-  override final val firstSeq: SegmentSeq[E, D, U1],
-  override final val secondSeq: SegmentSeq[E, D, U2],
+class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2](
+  override final val firstSeq: OrderedMapT[E, D, U1, S1],
+  override final val secondSeq: OrderedMapT[E, D, U2, S2],
   final val operatorFunc: (U1, U2) => V,
   final val firstInvariantFunc: U1 => Boolean,
   final val secondInvariantFunc: U2 => Boolean
@@ -17,7 +16,7 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V](
   final override val domainOps: DomainOps[E, D],
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
-) extends AbstractZippedSegmentSeq[E, D, U1, U2, V]
+) extends AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
   with OrderedMapCommons[E, D, V] {
 
   // Protected section -------------------------------------------------------- //
@@ -39,9 +38,9 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V](
 
 object ZippedOrderedMap {
 
-  def apply[E, D <: Domain[E], U1, U2, V](
-    first: SegmentSeq[E, D, U1],
-    second: SegmentSeq[E, D, U2],
+  def apply[E, D <: Domain[E], U1, U2, V, S1, S2](
+    first: OrderedMapT[E, D, U1, S1],
+    second: OrderedMapT[E, D, U2, S2],
     operatorFunc: (U1, U2) => V,
     firstInvariantFunc: U1 => Boolean,
     secondInvariantFunc: U2 => Boolean
@@ -50,6 +49,6 @@ object ZippedOrderedMap {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): ZippedOrderedMap[E, D, U1, U2, V] =
-    new ZippedOrderedMap[E, D, U1, U2, V](first, second, operatorFunc, firstInvariantFunc, secondInvariantFunc)
+  ): ZippedOrderedMap[E, D, U1, U2, V, S1, S2] =
+    new ZippedOrderedMap(first, second, operatorFunc, firstInvariantFunc, secondInvariantFunc)
 }

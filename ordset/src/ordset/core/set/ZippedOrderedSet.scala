@@ -1,19 +1,19 @@
 package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.{AbstractZippedSegmentSeq, OrderedSet}
+import ordset.core.AbstractZippedSegmentSeq
 import ordset.random.RngManager
 
-class ZippedOrderedSet[E, D <: Domain[E]](
-  override final val firstSeq: OrderedSet[E, D],
-  override final val secondSeq: OrderedSet[E, D],
+class ZippedOrderedSet[E, D <: Domain[E], S1, S2](
+  override final val firstSeq: OrderedSetT[E, D, S1],
+  override final val secondSeq: OrderedSetT[E, D, S2],
   final val operatorFunc: (Boolean, Boolean) => Boolean,
   final val invariantFunc: Boolean => Boolean
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
-) extends AbstractZippedSegmentSeq[E, D, Boolean, Boolean, Boolean]
+) extends AbstractZippedSegmentSeq[E, D, Boolean, Boolean, Boolean, S1, S2]
   with OrderedSetCommons[E, D] {
 
   // Protected section -------------------------------------------------------- //
@@ -35,35 +35,35 @@ class ZippedOrderedSet[E, D <: Domain[E]](
 
 object ZippedOrderedSet {
 
-  def apply[E, D <: Domain[E]](
-    first: OrderedSet[E, D],
-    second: OrderedSet[E, D],
+  def apply[E, D <: Domain[E], S1, S2](
+    first: OrderedSetT[E, D, S1],
+    second: OrderedSetT[E, D, S2],
     operatorFunc: (Boolean, Boolean) => Boolean,
     invariantFunc: Boolean => Boolean
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): ZippedOrderedSet[E, D] =
-    new ZippedOrderedSet[E, D](first, second, operatorFunc, invariantFunc)
+  ): ZippedOrderedSet[E, D, S1, S2] =
+    new ZippedOrderedSet(first, second, operatorFunc, invariantFunc)
 
-  def union[E, D <: Domain[E]](
-    first: OrderedSet[E, D],
-    second: OrderedSet[E, D]
+  def union[E, D <: Domain[E], S1, S2](
+    first: OrderedSetT[E, D, S1],
+    second: OrderedSetT[E, D, S2]
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): ZippedOrderedSet[E, D] =
-    new ZippedOrderedSet[E, D](first, second, _ || _, x => x)
+  ): ZippedOrderedSet[E, D, S1, S2] =
+    new ZippedOrderedSet(first, second, _ || _, x => x)
 
-  def intersection[E, D <: Domain[E]](
-    first: OrderedSet[E, D],
-    second: OrderedSet[E, D]
+  def intersection[E, D <: Domain[E], S1, S2](
+    first: OrderedSetT[E, D, S1],
+    second: OrderedSetT[E, D, S2]
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): ZippedOrderedSet[E, D] =
-    new ZippedOrderedSet[E, D](first, second, _ && _, !_)
+  ): ZippedOrderedSet[E, D, S1, S2] =
+    new ZippedOrderedSet(first, second, _ && _, !_)
 }

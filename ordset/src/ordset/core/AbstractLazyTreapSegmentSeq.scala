@@ -1,7 +1,6 @@
 package ordset.core
 
 import ordset.{Hash, util}
-import ordset.core.AbstractZippedSegmentSeq.ZippedSegment
 import ordset.core.domain.Domain
 import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
@@ -97,7 +96,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   protected var controlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]]
 
   @volatile
-  protected var zippedSeq: ZippedSegmentSeq[E, D, V, ControlValue[E, D, V], (V, ControlValue[E, D, V])]
+  protected var zippedSeq: ZSegmentSeq[E, D, V]
 
   protected val controlTupleOps: ValueOps[(V, ControlValue[E, D, V])] = ControlTupleOps.get(valueOps)
 
@@ -108,7 +107,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 //      controlSeq.synchronized {
 //        val newBaseSeq = zsegment.firstSeqSegment.patched(seq)
 //        val newControlSeq = zsegment.secondSeqSegment.patched(makeControlSeq(zsegment, seq))
-//        val newZippedSeq = ZippedOrderedMap.apply[E, D, V, ControlValue[E, D, V], (V, ControlValue[E, D, V])](
+//        val newZippedSeq = ZippedOrderedMap.apply(
 //          newBaseSeq, newControlSeq, Tuple2.apply, _ => false, _ => false
 //        )(
 //          domainOps, controlTupleOps, rngManager
@@ -225,8 +224,32 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
 object AbstractLazyTreapSegmentSeq {
 
+  import AbstractTreapSegmentSeq._
+  import AbstractZippedSegmentSeq._
+
+  protected type ZValue[E, D <: Domain[E], V] = (V, ControlValue[E, D, V])
+
   protected type ZSegment[E, D <: Domain[E], V] =
-    ZippedSegment[E, D, V, ControlValue[E, D, V], (V, ControlValue[E, D, V])]
+    ZippedSegment[
+      E,
+      D,
+      V,
+      ControlValue[E, D, V],
+      ZValue[E, D, V],
+      TreapSegmentBase[E, D, V],
+      TreapSegmentBase[E, D, ControlValue[E, D, V]]
+    ]
+
+  protected type ZSegmentSeq[E, D <: Domain[E], V] =
+    ZippedSegmentSeq[
+      E,
+      D,
+      V,
+      ControlValue[E, D, V],
+      ZValue[E, D, V],
+      TreapSegmentBase[E, D, V],
+      TreapSegmentBase[E, D, ControlValue[E, D, V]]
+    ]
 
   protected sealed trait ControlValue[E, D <: Domain[E], V] {
 
@@ -272,16 +295,15 @@ object AbstractLazyTreapSegmentSeq {
     import util.HashUtil._
 
     override def hash(x: ControlValue[E, D, V]): Int = x match {
-      case x: LazyValue[E, D, V] => System.identityHashCode(x)
-      case x: EagerValue[E, D, V] => product1Hash(x.isStable.##)
+      case x: LazyValue[_, _, _] => System.identityHashCode(x)
+      case x: EagerValue[_, _, _] => product1Hash(x.isStable.##)
     }
 
-    override def eqv(x: ControlValue[E, D, V], y: ControlValue[E, D, V]): Boolean =
-      (x, y) match {
-        case (x: LazyValue[E, D, V], y: LazyValue[E, D, V]) => x.eq(y)
-        case (x: EagerValue[E, D, V], y: EagerValue[E, D, V]) => x.isStable == y.isStable
-        case _ => false
-      }
+    override def eqv(x: ControlValue[E, D, V], y: ControlValue[E, D, V]): Boolean = (x, y) match {
+      case (x: LazyValue[_, _, _], y: LazyValue[_, _, _]) => x.eq(y)
+      case (x: EagerValue[_, _, _], y: EagerValue[_, _, _]) => x.isStable == y.isStable
+      case _ => false
+    }
   }
 
   object ControlValueHash {

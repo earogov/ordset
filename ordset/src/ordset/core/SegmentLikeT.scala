@@ -320,7 +320,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   for any `other` sequence
    * }}}
    */
-  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing

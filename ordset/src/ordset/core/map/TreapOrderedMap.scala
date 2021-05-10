@@ -91,7 +91,7 @@ object TreapOrderedMap {
     implicit
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): OrderedMap[E, D, V] = {
+  ): TreapSegmentSeq[E, D, V] = {
     val rng = rngManager.newUnsafeUniformRng()
     val boundOrd = domainOps.domain.boundOrd
     val valuesIter = values.iterator

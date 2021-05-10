@@ -1,6 +1,6 @@
 package test.ordset.core.specs.segmentSeq
 
-import ordset.core.OrderedSet
+import ordset.core.set.OrderedSet
 import ordset.core.domain.Domain
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
