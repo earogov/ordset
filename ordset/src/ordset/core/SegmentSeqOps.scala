@@ -7,31 +7,118 @@ import scala.annotation.tailrec
 object SegmentSeqOps {
 
   /**
-   * Returns upper bounds of subsequent segments from the given segment (inclusive).
+   * Returns upper bounds of all segments from current (inclusively or exclusively) to last (inclusively).
    * @return iterable of upper bounds.
    */
-  def getForwardUpperBoundsIterable[E, D <: Domain[E], V](segment: Segment[E, D, V]): Iterable[Bound.Upper[E]] =
-    segment.forwardIterable().map {
+  def getUpperBoundsIterableFromSegment[E, D <: Domain[E], V](
+    segment: Segment[E, D, V],
+    inclusive: Boolean
+  ): Iterable[Bound.Upper[E]] = {
+    val startSegment =
+      if (inclusive) segment
+      else segment match {
+        case s: Segment.WithNext[E, D, V] => s.moveNext
+        case _ => null
+      }
+    if (startSegment == null) Nil.toIterable
+    else startSegment.forwardIterable.map {
       case s: Segment.WithNext[E, D, V] => s.upperBound
       case _ => null
-    }.filterNot(_ == null)
-  
+    }.takeWhile(_ != null)
+  }
+
   /**
-   * Returns upper bounds of subsequent segments from the given segment (inclusive).
+   * Returns upper bounds of all segments from first (inclusively) to current (inclusively or exclusively).
+   * @return iterable of upper bounds.
+   */
+  def getUpperBoundsIterableToSegment[E, D <: Domain[E], V](
+    segment: Segment[E, D, V],
+    inclusive: Boolean
+  ): Iterable[Bound.Upper[E]] = {
+    if (inclusive)
+      segment.moveToFirst.forwardIterable.map { s =>
+        if (segment.domainOps.segmentUpperOrd.gt(s, segment)) null
+        else s match {
+          case s: Segment.WithNext[E, D, V] => s.upperBound
+          case _ => null
+        }
+      }.takeWhile(_ != null)
+    else
+      segment.moveToFirst.forwardIterable.map { s =>
+        if (segment.domainOps.segmentUpperOrd.gteqv(s, segment)) null
+        else s match {
+          case s: Segment.WithNext[E, D, V] => s.upperBound
+          case _ => null
+        }
+      }.takeWhile(_ != null)
+  }
+
+  /**
+   * Returns upper bounds of all segments from current (inclusively or exclusively) to last (inclusively).
    * @return list of upper bounds with its size.
    */
-  def getForwardUpperBoundsList[E, D <: Domain[E], V](segment: Segment[E, D, V]): (List[Bound.Upper[E]], Int) = {
+  def getUpperBoundsListFromSegment[E, D <: Domain[E], V](
+    segment: Segment[E, D, V],
+    inclusive: Boolean
+  ): (List[Bound.Upper[E]], Int) = {
+    var size = 0
+    var list: List[Bound.Upper[E]] = Nil
+
+    val ord = segment.domainOps.segmentUpperOrd
+    val loopCondition =
+      if (inclusive) (s: Segment[E, D, V]) => ord.gteqv(s, segment)
+      else (s: Segment[E, D, V]) => ord.gt(s, segment)
+
+    @tailrec
+    def loop(s: Segment[E, D, V]): Unit = if (loopCondition(s)) {
+      s match {
+        case s: Segment.WithNext[E, D, V] =>
+          size = size + 1
+          list = list.prepended(s.upperBound)
+        case _ => // nothing to do
+      }
+      s match {
+        case s: Segment.WithPrev[E, D, V] => loop(s.movePrev)
+        case _ => // stop
+      }
+    }
+
+    loop(segment.moveToLast)
+    (list, size)
+  }
+
+  /**
+   * Returns upper bounds of all segments from first (inclusively) to current (inclusively or exclusively).
+   * @return list of upper bounds with its size.
+   */
+  def getUpperBoundsListToSegment[E, D <: Domain[E], V](
+    segment: Segment[E, D, V],
+    inclusive: Boolean
+  ): (List[Bound.Upper[E]], Int) = {
     var size = 0
     var list = List.empty[Bound.Upper[E]]
+
     @tailrec
-    def loop(seg: Segment[E, D, V]): Unit = seg match {
-      case seg: Segment.WithNext[E, D, V] =>
-        size = size + 1
-        list = list.appended(seg.upperBound)
-        loop(seg.moveNext)
-      case _ =>
+    def loop(s: Segment[E, D, V]): Unit = {
+      s match {
+        case s: Segment.WithNext[E, D, V] =>
+          size = size + 1
+          list = list.prepended(s.upperBound)
+        case _ => // nothing to do
+      }
+      s match {
+        case s: Segment.WithPrev[E, D, V] => loop(s.movePrev)
+        case _ => // stop
+      }
     }
-    loop(segment)
+
+    val startSegment =
+      if (inclusive) segment
+      else segment match {
+        case s: Segment.WithPrev[E, D, V] => s.movePrev
+        case _ => null
+      }
+    if (startSegment != null) loop(startSegment)
     (list, size)
   }
 

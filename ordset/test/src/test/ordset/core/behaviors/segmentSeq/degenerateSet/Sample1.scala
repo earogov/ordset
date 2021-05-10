@@ -5,7 +5,7 @@ import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentPatchedTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentPatchedTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqPrependedTest, SegmentSeqSlicedTest}
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -13,6 +13,7 @@ import scala.language.postfixOps
 
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
+    with SegmentSeqPrependedTest[Int, D, Boolean]
     with SegmentSeqAppendedTest[Int, D, Boolean]
     with SegmentSeqSlicedTest[Int, D, Boolean]
     with SegmentPatchedTest[Int, D, Boolean] {
@@ -45,6 +46,94 @@ trait Sample1[D <: Domain[Int]]
     (-1`[`, false forAll x <  0 ) ::
     ( 0`]`, true  forAll x >= 0  & x <= 0 ) ::
     Nil
+
+  override def prependedCases: Seq[SegmentSeqPrependedTest.TestCase[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
+        //        bound
+        //          ]
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
+        //
+        // prepended:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //
+        // X---f---)|(---t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("A1"),
+          0 `]`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0 `)[`, 10 `)[`, 35 `)[`), complementary = false),
+          reference
+        ),
+        // current:
+        //                           bound
+        //                            )
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
+        //
+        // prepended:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //                                     false
+        // X---f---)[----t---)[--------](---t---)|(---t---X
+        //          0        10        20        30
+        //
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("A2"),
+          20 `)`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0 `)[`, 10 `)[`, 35 `)[`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <= 20) ::
+          (true  forAll x >  20 & x <  30) ::
+          (false forAll x >= 30 & x <= 30) ::
+          (true  forAll x >  30) ::
+          Nil
+        ),
+        // current:
+        //                            bound
+        //                              (
+        //        true               false     false
+        // X---f---)|(---f---)[---t---)|(---t---)|(---t---X
+        //          0        10        20        30
+        //
+        // prepended:
+        //
+        // X---f---)[----t---)[----------false-------)[-t-X
+        //          0        10                      35
+        //
+        // result:
+        //                                     false
+        // X---f---)[----t---)[--------](---t---)|(---t---X
+        //          0        10        20        30
+        //
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("A3"),
+          20 `(`,
+          factoryTuple._2.buildUnsafe(ArraySeq(0 `)[`, 10 `)[`, 35 `)[`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <= 20) ::
+          (true  forAll x >  20 & x <  30) ::
+          (false forAll x >= 30 & x <= 30) ::
+          (true  forAll x >  30) ::
+          Nil
+        )
+      )
+    }
+  }
 
   override def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>

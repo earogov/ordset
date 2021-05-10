@@ -77,9 +77,12 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   }
 
   // Transformation ----------------------------------------------------------- //
+  final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
+    prependedInternal(bound, getSegment, other)
+
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
     appendedInternal(bound, getSegment, other)
-  
+
   // Protected section -------------------------------------------------------- //
   /**
    * Collection of segments upper bounds.
@@ -147,21 +150,40 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   protected def consBelow(ind: Int): AbstractIndexedSegmentSeq[E, D, V]
 
   /**
-   * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
+   * Same as [[SegmentSeqT.prepended]] but with additional `segmentFunc` which allows to optimize receiving of segment
    * at `bound` for current sequence.
    *
-   * Default variant is to search segment at bound:
+   * One option is to search segment at bound:
    * {{{
    * segmentFunc = getSegment
    * }}}
-   * But if segment is already known one may perform this optimization:
+   * But if segment is already known one may perform such optimization:
+   * {{{
+   * `segmentFunc` = () => someSegment
+   * }}}
+   */
+  protected def prependedInternal(
+    bound: Bound[E],
+    segmentFunc: Bound[E] => IndexedSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
+  ): IndexedSegmentSeq[E, D, V]
+
+  /**
+   * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
+   * at `bound` for current sequence.
+   *
+   * One option is to search segment at bound:
+   * {{{
+   * segmentFunc = getSegment
+   * }}}
+   * But if segment is already known one may perform such optimization:
    * {{{
    * `segmentFunc` = () => someSegment
    * }}}
    */
   protected def appendedInternal(
     bound: Bound[E],
-    segmentFunc: Bound.Upper[E] => IndexedSegment[E, D, V],
+    segmentFunc: Bound[E] => IndexedSegment[E, D, V],
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
@@ -170,7 +192,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    */
   @inline
   protected final def getFirstSegmentValue: V = getSegmentValue(0)
-  
+
   /**
    * @return value of last segment.
    */
@@ -250,7 +272,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
 object AbstractIndexedSegmentSeq {
 
-  type IndexedSegment[E, D <: Domain[E], V] = 
+  type IndexedSegment[E, D <: Domain[E], V] =
     SegmentT[E, D, V, IndexedSegmentBase[E, D, V]] with IndexedSegmentBase[E, D, V]
 
   /**

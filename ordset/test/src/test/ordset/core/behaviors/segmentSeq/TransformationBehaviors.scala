@@ -9,6 +9,37 @@ import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 trait TransformationBehaviors[E, D <: Domain[E], V]
   extends SegmentSeqAssert[E, D, V] { this: AnyFunSpec =>
 
+  def segmentSeqCanBePrepended(
+    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqPrependedTest[E, D, V]]
+  )(
+    implicit valueHash: Hash[V]
+  ): Unit =
+    samples.foreach { sample =>
+      sample.prependedCases.foreach { prependedCase =>
+
+        it(s"should prepend $prependedCase to $sample before bound ${prependedCase.bound}") {
+          // `sequence.prepended(bound, otherSeq)` should be correct
+          val actual1 = sample.sequence.prepended(prependedCase.bound, prependedCase.prepended)
+          assertEqualSequences(prependedCase.expected, actual1)(sample.domainOps, valueHash)
+
+          // `sequence.prepended(bound, otherSeq)` should equals to `sequence.prepended(bound.flip, otherSeq)`
+          val actual2 = sample.sequence.prepended(prependedCase.bound.flip, prependedCase.prepended)
+          assertEqualSequences(prependedCase.expected, actual2)(sample.domainOps, valueHash)
+
+//          // `segment.prepended(otherSeq)` should be correct
+//          val boundSegment = sample.sequence.getSegment(prependedCase.bound)
+//          val actual3 = boundSegment.prepended(prependedCase.prepended)
+//          boundSegment match {
+//            case s: Segment.WithPrev[E, D, V] =>
+//              val expected = sample.sequence.prepended(s.lowerBound, prependedCase.prepended)
+//              assertEqualSequences(expected, actual3)(sample.domainOps, valueHash)
+//            case _ =>
+//              assertEqualSequences(sample.sequence, actual3)(sample.domainOps, valueHash)
+//          }
+        }
+      }
+    }
+
   def segmentSeqCanBeAppended(
     samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqAppendedTest[E, D, V]]
   )(
@@ -22,15 +53,19 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
           val actual1 = sample.sequence.appended(appendedCase.bound, appendedCase.appended)
           assertEqualSequences(appendedCase.expected, actual1)(sample.domainOps, valueHash)
 
-          // `segment.appened(otherSeq)` should be correct
+          // `sequence.appended(bound, otherSeq)` should equals to `sequence.appended(bound.flip, otherSeq)`
+          val actual2 = sample.sequence.appended(appendedCase.bound.flip, appendedCase.appended)
+          assertEqualSequences(appendedCase.expected, actual2)(sample.domainOps, valueHash)
+
+          // `segment.appended(otherSeq)` should be correct
           val boundSegment = sample.sequence.getSegment(appendedCase.bound)
-          val actual2 = boundSegment.appended(appendedCase.appended)
+          val actual3 = boundSegment.appended(appendedCase.appended)
           boundSegment match {
             case s: Segment.WithNext[E, D, V] =>
               val expected = sample.sequence.appended(s.upperBound, appendedCase.appended)
-              assertEqualSequences(expected, actual2)(sample.domainOps, valueHash)
+              assertEqualSequences(expected, actual3)(sample.domainOps, valueHash)
             case _ =>
-              assertEqualSequences(sample.sequence, actual2)(sample.domainOps, valueHash)
+              assertEqualSequences(sample.sequence, actual3)(sample.domainOps, valueHash)
           }
         }
       }
@@ -53,7 +88,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V]
           val actualAbove1 = sample.sequence.takenAbove(slicedCase.bound)
           assertEqualSequences(slicedCase.expectedAbove, actualAbove1)(sample.domainOps, valueHash)
 
-          // `sequence.sliced(blound)` should be correct
+          // `sequence.sliced(bound)` should be correct
           val actualSliced1 = sample.sequence.sliced(slicedCase.bound)
           assertEqualSequences(slicedCase.expectedBelow, actualSliced1._1)(sample.domainOps, valueHash)
           assertEqualSequences(slicedCase.expectedAbove, actualSliced1._2)(sample.domainOps, valueHash)

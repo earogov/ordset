@@ -40,13 +40,25 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
     (this, this)
+
+  final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+    val upperBound = bound.provideUpper
+
+    val otherBoundSegment = other.getSegment(upperBound)
+
+    val leftSequence = otherBoundSegment.takenBelow
+    val rightSequence = consPrepended(bound, otherBoundSegment.value)
+
+    if (rightSequence.isUniform) leftSequence
+    else rightSequence.prepended(bound, leftSequence)
+  }
   
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val lowerBound = bound.provideLower
     
     val otherBoundSegment = other.getSegment(lowerBound)
 
-    val leftSequence = consBounded(bound, otherBoundSegment.value)
+    val leftSequence = consAppended(bound, otherBoundSegment.value)
     val rightSequence = otherBoundSegment.takenAbove
     
     if (leftSequence.isUniform) rightSequence
@@ -55,7 +67,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   // Protected section -------------------------------------------------------- //
   /** Single segment instance. */
-  protected val segment: UniformSingleSegment[E, D, V] = new UniformSingleSegment(this)
+  protected val segment: UniformSingleSegment[E, D, V] = UniformSingleSegment(this)
 
   /** Value of single segment. */
   protected val value: V
@@ -67,6 +79,26 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    */
   protected def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 
+  /**
+   * Creates segment sequence:
+   * <tr>(minBound, U(bound)) -> `firstValue`</tr>
+   * <tr>(L(bound), maxBound) -> `this.value`</tr>
+   * <tr>where</tr>
+   * <tr>minBound - minimal bound of domain;</tr>
+   * <tr>maxBound - maximal bound of domain;</tr>
+   * <tr>
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise 
+   *   (see [[Bound.provideUpper]]);
+   * </tr>
+   * <tr>
+   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
+   *   (see [[Bound.provideLower]]).
+   * </tr>
+   * <tr></tr>
+   * If `firstValue` and `this.value` are equals returns current uniform sequence (bound in result sequence is dropped).
+   */
+  protected def consPrepended(bound: Bound[E], firstValue: V): SegmentSeq[E, D, V]
+  
   /**
    * Creates segment sequence:
    * <tr>(minBound, U(bound)) -> `this.value`</tr>
@@ -85,7 +117,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    * <tr></tr>
    * If `this.value` and `lastValue` are equals returns current uniform sequence (bound in result sequence is dropped).
    */
-  protected def consBounded(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V]
+  protected def consAppended(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V]
 }
 
 object AbstractUniformSegmentSeq {

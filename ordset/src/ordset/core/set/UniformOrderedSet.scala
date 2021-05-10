@@ -19,7 +19,19 @@ class UniformOrderedSet[E, D <: Domain[E]](
   @inline
   protected final override def isValueIncluded(value: Boolean): Boolean = value
 
-  protected final override def consBounded(bound: Bound[E], lastValue: Boolean): OrderedSet[E, D] =
+  protected final override def consPrepended(bound: Bound[E], firstValue: Boolean): OrderedSet[E, D] =
+    if (valueOps.eqv(firstValue, value))
+      this
+    else
+      TreapOrderedSet.fromIterableUnsafe(
+        List(bound.provideUpper), firstValue, domainOps
+      )(
+        OrderValidationFunc.alwaysTrue
+      )(
+        rngManager
+      )
+  
+  protected final override def consAppended(bound: Bound[E], lastValue: Boolean): OrderedSet[E, D] =
     if (valueOps.eqv(value, lastValue)) 
       this
     else

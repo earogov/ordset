@@ -141,7 +141,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * @return collection of all upper bounds.
    */
-  def upperBounds: Iterable[Bound.Upper[E]] = SegmentSeqOps.getForwardUpperBoundsIterable(firstSegment)
+  def upperBounds: Iterable[Bound.Upper[E]] = 
+    SegmentSeqOps.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true)
 
   /** @return first segment of sequence. */
   def firstSegment: SegmentT.First[E, D, V, S] with S
@@ -204,6 +205,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   
    *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
    *   for any bound
+   *
+   *   3. sequence == sequence.takenAbove(bound).prepended(bound, sequence.takenBelow(bound)) 
+   *   for any bound
    * }}}
    */
   def takenAbove(bound: Bound[E]): SegmentSeq[E, D, V]
@@ -255,6 +259,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   
    *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
    *   for any bound
+   *
+   *   3. sequence == sequence.takenAbove(bound).prepended(bound, sequence.takenBelow(bound)) 
+   *   for any bound
    * }}}
    */
    def takenBelow(bound: Bound[E]): SegmentSeq[E, D, V]
@@ -286,6 +293,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   
    *   2. sequence == sequence.sliced(bound)._1.appended(bound, sequence.sliced(bound)._2) 
    *   for any bound
+   *
+   *   3. sequence == sequence.sliced(bound)._2.prepended(bound, sequence.sliced(bound)._1) 
+   *   for any bound
    * }}}
    */
   def sliced(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
@@ -294,7 +304,79 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Returns sequence containing:
    * <tr>
    *   - segments {i ∈ [0, M]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
+   *   of `other` sequence for which l,,i,, `<` `bound`;
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [M+1, N]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
+   *   of original sequence for which u,,i,, `>` `bound`;
+   * </tr>
+   *
+   * {{{
+   * Example 1
+   *
+   * original:
+   *                        bound
+   *                         [
+   *   X--------](-----------------)[-----------X
+   *        A              B               C       - values
+   *
+   * other:
+   *
+   *   X--------------)[-------------](--------X
+   *           C               D           E       - values
+   *
+   * original.prepended(bound, other):
+   *
+   *                       bound
+   *                         v
+   *   X--------------)[----)[-----)[-----------X
+   *            C         D     B          C       - values
+   * }}}
+   * {{{
+   * Example 2
+   *
+   * original:
+   *                             bound
+   *                               )
+   *   X--------](-----------------)[-----------X
+   *        A              B               C       - values
+   *
+   * other:
+   *
+   *   X--------------)[----------------](-----X
+   *           C               D            E      - values
+   *
+   * original.prepended(bound, other):
+   *
+   *                             bound
+   *                               v
+   *   X--------------)[-----------)[-----------X
+   *           C             D            C        - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. sequence.prepended(lowerBound, other) == sequence.getSegment(lowerBound).prepended(other)
+   *   for any lower bound in sequence, i.e. for `lowerBound` such that:
+   *   sequence.getSegment(lowerBound).hasLowerBound(lowerBound) == true
+   *
+   *   2. sequence == sequence.takenAbove(bound).prepended(bound, sequence.takenBelow(bound))
+   *   for any bound
+   *
+   *   3. sequence.prepended(bound, other) == sequence.prepended(bound.flip, other)
+   *   for any bound and `other` sequence
+   *   
+   *   4. sequence.prepended(bound, other) == other.appended(bound, sequence)
+   *   for any bound and `other` sequence
+   * }}}
+   */
+  def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  
+  /**
+   * Returns sequence containing:
+   * <tr>
+   *   - segments {i ∈ [0, M]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
    *   of original sequence for which l,,i,, `<` `bound`;
+   * </tr>
    * <tr>
    *   - segments {i ∈ [M+1, N]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
    *   of `other` sequence for which u,,i,, `>` `bound`;
@@ -364,6 +446,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   for any bound
    *   
    *   3. sequence.appended(bound, other) == sequence.appended(bound.flip, other)
+   *   for any bound and `other` sequence
+   *
+   *   4. sequence.appended(bound, other) == other.prepended(bound, sequence)
    *   for any bound and `other` sequence
    * }}}
    */

@@ -1,6 +1,7 @@
 package ordset.core.set
 
 import ordset.array.SortedArraySearch
+import ordset.core.AbstractIndexedSegmentSeq.IndexedSegment
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
 import ordset.core._
 import ordset.random.RngManager
@@ -19,6 +20,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 
   import AbstractIndexedSegmentSeq._
   import SortedArraySearch._
+  import ArrayOrderedSet._
 
   validate()
 
@@ -44,9 +46,80 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     new ArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
   }
 
+  protected final override def prependedInternal(
+    bound: Bound[E],
+    segmentFunc: Bound[E] => IndexedSegment[E, D, Boolean],
+    other: OrderedSet[E, D]
+  ): IndexedSegmentSeq[E, D, Boolean] = {
+
+    // original:
+    //                bound  originalBoundSegment
+    //                   )   /
+    // X--false---](---true---](-----false----X
+    //            0           1                   - bounds indexes
+    //      0            1             2          - segments indexes
+    //
+    // other:
+    //                      otherBoundsProvider.boundSegment
+    //                       /
+    // X--t--)[-------false------](---true----X
+    //       0                   1                - bounds indexes
+    //    0              1              2         - segments indexes
+    //
+    // original.prepended(bound, other):
+    //
+    //                 bound
+    //                   v
+    // X--t--)[---false--)[-t-](-----false----X
+    //        0          1    2                   - bound indexes
+    //    0         1       2         3           - segments indexes
+    //
+    val upperBound = bound.provideUpper
+    val lowerBound = bound.provideLower
+
+    val originalBoundSegment = segmentFunc(lowerBound)
+    val otherBoundsProvider = BoundsProvider.backward(other, upperBound)
+
+    val originalBoundMatch = originalBoundSegment.hasLowerBound(lowerBound)
+    val boundValuesMatch = originalBoundSegment.hasValue(otherBoundsProvider.boundSegment.value)
+
+    val originalStartInd =
+      if (originalBoundMatch && !boundValuesMatch) originalBoundSegment.index - 1
+      else originalBoundSegment.index
+
+    val originalCopyLen = bounds.length - originalStartInd
+    val otherCopyLen = otherBoundsProvider.copyLen
+
+    if (originalCopyLen == bounds.length && otherCopyLen == 0 && boundValuesMatch) {
+      this
+    } else {
+      val skipBound = originalBoundMatch || boundValuesMatch
+
+      val newBoundsLen =
+        if (skipBound) originalCopyLen + otherCopyLen
+        else originalCopyLen + otherCopyLen + 1
+
+      if (newBoundsLen == 0)
+        consUniform(originalBoundSegment.value)
+      else {
+        val newBoundsArray = new Array[Bound.Upper[E]](newBoundsLen)
+        otherBoundsProvider.copyToArray(newBoundsArray, 0)
+        var nextInd = otherCopyLen
+        if (!skipBound) {
+          newBoundsArray(nextInd) = upperBound
+          nextInd = nextInd + 1
+        }
+        if (originalCopyLen > 0) {
+          Array.copy(bounds.unsafeArray, originalStartInd, newBoundsArray, nextInd, originalCopyLen)
+        }
+        new ArrayOrderedSet[E, D](ArraySeq.unsafeWrapArray(newBoundsArray), other.firstSegment.isIncluded)
+      }
+    }
+  }
+
   protected final override def appendedInternal(
     bound: Bound[E],
-    segmentFunc: Bound.Upper[E] => IndexedSegment[E, D, Boolean],
+    segmentFunc: Bound[E] => IndexedSegment[E, D, Boolean],
     other: OrderedSet[E, D]
   ): IndexedSegmentSeq[E, D, Boolean] = {
 
@@ -76,11 +149,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     val lowerBound = bound.provideLower
 
     val originalBoundSegment = segmentFunc(upperBound)
-
-    val otherBoundsProvider = other match {
-      case other: ArrayOrderedSet[E, D] => ArraySetBoundsProvider(other, lowerBound)
-      case _ => GeneralBoundsProvider(other, lowerBound)
-    }
+    val otherBoundsProvider = BoundsProvider.forward(other, lowerBound)
 
     val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)
     val boundValuesMatch = originalBoundSegment.hasValue(otherBoundsProvider.boundSegment.value)
@@ -109,52 +178,13 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
         }
         var nextInd = originalCopyLen
         if (!skipBound) {
-          newBoundsArray(originalCopyLen) = upperBound
+          newBoundsArray(nextInd) = upperBound
           nextInd = nextInd + 1
         }
         otherBoundsProvider.copyToArray(newBoundsArray, nextInd)
         new ArrayOrderedSet[E, D](ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
       }
     }
-  }
-
-  // Private section ---------------------------------------------------------- //
-  private sealed trait BoundsProvider() {
-
-    val boundSegment: Segment[E, D, Boolean]
-    
-    def copyLen: Int
-    
-    def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit
-  }
-  
-  private case class ArraySetBoundsProvider(
-    segmentSeq: ArrayOrderedSet[E, D],
-    bound: Bound.Lower[E]
-  ) extends BoundsProvider {
-    
-    override val boundSegment: IndexedSegment[E, D, Boolean] =
-      segmentSeq.getSegment(bound)
-    
-    override val copyLen: Int = segmentSeq.bounds.length - boundSegment.index
-    
-    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
-      if (copyLen > 0) Array.copy(segmentSeq.bounds.unsafeArray, boundSegment.index, arr, start, copyLen)
-  }
-  
-  private case class GeneralBoundsProvider(
-    segmentSeq: OrderedSet[E, D],
-    bound: Bound.Lower[E]
-  ) extends BoundsProvider {
-
-    override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegment(bound)
-
-    private val copyBounds: (List[Bound.Upper[E]], Int) = SegmentSeqOps.getForwardUpperBoundsList(boundSegment)
-
-    override def copyLen: Int = copyBounds._2
-
-    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
-      if (copyLen > 0) copyBounds._1.copyToArray(arr, start, copyLen)
   }
 }
 
@@ -220,4 +250,73 @@ object ArrayOrderedSet {
     implicit rngManager: RngManager
   ): OrderedSetFactory[E, D] =
     (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(validationFunc)
+
+  // Protected section -------------------------------------------------------- //
+  protected sealed trait BoundsProvider[E, D <: Domain[E]]() {
+
+    val boundSegment: Segment[E, D, Boolean]
+
+    def copyLen: Int
+
+    def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit
+  }
+
+  protected object BoundsProvider {
+
+    def forward[E, D <: Domain[E]](segmentSeq: OrderedSet[E, D], bound: Bound[E]): BoundsProvider[E, D] =
+      segmentSeq match {
+        case segmentSeq: ArrayOrderedSet[E, D] => ArraySetForwardProvider(segmentSeq, bound)
+        case _ => GeneralBoundsProvider(segmentSeq, bound, forward = true)
+      }
+
+    def backward[E, D <: Domain[E]](segmentSeq: OrderedSet[E, D], bound: Bound[E]): BoundsProvider[E, D] =
+      segmentSeq match {
+        case segmentSeq: ArrayOrderedSet[E, D] => ArraySetBackwardProvider(segmentSeq, bound)
+        case _ => GeneralBoundsProvider(segmentSeq, bound, forward = false)
+      }
+  }
+
+  protected final case class ArraySetForwardProvider[E, D <: Domain[E]](
+    segmentSeq: ArrayOrderedSet[E, D],
+    bound: Bound[E]
+  ) extends BoundsProvider[E, D] {
+
+    override val boundSegment: IndexedSegment[E, D, Boolean] = segmentSeq.getSegment(bound)
+
+    override val copyLen: Int = segmentSeq.bounds.length - boundSegment.index
+
+    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
+      if (copyLen > 0) Array.copy(segmentSeq.bounds.unsafeArray, boundSegment.index, arr, start, copyLen)
+  }
+
+  protected final case class ArraySetBackwardProvider[E, D <: Domain[E]](
+    segmentSeq: ArrayOrderedSet[E, D],
+    bound: Bound[E]
+  ) extends BoundsProvider[E, D] {
+
+    override val boundSegment: IndexedSegment[E, D, Boolean] = segmentSeq.getSegment(bound)
+
+    override val copyLen: Int = boundSegment.index
+
+    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
+      if (copyLen > 0) Array.copy(segmentSeq.bounds.unsafeArray, 0, arr, start, copyLen)
+  }
+
+  protected final case class GeneralBoundsProvider[E, D <: Domain[E]](
+    segmentSeq: OrderedSet[E, D],
+    bound: Bound[E],
+    forward: Boolean
+  ) extends BoundsProvider[E, D] {
+
+    override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegment(bound)
+
+    private val copyBounds: (List[Bound.Upper[E]], Int) =
+      if (forward) SegmentSeqOps.getUpperBoundsListFromSegment(boundSegment, inclusive = true)
+      else SegmentSeqOps.getUpperBoundsListToSegment(boundSegment, inclusive = false)
+
+    override def copyLen: Int = copyBounds._2
+
+    override def copyToArray(arr: Array[Bound.Upper[E]], start: Int): Unit =
+      if (copyLen > 0) copyBounds._1.copyToArray(arr, start, copyLen)
+  }
 }

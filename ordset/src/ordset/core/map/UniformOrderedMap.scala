@@ -3,7 +3,6 @@ package ordset.core.map
 import ordset.core.value.ValueOps
 import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
-import ordset.core.set.TreapOrderedSet
 import ordset.random.RngManager
 
 class UniformOrderedMap[E, D <: Domain[E], V](
@@ -20,13 +19,29 @@ class UniformOrderedMap[E, D <: Domain[E], V](
   @inline
   protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 
-  protected final override def consBounded(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V] =
+  protected final override def consPrepended(bound: Bound[E], firstValue: V): SegmentSeq[E, D, V] =
+    if (valueOps.eqv(firstValue, value))
+      this
+    else
+      TreapOrderedMap.fromIterableUnsafe(
+        List(bound.provideUpper), List(firstValue, value), domainOps
+      )(
+        OrderValidationFunc.alwaysTrue
+      )(
+        valueOps, rngManager
+      )
+  
+  protected final override def consAppended(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V] =
     if (valueOps.eqv(value, lastValue))
       this
-    else {
-      // TODO implement TreapOrderedMap
-      ???
-    }
+    else
+      TreapOrderedMap.fromIterableUnsafe(
+        List(bound.provideUpper), List(value, lastValue), domainOps
+      )(
+        OrderValidationFunc.alwaysTrue
+      )(
+        valueOps, rngManager
+      )
 }
 
 object UniformOrderedMap {

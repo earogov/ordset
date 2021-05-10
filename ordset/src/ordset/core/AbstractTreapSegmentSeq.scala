@@ -164,11 +164,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
    * at `bound` for current sequence.
    *
-   * Default variant is to search segment at bound:
+   * One option is to search segment at bound:
    * {{{
    * segmentFunc = getSegment
    * }}}
-   * But if segment is already known one may perform this optimization:
+   * But if segment is already known one may perform such optimization:
    * {{{
    * `segmentFunc` = () => someSegment
    * }}}
@@ -254,7 +254,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
         val mergedRoot = TreeMerge.foldTreaps(leftRoot, rightSequence.root)(Treap.nodePriorityOrder(boundOrd))
         consFromTree(mergedRoot, rightSequence.lastSegment.value)
       case _ =>
-        val buffer = otherBoundSegment.forwardIterable().foldLeft(
+        val buffer = otherBoundSegment.forwardIterable.foldLeft(
           BuildAsc.rightFrontToBuffer[Bound.Upper[E], V](leftRoot)
         ) {
           (buf, seg) => seg match {

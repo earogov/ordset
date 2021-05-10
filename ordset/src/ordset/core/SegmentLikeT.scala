@@ -113,13 +113,13 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def moveTo(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegment(bound)
 
   /** @return [[Iterable]] of all next segments of sequence starting from current. */
-  def forwardIterable(): Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
+  def forwardIterable: Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
 
-    override def iterator: Iterator[SegmentT[E, D, V, S] with S] = forwardIterator()
+    override def iterator: Iterator[SegmentT[E, D, V, S] with S] = forwardIterator
   }
 
   /** @return [[Iterator]] of all next segments of sequence starting from current. */
-  def forwardIterator(): Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
+  def forwardIterator: Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
     private var current: SegmentT[E, D, V, S] with S = _
 
@@ -138,13 +138,13 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   }
 
   /** @return [[Iterable]] of all previous segments of sequence starting from current. */
-  def backwardIterable(): Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
+  def backwardIterable: Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
 
-    override def iterator: Iterator[SegmentT[E, D, V, S] with S] = backwardIterator()
+    override def iterator: Iterator[SegmentT[E, D, V, S] with S] = backwardIterator
   }
 
   /** @return [[Iterator]] of all previous segments of sequence starting from current. */
-  def backwardIterator(): Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
+  def backwardIterator: Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
     private var current: SegmentT[E, D, V, S] with S = _
 
@@ -320,7 +320,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   for any `other` sequence
    * }}}
    */
-  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
   /**
    * Returns sequence containing
