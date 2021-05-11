@@ -149,6 +149,8 @@ object AbstractUniformSegmentSeq {
     override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
       (sequence, sequence)
 
+    override def prepended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
+
     override def appended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
 
     // Protected section -------------------------------------------------------- //

@@ -309,6 +309,11 @@ object AbstractIndexedSegmentSeq {
 
     override def sliced: (IndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
 
+    override def prepended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
+      // Default implementation for first segment. Must be overridden if segment has previous segment.
+      sequence
+    }
+    
     override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
       // Default implementation for last segment. Must be overridden if segment has next segment.
       sequence
@@ -362,6 +367,9 @@ object AbstractIndexedSegmentSeq {
     override def takenBelow: AbstractIndexedSegmentSeq[E, D, V]
 
     override def sliced: (AbstractIndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
+
+    override def prepended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
+      sequence.prependedInternal(lowerBound, _ => this, other)
   }
 
   /** Initial segment of sequence. */

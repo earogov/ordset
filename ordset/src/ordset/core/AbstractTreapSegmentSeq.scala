@@ -513,6 +513,11 @@ object AbstractTreapSegmentSeq {
 
     override def sliced: (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V])
 
+    override def prepended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
+      // Default implementation for first segment. Must be overridden if segment has previous segment.
+      sequence
+    }
+
     override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
       // Default implementation for last segment. Must be overridden if segment has next segment.
       sequence
@@ -580,6 +585,9 @@ object AbstractTreapSegmentSeq {
     override def takenBelow: AbstractTreapSegmentSeq[E, D, V]
 
     override def sliced: (AbstractTreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V])
+
+    override def prepended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+      sequence.prependedInternal(lowerBound, _ => this, other)
 
 //    override def patched(other: SegmentSeq[E, D, V]): AbstractTreapSegmentSeq[E, D, V]
   }

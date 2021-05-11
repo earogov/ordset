@@ -205,6 +205,9 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove)
    *   for any bound such that segment.contains(bound) == true
+   *
+   *   3. segment.sequence == segment.takenAbove.prepended(bound, segment.takenBelow)
+   *   for any bound such that segment.contains(bound) == true
    * }}}
    */
   def takenAbove: SegmentSeq[E, D, V]
@@ -239,6 +242,9 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    *   2. segment.sequence == segment.takenBelow.appended(bound, segment.takenAbove)
    *   for any bound such that segment.contains(bound) == true
+   *
+   *   3. segment.sequence == segment.takenAbove.prepended(bound, segment.takenBelow)
+   *   for any bound such that segment.contains(bound) == true
    * }}}
    */
   def takenBelow: SegmentSeq[E, D, V]
@@ -270,9 +276,60 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    *   2. segment.sequence == segment.sliced._1.appended(bound, segment.sliced._2)
    *   for any bound such that segment.contains(bound) == true
+   *
+   *   3. segment.sequence == segment.sliced._2.prepended(bound, segment.sliced._1)
+   *   for any bound such that segment.contains(bound) == true
    * }}}
    */
   def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
+
+  /**
+   * Returns sequence containing
+   * <tr>
+   *   - segments {i ∈ [0, M]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of `other` sequence for which u,,i,, `<` lowerBound
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [M+1, N]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of original sequence for which l,,i,, `≥` lowerBound
+   * </tr>
+   * <tr>where</tr>
+   * <tr>lowerBound - lower bound of current segment;</tr>
+   * <tr>upperBound - upper bound of current segment;</tr>
+   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * {{{
+   *
+   * original:
+   *                                    segment
+   *                                      v
+   *   X--------](------------------)[---------X
+   *        A              B         ^    C        - values
+   *                             lowerBound
+   *
+   * other:
+   *
+   *   X---)[-----------)[---)[-----------)[---X
+   *     D        E        F        G        H     - values
+   *
+   * segment.prepended(other):
+   *
+   *   X---)[-----------)[---)[-----)[---------X
+   *     D        E        F     G        C        - values
+   * }}}
+   * Methods definitions provide invariants:
+   * {{{
+   *   1. If segment has previous segment:
+   *   segment.prepended(other) == segment.sequence.prepended(segment.lowerBound, other)
+   *   for any `other` sequence
+   *
+   *   2. If segment is first:
+   *   segment.prepended(other) == segment.sequence
+   *   for any `other` sequence
+   * }}}
+   */
+  def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
   /**
    * Returns sequence containing
