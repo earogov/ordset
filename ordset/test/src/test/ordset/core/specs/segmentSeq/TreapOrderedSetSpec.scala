@@ -44,8 +44,10 @@ class TreapOrderedSetSpec extends AnyFunSpec
 
   describe("Treap based ordered set transformation operations:") {
 
+    it should behave like segmentSeqCanBePrepended(testSuite)
+
     it should behave like segmentSeqCanBeAppended(testSuite)
-    
+
     it should behave like segmentSeqCanBeSliced(testSuite)
 
     it should behave like segmentCanBePatched(testSuite)

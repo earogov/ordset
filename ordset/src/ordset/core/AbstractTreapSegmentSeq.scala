@@ -7,7 +7,7 @@ import ordset.tree.core.eval.{TreeStack, TreeVisitStack}
 import ordset.tree.core.fold.ContextExtract
 import ordset.tree.treap.Treap
 import ordset.tree.treap.immutable.transform.TreeSplit.{splitLeftFunc, splitRightFunc}
-import ordset.tree.treap.immutable.transform.{BuildAsc, SplitOutput, TreeMerge, TreeSplit}
+import ordset.tree.treap.immutable.transform.{BuildAsc, BuildDesc, SplitOutput, TreeMerge, TreeSplit}
 import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDownward, NodeUpward}
 import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitContext}
 
@@ -126,7 +126,10 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
       (leftSeq, rightSeq)
     }
   }
-  
+
+  final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+    prependedInternal(bound, getSegment, other)
+
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
     appendedInternal(bound, getSegment, other)
 
@@ -160,6 +163,123 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
       case _ => consUniform(value)
     }
 
+
+  /**
+   * Same as [[SegmentSeqT.prepended]] but with additional `segmentFunc` which allows to optimize receiving of segment
+   * at `bound` for current sequence.
+   *
+   * One option is to search segment at bound:
+   * {{{
+   * segmentFunc = getSegment
+   * }}}
+   * But if segment is already known one may perform such optimization:
+   * {{{
+   * `segmentFunc` = () => someSegment
+   * }}}
+   */
+  protected def prependedInternal(
+    bound: Bound[E],
+    segmentFunc: Bound[E] => TreapSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
+  ): TreapSegmentSeq[E, D, V] = {
+
+    // CASE 1                                              // CASE 2
+    // - bound doesn't match with segment bound            // - bound matches with segment bound
+    // - values of bound segments don't match              // - values of bound segments don't match
+    //                                                     //
+    // original:                                           // original:
+    //                bound  originalBoundSegment          //                      bound  originalBoundSegment
+    //                   )   /                             //                        ]    /
+    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X
+    //                                                     //
+    // other:                                              // other:
+    //                      otherBoundSegment              //                      otherBoundSegment
+    //                       /                             //                       /
+    // X--t--)[-------false------](---true----X            // X--f--)[--------true------](--false----X
+    //                                                     //
+    // original.prepended(bound, other):                   // original.prepended(bound, other):
+    //                                                     //
+    //                 bound                               //                      bound
+    //                   v                                 //                        v
+    // X--t--)[---false--)[-t-](-----false----X            // X--f--)[-----true------](-----false----X
+
+    // CASE 3                                              // CASE 4
+    // - bound doesn't match with segment bound            // - bound matches with segment bound
+    // - values of bound segments match                    // - values of bound segments match
+    //                                                     //
+    // original:                                           // original:
+    //                bound  originalBoundSegment          //                      bound  originalBoundSegment
+    //                   )   /                             //                        ]    /
+    // X--false---](---true---](-----false----X            // X--false---](---true---](-----false----X
+    //                                                     //
+    // other:                                              // other:
+    //                      otherBoundSegment              //                      otherBoundSegment
+    //                       /                             //                       /
+    // X--f--)[--------true------](---false---X            // X--t--)[-------false------](----true---X
+    //                                                     //
+    // original.prepended(bound, other):                   // original.prepended(bound, other):
+    //                                                     //
+    // X--f--)[-----true------](-----false----X            // X--t--)[-------------false-------------X
+
+    val upperBound = bound.provideUpper
+    val lowerBound = bound.provideLower
+
+    val originalBoundSegment = segmentFunc(lowerBound)
+    val otherBoundSegment = other.getSegment(upperBound)
+
+    val originalBoundMatch = originalBoundSegment.hasLowerBound(lowerBound)
+    val boundValuesMatch = originalBoundSegment.hasValue(otherBoundSegment.value)
+    val skipBound = originalBoundMatch || boundValuesMatch
+
+    val originalRightSequence: TreapSegmentSeq[E, D, V] =
+      if (originalBoundMatch && !boundValuesMatch) originalBoundSegment match {
+        case s: TreapSegmentWithPrev[E, D, V] => s.movePrev.takenAbove
+        case _ =>
+          // `originalBoundMatch` == `true` => `originalBoundSegment` has lower bound => impossible to get here
+          throw new AssertionError(s"Expected segment $originalBoundSegment has previous segment.")
+      }
+      else originalBoundSegment.takenAbove
+
+    val boundOrd = domainOps.boundOrd
+    val rng = rngManager.newUnsafeUniformRng()
+
+    val originalBuffer = BuildDesc.leftFrontToBuffer(getRoot(originalRightSequence))
+
+    val buffer =
+      if (skipBound) originalBuffer
+      else
+        BuildDesc.addToBuffer[Bound.Upper[E], Bound[E], V](
+          originalBuffer, upperBound, rng.nextInt(), otherBoundSegment.value
+        )(
+          boundOrd
+        )
+
+    val rightRoot = BuildDesc.finalizeBuffer(buffer)
+
+    if (otherBoundSegment.isFirst) consFromTree(rightRoot, lastSegment.value)
+    else otherBoundSegment match {
+      case otherBoundSegment: TreapSegmentWithPrev[E, D, V] =>
+        val leftSequence = otherBoundSegment.takenBelow
+        val mergedRoot = TreeMerge.foldTreaps(leftSequence.root, rightRoot)(Treap.nodePriorityOrder(boundOrd))
+        consFromTree(mergedRoot, lastSegment.value)
+      case _ =>
+        val buffer = otherBoundSegment.backwardIterable.drop(1).foldLeft(
+          BuildDesc.leftFrontToBuffer[Bound.Upper[E], V](rightRoot)
+        ) {
+          (buf, seg) => seg match {
+            case seg: Segment.WithNext[E, D, V] =>
+              BuildDesc.addToBuffer[Bound.Upper[E], Bound[E], V](
+                buf, seg.upperBound, rng.nextInt(), seg.value
+              )(
+                boundOrd
+              )
+            case _ => buf
+          }
+        }
+        consFromTree(BuildDesc.finalizeBuffer(buffer), lastSegment.value)
+    }
+  }
+
   /**
    * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
    * at `bound` for current sequence.
@@ -175,11 +295,13 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    */
   protected def appendedInternal(
     bound: Bound[E],
-    segmentFunc: Bound.Upper[E] => TreapSegment[E, D, V],
+    segmentFunc: Bound[E] => TreapSegment[E, D, V],
     other: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] = {
 
     // CASE 1                                              // CASE 2
+    // - bound doesn't match with segment bound            // - bound matches with segment bound
+    // - values of bound segments don't match              // - values of bound segments don't match
     //                                                     //
     // original:                                           // original:
     //                bound  originalBoundSegment          // originalBoundSegment  bound
@@ -198,6 +320,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     // X--false---](--t--)[--f---](---true----X            // X--false---](---true---](f](---true----X
 
     // CASE 3                                              // CASE 4
+    // - bound doesn't match with segment bound            // - bound matches with segment bound
+    // - values of bound segments match                    // - values of bound segments match
     //                                                     //
     // original:                                           // original:
     //                bound  originalBoundSegment          // originalBoundSegment  bound
@@ -224,12 +348,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     val skipBound = originalBoundMatch || boundValuesMatch
 
     val originalLeftSequence: TreapSegmentSeq[E, D, V] =
-      if (originalBoundMatch && !boundValuesMatch)
-        originalBoundSegment match {
-          case s: TreapSegmentWithNext[E, D, V] => s.moveNext.takenBelow
+      if (originalBoundMatch && !boundValuesMatch) originalBoundSegment match {
+        case s: TreapSegmentWithNext[E, D, V] => s.moveNext.takenBelow
+        case _ =>
           // `originalBoundMatch` == `true` => `originalBoundSegment` has upper bound => impossible to get here
-          case _ => throw new AssertionError("Unreachable case: next segment expected.")
-        }
+          throw new AssertionError(s"Expected segment $originalBoundSegment has next segment.")
+      }
       else originalBoundSegment.takenBelow
 
     val boundOrd = domainOps.boundOrd
@@ -351,17 +475,17 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 object AbstractTreapSegmentSeq {
 
   type TreapSegment[E, D <: Domain[E], V] = SegmentT[E, D, V, TreapSegmentBase[E, D, V]] with TreapSegmentBase[E, D, V]
-  
+
   def getRoot[E, D <: Domain[E], V](seq: TreapSegmentSeq[E, D, V]): ImmutableTreap[Bound.Upper[E], V] =
     seq match {
       case s: AbstractTreapSegmentSeq[E, D, V] => s.root
       case s: UniformSegmentSeq[E, D, V] => ImmutableTreap.Empty
     }
-  
+
   /**
    * Base trait for non single segments. It has either previous segment or next.
    */
-  sealed trait TreapSegmentBase[E, D <: Domain[E], V] 
+  sealed trait TreapSegmentBase[E, D <: Domain[E], V]
     extends SegmentLikeT[E, D, V, TreapSegmentBase[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
@@ -370,7 +494,7 @@ object AbstractTreapSegmentSeq {
     val context: NodeVisitContext[Bound.Upper[E], V]
 
     override val sequence: AbstractTreapSegmentSeq[E, D, V]
-    
+
     override def value: V = node.value
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
@@ -393,7 +517,7 @@ object AbstractTreapSegmentSeq {
       // Default implementation for last segment. Must be overridden if segment has next segment.
       sequence
     }
-    
+
 //    override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = this match {
 //      case s: Segment.Inner[E, D, V]    => s.movePrev.appended(other).appended(s.upperBound, sequence)
 //      case s: Segment.WithNext[E, D, V] => other.appended(s.upperBound, sequence)
@@ -481,7 +605,7 @@ object AbstractTreapSegmentSeq {
 
     override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractTreapSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
-      
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: TreapInitialSegment[E, D, V] = this
 
@@ -548,7 +672,7 @@ object AbstractTreapSegmentSeq {
     override def takenBelow: AbstractTreapSegmentSeq[E, D, V] = sliced._1
 
     override def sliced: (AbstractTreapSegmentSeq[E, D, V], AbstractTreapSegmentSeq[E, D, V]) = {
-      // Generally we cann't just fold `context` of current node with split function.
+      // Generally we can't just fold `context` of current node with split function.
       // Before we need to move down to get correct stack for split operation.
       //
       // If for example `A` is a current node then we need to move down to `C`.

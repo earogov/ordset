@@ -213,7 +213,7 @@ object BuildAsc {
           buffer.prepended(newNode)
         } else {
           // Precondition of method `toImmutableNode` is satisfied due to Lemma 1.
-          val immutableHead = toImmutableNode(head)
+          val immutableHead = BuildUtils.toImmutableNode(head)
           tail match {
             case second :: _ =>
               second.setRightNode(immutableHead)
@@ -262,7 +262,7 @@ object BuildAsc {
     buffer match {
       case head :: tail =>
         // Precondition of method `toImmutableNode` is satisfied due to Lemma 1.
-        val immutableHead = toImmutableNode(head)
+        val immutableHead = BuildUtils.toImmutableNode(head)
         tail match {
           case second :: _ =>
             second.setRightNode(immutableHead)
@@ -273,46 +273,4 @@ object BuildAsc {
       case _ =>
         ImmutableTreap.Empty
     }
-
-  /**
-   * Converts mutable node to immutable one.
-   *
-   * Preconditions:
-   *
-   * 1. All children of input node must be immutable.
-   */
-  private def toImmutableNode[K, V](mutable: MutableTreap.Node[K, V]): ImmutableTreap.Node[K, V] =
-    if (mutable.getLeftOrNull == null)
-      if (mutable.getRightOrNull == null)
-        new ImmutableTreap.Leaf[K, V](
-          mutable.key,
-          mutable.priority,
-          mutable.value
-        )
-      else
-        new ImmutableTreap.NodeWithRightOnly[K, V](
-          // Cast is safe by precondition.
-          mutable.getRightOrNull.asInstanceOf[ImmutableTreap.Node[K, V]],
-          mutable.key,
-          mutable.priority,
-          mutable.value
-        )
-    else
-      if (mutable.getRightOrNull == null)
-        new ImmutableTreap.NodeWithLeftOnly[K, V](
-          // Cast is safe by precondition.
-          mutable.getLeftOrNull.asInstanceOf[ImmutableTreap.Node[K, V]],
-          mutable.key,
-          mutable.priority,
-          mutable.value
-        )
-      else
-        new ImmutableTreap.NodeWithLeftRight[K, V](
-          // Casts are safe by precondition.
-          mutable.getLeftOrNull.asInstanceOf[ImmutableTreap.Node[K, V]],
-          mutable.getRightOrNull.asInstanceOf[ImmutableTreap.Node[K, V]],
-          mutable.key,
-          mutable.priority,
-          mutable.value
-        )
 }
