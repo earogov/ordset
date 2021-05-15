@@ -522,6 +522,14 @@ object AbstractTreapSegmentSeq {
       // Default implementation for last segment. Must be overridden if segment has next segment.
       sequence
     }
+
+    override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
+      // We need to override method here to provide more concrete type.
+      // But we can't make method abstract due to conflict with implementation in parent trait.
+      // So we just throw exception here and real implemented is provided subclasses.
+      // Trait is sealed so this is unreachable case.
+      throw new AssertionError("Implementation is provided in subclasses of sealed trait.")
+    }
   }
 
   /**
@@ -603,6 +611,8 @@ object AbstractTreapSegmentSeq {
     override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractTreapSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
 
+    override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = moveNext.prepended(other)
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: TreapInitialSegment[E, D, V] = this
 
@@ -643,6 +653,8 @@ object AbstractTreapSegmentSeq {
 
     override def sliced: (AbstractTreapSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
+
+    override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = movePrev.appended(other)
 
     // Protected section -------------------------------------------------------- //
     protected override def self: TreapTerminalSegment[E, D, V] = this
@@ -726,6 +738,9 @@ object AbstractTreapSegmentSeq {
       val leftSeq = sequence.consFromNode(leftNode, rightSeq.firstSegment.value)
       (leftSeq, rightSeq)
     }
+
+    override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+      moveNext.prepended(movePrev.appended(other))
 
     // Protected section -------------------------------------------------------- //
     protected override def self: TreapInnerSegment[E, D, V] = this

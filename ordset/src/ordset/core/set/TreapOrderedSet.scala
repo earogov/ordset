@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core._
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
@@ -8,6 +8,7 @@ import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
 
 import java.util.NoSuchElementException
+import scala.util.control.NonFatal
 
 class TreapOrderedSet[E, D <: Domain[E]] protected(
   final override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
@@ -53,43 +54,29 @@ object TreapOrderedSet {
     new TreapOrderedSet(root, lastValue)
 
   /**
-   * Creates ordered set from collection of upper bounds.
+   * Creates ordered set from collection of upper bounds. See [[OrderedSetFactory.unsafeBuildAsc]] for details.
    *
-   * Preconditions:
-   *
-   * 1. `bounds` collection is ordered according to `validationFunc`:
-   * <tr>
-   *   validationFunc(bounds,,i-1,,, bounds,,i,,) == true for each i in [1, bounds.size - 1]
-   * </tr>
-   * <tr></tr>
-   * 
-   * Method is considered 'unsafe' because it throws exception if preconditions are violated.
-   *
-   * @param bounds collection of upper bounds.
-   * @param complementary when `true`: first segment is included in set, second - excluded, etc;
-   *                      when `false`: first segment is excluded, second - included, etc.
-   * @param domainOps domain related functions.
-   * @param validationFunc validates ordering of `bounds`.
-   * @param rngManager provides random numbers generator.
+   * Precondition 1 of [[OrderedSetFactory.unsafeBuildAsc]] is checked by `boundsValidation` function which
+   * is applied to each pair of adjacent bounds. [[SegmentSeqException]] is thrown in case of failure.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
-  def fromIterableUnsafe[E, D <: Domain[E]](
+  def unsafeBuildAsc[E, D <: Domain[E]](
     bounds: IterableOnce[Bound.Upper[E]],
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc,
+    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
   )(
     implicit rngManager: RngManager
   ): OrderedSet[E, D] = {
-    val rng = rngManager.newUnsafeUniformRng()
-    val boundOrd = domainOps.domain.boundOrd
     try {
+      val rng = rngManager.newUnsafeUniformRng()
+      val boundOrd = domainOps.domain.boundOrd
       var value = complementary
       val buffer =
-        OrderValidationFunc.foldIterableAfter[Bound.Upper[E], List[MutableTreap.Node[Bound.Upper[E], Boolean]]](
+        SeqValidationPredicate.foldIterableAfter[Bound.Upper[E], List[MutableTreap.Node[Bound.Upper[E], Boolean]]](
           bounds,
-          validationFunc,
+          boundsValidation,
           List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]],
           (buf, bnd) => {
             val buffer =
@@ -104,25 +91,25 @@ object TreapOrderedSet {
         )
       val root = BuildAsc.finalizeBuffer(buffer)
       root match {
-        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] => 
+        case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
           TreapOrderedSet.unchecked(r, value)(domainOps, rngManager)
-        case _ => 
+        case _ =>
           UniformOrderedSet(value)(domainOps, rngManager)
       }
     } catch {
-      case e @ (_: NoSuchElementException | _: IllegalArgumentException) => throw SegmentSeqException(e)
+      case NonFatal(e) => throw SegmentSeqException.seqBuildFailed(e)
     }
   }
 
   /**
-   * Returns ordered set factory.
+   * Returns ordered set factory. Implementation is based on [[unsafeBuildAsc]].
    */
   def getFactory[E, D <: Domain[E]](
     domainOps: DomainOps[E, D]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
   )(
     implicit rngManager: RngManager
   ): OrderedSetFactory[E, D] =
-    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(validationFunc)(rngManager)
+    (bounds, complementary) => unsafeBuildAsc(bounds, complementary, domainOps)(boundsValidation)(rngManager)
 }

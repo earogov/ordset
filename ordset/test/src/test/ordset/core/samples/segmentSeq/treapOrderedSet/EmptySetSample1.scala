@@ -20,5 +20,5 @@ class EmptySetSample1[D <: Domain[Int]](
   override def labels: Set[Label] = super.labels + Labels.emptySet
 
   override def sequence: GenSegmentSeq =
-    TreapOrderedSet.fromIterableUnsafe[Int, D](bounds, complementary, domainOps)()(TestRngUtil.defaultRngManager(seed))
+    TreapOrderedSet.unsafeBuildAsc[Int, D](bounds, complementary, domainOps)()(TestRngUtil.defaultRngManager(seed))
 }

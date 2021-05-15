@@ -1,7 +1,7 @@
 package ordset.core
 
 import ordset.core.value.ValueOps
-import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.TreapOrderedSet
 
 // TODO: class description.

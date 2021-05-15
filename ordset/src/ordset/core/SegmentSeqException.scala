@@ -12,4 +12,7 @@ object SegmentSeqException {
   def apply(message: String): SegmentSeqException = new SegmentSeqException(message, null)
 
   def apply(cause: Throwable): SegmentSeqException = new SegmentSeqException("", cause)
+  
+  def seqBuildFailed(cause: Throwable): SegmentSeqException = 
+    new SegmentSeqException("Unable to build segment sequence", cause)
 }

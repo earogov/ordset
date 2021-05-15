@@ -2,7 +2,7 @@ package ordset.core.set
 
 import ordset.array.SortedArraySearch
 import ordset.core.AbstractIndexedSegmentSeq.IndexedSegment
-import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core._
 import ordset.random.RngManager
 
@@ -211,9 +211,9 @@ object ArrayOrderedSet {
    *
    * Preconditions:
    *
-   * 1. `bounds` collection is ordered according to `validationFunc`:
+   * 1. `bounds` collection is ordered according to `boundsValidationFunc`:
    *
-   * validationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
+   * boundsValidationFunc(bounds^i-1^, bounds^i^) == true for each i in [1, bounds.size]
    */
   @throws[SegmentSeqException]("if preconditions are violated")
   def fromIterableUnsafe[E, D <: Domain[E]](
@@ -221,18 +221,18 @@ object ArrayOrderedSet {
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+    boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
   )(
     implicit rngManager: RngManager
   ): OrderedSet[E, D] = bounds match {
     case bounds: ArraySeq[Bound.Upper[E]] =>
-      OrderValidationFunc.validateIterable(bounds, validationFunc)
+      SeqValidationPredicate.validateIterable(bounds, boundsValidationFunc)
       unchecked(bounds, complementary)(domainOps, rngManager)
     case _ =>
       val boundsArraySeq =
-        OrderValidationFunc.foldIterableAfter[Bound.Upper[E], ArraySeq[Bound.Upper[E]]](
+        SeqValidationPredicate.foldIterableAfter[Bound.Upper[E], ArraySeq[Bound.Upper[E]]](
           bounds,
-          validationFunc,
+          boundsValidationFunc,
           ArraySeq.empty[Bound.Upper[E]],
           (seq, bnd) => seq.appended(bnd)
         )
@@ -245,11 +245,11 @@ object ArrayOrderedSet {
   def getFactory[E, D <: Domain[E]](
     domainOps: DomainOps[E, D]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] =  domainOps.boundOrd.strictValidationFunc
+    boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] =  domainOps.boundOrd.strictValidation
   )(
     implicit rngManager: RngManager
   ): OrderedSetFactory[E, D] =
-    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(validationFunc)
+    (bounds, complementary) => fromIterableUnsafe[E, D](bounds, complementary, domainOps)(boundsValidationFunc)
 
   // Protected section -------------------------------------------------------- //
   protected sealed trait BoundsProvider[E, D <: Domain[E]]() {

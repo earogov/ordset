@@ -1,7 +1,7 @@
 package ordset.core.map
 
 import ordset.core._
-import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
@@ -9,6 +9,7 @@ import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
 
 import java.util.NoSuchElementException
+import scala.util.control.NonFatal
 
 class TreapOrderedMap[E, D <: Domain[E], V] protected(
   final override val root: ImmutableTreap.Node[Bound.Upper[E], V],
@@ -40,7 +41,7 @@ class TreapOrderedMap[E, D <: Domain[E], V] protected(
 object TreapOrderedMap {
 
   /**
-   * Creates ordered map from treap node (see [[AbstractSegmentSeq]]).
+   * Creates ordered map from treap node.
    *
    * Validation of treap invariants (keys and priorities order) is not applied.
    */
@@ -56,81 +57,96 @@ object TreapOrderedMap {
     new TreapOrderedMap(root, lastValue)
 
   /**
-   * Creates ordered map from collections of upper bounds and values.
+   * Creates ordered map from collections of upper bounds and values. See [[OrderedMapFactory.unsafeBuildAsc]]
+   * for details.
    *
-   * Preconditions:
+   * Precondition 3 of [[OrderedMapFactory.unsafeBuildAsc]] is checked by `boundsValidation` function which
+   * is applied to each pair of adjacent bounds (except last bound == null). [[SegmentSeqException]] is thrown
+   * in case of failure.
    *
-   * 1. `bounds` collection is ordered according to `validationFunc`:
-   * <tr>
-   *   validationFunc(bounds,,i-1,,, bounds,,i,,) == true for each i in [1, bounds.size - 1]
-   * </tr>
-   * 
-   * 2. `values` collection size is greater by 1 then `bounds` size:
-   * <tr>
-   *   values.size == bounds.size + 1
-   * </tr>
-   * <tr></tr>
-   *
-   * Method is considered 'unsafe' because it throws exception if preconditions are violated.
-   *
-   * @param bounds collection of upper bounds.
-   * @param values collection of values.
-   * @param domainOps domain related functions.
-   * @param validationFunc validates ordering of `bounds`.
-   * @param rngManager provides random numbers generator.
-   * @param valueOps value related functions (equality and inclusion typeclasses, etc)
+   * Precondition 4 of [[OrderedMapFactory.unsafeBuildAsc]] is checked by `valuesValidation` function which
+   * is applied to each pair of adjacent values.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
-  def fromIterableUnsafe[E, D <: Domain[E], V](
-    bounds: IterableOnce[Bound.Upper[E]],
-    values: IterableOnce[V],
-    domainOps: DomainOps[E, D]
+  def unsafeBuildAsc[E, D <: Domain[E], V](
+    seq: IterableOnce[(Bound.Upper[E], V)],
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc,
+    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
+    valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
-    implicit
-    valueOps: ValueOps[V],
-    rngManager: RngManager
+    implicit rngManager: RngManager,
   ): TreapSegmentSeq[E, D, V] = {
-    val rng = rngManager.newUnsafeUniformRng()
-    val boundOrd = domainOps.domain.boundOrd
-    val valuesIter = values.iterator
     try {
-      val buffer =
-        OrderValidationFunc.foldIterableAfter[Bound.Upper[E], List[MutableTreap.Node[Bound.Upper[E], V]]](
-          bounds,
-          validationFunc,
-          List.empty[MutableTreap.Node[Bound.Upper[E], V]],
-          (buf, bnd) =>
-            BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
-              buf, bnd, rng.nextInt(), valuesIter.next()
-            )(
-              boundOrd
-            )
-        )
-      val root = BuildAsc.finalizeBuffer(buffer)
+      val rng = rngManager.newUnsafeUniformRng()
+      val boundOrd = domainOps.domain.boundOrd
+      val iter = seq.iterator
+      val lastValue = new ValueHolder[V]()
+      var buffer: List[MutableTreap.Node[Bound.Upper[E], V]] = Nil
+      var root: ImmutableTreap[Bound.Upper[E], V] = null
+      var prevItem: (Bound.Upper[E], V) = null
+      while (iter.hasNext) {
+        if (root != null) {
+          throw new IllegalArgumentException("Item with bound == null must be last in input sequence")
+        }
+        val item = iter.next()
+
+        // Validation
+        if (prevItem != null) {
+          // Exclude last item with bound == null.
+          if (item._1 != null) boundsValidation.validate(prevItem._1, item._1)
+          valuesValidation(prevItem._2, item._2)
+        }
+        // Building
+        if (item._1 != null) {
+          buffer = BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
+            buffer, item._1, rng.nextInt(), item._2
+          )(
+            boundOrd
+          )
+        } else {
+          root = BuildAsc.finalizeBuffer(buffer)
+          lastValue.set(item._2)
+        }
+        prevItem = item
+      }
+      if (root == null) {
+        throw new IllegalArgumentException("Last item in input sequence must have bound == null")
+      }
       root match {
         case r: ImmutableTreap.Node[Bound.Upper[E], V] =>
-          TreapOrderedMap.unchecked(r, valuesIter.next())(domainOps, valueOps, rngManager)
+          TreapOrderedMap.unchecked(r, lastValue.get)(domainOps, valueOps, rngManager)
         case _ =>
-          UniformOrderedMap(valuesIter.next())(domainOps, valueOps, rngManager)
+          UniformOrderedMap(lastValue.get)(domainOps, valueOps, rngManager)
       }
     } catch {
-      case e @ (_: NoSuchElementException | _: IllegalArgumentException) => throw SegmentSeqException(e)
+      case NonFatal(e) => throw SegmentSeqException.seqBuildFailed(e)
+    }
+  }
+
+  private class ValueHolder[V]{
+    private var value: V = _
+
+    def get: V = value
+
+    def set(v: V): Unit = {
+      value = v
     }
   }
 
   /**
-   * Returns ordered map factory.
+   * Returns ordered map factory. Implementation is based on [[unsafeBuildAsc]].
    */
   def getFactory[E, D <: Domain[E], V](
-    domainOps: DomainOps[E, D]
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V]
   )(
-    validationFunc: OrderValidationFunc[Bound.Upper[E]] = domainOps.boundOrd.strictValidationFunc
+    boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
+    valuesValidationFunc: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit
-    valueOps: ValueOps[V],
     rngManager: RngManager
   ): OrderedMapFactory[E, D, V] =
-    (bounds, values) => fromIterableUnsafe[E, D, V](bounds, values, domainOps)(validationFunc)(valueOps, rngManager)
+    seq => unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidationFunc, valuesValidationFunc)(rngManager)
 }

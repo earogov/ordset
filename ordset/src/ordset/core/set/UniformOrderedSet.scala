@@ -1,7 +1,7 @@
 package ordset.core.set
 
-import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, TreapSegmentSeq}
-import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationPredicate, TreapSegmentSeq}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
 class UniformOrderedSet[E, D <: Domain[E]](
@@ -23,10 +23,10 @@ class UniformOrderedSet[E, D <: Domain[E]](
     if (valueOps.eqv(firstValue, value))
       this
     else
-      TreapOrderedSet.fromIterableUnsafe(
+      TreapOrderedSet.unsafeBuildAsc[E, D](
         List(bound.provideUpper), firstValue, domainOps
       )(
-        OrderValidationFunc.alwaysTrue
+        SeqValidationPredicate.alwaysTrue
       )(
         rngManager
       )
@@ -35,10 +35,10 @@ class UniformOrderedSet[E, D <: Domain[E]](
     if (valueOps.eqv(value, lastValue)) 
       this
     else
-      TreapOrderedSet.fromIterableUnsafe(
+      TreapOrderedSet.unsafeBuildAsc[E, D](
         List(bound.provideUpper), value, domainOps
       )(
-        OrderValidationFunc.alwaysTrue
+        SeqValidationPredicate.alwaysTrue
       )(
         rngManager
       )

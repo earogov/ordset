@@ -1,8 +1,8 @@
 package ordset.core.map
 
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq}
-import ordset.core.domain.{Domain, DomainOps, OrderValidationFunc}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationPredicate}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
 class UniformOrderedMap[E, D <: Domain[E], V](
@@ -23,24 +23,24 @@ class UniformOrderedMap[E, D <: Domain[E], V](
     if (valueOps.eqv(firstValue, value))
       this
     else
-      TreapOrderedMap.fromIterableUnsafe(
-        List(bound.provideUpper), List(firstValue, value), domainOps
+      TreapOrderedMap.unsafeBuildAsc[E, D, V](
+        List((bound.provideUpper, firstValue), (null, value)), domainOps, valueOps
       )(
-        OrderValidationFunc.alwaysTrue
+        SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
       )(
-        valueOps, rngManager
+        rngManager
       )
   
   protected final override def consAppended(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V] =
     if (valueOps.eqv(value, lastValue))
       this
     else
-      TreapOrderedMap.fromIterableUnsafe(
-        List(bound.provideUpper), List(value, lastValue), domainOps
+      TreapOrderedMap.unsafeBuildAsc[E, D, V](
+        List((bound.provideUpper, value), (null, lastValue)), domainOps, valueOps
       )(
-        OrderValidationFunc.alwaysTrue
+        SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
       )(
-        valueOps, rngManager
+        rngManager
       )
 }
 

@@ -1,6 +1,7 @@
 package ordset.core.domain
 
 import ordset._
+import ordset.core.SeqValidationPredicate
 import ordset.util.label.Label
 import ordset.util.types.{>|<, SingleValue}
 
@@ -22,12 +23,12 @@ trait DirectedOrder[E, +Dir <: OrderDir] extends Order[E] with Hash[E] {
   /**
    * Validation function wrapping [[validateStrictly]] method.
    */
-  final lazy val strictValidationFunc: OrderValidationFunc[E] = validateStrictly _
+  final lazy val strictValidation: SeqValidationPredicate[E] = validateStrictly
 
   /**
    * Validation function wrapping [[validateNonStrictly]] method.
    */
-  final lazy val nonStrictValidationFunc: OrderValidationFunc[E] = validateNonStrictly _
+  final lazy val nonStrictValidation: SeqValidationPredicate[E] = validateNonStrictly
 
   /**
    * Value representation of Dir type parameter.

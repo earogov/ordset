@@ -52,7 +52,7 @@ trait Sample1[D <: Domain[Int]]
         SegmentSeqPrependedTest.TestCase(
           factoryTuple._1 + Label("A1"),
           0 `]`,
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
           reference
         ),
 //        // current:
@@ -91,7 +91,7 @@ trait Sample1[D <: Domain[Int]]
         SegmentSeqAppendedTest.TestCase(
           factoryTuple._1 + Label("A1"),
           0`]`,
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
           reference
         ),
         // current:
@@ -106,7 +106,7 @@ trait Sample1[D <: Domain[Int]]
         SegmentSeqAppendedTest.TestCase(
           factoryTuple._1 + Label("B1"),
           0`]`,
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = false),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
           (true  forAll x <= 0) ::
           (false forAll x >  0) ::
           Nil
@@ -197,7 +197,7 @@ trait Sample1[D <: Domain[Int]]
         SegmentPatchedTest.TestCase(
           factoryTuple._1 + Label("A1"),
           0 `[`,
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = false),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
           (false forAll x) ::
           Nil
         ),
@@ -212,7 +212,7 @@ trait Sample1[D <: Domain[Int]]
         SegmentPatchedTest.TestCase(
           factoryTuple._1 + Label("A2"),
           0 `[`,
-          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
           reference
         ),
         // current:
@@ -227,7 +227,7 @@ trait Sample1[D <: Domain[Int]]
         SegmentPatchedTest.TestCase(
           factoryTuple._1 + Label("B1"),
           0 `[`,
-          factoryTuple._2.buildUnsafe(ArraySeq(0 `)[`), complementary = false),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(0 `)[`), complementary = false),
           (false forAll x <  0) ::
           (true  forAll x >= 0) ::
           Nil
