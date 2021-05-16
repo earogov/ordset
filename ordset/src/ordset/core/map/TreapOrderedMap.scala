@@ -7,6 +7,7 @@ import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
+import ordset.util.ValueHolder
 
 import java.util.NoSuchElementException
 import scala.util.control.NonFatal
@@ -20,7 +21,7 @@ class TreapOrderedMap[E, D <: Domain[E], V] protected(
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
 ) extends AbstractTreapSegmentSeq[E, D, V]
-  with OrderedMapCommons[E, D, V]{
+  with OrderedMapCommons[E, D, V] {
 
   // Protected section -------------------------------------------------------- //
   @inline
@@ -125,14 +126,22 @@ object TreapOrderedMap {
     }
   }
 
-  private class ValueHolder[V]{
-    private var value: V = _
-
-    def get: V = value
-
-    def set(v: V): Unit = {
-      value = v
-    }
+  /**
+   * Converts input segment sequence to [[TreapSegmentSeq]].
+   */
+  def convertSegmentSeq[E, D <: Domain[E], V](seq: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = seq match {
+    case seq: TreapSegmentSeq[E, D, V] => seq
+    case _ => 
+      unsafeBuildAsc(
+        SegmentSeqOps.getBoundValueIterableForSeq(seq),
+        seq.domainOps,
+        seq.valueOps
+      )(
+        SeqValidationPredicate.alwaysTrue,
+        SeqValidationPredicate.alwaysTrue
+      )(
+        seq.rngManager
+      )
   }
 
   /**
@@ -145,8 +154,7 @@ object TreapOrderedMap {
     boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
     valuesValidationFunc: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
-    implicit
-    rngManager: RngManager
+    implicit rngManager: RngManager
   ): OrderedMapFactory[E, D, V] =
     seq => unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidationFunc, valuesValidationFunc)(rngManager)
 }

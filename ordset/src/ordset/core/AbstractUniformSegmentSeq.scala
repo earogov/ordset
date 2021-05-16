@@ -134,6 +134,8 @@ object AbstractUniformSegmentSeq {
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
 
+    override def self: UniformSingleSegment[E, D, V] = this
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: UniformSingleSegment[E, D, V] = this
 
@@ -152,8 +154,5 @@ object AbstractUniformSegmentSeq {
     override def prepended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
 
     override def appended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: UniformSingleSegment[E, D, V] = this
   }
 }

@@ -389,6 +389,8 @@ object AbstractIndexedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override val index: Int = 0
 
+    override def self: IndexedInitialSegment[E, D, V] = this
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: IndexedInitialSegment[E, D, V] = this
 
@@ -401,9 +403,6 @@ object AbstractIndexedSegmentSeq {
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = moveNext.prepended(other)
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: IndexedInitialSegment[E, D, V] = this
   }
 
   /** Terminal segment of sequence. */
@@ -414,6 +413,8 @@ object AbstractIndexedSegmentSeq {
 
     // Inspection --------------------------------------------------------------- //
     override val index: Int = sequence.lastSegmentIndex
+
+    override def self: IndexedTerminalSegment[E, D, V] = this
 
     // Navigation --------------------------------------------------------------- //
     override def moveToLast: IndexedTerminalSegment[E, D, V] = this
@@ -427,9 +428,6 @@ object AbstractIndexedSegmentSeq {
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = movePrev.appended(other)
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: IndexedTerminalSegment[E, D, V] = this
   }
 
   /**
@@ -446,6 +444,9 @@ object AbstractIndexedSegmentSeq {
     with IndexedSegmentWithPrev[E, D, V]
     with IndexedSegmentWithNext[E, D, V] {
 
+    // Inspection --------------------------------------------------------------- //
+    override def self: IndexedInnerSegment[E, D, V] = this
+    
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: AbstractIndexedSegmentSeq[E, D, V] = sequence.consAbove(index)
 
@@ -456,8 +457,5 @@ object AbstractIndexedSegmentSeq {
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
       moveNext.prepended(movePrev.appended(other))
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: IndexedInnerSegment[E, D, V] = this
   }
 }

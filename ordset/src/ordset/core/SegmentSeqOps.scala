@@ -20,7 +20,7 @@ object SegmentSeqOps {
         case s: Segment.WithNext[E, D, V] => s.moveNext
         case _ => null
       }
-    if (startSegment == null) Nil.toIterable
+    if (startSegment == null) Nil
     else startSegment.forwardIterable.map {
       case s: Segment.WithNext[E, D, V] => s.upperBound
       case _ => null
@@ -121,6 +121,35 @@ object SegmentSeqOps {
     if (startSegment != null) loop(startSegment)
     (list, size)
   }
+
+  /**
+   * Returns iterable of (bound, value) tuples for given segment sequence.
+   *
+   * {{{
+   *     seq:
+   *
+   *       segment_0       segment_1     segment_i    segment_(n-1)
+   *     X------------)[------------](-------------](-----------X
+   *
+   *                               V V V
+   *     output:
+   *
+   *         value_0       value_1       value_i        value_(n-1)
+   *      ------------) ------------] -------------] -----------
+   *               bound_0       bound_1         bound_i       null
+   *
+   *     n = seq.size  - number of segments
+   * }}}
+   *
+   * Output iterable has at least one element. Last element has bound == null.
+   */
+  def getBoundValueIterableForSeq[E, D <: Domain[E], V](
+    seq: SegmentSeq[E, D, V]
+  ): Iterable[(Bound.Upper[E], V)] =
+    seq.firstSegment.forwardIterable.map {
+      case s: Segment.WithNext[E, D, V] => (s.upperBound, s.value)
+      case _ @ s => (null, s.value)
+    }
 
   /**
    * Returns tuple of segments of sequence `seq`:

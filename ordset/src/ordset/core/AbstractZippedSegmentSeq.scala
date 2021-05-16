@@ -883,11 +883,10 @@ object AbstractZippedSegmentSeq {
     override def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontBackward
     override def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontForward
 
+    override def self: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
   }
 
   /**
@@ -907,11 +906,10 @@ object AbstractZippedSegmentSeq {
     override def isRepresentedBy(left: Segment[E, D, ?], right: Segment[E, D, ?]): Boolean =
       left.isLast && right.isLast
 
+    override def self: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
+
     // Navigation --------------------------------------------------------------- //
     override def moveToLast: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
   }
   
   /**
@@ -933,8 +931,7 @@ object AbstractZippedSegmentSeq {
     override def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontBackward
     override def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontForward
 
-    // Protected section -------------------------------------------------------- //
-    protected override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
+    override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
   }
 
   /**
@@ -954,15 +951,14 @@ object AbstractZippedSegmentSeq {
     override def isRepresentedBy(left: Segment[E, D, ?], right: Segment[E, D, ?]): Boolean =
       left.isLast && right.isLast
 
+    override def self: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
     override def moveToLast: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
     override def moveTo(bound: Bound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
   }
 
   // Protected section -------------------------------------------------------- //

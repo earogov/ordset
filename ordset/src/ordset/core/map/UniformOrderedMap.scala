@@ -12,7 +12,7 @@ class UniformOrderedMap[E, D <: Domain[E], V](
   final override val domainOps: DomainOps[E, D],
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
-) extends AbstractUniformSegmentSeq[E, D, V] 
+) extends AbstractUniformSegmentSeq[E, D, V]
   with OrderedMapCommons[E, D, V] {
 
   // Protected section -------------------------------------------------------- //  

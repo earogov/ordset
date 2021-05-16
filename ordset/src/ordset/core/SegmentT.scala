@@ -225,11 +225,13 @@ object SegmentT {
       case _ => domainOps.interval.universal
     }
 
-    override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = 
-      LazyList.cons(self, LazyList.empty)
-    
+    override def self: SegmentT.First[E, D, V, S] with S
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: SegmentT.First[E, D, V, S] with S = self
+
+    override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] =
+      LazyList.cons(self, LazyList.empty)
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: SegmentSeq[E, D, V] = sequence
@@ -238,9 +240,6 @@ object SegmentT {
       case s: Segment.WithNext[_, _, _] => s.moveNext.prepended(other)
       case _ => other
     }
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: SegmentT.First[E, D, V, S] with S
   }
 
   /**
@@ -258,11 +257,13 @@ object SegmentT {
       case _ => domainOps.interval.universal
     }
 
-    override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = 
-      LazyList.cons(self, LazyList.empty)
+    override def self: SegmentT.Last[E, D, V, S] with S
 
     // Navigation --------------------------------------------------------------- //
     override def moveToLast: SegmentT.Last[E, D, V, S] with S = self
+
+    override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] =
+      LazyList.cons(self, LazyList.empty)
 
     // Transformation ----------------------------------------------------------- //
     override def takenBelow: SegmentSeq[E, D, V] = sequence
@@ -271,9 +272,6 @@ object SegmentT {
       case s: Segment.WithPrev[_, _, _] => s.movePrev.appended(other)
       case _ => other
     }
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: SegmentT.Last[E, D, V, S] with S
   }
 
   /**
@@ -293,6 +291,8 @@ object SegmentT {
     override def toString: String = 
       SetBuilderFormat.singleSegment(this, (v: V) => v.toString)
 
+    override def self: SegmentT.Single[E, D, V, S] with S
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: SegmentT.Single[E, D, V, S] with S = self
 
@@ -302,9 +302,6 @@ object SegmentT {
 
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: SegmentT.Single[E, D, V, S] with S
   }
 
   /**
@@ -324,14 +321,13 @@ object SegmentT {
     override def toString: String = 
       SetBuilderFormat.initialSegment(this, (e: E) => e.toString, (v: V) => v.toString)
 
+    override def self: SegmentT.Initial[E, D, V, S] with S
+
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: SegmentT.Initial[E, D, V, S] with S = self
     
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(other)
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: SegmentT.Initial[E, D, V, S] with S
   }
 
   /**
@@ -351,14 +347,13 @@ object SegmentT {
     override def toString: String =
       SetBuilderFormat.terminalSegment(this, (e: E) => e.toString, (v: V) => v.toString)
 
+    override def self: SegmentT.Terminal[E, D, V, S] with S
+
     // Navigation --------------------------------------------------------------- //
     override def moveToLast: SegmentT.Terminal[E, D, V, S] with S = self
     
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.appended(other)
-
-    // Protected section -------------------------------------------------------- //
-    protected override def self: SegmentT.Terminal[E, D, V, S] with S
   }
 
   /**

@@ -101,6 +101,14 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   override def toString: String = SetBuilderFormat.segment(self, (e: E) => e.toString, (v: V) => v.toString)
 
+  /**
+   * Returns current instance with a more precise type.
+   *
+   * It's may be convenient to pass around arguments of type [[SegmentT]] (without S) and later restore full type
+   * if needed.
+   */
+  def self: SegmentT[E, D, V, S] with S
+
   // Navigation --------------------------------------------------------------- //
 
   /** @return first segment of sequence. */
@@ -425,7 +433,4 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     case s: Segment.WithPrev[E, D, V] => s.movePrev.appended(other)
     case _                            => other
   }
-
-  // Protected section -------------------------------------------------------- //
-  protected def self: SegmentT[E, D, V, S] with S
 }

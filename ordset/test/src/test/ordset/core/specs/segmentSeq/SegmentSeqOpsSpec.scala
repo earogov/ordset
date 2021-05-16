@@ -1,13 +1,14 @@
 package test.ordset.core.specs.segmentSeq;
 
-import ordset.core.{Bound, SegmentSeqOps}
+import ordset.core.{Bound, Segment, SegmentSeqOps}
 import ordset.core.set.ArrayOrderedSet
 import ordset.core.set.OrderedSet
-import ordset.core.domain.Domain
+import ordset.core.domain.{Domain, DomainOps}
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import ordset.Order
+import ordset.{Order, core}
+import ordset.util.IterableUtil
 
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
@@ -20,19 +21,28 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
   import ordset.instances.tuple2._
   import ordset.instances.list._
   import ordset.core.instances.int._
+  import ordset.core.instances.boolean._
   import test.ordset.core.TestRngUtil.Implicits._
+  import test.ordset.core.SegmentSeqAssert._
 
   type Dom = Domain[Int]
-  type SegmentSeq = OrderedSet[Int, Dom]
 
-  private val seq1: SegmentSeq = ArrayOrderedSet.unchecked[Int, Dom](
+  private val domainOps: DomainOps[Int, Dom] = implicitly[DomainOps[Int, Dom]]
+  private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom](domainOps)
+
+  private val seq1: OrderedSet[Int, Dom] = ArrayOrderedSet.unchecked[Int, Dom](
     ArraySeq.empty,
     complementary = false
   )
 
-  private val seq2: SegmentSeq = ArrayOrderedSet.unchecked[Int, Dom](
+  private val seq2: OrderedSet[Int, Dom] = ArrayOrderedSet.unchecked[Int, Dom](
     ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
     complementary = true
+  )
+
+  private val seq3: OrderedSet[Int, Dom] = ArrayOrderedSet.unchecked[Int, Dom](
+    ArraySeq(2 `)[`, 5 `)[`, 25 `)[`),
+    complementary = false
   )
 
   private val listOrd: Order[List[Bound[Int]]] = implicitly[Order[List[Bound[Int]]]]
@@ -240,5 +250,49 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
       (List(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`), 5),
       SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(50 `)`), inclusive = true)
     ))
+  }
+
+  it("should convert segment sequence to iterable of (bound, value) tuples") {
+
+    assertEqualBoundValueIterables(
+      List((null, false)),
+      SegmentSeqOps.getBoundValueIterableForSeq(seq1)
+    )
+
+    assertEqualBoundValueIterables(
+      List((0 `)[`, true), (10 `)[`, false), (20 `)[`, true), (30 `)[`, false), (40 `)[`, true), (null, false)),
+      SegmentSeqOps.getBoundValueIterableForSeq(seq2)
+    )
+  }
+
+  it("should get bound segments") {
+
+    def toList[E, D <: Domain[E], V](tuple: (Segment[E, D, V], Segment[E, D, V])): List[Segment[E, D, V]] =
+      List(tuple._1, tuple._2)
+
+    assertEqualRelationSeq(
+      (true forAll x < 0) :: (false forAll x >= 40) :: Nil,
+      toList(SegmentSeqOps.getBoundSegments(seq1.firstSegment, seq2)).map(_.intervalRelation)
+    )
+
+    assertEqualRelationSeq(
+      (false forAll x >= 0 & x < 10) :: (false forAll x >= 20 & x < 30) :: Nil,
+      toList(SegmentSeqOps.getBoundSegments(seq3.getSegment(10 `]`), seq2)).map(_.intervalRelation)
+    )
+
+    assertEqualRelationSeq(
+      (false forAll x >= 0 & x < 10) :: (false forAll x >= 0 & x < 10) :: Nil,
+      toList(SegmentSeqOps.getBoundSegments(seq3.getSegment(3 `]`), seq2)).map(_.intervalRelation)
+    )
+
+    assertEqualRelationSeq(
+      (false forAll x) :: (false forAll x) :: Nil,
+      toList(SegmentSeqOps.getBoundSegments(seq2.getSegment(15 `[`), seq1)).map(_.intervalRelation)
+    )
+
+    assertEqualRelationSeq(
+      (false forAll x) :: (false forAll x) :: Nil,
+      toList(SegmentSeqOps.getBoundSegments(seq2.getSegment(50 `[`), seq1)).map(_.intervalRelation)
+    )
   }
 }

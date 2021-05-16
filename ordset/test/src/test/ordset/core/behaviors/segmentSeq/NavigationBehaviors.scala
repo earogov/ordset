@@ -2,10 +2,11 @@ package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
 import org.scalatest.funspec.AnyFunSpec
+import test.ordset.core.SegmentSeqAssert._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
-trait NavigationBehaviors[E, D <: Domain[E], V]
-  extends SegmentSeqAssert[E, D, V] { this: AnyFunSpec =>
+trait NavigationBehaviors[E, D <: Domain[E], V] { 
+  this: AnyFunSpec =>
 
   import ordset._
   import ordset.core._
