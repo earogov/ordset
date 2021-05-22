@@ -23,7 +23,7 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
   import ordset.core.instances.int._
   import ordset.core.instances.boolean._
   import test.ordset.core.TestRngUtil.Implicits._
-  import test.ordset.core.SegmentSeqAssert._
+  import test.ordset.core.SegmentSeqAssertions._
 
   type Dom = Domain[Int]
 
@@ -254,12 +254,12 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
 
   it("should convert segment sequence to iterable of (bound, value) tuples") {
 
-    assertEqualBoundValueIterables(
+    assertSameBoundValueIterable(
       List((null, false)),
       SegmentSeqOps.getBoundValueIterableForSeq(seq1)
     )
 
-    assertEqualBoundValueIterables(
+    assertSameBoundValueIterable(
       List((0 `)[`, true), (10 `)[`, false), (20 `)[`, true), (30 `)[`, false), (40 `)[`, true), (null, false)),
       SegmentSeqOps.getBoundValueIterableForSeq(seq2)
     )
@@ -270,29 +270,85 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
     def toList[E, D <: Domain[E], V](tuple: (Segment[E, D, V], Segment[E, D, V])): List[Segment[E, D, V]] =
       List(tuple._1, tuple._2)
 
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       (true forAll x < 0) :: (false forAll x >= 40) :: Nil,
       toList(SegmentSeqOps.getBoundSegments(seq1.firstSegment, seq2)).map(_.intervalRelation)
     )
 
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       (false forAll x >= 0 & x < 10) :: (false forAll x >= 20 & x < 30) :: Nil,
       toList(SegmentSeqOps.getBoundSegments(seq3.getSegment(10 `]`), seq2)).map(_.intervalRelation)
     )
 
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       (false forAll x >= 0 & x < 10) :: (false forAll x >= 0 & x < 10) :: Nil,
       toList(SegmentSeqOps.getBoundSegments(seq3.getSegment(3 `]`), seq2)).map(_.intervalRelation)
     )
 
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       (false forAll x) :: (false forAll x) :: Nil,
       toList(SegmentSeqOps.getBoundSegments(seq2.getSegment(15 `[`), seq1)).map(_.intervalRelation)
     )
 
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       (false forAll x) :: (false forAll x) :: Nil,
       toList(SegmentSeqOps.getBoundSegments(seq2.getSegment(50 `[`), seq1)).map(_.intervalRelation)
+    )
+  }
+  
+  it("should get lower bound segment") {
+    
+    assertSameRelationAndSegment(
+      true forAll x < 0,
+      SegmentSeqOps.getLowerBoundSegment(seq1.firstSegment, seq2)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x >= 0 & x < 10,
+      SegmentSeqOps.getLowerBoundSegment(seq3.getSegment(10 `]`), seq2)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x >= 0 & x < 10,
+      SegmentSeqOps.getLowerBoundSegment(seq3.getSegment(3 `]`), seq2)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x,
+      SegmentSeqOps.getLowerBoundSegment(seq2.getSegment(15 `[`), seq1)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x,
+      SegmentSeqOps.getLowerBoundSegment(seq2.getSegment(50 `[`), seq1)
+    )
+  }
+
+  it("should get upper bound segment") {
+
+    assertSameRelationAndSegment(
+      false forAll x >= 40,
+      SegmentSeqOps.getUpperBoundSegment(seq1.firstSegment, seq2)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x >= 20 & x < 30,
+      SegmentSeqOps.getUpperBoundSegment(seq3.getSegment(10 `]`), seq2)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x >= 0 & x < 10,
+      SegmentSeqOps.getUpperBoundSegment(seq3.getSegment(3 `]`), seq2)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x,
+      SegmentSeqOps.getUpperBoundSegment(seq2.getSegment(15 `[`), seq1)
+    )
+
+    assertSameRelationAndSegment(
+      false forAll x,
+      SegmentSeqOps.getUpperBoundSegment(seq2.getSegment(50 `[`), seq1)
     )
   }
 }

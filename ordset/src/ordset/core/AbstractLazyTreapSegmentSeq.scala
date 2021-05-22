@@ -7,11 +7,10 @@ import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
-
-import AbstractTreapSegmentSeq._
 import AbstractZippedSegmentSeq._
 import AbstractUniformSegmentSeq._
 import AbstractZippedSegmentSeq._
+import AbstractTreapSegmentSeq._
 /**
  * {{{
  *
@@ -81,17 +80,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = ???
 
   // Protected section -------------------------------------------------------- //
-  @volatile
-  protected var baseSeq: TreapSegmentSeq[E, D, V] = null
-
-  @volatile
-  protected var controlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = null
-
   /**
-   * Zipped sequence which joins [[baseSeq]] and [[controlSeq]].
+   * Zipped sequence which joins `baseSeq` and `controlSeq`.
    * <h3>Note</h3>
    *
-   * To construct [[zippedSeq]] from [[baseSeq]] and [[controlSeq]] we use type equality:
+   * To construct `zippedSeq` from `baseSeq` and `controlSeq` we use type equality:
    *
    * SegmentSeqT[E, D, V, S1] | SegmentSeqT[E, D, V, S2] == SegmentSeq[E, D, V, S1 | S2]
    *
@@ -102,7 +95,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr>S2 == [[UniformSingleSegment]]</tr>
    */
   @volatile
-  protected var zippedSeq: ZSegmentSeq[E, D, V] = null
+  protected var zippedSeq: ZSegmentSeq[E, D, V] = _
+
+  protected final def baseSeq: BaseSegmentSeq[E, D, V] = zippedSeq.firstSeq
+
+  protected final def controlSeq: ControlSegmentSeq[E, D, V] = zippedSeq.secondSeq
 
   protected final def eval(zsegment: ZSegment[E, D, V]): Unit =
     zsegment.value._2 match {
@@ -113,33 +110,31 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           zsegment.firstSeqSegment.self,
           seq
         )
-        val newControlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = TreapSegmentSeqOps.patchSegment(
-          zsegment.secondSeqSegment.self,
-          makeControlSeq(zsegment, seq)
+        val newControlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = patchControlSeq(
+          zsegment,
+          seq
         )
         val newZippedSeq: ZSegmentSeq[E, D, V] = ZippedOrderedMap.apply(
           newBaseSeq, newControlSeq, Tuple2.apply, _ => false, _ => false
         )(
           domainOps, zippedSeq.valueOps, rngManager
         )
-        baseSeq = newBaseSeq
-        controlSeq = newControlSeq
         zippedSeq = newZippedSeq
       }
     case _ => // nothing to do
   }
 
   /**
-   * Builds control sequence for a given sequence `seq` that was evaluated for `zsegment`.
-   * Segments of `seq` that are completely inside input `zsegment` are mapped to stable control values,
+   * Builds control sequence for a given sequence `baseSeq` that was evaluated for `zsegment`.
+   * Segments of `baseSeq` that are completely inside input `zsegment` are mapped to stable control values,
    * others - to unstable (see class description).
    *
    * {{{
-   *   segment:
+   *   zsegment:
    *
    *                (----------------------]
    *
-   *   seq:
+   *   baseSeq:
    *
    *        A         B           C          D         E       - values
    *   X--------](---------](----------](--------](---------X
@@ -152,16 +147,16 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * where u - unstable segment; s - stable segment.
    *
    * @param zsegment zipped segment (contains base segment and control segment).
-   * @param seq sequence that was evaluated for `zsegment` to patch corresponding base segment.
+   * @param baseSeq sequence that was evaluated for `zsegment` to patch corresponding base segment.
    */
   protected final def makeControlSeq(
     zsegment: ZSegment[E, D, V],
-    seq: SegmentSeq[E, D, V]
+    baseSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, ControlValue[E, D, V]] = {
-    val boundSegments = SegmentSeqOps.getBoundSegments(zsegment, seq)
+    val boundSegments = SegmentSeqOps.getBoundSegments(zsegment, baseSeq)
 
-    //          (---]            - segment
-    //  X--)[----------)[----X   - seq
+    //          (---]            - zsegment
+    //  X--)[----------)[----X   - baseSeq
     //  X--------------------X   - output
     //         unstable
     if (domainOps.segmentUpperOrd.eqv(boundSegments._1, boundSegments._2)) {
@@ -187,11 +182,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
         val nextSegment = lowerSegment.moveNext
 
-        //   (----------------]      - segment
-        //  X--)[----------)[----X   - seq
-        //  X--)[----------)[----X   - output
-        //    |     stable     |
-        //  unstable       unstable
+        //         (----------------]           - zsegment
+        //  X---)[---)[----](----)[-----](--X   - baseSeq
+        //  X---)[---)[----------)[-----](--X   - output
+        //         |     stable     |
+        //       unstable       unstable
         if (!domainOps.segmentUpperOrd.eqv(nextSegment, upperSegment)) {
           buffer =
             BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
@@ -204,19 +199,16 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             )
         }
         // else:
-        //            (-------]      - segment
-        //  X--)[----------)[----X   - seq
-        //  X--------------)[----X   - output
-        //      unstable   unstable
+        //         (----------------]           - zsegment
+        //  X---)[---------------)[-----](--X   - baseSeq
+        //  X---)[---------------)[-----](--X   - output
+        //           |              |
+        //       unstable       unstable
 
         val root = BuildAsc.finalizeBuffer(buffer)
         root match {
           case root: ImmutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]] =>
-            TreapOrderedMap.unchecked(
-              root, EagerValue.unstable
-            )(
-              domainOps, ControlValueOps.get, rngManager
-            )
+            TreapOrderedMap.unchecked(root, EagerValue.unstable)(domainOps, ControlValueOps.get, rngManager)
           case _ =>
             throw new AssertionError(s"Expected nonempty tree $root for control sequence.")
         }
@@ -230,6 +222,76 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         )
     }
   }
+
+  /**
+   * Builds new control sequence for given `zsegment` and applies patch operation to existing control sequence.
+   *
+   * {{{
+   *   zsegment:
+   *
+   *                (----------------------]
+   *
+   *   baseSeq:
+   *
+   *        A         B           C          D         E       - values
+   *   X--------](---------](----------](--------](---------X
+   *
+   *   output:
+   *
+   *      ?          u            s            u         ?     - control values
+   *   X----)[-------------](----------](------------)[-----X
+   *                |                          |
+   *          bound segment               bound segment
+   * }}}
+   * where u - unstable segment; s - stable segment; ? - lazy segment.
+   *
+   * @param zsegment zipped segment (contains base segment and control segment).
+   * @param baseSeq sequence that was evaluated for `zsegment` to patch corresponding base segment.
+   */
+  protected final def patchControlSeq(
+    zsegment: ZSegment[E, D, V],
+    baseSeq: SegmentSeq[E, D, V]
+  ): TreapSegmentSeq[E, D, ControlValue[E, D, V]] =
+    stabilizeBounds(
+      zsegment,
+      TreapSegmentSeqOps.patchSegment(
+        zsegment.secondSeqSegment.self,
+        makeControlSeq(zsegment, baseSeq)
+      )
+    )
+
+  protected final def stabilizeBounds(
+    zsegment: ZSegment[E, D, V],
+    controlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]]
+  ): TreapSegmentSeq[E, D, ControlValue[E, D, V]] = {
+
+    val lowerSegment: ControlSegment[E, D, V] = SegmentSeqOps.getLowerBoundSegment(zsegment, controlSeq)
+
+    val newControlSeq =
+      if (lowerSegment.value.isUnstable && checkStability(lowerSegment))
+        TreapSegmentSeqOps.patchSegment(
+          lowerSegment.self,
+          UniformOrderedMap.apply(EagerValue.stable)(domainOps, ControlValueOps.get, rngManager)
+        )
+      else controlSeq
+
+    val upperSegment: ControlSegment[E, D, V] = SegmentSeqOps.getUpperBoundSegment(zsegment, newControlSeq)
+
+    if (upperSegment.value.isUnstable && checkStability(upperSegment))
+      TreapSegmentSeqOps.patchSegment(
+        upperSegment.self,
+        UniformOrderedMap.apply(EagerValue.stable)(domainOps, ControlValueOps.get, rngManager)
+      )
+    else newControlSeq
+  }
+
+  protected final def checkStability(controlSegment: Segment[E, D, ControlValue[E, D, V]]): Boolean =
+    controlSegment match {
+      case s: Segment.Inner[_, _, _] => s.movePrev.value.isStable && s.moveNext.value.isStable
+      case s: Segment.WithNext[_, _, _] => s.moveNext.value.isStable
+      case s: Segment.WithPrev[_, _, _] => s.movePrev.value.isStable
+      case _ => true
+    }
 }
 
 object AbstractLazyTreapSegmentSeq {
@@ -255,6 +317,38 @@ object AbstractLazyTreapSegmentSeq {
       ControlValue[E, D, V],
       ZValue[E, D, V],
       TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
+      TreapSegmentBase[E, D, ControlValue[E, D, V]] | UniformSingleSegment[E, D, ControlValue[E, D, V]]
+    ]
+
+  type BaseSegment[E, D <: Domain[E], V] =
+    SegmentT[
+      E,
+      D,
+      V,
+      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    ]
+
+  type BaseSegmentSeq[E, D <: Domain[E], V] =
+    SegmentSeqT[
+      E,
+      D,
+      V,
+      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    ]
+
+  type ControlSegment[E, D <: Domain[E], V] =
+    SegmentT[
+      E,
+      D,
+      ControlValue[E, D, V],
+      TreapSegmentBase[E, D, ControlValue[E, D, V]] | UniformSingleSegment[E, D, ControlValue[E, D, V]]
+    ]
+
+  type ControlSegmentSeq[E, D <: Domain[E], V] =
+    SegmentSeqT[
+      E,
+      D,
+      ControlValue[E, D, V],
       TreapSegmentBase[E, D, ControlValue[E, D, V]] | UniformSingleSegment[E, D, ControlValue[E, D, V]]
     ]
 

@@ -175,14 +175,70 @@ object SegmentSeqOps {
    *           tuple._1        tuple._2
    * }}}
    */
-  def getBoundSegments[E, D <: Domain[E], V](
+  def getBoundSegments[E, D <: Domain[E], V, S](
     segment: Segment[E, D, ?], 
-    seq: SegmentSeq[E, D, V]
-  ): (Segment[E, D, V], Segment[E, D, V]) =
+    seq: SegmentSeqT[E, D, V, S]
+  ): (SegmentT[E, D, V, S], SegmentT[E, D, V, S]) =
     segment match {
       case s: Segment.Inner[E, D, ?]    => (seq.getSegment(s.lowerBound), seq.getSegment(s.upperBound))
       case s: Segment.WithNext[E, D, ?] => (seq.firstSegment, seq.getSegment(s.upperBound))
       case s: Segment.WithPrev[E, D, ?] => (seq.getSegment(s.lowerBound), seq.lastSegment)
       case _                            => (seq.firstSegment, seq.lastSegment)
+    }
+
+  /**
+   * Returns segment that contains lower bound of `segment` or first segment of `seq` if `segment` is first.
+   *
+   * {{{
+   *   segment:
+   *
+   *               [--------------]
+   *             lower
+   *             bound          
+   *   seq:
+   *
+   *       A       B      C       D         E
+   *   X------](------)[----](---------](-------X
+   *
+   *   output:
+   *               B              
+   *           (------)
+   * }}}
+   */
+  def getLowerBoundSegment[E, D <: Domain[E], V, S](
+    segment: Segment[E, D, ?],
+    seq: SegmentSeqT[E, D, V, S]
+  ): SegmentT[E, D, V, S] =
+    segment match {
+      case s: Segment.WithPrev[E, D, ?] => seq.getSegment(s.lowerBound)
+      case _ => seq.firstSegment
+    }
+
+  /**
+   * Returns segment that contains upper bound of `segment` or last segment of `seq` if `segment` is last.
+   *
+   * {{{
+   *   segment:
+   *
+   *               [--------------]
+   *                            upper
+   *                            bound
+   *   seq:
+   *
+   *       A       B      C       D         E 
+   *   X------](------)[----](---------](-------X
+   *
+   *   output:
+   *                              D
+   *                         (---------]
+   * }}}
+   */
+  def getUpperBoundSegment[E, D <: Domain[E], V, S](
+    segment: Segment[E, D, ?],
+    seq: SegmentSeqT[E, D, V, S]
+  ): SegmentT[E, D, V, S] =
+    segment match {
+      case s: Segment.WithNext[E, D, ?] => seq.getSegment(s.upperBound)
+      case _ => seq.lastSegment
     }
 }

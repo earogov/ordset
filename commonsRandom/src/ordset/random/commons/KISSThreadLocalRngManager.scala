@@ -15,7 +15,7 @@ final class KISSThreadLocalRngManager(seed1: Long, seed2: Long) extends RngManag
 
   override def newUnsafeUniformRng(): UnsafeUniformRng = threadLocal.get().newUnsafeUniformRng()
 
-  // Private section --------------------------------------------------------- //
+  // Private section ---------------------------------------------------------- //
   private val seedManager = new KISSSynchronizedRngManager(seed1, seed2)
 
   private val threadLocal: ThreadLocal[UnsafeRngManager] = ThreadLocal.withInitial { () =>

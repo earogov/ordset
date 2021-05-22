@@ -19,7 +19,7 @@ final class KISSSynchronizedRngManager(seed1: Long, seed2: Long) extends RngMana
     KISSRngFactory.create(seed1, seed2)
   }
 
-  // Private section --------------------------------------------------------- //
+  // Private section ---------------------------------------------------------- //
   private val lock: Object = new Object()
 
   private val seedRng = KISSRngFactory.create(seed1, seed2)

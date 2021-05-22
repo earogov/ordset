@@ -6,9 +6,49 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.util.IterableUtil
 import org.scalatest.Assertions._
 
-object SegmentSeqAssert {
+object SegmentSeqAssertions {
 
-  def assertEqualSegmentSeq[E, D <: Domain[E], V](
+  def assertSameSegment[E, D <: Domain[E], V](
+    expected: Segment[E, D, V],
+    actual: Segment[E, D, V]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueHash: Hash[V]
+  ): Unit = {
+    assert(
+      domainOps.domainHash.eqv(
+        expected.domainOps.domain,
+        actual.domainOps.domain
+      )
+    )
+    assertSameRelation(expected.intervalRelation, actual.intervalRelation)
+  }
+
+  def assertSameRelationAndSegment[E, D <: Domain[E], V](
+    expected: IntervalRelation[E, D, V],
+    actual: Segment[E, D, V]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueHash: Hash[V]
+  ): Unit =
+    assertSameRelation(expected, actual.intervalRelation)
+
+  def assertSameRelation[E, D <: Domain[E], V](
+    expected: IntervalRelation[E, D, V],
+    actual: IntervalRelation[E, D, V]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueHash: Hash[V]
+  ): Unit =
+    assert(
+      domainOps.intervalRelationHash(valueHash).eqv(expected, actual),
+      debugInfo(expected, actual)
+    )
+
+  def assertSameSegmentSeq[E, D <: Domain[E], V](
     expected: SegmentSeq[E, D, V],
     actual: SegmentSeq[E, D, V]
   )(
@@ -16,20 +56,19 @@ object SegmentSeqAssert {
     domainOps: DomainOps[E, D],
     valueHash: Hash[V]
   ): Unit = {
-
     assert(
       domainOps.domainHash.eqv(
         expected.domainOps.domain,
         actual.domainOps.domain
       )
     )
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       expected.firstSegment.forwardIterable.map(_.intervalRelation),
       actual.firstSegment.forwardIterable.map(_.intervalRelation)
     )
   }
 
-  def assertEqualRelationAndSegmentSeq[E, D <: Domain[E], V](
+  def assertSameRelationAndSegmentSeq[E, D <: Domain[E], V](
     expected: Iterable[IntervalRelation[E, D, V]],
     actual: SegmentSeq[E, D, V]
   )(
@@ -37,12 +76,12 @@ object SegmentSeqAssert {
     domainOps: DomainOps[E, D],
     valueHash: Hash[V]
   ): Unit =
-    assertEqualRelationSeq(
+    assertSameRelationSeq(
       expected,
       actual.firstSegment.forwardIterable.map(_.intervalRelation)
     )
 
-  def assertEqualRelationSeq[E, D <: Domain[E], V](
+  def assertSameRelationSeq[E, D <: Domain[E], V](
     expected: Iterable[IntervalRelation[E, D, V]],
     actual: Iterable[IntervalRelation[E, D, V]],
   )(
@@ -57,11 +96,10 @@ object SegmentSeqAssert {
       )(
         domainOps.intervalRelationHash(valueHash)
       ),
-      s"\nexpected: $expected\nactual  : $actual"
+      debugInfo(expected, actual)
     )
 
-
-  def assertEqualBoundValueIterables[E, D <: Domain[E], V](
+  def assertSameBoundValueIterable[E, D <: Domain[E], V](
     expected: Iterable[(Bound.Upper[E], V)],
     actual: Iterable[(Bound.Upper[E], V)]
   )(
@@ -74,30 +112,35 @@ object SegmentSeqAssert {
     val actIter = actual.iterator
 
     if (expIter.hasNext != actIter.hasNext) {
-      fail(s"iterables have different length \nexpected: $expected\nactual  : $actual")
+      fail("iterables have different length" + debugInfo(expected, actual))
     }
     while (expIter.hasNext) {
       val expItem = expIter.next()
       val actItem = actIter.next()
 
       if (expIter.hasNext != actIter.hasNext) {
-        fail(s"iterables have different length \nexpected: $expected\nactual  : $actual")
+        fail("iterables have different length" + debugInfo(expected, actual))
       }
       assert(
         valueHash.eqv(expItem._2, actItem._2),
-        s"different values \nexpected: ${expItem._2}\nactual  : ${actItem._2}"
+        "different values" + debugInfo(expItem._2, actItem._2)
       )
       if (expIter.hasNext) {
         assert(
           domainOps.boundOrd.eqv(expItem._1, actItem._1),
-          s"different bounds \nexpected: ${expItem._1}\nactual  : ${actItem._1}"
+          "different bounds" + debugInfo(expItem._1, actItem._1)
         )
       } else {
         assert(
           expItem._1 == null || actItem._1 == null,
-          s"bound of last item must be null \nexpected: ${expItem._1}\nactual  : ${actItem._1}"
+          "bound of last item must be null" + debugInfo(expItem._1, actItem._1)
         )
       }
     }
+  }
+
+  // Private section ---------------------------------------------------------- //
+  private def debugInfo(expected: Any, actual: Any): String = {
+      s"\nexpected: $expected\nactual  : $actual"
   }
 }

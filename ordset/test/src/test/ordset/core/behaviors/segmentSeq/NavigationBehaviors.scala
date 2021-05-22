@@ -2,7 +2,7 @@ package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.SegmentSeqAssert._
+import test.ordset.core.SegmentSeqAssertions._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 trait NavigationBehaviors[E, D <: Domain[E], V] { 

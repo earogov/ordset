@@ -25,7 +25,7 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
   import ordset.core.syntax.SetBuilderNotation._
   import ordset.instances.list._
   import ordset.instances.tuple2._
-  import test.ordset.core.SegmentSeqAssert._
+  import test.ordset.core.SegmentSeqAssertions._
   import test.ordset.core.TestRngUtil.Implicits._
 
   type Dom = Domain[Int]
@@ -36,14 +36,27 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
 
   it("test 1") {
 
+    //
+    // X-----------------------false----------------)[--t---](---f---X
+    //                                              15      20
+    //
+    // X----------false--------)[----t---](-------f------)[-----t----X
+    //                         2         8               17
+    //
+    // X-t--)[---f--](-----true-----)[------------false--------------X
+    //      -10     -5              5
+    //
+    // X-----------------)[--------------------](--------------------X
+    //                   0                     10
+
     val seq1 = TreapOrderedSet.unsafeBuildAsc(
-      ArraySeq(-10 `)[`, -5 `](`),
+      ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
       complementary = true,
       domainOps
     )()
 
     val seq2 = TreapOrderedSet.unsafeBuildAsc(
-      ArraySeq(2 `)[`, 8 `](`),
+      ArraySeq(2 `)[`, 8 `](`, 17 `)[`),
       complementary = false,
       domainOps
     )()
@@ -62,8 +75,11 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
       )
     )
 
-    val segment = lazySeq.getSegment(5 `]`)
-    println(segment)
+    val segment1 = lazySeq.getSegment(5 `]`)
+    println(segment1)
+
+    val segment2 = lazySeq.getSegment(15 `]`)
+    println(segment2)
   }
 
   private class LazyTreapOrderedSet[E, D <: Domain[E], V](
@@ -75,22 +91,24 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
     final override val rngManager: RngManager
   ) extends AbstractLazyTreapSegmentSeq[E, D, V] {
 
-    baseSeq = TreapOrderedMap.unsafeBuildAsc(
-      List((null, valueOps.unit)),
-      domainOps,
-      valueOps
-    )()
-
-    controlSeq = TreapOrderedMap.unsafeBuildAsc(
-      initControlSeq.map(p => (p._1, LazyValue(p._2))),
-      domainOps,
-      ControlValueOps.get
-    )()
-
     zippedSeq = ZippedOrderedMap.apply(
-      baseSeq, controlSeq, Tuple2.apply, _ => false, _ => false
+      TreapOrderedMap.unsafeBuildAsc(
+        List((null, valueOps.unit)),
+        domainOps,
+        valueOps
+      )(),
+      TreapOrderedMap.unsafeBuildAsc(
+        initControlSeq.map(p => (p._1, LazyValue(p._2))),
+        domainOps,
+        ControlValueOps.get
+      )(),
+      Tuple2.apply,
+      _ => false,
+      _ => false
     )(
-      domainOps, ControlTupleOps.get(valueOps), rngManager
+      domainOps,
+      ControlTupleOps.get(valueOps),
+      rngManager
     )
   }
 }
