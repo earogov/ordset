@@ -87,7 +87,7 @@ object NodeDownward {
    *       ↙   |    ↘
    *     C    key    D
    * }}}
-   * Let `B` is a current node and its key is equals to the specified `key`. Then [[foldDefault]] will stop
+   * Let `B` is a current node and its key is equal to the specified `key`. Then [[foldDefault]] will stop
    * at node `B` (due to [[Navigation.defaultFunc]] stop condition).
    *
    * [[foldForRightSplit]] will move to the left child (node `C`) and continue to descend in its subtree.
@@ -124,7 +124,7 @@ object NodeDownward {
    *       ↙   |    ↘
    *     C    key    D
    * }}}
-   * Let `B` is a current node and its key is equals to the specified `key`. Then [[foldDefault]] will stop
+   * Let `B` is a current node and its key is equal to the specified `key`. Then [[foldDefault]] will stop
    * at node `B` (due to [[Navigation.defaultFunc]] stop condition).
    *
    * [[foldForLeftSplit]] will move to the right child (node `D`) and continue to descend in its subtree.

@@ -160,22 +160,10 @@ object SegmentT {
 
     def upperBound: Bound.Upper[E]
 
-    override def interval: Interval[E, D] = this match {
-      case s: Segment.WithPrev[_, _, _] => domainOps.interval(s.lowerBound, upperBound)
-      case _ => domainOps.interval(upperBound)
-    }
-    
     // Navigation --------------------------------------------------------------- //
     def moveNext: SegmentT.WithPrev[E, D, V, S] with S
 
-    override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = 
-      LazyList.cons(self, moveNext.forwardLazyList)
-
-    // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: Segment.WithPrev[_, _, _] => moveNext.prepended(s.movePrev.appended(other))
-      case _ => moveNext.prepended(other)
-    }
+    override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, moveNext.forwardLazyList)
   }
 
   /**
@@ -191,23 +179,11 @@ object SegmentT {
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
 
     def lowerBound: Bound.Lower[E]
-
-    override def interval: Interval[E, D] = this match {
-      case s: Segment.WithNext[_, _, _] => domainOps.interval(lowerBound, s.upperBound)
-      case _ => domainOps.interval(lowerBound)
-    }
     
     // Navigation --------------------------------------------------------------- //
     def movePrev: SegmentT.WithNext[E, D, V, S] with S
 
-    override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = 
-      LazyList.cons(self, movePrev.backwardLazyList)
-
-    // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: Segment.WithNext[_, _, _] => s.moveNext.prepended(movePrev.appended(other))
-      case _ => movePrev.appended(other)
-    }
+    override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, movePrev.backwardLazyList)
   }
 
   /**
@@ -219,27 +195,18 @@ object SegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def isFirst: Boolean = true
-    
-    override def interval: Interval[E, D] = this match {
-      case s: Segment.WithNext[_, _, _] => domainOps.interval(s.upperBound)
-      case _ => domainOps.interval.universal
-    }
+
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
 
     override def self: SegmentT.First[E, D, V, S] with S
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: SegmentT.First[E, D, V, S] with S = self
 
-    override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] =
-      LazyList.cons(self, LazyList.empty)
+    override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, LazyList.empty)
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: SegmentSeq[E, D, V] = sequence
-    
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: Segment.WithNext[_, _, _] => s.moveNext.prepended(other)
-      case _ => other
-    }
   }
 
   /**
@@ -251,27 +218,18 @@ object SegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def isLast: Boolean = true
-    
-    override def interval: Interval[E, D] = this match {
-      case s: Segment.WithPrev[_, _, _] => domainOps.interval(s.lowerBound)
-      case _ => domainOps.interval.universal
-    }
+
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
     override def self: SegmentT.Last[E, D, V, S] with S
 
     // Navigation --------------------------------------------------------------- //
     override def moveToLast: SegmentT.Last[E, D, V, S] with S = self
 
-    override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] =
-      LazyList.cons(self, LazyList.empty)
+    override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, LazyList.empty)
 
     // Transformation ----------------------------------------------------------- //
     override def takenBelow: SegmentSeq[E, D, V] = sequence
-    
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-      case s: Segment.WithPrev[_, _, _] => s.movePrev.appended(other)
-      case _ => other
-    }
   }
 
   /**
@@ -285,11 +243,12 @@ object SegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def isSingle: Boolean = true
-    
+
+    override def contains(bound: Bound[E]): Boolean = true
+
     override def interval: Interval[E, D] = domainOps.interval.universal
 
-    override def toString: String = 
-      SetBuilderFormat.singleSegment(this, (v: V) => v.toString)
+    override def toString: String = SetBuilderFormat.singleSegment(this)
 
     override def self: SegmentT.Single[E, D, V, S] with S
 
@@ -302,6 +261,30 @@ object SegmentT {
 
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
+
+    override def truncation(bound: Bound[E]): Single.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
+      new Single.Truncation(self, bound)
+  }
+
+  object Single {
+
+    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+      override val segment: SegmentT.Single[E, D, V, S] with S,
+      inputBound: Bound[E]
+    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+      segment,
+      inputBound,
+    ) {
+
+      // Protected section -------------------------------------------------------- //
+
+      protected override def getPrependedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
+
+      protected override def getAppendedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
+
+      @inline
+      protected final override def restrictBound(bnd: Bound[E]): Bound[E] = bnd
+    }
   }
 
   /**
@@ -316,10 +299,11 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isInitial: Boolean = true
 
+    override def contains(bound: Bound[E]): Boolean = domainOps.boundOrd.gteqv(upperBound, bound)
+
     override def interval: Interval[E, D] = domainOps.interval(upperBound)
 
-    override def toString: String = 
-      SetBuilderFormat.initialSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+    override def toString: String = SetBuilderFormat.initialSegment(this)
 
     override def self: SegmentT.Initial[E, D, V, S] with S
 
@@ -328,6 +312,33 @@ object SegmentT {
     
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(other)
+
+    override def truncation(bound: Bound[E]): Initial.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
+      new Initial.Truncation(self, bound)
+  }
+
+  object Initial {
+
+    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+      override val segment: SegmentT.Initial[E, D, V, S] with S,
+      inputBound: Bound[E],
+    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+      segment,
+      inputBound,
+    ) {
+
+      // Protected section -------------------------------------------------------- //
+
+      protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S =
+        if (segment.hasUpperBound(bound.provideUpper)) segment.moveNext
+        else segment
+
+      protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S = segment
+
+      @inline
+      protected final override def restrictBound(bnd: Bound[E]): Bound[E] =
+        segment.domainOps.boundOrd.min(bnd, segment.upperBound)
+    }
   }
 
   /**
@@ -342,10 +353,11 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isTerminal: Boolean = true
 
+    override def contains(bound: Bound[E]): Boolean = domainOps.boundOrd.lteqv(lowerBound, bound)
+
     override def interval: Interval[E, D] = domainOps.interval(lowerBound)
 
-    override def toString: String =
-      SetBuilderFormat.terminalSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+    override def toString: String = SetBuilderFormat.terminalSegment(this)
 
     override def self: SegmentT.Terminal[E, D, V, S] with S
 
@@ -354,6 +366,33 @@ object SegmentT {
     
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.appended(other)
+
+    override def truncation(bound: Bound[E]): Terminal.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
+      new Terminal.Truncation(self, bound)
+  }
+
+  object Terminal {
+
+    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+      override val segment: SegmentT.Terminal[E, D, V, S] with S,
+      inputBound: Bound[E]
+    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+      segment,
+      inputBound
+    ) {
+
+      // Protected section -------------------------------------------------------- //
+
+      protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S = segment
+
+      protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
+        if (segment.hasLowerBound(bound.provideLower)) segment.movePrev
+        else segment
+
+      @inline
+      protected final override def restrictBound(bnd: Bound[E]): Bound[E] =
+        segment.domainOps.boundOrd.max(bnd, segment.lowerBound)
+    }
   }
 
   /**
@@ -368,14 +407,50 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isInner: Boolean = true
 
+    override def contains(bound: Bound[E]): Boolean = {
+      val boundOrd = domainOps.boundOrd
+      boundOrd.lteqv(lowerBound, bound) && boundOrd.gteqv(upperBound, bound)
+    }
+
     override def interval: Interval[E, D] = domainOps.interval(lowerBound, upperBound)
 
-    override def toString: String =
-      SetBuilderFormat.innerSegment(this, (e: E) => e.toString, (v: V) => v.toString)
+    override def toString: String = SetBuilderFormat.innerSegment(this)
+
+    override def self: SegmentT.Inner[E, D, V, S] with S
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
-      moveNext.prepended(movePrev.appended(other))
+    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(movePrev.appended(other))
+
+    override def truncation(bound: Bound[E]): Inner.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
+      new Inner.Truncation(self, bound)
+  }
+
+  object Inner {
+
+    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+      segment: SegmentT.Inner[E, D, V, S] with S,
+      inputBound: Bound[E],
+    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+      segment,
+      inputBound
+    ) {
+
+      // Protected section -------------------------------------------------------- //
+
+      protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S =
+        if (segment.hasUpperBound(bound.provideUpper)) segment.moveNext
+        else segment
+
+      protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
+        if (segment.hasLowerBound(bound.provideLower)) segment.movePrev
+        else segment
+
+      @inline
+      protected final override def restrictBound(bnd: Bound[E]): Bound[E] = {
+        val boundOrd = segment.domainOps.boundOrd
+        boundOrd.min(boundOrd.max(bnd, segment.lowerBound), segment.upperBound)
+      }
+    }
   }
 
   final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(

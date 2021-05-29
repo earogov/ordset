@@ -2,14 +2,14 @@ package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-
 import scala.collection.Seq
+import AbstractIndexedSegmentSeq._
 
 /**
  * For common description of segment sequence see [[SegmentSeq]].
  *
  * <u>Class is not intended to model empty and universal sets.</u>
- * For such cases implementation based on [[AbstractUniformSegmentSeq]] can be used.
+ * For such cases implementation based on [[UniformSegmentSeq]] can be used.
  *
  * Upper bounds of segments are stored in `bounds` standard collection:
  * {{{
@@ -25,10 +25,8 @@ import scala.collection.Seq
  * <tr>`bounds` collection SHOULD provide fast access by index. </tr>
  */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V] 
-  extends AbstractSegmentSeq[E, D, V, AbstractIndexedSegmentSeq.IndexedSegmentBase[E, D, V]] { 
+  extends AbstractSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
   seq =>
-
-  import AbstractIndexedSegmentSeq._
   
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = false
@@ -78,10 +76,10 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
   // Transformation ----------------------------------------------------------- //
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-    prependedInternal(bound, getSegment, other)
+    prependedInternal(bound, getSegment(bound.provideLower), other)
 
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-    appendedInternal(bound, getSegment, other)
+    appendedInternal(bound, getSegment(bound.provideUpper), other)
 
   // Protected section -------------------------------------------------------- //
   /**
@@ -138,7 +136,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    *
    * Creates segment sequence from current keeping only upper bounds with index `>=` `ind`.
    */
-  protected def consAbove(ind: Int): AbstractIndexedSegmentSeq[E, D, V]
+  protected def consAbove(ind: Int): NonuniformIndexedSegmentSeq[E, D, V]
 
   /**
    * Preconditions:
@@ -147,43 +145,35 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    *
    * Creates segment sequence from current keeping only upper bounds with index `<=` `ind`.
    */
-  protected def consBelow(ind: Int): AbstractIndexedSegmentSeq[E, D, V]
+  protected def consBelow(ind: Int): NonuniformIndexedSegmentSeq[E, D, V]
 
   /**
-   * Same as [[SegmentSeqT.prepended]] but with additional `segmentFunc` which allows to optimize receiving of segment
-   * at `bound` for current sequence.
+   * Same as [[SegmentSeqT.prepended]] but with supplied segment of original sequence such that:
+   * {{{
+   *   originalBoundSegment = this.getSegment(bound.provideLower)    (1)
+   * }}}
+   * This allows to avoid repeated search of segment if it's already known before method call.
    *
-   * One option is to search segment at bound:
-   * {{{
-   * segmentFunc = getSegment
-   * }}}
-   * But if segment is already known one may perform such optimization:
-   * {{{
-   * `segmentFunc` = () => someSegment
-   * }}}
+   * Note if provided segment other then one defined by condition 1, the behaviour of method is undefined.
    */
   protected def prependedInternal(
     bound: Bound[E],
-    segmentFunc: Bound[E] => IndexedSegment[E, D, V],
+    originalBoundSegment: IndexedSegment[E, D, V],
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
   /**
-   * Same as [[SegmentSeqT.appended]] but with additional `segmentFunc` which allows to optimize receiving of segment
-   * at `bound` for current sequence.
+   * Same as [[SegmentSeqT.appended]] but with supplied segment of original sequence such that:
+   * {{{
+   *   originalBoundSegment = this.getSegment(bound.provideUpper)    (1)
+   * }}}
+   * This allows to avoid repeated search of segment if it's already known before method call.
    *
-   * One option is to search segment at bound:
-   * {{{
-   * segmentFunc = getSegment
-   * }}}
-   * But if segment is already known one may perform such optimization:
-   * {{{
-   * `segmentFunc` = () => someSegment
-   * }}}
+   * Note if provided segment other then one defined by condition 1, the behaviour of method is undefined.
    */
   protected def appendedInternal(
     bound: Bound[E],
-    segmentFunc: Bound[E] => IndexedSegment[E, D, V],
+    originalBoundSegment: IndexedSegment[E, D, V],
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
@@ -288,7 +278,7 @@ object AbstractIndexedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     val index: Int
 
-    override val sequence: AbstractIndexedSegmentSeq[E, D, V]
+    override val sequence: NonuniformIndexedSegmentSeq[E, D, V]
 
     override def value: V = sequence.getSegmentValue(index)
 
@@ -346,12 +336,12 @@ object AbstractIndexedSegmentSeq {
     override def moveNext: IndexedSegmentWithPrev[E, D, V] = sequence.makeSegmentWithPrev(index + 1)
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: AbstractIndexedSegmentSeq[E, D, V]
+    override def takenAbove: NonuniformIndexedSegmentSeq[E, D, V]
 
-    override def sliced: (IndexedSegmentSeq[E, D, V], AbstractIndexedSegmentSeq[E, D, V])
+    override def sliced: (IndexedSegmentSeq[E, D, V], NonuniformIndexedSegmentSeq[E, D, V])
 
     override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-      sequence.appendedInternal(upperBound, _ => this, other)
+      sequence.appendedInternal(upperBound, this, other)
   }
 
   /**
@@ -372,17 +362,17 @@ object AbstractIndexedSegmentSeq {
     override def movePrev: IndexedSegmentWithNext[E, D, V] = sequence.makeSegmentWithNext(index - 1)
 
     // Transformation ----------------------------------------------------------- //
-    override def takenBelow: AbstractIndexedSegmentSeq[E, D, V]
+    override def takenBelow: NonuniformIndexedSegmentSeq[E, D, V]
 
-    override def sliced: (AbstractIndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
+    override def sliced: (NonuniformIndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
 
     override def prepended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-      sequence.prependedInternal(lowerBound, _ => this, other)
+      sequence.prependedInternal(lowerBound, this, other)
   }
 
   /** Initial segment of sequence. */
   final case class IndexedInitialSegment[E, D <: Domain[E], V](
-    override val sequence: AbstractIndexedSegmentSeq[E, D, V]
+    override val sequence: NonuniformIndexedSegmentSeq[E, D, V]
   ) extends SegmentT.Initial[E, D, V, IndexedSegmentBase[E, D, V]]
     with IndexedSegmentWithNext[E, D, V] {
 
@@ -395,11 +385,11 @@ object AbstractIndexedSegmentSeq {
     override def moveToFirst: IndexedInitialSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: AbstractIndexedSegmentSeq[E, D, V] = sequence
+    override def takenAbove: NonuniformIndexedSegmentSeq[E, D, V] = sequence
 
-    override def takenBelow: AbstractUniformSegmentSeq[E, D, V] = sequence.consUniform(value)
+    override def takenBelow: UniformSegmentSeq[E, D, V] = sequence.consUniform(value)
 
-    override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractIndexedSegmentSeq[E, D, V]) =
+    override def sliced: (UniformSegmentSeq[E, D, V], NonuniformIndexedSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = moveNext.prepended(other)
@@ -407,7 +397,7 @@ object AbstractIndexedSegmentSeq {
 
   /** Terminal segment of sequence. */
   final case class IndexedTerminalSegment[E, D <: Domain[E], V](
-    override val sequence: AbstractIndexedSegmentSeq[E, D, V]
+    override val sequence: NonuniformIndexedSegmentSeq[E, D, V]
   ) extends SegmentT.Terminal[E, D, V, IndexedSegmentBase[E, D, V]]
     with IndexedSegmentWithPrev[E, D, V] {
 
@@ -420,11 +410,11 @@ object AbstractIndexedSegmentSeq {
     override def moveToLast: IndexedTerminalSegment[E, D, V] = this
     
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: AbstractUniformSegmentSeq[E, D, V] = sequence.consUniform(value)
+    override def takenAbove: UniformSegmentSeq[E, D, V] = sequence.consUniform(value)
 
-    override def takenBelow: AbstractIndexedSegmentSeq[E, D, V] = sequence
+    override def takenBelow: NonuniformIndexedSegmentSeq[E, D, V] = sequence
 
-    override def sliced: (AbstractIndexedSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
+    override def sliced: (NonuniformIndexedSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = movePrev.appended(other)
@@ -438,7 +428,7 @@ object AbstractIndexedSegmentSeq {
    * 1. `1 <= ind < bounds.length (last segment index)`.
    */
   final case class IndexedInnerSegment[E, D <: Domain[E], V](
-    override val sequence: AbstractIndexedSegmentSeq[E, D, V],
+    override val sequence: NonuniformIndexedSegmentSeq[E, D, V],
     override val index: Int
   ) extends SegmentT.Inner[E, D, V, IndexedSegmentBase[E, D, V]]
     with IndexedSegmentWithPrev[E, D, V]
@@ -448,11 +438,11 @@ object AbstractIndexedSegmentSeq {
     override def self: IndexedInnerSegment[E, D, V] = this
     
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: AbstractIndexedSegmentSeq[E, D, V] = sequence.consAbove(index)
+    override def takenAbove: NonuniformIndexedSegmentSeq[E, D, V] = sequence.consAbove(index)
 
-    override def takenBelow: AbstractIndexedSegmentSeq[E, D, V] = sequence.consBelow(index - 1)
+    override def takenBelow: NonuniformIndexedSegmentSeq[E, D, V] = sequence.consBelow(index - 1)
 
-    override def sliced: (AbstractIndexedSegmentSeq[E, D, V], AbstractIndexedSegmentSeq[E, D, V]) =
+    override def sliced: (NonuniformIndexedSegmentSeq[E, D, V], NonuniformIndexedSegmentSeq[E, D, V]) =
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =

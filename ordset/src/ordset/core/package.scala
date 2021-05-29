@@ -26,9 +26,13 @@ package object core {
   
   type UniformSegmentSeq[E, D <: Domain[E], V] = AbstractUniformSegmentSeq[E, D, V]
   
-  type IndexedSegmentSeq[E, D <: Domain[E], V] = AbstractIndexedSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
+  type NonuniformIndexedSegmentSeq[E, D <: Domain[E], V] = AbstractIndexedSegmentSeq[E, D, V]
+  
+  type IndexedSegmentSeq[E, D <: Domain[E], V] = NonuniformIndexedSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
 
-  type TreapSegmentSeq[E, D <: Domain[E], V] = AbstractTreapSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
+  type NonuniformTreapSegmentSeq[E, D <: Domain[E], V] = AbstractTreapSegmentSeq[E, D, V]
+  
+  type TreapSegmentSeq[E, D <: Domain[E], V] = NonuniformTreapSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
   
   type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2] = AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 }

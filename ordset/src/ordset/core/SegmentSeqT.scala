@@ -305,7 +305,19 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   - segments {i ∈ [M+1, N]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
    *   of original sequence for which u,,i,, `>` `bound`;
    * </tr>
-   *
+   * <tr>where</tr>
+   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
+   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
+   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   * <tr>
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
+   *   (see [[Bound.provideUpper]]);
+   * </tr>
+   * <tr>
+   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
+   *   (see [[Bound.provideLower]]).
+   * </tr>
+   * 
    * {{{
    * Example 1
    *

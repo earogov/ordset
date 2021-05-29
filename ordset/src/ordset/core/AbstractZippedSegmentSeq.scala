@@ -2,13 +2,12 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
+import AbstractZippedSegmentSeq._
 
 // TODO: class description.
 abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
-  extends AbstractSegmentSeq[E, D, V, AbstractZippedSegmentSeq.ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] {
+  extends AbstractSegmentSeq[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] {
   seq =>
-
-  import AbstractZippedSegmentSeq._
   
   // Inspection --------------------------------------------------------------- //
   /** Original sequence to which zipping is applied. */
@@ -662,7 +661,7 @@ object AbstractZippedSegmentSeq {
    */
   sealed trait ZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2] {
 
-    def sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
+    def sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 
     def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
 
@@ -702,7 +701,7 @@ object AbstractZippedSegmentSeq {
   }
 
   final case class ZippedTupleImpl[E, D <: Domain[E], U1, U2, V, S1, S2](
-    override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+    override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ) extends ZippedTuple[E, D, U1, U2, V, S1, S2]
@@ -710,7 +709,7 @@ object AbstractZippedSegmentSeq {
   object ZippedTupleImpl {
 
     def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
-      sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
+      sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
     ): (SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2], SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]) =>
       ZippedTuple[E, D, U1, U2, V, S1, S2]
     = (left, right) => new ZippedTupleImpl[E, D, U1, U2, V, S1, S2](sequence, left, right)
@@ -746,7 +745,7 @@ object AbstractZippedSegmentSeq {
       with ZippedTuple[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
-    override def sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
+    override def sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
 
@@ -873,7 +872,7 @@ object AbstractZippedSegmentSeq {
    * which are ordered by their upper bound.
    */
   final case class ZippedInitialSegment[E, D <: Domain[E], U1, U2, V, S1, S2] (
-    override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+    override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val frontBackward: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val frontForward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ) extends SegmentT.Initial[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]
@@ -896,7 +895,7 @@ object AbstractZippedSegmentSeq {
    * which must be last segments of original sequences.
    */
   final case class ZippedTerminalSegment[E, D <: Domain[E], U1, U2, V, S1, S2] (
-    override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+    override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ) extends SegmentT.Terminal[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]
@@ -920,7 +919,7 @@ object AbstractZippedSegmentSeq {
    * which are ordered by their upper bound.
    */
   final case class ZippedInnerSegment[E, D <: Domain[E], U1, U2, V, S1, S2](
-    override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+    override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val frontBackward: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val frontForward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ) extends SegmentT.Inner[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]
@@ -941,7 +940,7 @@ object AbstractZippedSegmentSeq {
    * which must be last segments of original sequences.
    */
   final case class ZippedSingleSegment[E, D <: Domain[E], U1, U2, V, S1, S2](
-    override val sequence: AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+    override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ) extends SegmentT.Single[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]

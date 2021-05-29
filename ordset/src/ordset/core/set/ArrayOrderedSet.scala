@@ -48,7 +48,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 
   protected final override def prependedInternal(
     bound: Bound[E],
-    segmentFunc: Bound[E] => IndexedSegment[E, D, Boolean],
+    originalBoundSegment: IndexedSegment[E, D, Boolean],
     other: OrderedSet[E, D]
   ): IndexedSegmentSeq[E, D, Boolean] = {
 
@@ -76,8 +76,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     //
     val upperBound = bound.provideUpper
     val lowerBound = bound.provideLower
-
-    val originalBoundSegment = segmentFunc(lowerBound)
+    
     val otherBoundsProvider = BoundsProvider.backward(other, upperBound)
 
     val originalBoundMatch = originalBoundSegment.hasLowerBound(lowerBound)
@@ -119,7 +118,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
 
   protected final override def appendedInternal(
     bound: Bound[E],
-    segmentFunc: Bound[E] => IndexedSegment[E, D, Boolean],
+    originalBoundSegment: IndexedSegment[E, D, Boolean],
     other: OrderedSet[E, D]
   ): IndexedSegmentSeq[E, D, Boolean] = {
 
@@ -147,8 +146,7 @@ class ArrayOrderedSet[E, D <: Domain[E]] protected (
     //
     val upperBound = bound.provideUpper
     val lowerBound = bound.provideLower
-
-    val originalBoundSegment = segmentFunc(upperBound)
+    
     val otherBoundsProvider = BoundsProvider.forward(other, lowerBound)
 
     val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)

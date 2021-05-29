@@ -8,7 +8,7 @@ import scala.collection.immutable.ArraySeq
  * For common description of segment sequence see [[SegmentSeq]].
  *
  * <u>Class is not intended to model empty and universal sets.</u>
- * For such cases implementation based on [[AbstractUniformSegmentSeq]] can be used.
+ * For such cases implementation based on [[UniformSegmentSeq]] can be used.
  *
  * Upper bounds of segments are stored in `bounds` array based collection.
  *

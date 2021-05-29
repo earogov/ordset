@@ -3,13 +3,12 @@ package ordset.core
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.TreapOrderedSet
+import AbstractUniformSegmentSeq._
 
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
-  extends AbstractSegmentSeq[E, D, V, AbstractUniformSegmentSeq.UniformSingleSegment[E, D, V]] {
+  extends AbstractSegmentSeq[E, D, V, UniformSingleSegment[E, D, V]] {
   seq =>
-
-  import AbstractUniformSegmentSeq._
 
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !isValueIncluded(value)
@@ -34,11 +33,11 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def getSegmentForElement(element: E): UniformSingleSegment[E, D, V] = segment
 
   // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, V] = this
+  final override def takenAbove(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
-  final override def takenBelow(bound: Bound[E]): AbstractUniformSegmentSeq[E, D, V] = this
+  final override def takenBelow(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
-  final override def sliced(bound: Bound[E]): (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
+  final override def sliced(bound: Bound[E]): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
     (this, this)
 
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
@@ -126,7 +125,7 @@ object AbstractUniformSegmentSeq {
    * Single segment of sequence. It has no previous and next segments.
    */
   final case class UniformSingleSegment[E, D <: Domain[E], V](
-    override val sequence: AbstractUniformSegmentSeq[E, D, V]
+    override val sequence: UniformSegmentSeq[E, D, V]
   ) extends SegmentT.Single[E, D, V, UniformSingleSegment[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
@@ -144,15 +143,15 @@ object AbstractUniformSegmentSeq {
     override def moveTo(bound: Bound[E]): UniformSingleSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: AbstractUniformSegmentSeq[E, D, V] = sequence
+    override def takenAbove: UniformSegmentSeq[E, D, V] = sequence
 
-    override def takenBelow: AbstractUniformSegmentSeq[E, D, V] = sequence
+    override def takenBelow: UniformSegmentSeq[E, D, V] = sequence
 
-    override def sliced: (AbstractUniformSegmentSeq[E, D, V], AbstractUniformSegmentSeq[E, D, V]) =
+    override def sliced: (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
       (sequence, sequence)
 
-    override def prepended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
+    override def prepended(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
 
-    override def appended(other: SegmentSeq[E, D, V]): AbstractUniformSegmentSeq[E, D, V] = sequence
+    override def appended(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
   }
 }

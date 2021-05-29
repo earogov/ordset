@@ -25,7 +25,7 @@ import scala.{specialized => sp}
  * }}}
  * 
  * 
- * @tparam E - type of element
+ * @tparam E type of element
  */
 sealed trait Bound[@sp(spNum) +E] {
 

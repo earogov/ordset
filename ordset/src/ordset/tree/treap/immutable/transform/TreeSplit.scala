@@ -110,7 +110,7 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeFoldFunc, NodeStackConte
  *     C    key    D
  * }}}
  * <tr>
- * Assume that at some moment of downward move `B` is a current node and its key is equals to the specified `key`.
+ * Assume that at some moment of downward move `B` is a current node and its key is equal to the specified `key`.
  * Then [[NodeDownward.foldDefault]] will stop at this node (due to [[Navigation.defaultFunc]] stop condition).
  * The result context will contain `B` as a current node and all its upward nodes in stack.
  * </tr>

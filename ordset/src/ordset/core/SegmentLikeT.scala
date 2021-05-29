@@ -8,7 +8,9 @@ import scala.collection.{AbstractIterable, AbstractIterator}
 import scala.{specialized => sp}
 
 trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
-  
+
+  import SegmentLikeT._
+
   // Inspection --------------------------------------------------------------- //
 
   /** Sequence to which segment belongs. */
@@ -41,34 +43,25 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def isIncluded: Boolean
 
   /** @return `true` if `bound` is between segment bounds. */
-  def contains(bound: Bound[E]): Boolean = this match {
-    case s: Segment.Inner[E, D, V] =>
-      domainOps.boundOrd.lteqv(s.lowerBound, bound) && domainOps.boundOrd.gteqv(s.upperBound, bound)
-    case s: Segment.WithPrev[E, D, V] =>
-      domainOps.boundOrd.lteqv(s.lowerBound, bound)
-    case s: Segment.WithNext[E, D, V] =>
-      domainOps.boundOrd.gteqv(s.upperBound, bound)
-    case _ =>
-      true
-  }
+  def contains(bound: Bound[E]): Boolean
 
   /** @return `true` if `element` is between segment bounds. */
   def containsElement(element: E): Boolean = contains(Bound.Upper.inclusive(element))
 
-  /** @return `true` if there is next segment after current. */
-  def hasNext: Boolean = false
-
-  /** @return `true` if there is previous segment before current. */
-  def hasPrev: Boolean = false
-
   /** @return `true` if segment has specified upper bound. */
-  def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
+  def hasUpperBound(bound: Bound.Upper[E]): Boolean
 
   /** @return `true` if segment has specified lower bound. */
-  def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+  def hasLowerBound(bound: Bound.Lower[E]): Boolean
 
   /** @return `true` if segment has specified value. */
   def hasValue(v: V): Boolean = valueOps.eqv(value, v)
+
+  /** @return `true` if there is next segment after current, i.e. if it's [[SegmentT.WithNext]]. */
+  def hasNext: Boolean = false
+
+  /** @return `true` if there is previous segment before current, i.e. if it's [[SegmentT.WithPrev]]. */
+  def hasPrev: Boolean = false
 
   /** @return `true` if segment is [[SegmentT.First]]. */
   def isFirst: Boolean = false
@@ -89,12 +82,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def isTerminal: Boolean = false
 
   /** @return interval that corresponds to the segment in given domain. */
-  def interval: Interval[E, D] = this match {
-    case s: Segment.Inner[E, D, V]    => domainOps.interval(s.lowerBound, s.upperBound)
-    case s: Segment.WithPrev[E, D, V] => domainOps.interval(s.lowerBound)
-    case s: Segment.WithNext[E, D, V] => domainOps.interval(s.upperBound)
-    case _                            => domainOps.interval.universal
-  }
+  def interval: Interval[E, D]
 
   /** @return tuple of segment value and interval that corresponds to the segment in given domain. */
   def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
@@ -104,7 +92,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns current instance with a more precise type.
    *
-   * It's may be convenient to pass around arguments of type [[SegmentT]] (without S) and later restore full type
+   * It's may be convenient to pass arguments of type [[SegmentT]] (without S) and later restore full type
    * if needed.
    */
   def self: SegmentT[E, D, V, S] with S
@@ -133,11 +121,11 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
     override def hasNext: Boolean = current == null || !current.isLast
 
-    override def next(): SegmentT[E, D, V, S] with S = current match {
+    override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S]) match {
       case null =>
         current = self
         current
-      case s: SegmentT.WithNext[E, D, V, S] @unchecked =>
+      case s: SegmentT.WithNext[E, D, V, S] =>
         current = s.moveNext
         current
       case _ =>
@@ -158,11 +146,11 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
     override def hasNext: Boolean = current == null || !current.isFirst
 
-    override def next(): SegmentT[E, D, V, S] with S = current match {
+    override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S]) match {
       case null =>
         current = self
         current
-      case s: SegmentT.WithPrev[E, D, V, S] @unchecked =>
+      case s: SegmentT.WithPrev[E, D, V, S] =>
         current = s.movePrev
         current
       case _ =>
@@ -171,16 +159,10 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   }
 
   /** @return [[LazyList]] of all next segments of sequence starting from current. */
-  def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = this match {
-    case s: SegmentT.WithNext[E, D, V, S] => LazyList.cons(self, s.moveNext.forwardLazyList)
-    case _                                => LazyList.cons(self, LazyList.empty)
-  }
+  def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S]
 
   /** @return [[LazyList]] of all previous segments of sequence starting from current. */
-  def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = this match {
-    case s: SegmentT.WithPrev[E, D, V, S] => LazyList.cons(self, s.movePrev.backwardLazyList)
-    case _                                => LazyList.cons(self, LazyList.empty)
-  }
+  def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S]
 
   // Transformation ----------------------------------------------------------- //
   /**
@@ -427,10 +409,153 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *        A       E      F     G        C        - values
    * }}}
    */
-  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = this match {
-    case s: Segment.Inner[E, D, V]    => s.moveNext.prepended(s.movePrev.appended(other))
-    case s: Segment.WithNext[E, D, V] => s.moveNext.prepended(other)
-    case s: Segment.WithPrev[E, D, V] => s.movePrev.appended(other)
-    case _                            => other
+  def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+
+  /**
+   * Returns instance that captures current segment and specified bound to perform further operations.
+   */
+  def truncation(bound: Bound[E]): Truncation[E, D, V, S, SegmentSeq[E, D, V]] = ???
+}
+
+object SegmentLikeT {
+
+  /**
+   * Captures segment and bound to perform further operations.
+   */
+  abstract class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+    val segment: SegmentT[E, D, V, S] with S,
+    inputBound: Bound[E],
+  ) {
+
+    /**
+     * Truncation bound.
+     *
+     * Truncation bound equals to input bound limited by [[restrictBound]]. So invariant is always provided:
+     * {{{
+     *   segment.contains(bound) == true
+     * }}}
+     */
+    final val bound: Bound[E] = restrictBound(inputBound)
+
+    /**
+     * Same as [[SegmentSeqT.prepended]] applied to truncation bound and `other` sequence:
+     * {{{
+     *   truncation.prepended(other) == truncation.segment.sequence.prepended(truncation.bound, other)
+     * }}}
+     * If segment is already known current method allows to avoid its repeated search in contrast to
+     * [[SegmentSeqT.prepended]].
+     * {{{
+     *
+     * original:
+     *                              bound   segment
+     *                                )       v
+     *   X--------](-----------)[----------------X
+     *        A          B      ^        C           - values
+     *                      lowerBound
+     *
+     * other:
+     *
+     *   X---)[----------------)[-----------)[---X
+     *     D           E              F        G     - values
+     *
+     * segment.truncation(bound).prepended(other):
+     *
+     *                              bound
+     *                                v
+     *   X---)[----------------)[-----)[---------X
+     *     D           E           F        C        - values
+     * }}}
+     *
+     * <h3>Degenerate case</h3>
+     *
+     * If truncation bound equals to upper bound of [[segment]] the result is equivalent to [[Truncation.prepended]]
+     * applied to the next segment:
+     * {{{
+     *   segment.truncation(bound).prepended(other) == segment.moveNext.truncation(bound).prepended(other)
+     *   if segment.hasUpperBound(bound)
+     * }}}
+     * {{{
+     *                    segment    bound   next segment
+     *                       v        )        v
+     *   X------------](--------------)[---------X
+     *         A               B      ^     C        - values
+     *                            upperBound
+     * }}}
+     *
+     * [[Truncation.getPrependedBoundSegment]] returns next segment in degenerate case and segment itself otherwise.
+     */
+    def prepended(other: SegmentSeq[E, D, V]): SSeq = ???
+
+    /**
+     * Same as [[SegmentSeqT.appended]] applied to truncation bound and `other` sequence:
+     * {{{
+     *   truncation.appended(other) == truncation.segment.sequence.appended(truncation.bound, other)
+     * }}}
+     * If segment is already known current method allows to avoid its repeated search in contrast to
+     * [[SegmentSeqT.appended]].
+     * {{{
+     *
+     * original:
+     *
+     *   segment  bound
+     *       v     (
+     *   X------------](--------------)[---------X
+     *         A      ^        B            C        - values
+     *            upperBound
+     *
+     * other:
+     *
+     *   X---)[----------------)[-----------)[---X
+     *     D           E              F        G     - values
+     *
+     * segment.truncation(bound).appended(other):
+     *
+     *           bound
+     *             v
+     *   X--------](-----------)[-----------)[---X
+     *        A           E           F        G    - values
+     * }}}
+     *
+     * <h3>Degenerate case</h3>
+     *
+     * If truncation bound equals to lower bound of [[segment]] the result is equivalent to [[Truncation.appended]]
+     * applied to the previous segment:
+     * {{{
+     *   segment.truncation(bound).appended(other) == segment.movePrev.truncation(bound).appended(other)
+     *   if segment.hasLowerBound(bound)
+     * }}}
+     * {{{
+     *   prev. segment   bound   segment
+     *         v          (        v
+     *   X---------------](-----------)[---------X
+     *         A          ^     B           C       - values
+     *                lowerBound
+     * }}}
+     *
+     * [[Truncation.getAppendedBoundSegment]] returns previous segment in degenerate case and segment itself otherwise.
+     */
+    def appended(other: SegmentSeq[E, D, V]): SSeq = ???
+
+    // Protected section -------------------------------------------------------- //
+
+    /**
+     * Returns next segment in degenerate case (see [[Truncation.prepended]]) or segment itself otherwise.
+     */
+    protected def getPrependedBoundSegment: SegmentT[E, D, V, S] with S
+
+    /**
+     * Returns previous segment in degenerate case (see [[Truncation.appended]]) or segment itself otherwise.
+     */
+    protected def getAppendedBoundSegment: SegmentT[E, D, V, S] with S
+
+    /**
+     * Returns the bound:
+     *
+     * min(max(`bnd`, lower bound of [[segment]]), upper bound of [[segment]])
+     *
+     * I.e. if `bnd` is inside [[segment]] it's returned unchanged,
+     * else closest bound of [[segment]] is returned (either lower or upper).
+     */
+    protected def restrictBound(bnd: Bound[E]): Bound[E]
   }
 }
