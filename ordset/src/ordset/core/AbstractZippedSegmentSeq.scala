@@ -759,7 +759,7 @@ object AbstractZippedSegmentSeq {
         sequence.generalFrontZipper, 
         left.moveTo(bound), 
         right.moveTo(bound)
-      )
+      );
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: SegmentSeq[E, D, V] = ???
@@ -767,6 +767,12 @@ object AbstractZippedSegmentSeq {
     override def takenBelow: SegmentSeq[E, D, V] = ???
 
     override def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+
+    override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+    override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+    override def truncation(bound: Bound[E]): SegmentLikeT.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] = ???
   }
 
   /**

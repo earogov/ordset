@@ -346,7 +346,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   for any `other` sequence
    * }}}
    */
-  def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing
@@ -394,7 +394,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   for any `other` sequence
    * }}}
    */
-  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing
@@ -441,7 +441,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns instance that captures current segment and specified bound to perform further operations.
    */
-  def truncation(bound: Bound[E]): Truncation[E, D, V, S] = ???
+  def truncation(bound: Bound[E]): Truncation[E, D, V, S]
 }
 
 object SegmentLikeT {
