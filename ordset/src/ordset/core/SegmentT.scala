@@ -246,6 +246,8 @@ object SegmentT {
 
     override def contains(bound: Bound[E]): Boolean = true
 
+    override def restrictBound(bound: Bound[E]): Bound[E] = bound
+
     override def interval: Interval[E, D] = domainOps.interval.universal
 
     override def toString: String = SetBuilderFormat.singleSegment(this)
@@ -261,17 +263,14 @@ object SegmentT {
 
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
-
-    override def truncation(bound: Bound[E]): Single.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
-      new Single.Truncation(self, bound)
   }
 
   object Single {
 
-    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+    abstract class Truncation[E, D <: Domain[E], V, +S](
       override val segment: SegmentT.Single[E, D, V, S] with S,
       inputBound: Bound[E]
-    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+    ) extends SegmentLikeT.Truncation[E, D, V, S](
       segment,
       inputBound,
     ) {
@@ -281,9 +280,6 @@ object SegmentT {
       protected override def getPrependedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
 
       protected override def getAppendedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
-
-      @inline
-      protected final override def restrictBound(bnd: Bound[E]): Bound[E] = bnd
     }
   }
 
@@ -301,6 +297,10 @@ object SegmentT {
 
     override def contains(bound: Bound[E]): Boolean = domainOps.boundOrd.gteqv(upperBound, bound)
 
+    override def restrictBound(bound: Bound[E]): Bound[E] =
+      if (domainOps.boundOrd.gt(bound, upperBound)) upperBound
+      else bound
+
     override def interval: Interval[E, D] = domainOps.interval(upperBound)
 
     override def toString: String = SetBuilderFormat.initialSegment(this)
@@ -312,17 +312,14 @@ object SegmentT {
     
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(other)
-
-    override def truncation(bound: Bound[E]): Initial.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
-      new Initial.Truncation(self, bound)
   }
 
   object Initial {
 
-    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+    abstract class Truncation[E, D <: Domain[E], V, +S](
       override val segment: SegmentT.Initial[E, D, V, S] with S,
       inputBound: Bound[E],
-    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+    ) extends SegmentLikeT.Truncation[E, D, V, S](
       segment,
       inputBound,
     ) {
@@ -334,10 +331,6 @@ object SegmentT {
         else segment
 
       protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S = segment
-
-      @inline
-      protected final override def restrictBound(bnd: Bound[E]): Bound[E] =
-        segment.domainOps.boundOrd.min(bnd, segment.upperBound)
     }
   }
 
@@ -355,6 +348,10 @@ object SegmentT {
 
     override def contains(bound: Bound[E]): Boolean = domainOps.boundOrd.lteqv(lowerBound, bound)
 
+    override def restrictBound(bound: Bound[E]): Bound[E] =
+      if (domainOps.boundOrd.lt(bound, lowerBound)) lowerBound
+      else bound
+
     override def interval: Interval[E, D] = domainOps.interval(lowerBound)
 
     override def toString: String = SetBuilderFormat.terminalSegment(this)
@@ -366,17 +363,14 @@ object SegmentT {
     
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.appended(other)
-
-    override def truncation(bound: Bound[E]): Terminal.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
-      new Terminal.Truncation(self, bound)
   }
 
   object Terminal {
 
-    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+    abstract class Truncation[E, D <: Domain[E], V, +S](
       override val segment: SegmentT.Terminal[E, D, V, S] with S,
       inputBound: Bound[E]
-    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+    ) extends SegmentLikeT.Truncation[E, D, V, S](
       segment,
       inputBound
     ) {
@@ -388,10 +382,6 @@ object SegmentT {
       protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
         if (segment.hasLowerBound(bound.provideLower)) segment.movePrev
         else segment
-
-      @inline
-      protected final override def restrictBound(bnd: Bound[E]): Bound[E] =
-        segment.domainOps.boundOrd.max(bnd, segment.lowerBound)
     }
   }
 
@@ -412,6 +402,13 @@ object SegmentT {
       boundOrd.lteqv(lowerBound, bound) && boundOrd.gteqv(upperBound, bound)
     }
 
+    override def restrictBound(bound: Bound[E]): Bound[E] = {
+      val boundOrd = domainOps.boundOrd
+      if (boundOrd.lt(bound, lowerBound)) lowerBound
+      else if (boundOrd.gt(bound, upperBound)) upperBound
+      else bound
+    }
+
     override def interval: Interval[E, D] = domainOps.interval(lowerBound, upperBound)
 
     override def toString: String = SetBuilderFormat.innerSegment(this)
@@ -420,17 +417,14 @@ object SegmentT {
 
     // Transformation ----------------------------------------------------------- //
     override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(movePrev.appended(other))
-
-    override def truncation(bound: Bound[E]): Inner.Truncation[E, D, V, S, SegmentSeq[E, D, V]] =
-      new Inner.Truncation(self, bound)
   }
 
   object Inner {
 
-    class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+    abstract class Truncation[E, D <: Domain[E], V, +S](
       segment: SegmentT.Inner[E, D, V, S] with S,
       inputBound: Bound[E],
-    ) extends SegmentLikeT.Truncation[E, D, V, S, SSeq](
+    ) extends SegmentLikeT.Truncation[E, D, V, S](
       segment,
       inputBound
     ) {
@@ -444,12 +438,7 @@ object SegmentT {
       protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
         if (segment.hasLowerBound(bound.provideLower)) segment.movePrev
         else segment
-
-      @inline
-      protected final override def restrictBound(bnd: Bound[E]): Bound[E] = {
-        val boundOrd = segment.domainOps.boundOrd
-        boundOrd.min(boundOrd.max(bnd, segment.lowerBound), segment.upperBound)
-      }
+      
     }
   }
 

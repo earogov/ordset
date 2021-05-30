@@ -153,5 +153,26 @@ object AbstractUniformSegmentSeq {
     override def prepended(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
 
     override def appended(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
+
+    override def truncation(bound: Bound[E]): UniformSingleSegment.Truncation[E, D, V] =
+      new UniformSingleSegment.Truncation(this, bound)
+  }
+
+  object UniformSingleSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: UniformSingleSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Single.Truncation[E, D, V, UniformSingleSegment[E, D, V]](
+      segment,
+      inputBound,
+    ) {
+
+      override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+        segment.sequence.prepended(bound, other)
+
+      override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+        segment.sequence.appended(bound, other)
+    }
   }
 }

@@ -54,6 +54,32 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return `true` if segment has specified lower bound. */
   def hasLowerBound(bound: Bound.Lower[E]): Boolean
 
+  /**
+   * If `bound` is outside of segment returns closest bound of segment (either lower or upper).
+   * Otherwise returns `bound`.
+   *
+   * <h3>Note</h3>
+   *
+   * The formula below seems to be equivalent to method definition:
+   *
+   * output bound = min(max(`bound`, lower bound of segment), upper bound of segment)     (1)
+   *
+   * But there is a subtle difference: according to bound ordering defined for segment two bounds,
+   * for example, 5`]` and `[`5 are equal. So min() and max() operators can return any of them.
+   *
+   * Consider the case.
+   * {{{
+   *       bound
+   *         ]
+   * -------)[-----------)[--------
+   *         5     ^     10
+   *            segment
+   * }}}
+   * [[restrictBound]] must return `bound` = 5`]`
+   * But implementation based on formula (1) can return either 5`]` or 5`[`.
+   */
+  def restrictBound(bound: Bound[E]): Bound[E]
+
   /** @return `true` if segment has specified value. */
   def hasValue(v: V): Boolean = valueOps.eqv(value, v)
 
@@ -165,6 +191,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S]
 
   // Transformation ----------------------------------------------------------- //
+
   /**
    * Returns sequence containing
    * <tr>- segment (minBound, u,,0,,) -> v,,0,,</tr>
@@ -414,7 +441,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns instance that captures current segment and specified bound to perform further operations.
    */
-  def truncation(bound: Bound[E]): Truncation[E, D, V, S, SegmentSeq[E, D, V]] = ???
+  def truncation(bound: Bound[E]): Truncation[E, D, V, S] = ???
 }
 
 object SegmentLikeT {
@@ -422,7 +449,7 @@ object SegmentLikeT {
   /**
    * Captures segment and bound to perform further operations.
    */
-  abstract class Truncation[E, D <: Domain[E], V, +S, +SSeq](
+  abstract class Truncation[E, D <: Domain[E], V, +S](
     val segment: SegmentT[E, D, V, S] with S,
     inputBound: Bound[E],
   ) {
@@ -430,12 +457,13 @@ object SegmentLikeT {
     /**
      * Truncation bound.
      *
-     * Truncation bound equals to input bound limited by [[restrictBound]]. So invariant is always provided:
+     * Truncation bound equals to input bound limited by segment (see [[SegmentLikeT.restrictBound]]).
+     * So invariant is always provided:
      * {{{
      *   segment.contains(bound) == true
      * }}}
      */
-    final val bound: Bound[E] = restrictBound(inputBound)
+    final val bound: Bound[E] = segment.restrictBound(inputBound)
 
     /**
      * Same as [[SegmentSeqT.prepended]] applied to truncation bound and `other` sequence:
@@ -484,7 +512,7 @@ object SegmentLikeT {
      *
      * [[Truncation.getPrependedBoundSegment]] returns next segment in degenerate case and segment itself otherwise.
      */
-    def prepended(other: SegmentSeq[E, D, V]): SSeq = ???
+    def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
     /**
      * Same as [[SegmentSeqT.appended]] applied to truncation bound and `other` sequence:
@@ -534,7 +562,7 @@ object SegmentLikeT {
      *
      * [[Truncation.getAppendedBoundSegment]] returns previous segment in degenerate case and segment itself otherwise.
      */
-    def appended(other: SegmentSeq[E, D, V]): SSeq = ???
+    def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
     // Protected section -------------------------------------------------------- //
 
@@ -547,15 +575,5 @@ object SegmentLikeT {
      * Returns previous segment in degenerate case (see [[Truncation.appended]]) or segment itself otherwise.
      */
     protected def getAppendedBoundSegment: SegmentT[E, D, V, S] with S
-
-    /**
-     * Returns the bound:
-     *
-     * min(max(`bnd`, lower bound of [[segment]]), upper bound of [[segment]])
-     *
-     * I.e. if `bnd` is inside [[segment]] it's returned unchanged,
-     * else closest bound of [[segment]] is returned (either lower or upper).
-     */
-    protected def restrictBound(bnd: Bound[E]): Bound[E]
   }
 }

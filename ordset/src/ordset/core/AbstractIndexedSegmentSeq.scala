@@ -2,8 +2,10 @@ package ordset.core
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
+
 import scala.collection.Seq
 import AbstractIndexedSegmentSeq._
+import ordset.core.SegmentT.{Initial, Inner, Terminal}
 
 /**
  * For common description of segment sequence see [[SegmentSeq]].
@@ -318,6 +320,19 @@ object AbstractIndexedSegmentSeq {
     }
   }
 
+  object IndexedSegmentBase {
+
+    trait TruncationBase[E, D <: Domain[E], V] {
+      self: SegmentLikeT.Truncation[E, D, V, IndexedSegmentBase[E, D, V]] =>
+
+      override def prepended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
+        segment.sequence.prependedInternal(bound, getPrependedBoundSegment, other)
+
+      override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
+        segment.sequence.appendedInternal(bound, getAppendedBoundSegment, other)
+    }
+  }
+
   /**
    * Segment which has next segment.
    *
@@ -393,6 +408,20 @@ object AbstractIndexedSegmentSeq {
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = moveNext.prepended(other)
+
+    override def truncation(bound: Bound[E]): IndexedInitialSegment.Truncation[E, D, V] =
+      new IndexedInitialSegment.Truncation(this, bound)
+  }
+
+  object IndexedInitialSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: IndexedInitialSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Initial.Truncation[E, D, V, IndexedSegmentBase[E, D, V]](
+      segment,
+      inputBound,
+    ) with IndexedSegmentBase.TruncationBase[E, D, V]
   }
 
   /** Terminal segment of sequence. */
@@ -418,6 +447,20 @@ object AbstractIndexedSegmentSeq {
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = movePrev.appended(other)
+
+    override def truncation(bound: Bound[E]): IndexedTerminalSegment.Truncation[E, D, V] =
+      new IndexedTerminalSegment.Truncation(this, bound)
+  }
+
+  object IndexedTerminalSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: IndexedTerminalSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Terminal.Truncation[E, D, V, IndexedSegmentBase[E, D, V]](
+      segment,
+      inputBound,
+    ) with IndexedSegmentBase.TruncationBase[E, D, V]
   }
 
   /**
@@ -447,5 +490,19 @@ object AbstractIndexedSegmentSeq {
 
     override def patched(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
       moveNext.prepended(movePrev.appended(other))
+
+    override def truncation(bound: Bound[E]): IndexedInnerSegment.Truncation[E, D, V] =
+      new IndexedInnerSegment.Truncation(this, bound)
+  }
+
+  object IndexedInnerSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: IndexedInnerSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Inner.Truncation[E, D, V, IndexedSegmentBase[E, D, V]](
+      segment,
+      inputBound,
+    ) with IndexedSegmentBase.TruncationBase[E, D, V]
   }
 }

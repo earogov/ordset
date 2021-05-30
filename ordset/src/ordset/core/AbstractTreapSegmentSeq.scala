@@ -510,6 +510,19 @@ object AbstractTreapSegmentSeq {
     }
   }
 
+  object TreapSegmentBase {
+
+    trait TruncationBase[E, D <: Domain[E], V] {
+      self: SegmentLikeT.Truncation[E, D, V, TreapSegmentBase[E, D, V]] =>
+
+      override def prepended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+        segment.sequence.prependedInternal(bound, getPrependedBoundSegment, other)
+
+      override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
+        segment.sequence.appendedInternal(bound, getAppendedBoundSegment, other)
+    }
+  }
+
   /**
    * Segment which has next segment.
    */
@@ -596,6 +609,20 @@ object AbstractTreapSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: TreapInitialSegment[E, D, V] = this
+
+    override def truncation(bound: Bound[E]): TreapInitialSegment.Truncation[E, D, V] =
+      new TreapInitialSegment.Truncation(this, bound)
+  }
+
+  object TreapInitialSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: TreapInitialSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Initial.Truncation[E, D, V, TreapSegmentBase[E, D, V]](
+      segment,
+      inputBound,
+    ) with TreapSegmentBase.TruncationBase[E, D, V]
   }
 
   /**
@@ -635,8 +662,22 @@ object AbstractTreapSegmentSeq {
       (takenBelow, takenAbove)
 
     override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = movePrev.appended(other)
+
+    override def truncation(bound: Bound[E]): TreapTerminalSegment.Truncation[E, D, V] =
+      new TreapTerminalSegment.Truncation(this, bound)
   }
-  
+
+  object TreapTerminalSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: TreapTerminalSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Terminal.Truncation[E, D, V, TreapSegmentBase[E, D, V]](
+      segment,
+      inputBound,
+    ) with TreapSegmentBase.TruncationBase[E, D, V]
+  }
+
   /**
    * Inner segment of sequence.
    *
@@ -721,5 +762,19 @@ object AbstractTreapSegmentSeq {
 
     override def patched(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
       moveNext.prepended(movePrev.appended(other))
+
+    override def truncation(bound: Bound[E]): TreapInnerSegment.Truncation[E, D, V] =
+      new TreapInnerSegment.Truncation(this, bound)
+  }
+
+  object TreapInnerSegment {
+
+    final class Truncation[E, D <: Domain[E], V](
+      override val segment: TreapInnerSegment[E, D, V],
+      inputBound: Bound[E],
+    ) extends SegmentT.Inner.Truncation[E, D, V, TreapSegmentBase[E, D, V]](
+      segment,
+      inputBound,
+    ) with TreapSegmentBase.TruncationBase[E, D, V]
   }
 }
