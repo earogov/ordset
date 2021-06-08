@@ -49,17 +49,15 @@ class DegenerateSetSample1[D <: Domain[Int]](
       // c
       ZippedOrderedSet.union(
         // b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `)[`, 0 `](`, 30 `](`),
-          complementary = false,
-          domainOps
-        )(),
+          complementary = false
+        ),
         // a
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`),
-          complementary = false,
-          domainOps
-        )()
+          complementary = false
+        )
       )
     )
 }

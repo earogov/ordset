@@ -5,7 +5,7 @@ import ordset.core.value.ValueOps
 import ordset.core.{AbstractZippedSegmentSeq, SegmentSeq}
 import ordset.random.RngManager
 
-class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2](
+class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
   override final val firstSeq: OrderedMapT[E, D, U1, S1],
   override final val secondSeq: OrderedMapT[E, D, U2, S2],
   final val operatorFunc: (U1, U2) => V,

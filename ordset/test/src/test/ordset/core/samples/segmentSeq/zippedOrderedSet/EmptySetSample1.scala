@@ -47,11 +47,10 @@ class EmptySetSample1[D <: Domain[Int]](
     ZippedOrderedSet.union(
       ZippedOrderedSet.intersection(
         // b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
           complementary = false,
-          domainOps
-        )(),
+        ),
         // a
         ArrayOrderedSet.unchecked[Int, D](
           ArraySeq.empty,
@@ -61,17 +60,15 @@ class EmptySetSample1[D <: Domain[Int]](
       // f
       ZippedOrderedSet.intersection(
         // b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-          complementary = false,
-          domainOps
-        )(),
+          complementary = false
+        ),
         // ~b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-          complementary = true,
-          domainOps
-        )()
+          complementary = true
+        )
       )
     )
 }

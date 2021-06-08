@@ -46,25 +46,22 @@ class MultiBoundedSetSample2[D <: Domain[Int]](
     // X--------0](0--------------10)[10--------------20)[20---------------30)[30--------------40)[40-----------X
     ZippedOrderedSet.intersection(
       // c
-      ArrayOrderedSet.fromIterableUnsafe[Int, D](
+      ArrayOrderedSet.unchecked[Int, D](
         ArraySeq(7 `)[`, 20 `](`, 25 `)[`, 35 `](`),
-        complementary = true,
-        domainOps
-      )(),
+        complementary = true
+      ),
       // d
       ZippedOrderedSet.union(
         // a
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-          complementary = true,
-          domainOps
-        )(),
+          complementary = true
+        ),
         // b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(5 `)[`, 12 `](`, 20 `)[`, 30 `](`, 60 `)[`),
-          complementary = false,
-          domainOps
-        )()
+          complementary = false
+        )
       )
     )
 }

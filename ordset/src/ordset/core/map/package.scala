@@ -7,4 +7,7 @@ package object map {
   type OrderedMap[E, D <: Domain[E], V] = SegmentSeq[E, D, V]
 
   type OrderedMapT[E, D <: Domain[E], V, +S] = SegmentSeqT[E, D, V, S]
+
+
+  type TreapOrderedMap[E, D <: Domain[E], V] = NonuniformTreapOrderedMap[E, D, V] | UniformOrderedMap[E, D, V]
 }

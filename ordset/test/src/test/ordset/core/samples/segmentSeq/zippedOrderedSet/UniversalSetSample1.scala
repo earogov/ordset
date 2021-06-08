@@ -48,11 +48,10 @@ class UniversalSetSample1[D <: Domain[Int]](
       // c
       ZippedOrderedSet.union(
         // b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-          complementary = false,
-          domainOps
-        )(),
+          complementary = false
+        ),
         // a
         ArrayOrderedSet.unchecked[Int, D](
           ArraySeq.empty,
@@ -62,17 +61,15 @@ class UniversalSetSample1[D <: Domain[Int]](
       // f
       ZippedOrderedSet.union(
         // b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-          complementary = false,
-          domainOps
-        )(),
+          complementary = false
+        ),
         // ~b
-        ArrayOrderedSet.fromIterableUnsafe[Int, D](
+        ArrayOrderedSet.unchecked[Int, D](
           ArraySeq(0 `](`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
-          complementary = true,
-          domainOps
-        )()
+          complementary = true
+        )
       )
     )
 }

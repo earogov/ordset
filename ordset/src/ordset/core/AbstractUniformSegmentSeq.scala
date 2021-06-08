@@ -2,7 +2,7 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.TreapOrderedSet
+import ordset.core.set.NonuniformTreapOrderedSet
 import AbstractUniformSegmentSeq._
 
 // TODO: class description.

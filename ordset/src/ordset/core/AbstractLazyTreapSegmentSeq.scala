@@ -2,7 +2,7 @@ package ordset.core
 
 import ordset.{Hash, util}
 import ordset.core.domain.Domain
-import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
+import ordset.core.map.{NonuniformTreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
@@ -208,7 +208,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         val root = BuildAsc.finalizeBuffer(buffer)
         root match {
           case root: ImmutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]] =>
-            TreapOrderedMap.unchecked(root, EagerValue.unstable)(domainOps, ControlValueOps.get, rngManager)
+            NonuniformTreapOrderedMap.unchecked(root, EagerValue.unstable)(domainOps, ControlValueOps.get, rngManager)
           case _ =>
             throw new AssertionError(s"Expected nonempty tree $root for control sequence.")
         }

@@ -12,4 +12,10 @@ package object set {
   type OrderedSet[E, D <: Domain[E]] = SegmentSeq[E, D, Boolean]
 
   type OrderedSetT[E, D <: Domain[E], +S] = SegmentSeqT[E, D, Boolean, S]
+  
+  
+  type ArrayOrderedSet[E, D <: Domain[E]] = NonuniformArrayOrderedSet[E, D] | UniformOrderedSet[E, D]
+  
+  
+  type TreapOrderedSet[E, D <: Domain[E]] = NonuniformTreapOrderedSet[E, D] | UniformOrderedSet[E, D]
 }

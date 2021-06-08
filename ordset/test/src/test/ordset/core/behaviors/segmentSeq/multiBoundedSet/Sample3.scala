@@ -2,7 +2,7 @@ package test.ordset.core.behaviors.segmentSeq.multiBoundedSet
 
 import ordset.core.Bound
 import ordset.core.domain.Domain
-import ordset.core.set.TreapOrderedSet
+import ordset.core.set.NonuniformTreapOrderedSet
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.util.label.Label

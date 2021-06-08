@@ -5,7 +5,7 @@ import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationP
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
-class UniformOrderedMap[E, D <: Domain[E], V](
+class UniformOrderedMap[E, D <: Domain[E], V] protected (
   final override val value: V
 )(
   implicit
@@ -23,7 +23,7 @@ class UniformOrderedMap[E, D <: Domain[E], V](
     if (valueOps.eqv(firstValue, value))
       this
     else
-      TreapOrderedMap.unsafeBuildAsc[E, D, V](
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
         List((bound.provideUpper, firstValue), (null, value)), domainOps, valueOps
       )(
         SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
@@ -35,7 +35,7 @@ class UniformOrderedMap[E, D <: Domain[E], V](
     if (valueOps.eqv(value, lastValue))
       this
     else
-      TreapOrderedMap.unsafeBuildAsc[E, D, V](
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
         List((bound.provideUpper, value), (null, lastValue)), domainOps, valueOps
       )(
         SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue

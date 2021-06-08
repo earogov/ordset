@@ -4,7 +4,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.AbstractZippedSegmentSeq
 import ordset.random.RngManager
 
-class ZippedOrderedSet[E, D <: Domain[E], S1, S2](
+class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
   override final val firstSeq: OrderedSetT[E, D, S1],
   override final val secondSeq: OrderedSetT[E, D, S2],
   final val operatorFunc: (Boolean, Boolean) => Boolean,

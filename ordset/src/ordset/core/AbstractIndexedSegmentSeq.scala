@@ -97,9 +97,9 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   /**
    * Validate state after initialization.
    */
-  @throws[AssertionError]("if bounds collection is empty")
+  @throws[SegmentSeqException]("if bounds collection is empty")
   protected def validate(): Unit = {
-    if (bounds.isEmpty) throw new AssertionError("Bounds collection must be non empty.")
+    if (bounds.isEmpty) throw SegmentSeqException("Bounds collection must be nonempty.")
   }
 
   /**

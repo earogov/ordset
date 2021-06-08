@@ -4,7 +4,7 @@ import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationP
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
-class UniformOrderedSet[E, D <: Domain[E]](
+class UniformOrderedSet[E, D <: Domain[E]] protected (
   final override val value: Boolean
 )(
   implicit
@@ -23,7 +23,7 @@ class UniformOrderedSet[E, D <: Domain[E]](
     if (valueOps.eqv(firstValue, value))
       this
     else
-      TreapOrderedSet.unsafeBuildAsc[E, D](
+      TreapOrderedSet.getFactory.unsafeBuildAsc(
         List(bound.provideUpper), firstValue, domainOps
       )(
         SeqValidationPredicate.alwaysTrue
@@ -35,7 +35,7 @@ class UniformOrderedSet[E, D <: Domain[E]](
     if (valueOps.eqv(value, lastValue)) 
       this
     else
-      TreapOrderedSet.unsafeBuildAsc[E, D](
+      TreapOrderedSet.getFactory.unsafeBuildAsc(
         List(bound.provideUpper), value, domainOps
       )(
         SeqValidationPredicate.alwaysTrue

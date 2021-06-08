@@ -48,20 +48,19 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
     //
     // X-----------------)[--------------------](--------------------X
     //                   0                     10
-
-    val seq1 = TreapOrderedSet.unsafeBuildAsc(
+    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
       complementary = true,
       domainOps
     )()
 
-    val seq2 = TreapOrderedSet.unsafeBuildAsc(
+    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(2 `)[`, 8 `](`, 17 `)[`),
       complementary = false,
       domainOps
     )()
 
-    val seq3 = TreapOrderedSet.unsafeBuildAsc(
+    val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(15 `)[`, 20 `](`),
       complementary = false,
       domainOps
@@ -92,12 +91,12 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
   ) extends AbstractLazyTreapSegmentSeq[E, D, V] {
 
     zippedSeq = ZippedOrderedMap.apply(
-      TreapOrderedMap.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
         List((null, valueOps.unit)),
         domainOps,
         valueOps
       )(),
-      TreapOrderedMap.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
         initControlSeq.map(p => (p._1, LazyValue(p._2))),
         domainOps,
         ControlValueOps.get

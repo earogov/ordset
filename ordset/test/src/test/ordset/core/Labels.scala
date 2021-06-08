@@ -2,7 +2,7 @@ package test.ordset.core
 
 import ordset.Show
 import ordset.core.map.UniformOrderedMap
-import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
+import ordset.core.set.{NonuniformArrayOrderedSet, NonuniformTreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.util.label.Label
 
 object Labels {
@@ -23,9 +23,9 @@ object Labels {
 
   val uniformOrderedMap: Label = Label(classOf[UniformOrderedMap[_, _, _]].getClass.getSimpleName)
 
-  val arrayOrderedSet: Label = Label(classOf[ArrayOrderedSet[_, _]].getSimpleName)
+  val arrayOrderedSet: Label = Label(classOf[NonuniformArrayOrderedSet[_, _]].getSimpleName)
 
-  val treapOrderedSet: Label = Label(classOf[TreapOrderedSet[_, _]].getSimpleName)
+  val treapOrderedSet: Label = Label(classOf[NonuniformTreapOrderedSet[_, _]].getSimpleName)
 
   val zippedOrderedSet: Label = Label(classOf[ZippedOrderedSet[_, _, _, _]].getSimpleName)
 

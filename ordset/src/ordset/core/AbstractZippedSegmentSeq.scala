@@ -347,7 +347,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
       while (!stop) {
         nextZipped = stepForwardZipper(ZippedTupleImpl.zipper(this), currZipped.left, currZipped.right)
         if (valueOps.neqv(currZipped.value, nextZipped.value)) {
-          // We have found a bound, Vhere operator change its value => return 'currZipped'.
+          // We have found a bound where operator change its value => return 'currZipped'.
           stop = true
         } else {
           // 'currZipped' and 'nextZipped' have same value => accept 'nextZipped' and try to move next.
@@ -400,7 +400,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
       while (!stop) {
         prevZipped = stepBackwardZipper(ZippedTupleImpl.zipper(this), currZipped.left, currZipped.right)
         if (valueOps.neqv(currZipped.value, prevZipped.value)) {
-          // We have found a bound, Vhere operator change its value => return 'currZipped'.
+          // We have found a bound where operator change its value => return 'currZipped'.
           stop = true
         } else {
           // 'currZipped' and 'prevZipped' have same value => accept 'prevZipped' and try to move back.
@@ -759,7 +759,7 @@ object AbstractZippedSegmentSeq {
         sequence.generalFrontZipper, 
         left.moveTo(bound), 
         right.moveTo(bound)
-      );
+      )
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: SegmentSeq[E, D, V] = ???
