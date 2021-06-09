@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
@@ -31,7 +31,7 @@ object TreapOrderedSet {
   ): TreapOrderedSet[E, D] = 
     root match {
       case root: ImmutableTreap.Node[Bound.Upper[E], Boolean] => NonuniformTreapOrderedSet.unchecked(root, lastValue)
-      case _ => UniformOrderedSet.apply(lastValue)
+      case _ => UniformOrderedSet.apply(lastValue, TreapOrderedSet.getFactory)
     }
 
   /**
@@ -80,11 +80,17 @@ object TreapOrderedSet {
           case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
             NonuniformTreapOrderedSet.unchecked(r, value)(domainOps, rngManager)
           case _ =>
-            UniformOrderedSet(value)(domainOps, rngManager)
+            UniformOrderedSet.apply(value, this)(domainOps, rngManager)
         }
       } catch {
         case NonFatal(e) => throw SegmentSeqException.seqBuildFailed(e)
       } 
     }
+
+    override def convertSet(set: OrderedSet[E, D]): TreapOrderedSet[E, D] =
+      set match {
+        case set: TreapOrderedSet[E, D] => set
+        case _ => convertSetInternal(set)
+      }
   }
 }

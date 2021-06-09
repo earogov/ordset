@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.{AbstractIndexedSegmentSeq, Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.{AbstractIndexedSegmentSeq, Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
@@ -26,7 +26,7 @@ object ArrayOrderedSet {
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): ArrayOrderedSet[E, D] =
-    if (bounds.isEmpty) UniformOrderedSet(complementary)
+    if (bounds.isEmpty) UniformOrderedSet.apply(complementary, getFactory)
     else NonuniformArrayOrderedSet.unsafeUnchecked(bounds, complementary)
 
   /**
@@ -63,6 +63,12 @@ object ArrayOrderedSet {
               (seq, bnd) => seq.appended(bnd)
             )
           unchecked(boundsArraySeq, complementary)(domainOps, rngManager)
+      }
+
+    override def convertSet(set: OrderedSet[E, D]): ArrayOrderedSet[E, D] =
+      set match {
+        case set: ArrayOrderedSet[E, D] => set
+        case _ => convertSetInternal(set)
       }
   }
 }

@@ -35,26 +35,7 @@ object TreapOrderedMap {
   ): TreapOrderedMap[E, D, V] =
     root match {
       case root: ImmutableTreap.Node[Bound.Upper[E], V] => NonuniformTreapOrderedMap.unchecked(root, lastValue)
-      case _ => UniformOrderedMap.apply(lastValue)
-    }
-  
-  /**
-   * Converts input segment sequence into [[TreapOrderedMap]].
-   */
-  def convertSegmentSeq[E, D <: Domain[E], V](seq: OrderedMap[E, D, V]): TreapOrderedMap[E, D, V] =
-    seq match {
-      case seq: TreapOrderedMap[E, D, V] => seq
-      case _ =>
-        getFactory.unsafeBuildAsc(
-          SegmentSeqOps.getBoundValueIterableForSeq(seq),
-          seq.domainOps,
-          seq.valueOps
-        )(
-          SeqValidationPredicate.alwaysTrue,
-          SeqValidationPredicate.alwaysTrue
-        )(
-          seq.rngManager
-        )
+      case _ => UniformOrderedMap.apply(lastValue, getFactory)
     }
 
   /**
@@ -119,11 +100,17 @@ object TreapOrderedMap {
           case r: ImmutableTreap.Node[Bound.Upper[E], V] =>
             NonuniformTreapOrderedMap.unchecked(r, lastValue.get)(domainOps, valueOps, rngManager)
           case _ =>
-            UniformOrderedMap(lastValue.get)(domainOps, valueOps, rngManager)
+            UniformOrderedMap.apply(lastValue.get, this)(domainOps, valueOps, rngManager)
         }
       } catch {
         case NonFatal(e) => throw SegmentSeqException.seqBuildFailed(e)
       }
     }
+
+    override def convertMap(map: OrderedMap[E, D, V]): TreapOrderedMap[E, D, V] =
+      map match {
+        case map: TreapOrderedMap[E, D, V] => map
+        case _ => convertMapInternal(map)
+      }
   }
 }

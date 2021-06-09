@@ -29,7 +29,8 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
   protected final override def getSegmentValue(ind: Int): Boolean = isValueIncluded(ind)
 
   @inline
-  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet(value)
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =
+    UniformOrderedSet.apply(value, ArrayOrderedSet.getFactory)
 
   protected final override def consAbove(ind: Int): NonuniformArrayOrderedSet[E, D] = {
     val newComplementary = getSegmentValue(ind)

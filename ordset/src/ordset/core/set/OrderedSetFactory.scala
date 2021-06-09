@@ -1,7 +1,8 @@
 package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.map.OrderedMap
+import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
 import ordset.random.RngManager
 
 import scala.util.Try
@@ -63,6 +64,15 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
   ): SSeq
 
   /**
+   * Converts specified `set` into ordered set of type `SSeq`.
+   */
+  def convertSet(set: OrderedSet[E, D]): SSeq
+  // Note
+  // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
+  // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
+  // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertSetInternal`.
+  
+  /**
    * Same as [[unsafeBuildAsc]] but wraps result with [[Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildAsc]] preconditions.
@@ -111,5 +121,19 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
      */
     final def tryBuildAsc(bounds: IterableOnce[Bound.Upper[E]], complementary: Boolean): Try[SSeq] =
       Try.apply(unsafeBuildAsc(bounds, complementary))
+  }
+
+  // Protected section -------------------------------------------------------- //
+  protected final def convertSetInternal(set: OrderedSet[E, D]): SSeq = {
+    val firstSegment = set.firstSegment
+    unsafeBuildAsc(
+      SegmentSeqOps.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true),
+      firstSegment.value,
+      set.domainOps
+    )(
+      SeqValidationPredicate.alwaysTrue
+    )(
+      set.rngManager
+    )
   }
 }

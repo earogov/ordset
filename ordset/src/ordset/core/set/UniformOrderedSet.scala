@@ -5,7 +5,8 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
 class UniformOrderedSet[E, D <: Domain[E]] protected (
-  final override val value: Boolean
+  final override val value: Boolean,
+  final val setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
@@ -23,7 +24,7 @@ class UniformOrderedSet[E, D <: Domain[E]] protected (
     if (valueOps.eqv(firstValue, value))
       this
     else
-      TreapOrderedSet.getFactory.unsafeBuildAsc(
+      setFactory.unsafeBuildAsc(
         List(bound.provideUpper), firstValue, domainOps
       )(
         SeqValidationPredicate.alwaysTrue
@@ -35,7 +36,7 @@ class UniformOrderedSet[E, D <: Domain[E]] protected (
     if (valueOps.eqv(value, lastValue)) 
       this
     else
-      TreapOrderedSet.getFactory.unsafeBuildAsc(
+      setFactory.unsafeBuildAsc(
         List(bound.provideUpper), value, domainOps
       )(
         SeqValidationPredicate.alwaysTrue
@@ -47,25 +48,53 @@ class UniformOrderedSet[E, D <: Domain[E]] protected (
 object UniformOrderedSet {
 
   def apply[E, D <: Domain[E]](
+    value: Boolean,
+    setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    new UniformOrderedSet(value, setFactory)
+
+  def empty[E, D <: Domain[E]](
+    setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    new UniformOrderedSet(false, setFactory)
+
+  def universal[E, D <: Domain[E]](
+    setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    new UniformOrderedSet(true, setFactory)
+
+  def default[E, D <: Domain[E]](
     value: Boolean
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
-    new UniformOrderedSet[E, D](value)
+    new UniformOrderedSet(value, TreapOrderedSet.getFactory)
 
-  def empty[E, D <: Domain[E]](
+  def defaultEmpty[E, D <: Domain[E]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
-    new UniformOrderedSet[E, D](false)
+    new UniformOrderedSet(false, TreapOrderedSet.getFactory)
 
-  def universal[E, D <: Domain[E]](
+  def defaultUniversal[E, D <: Domain[E]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
-    new UniformOrderedSet[E, D](true)
+    new UniformOrderedSet(true, TreapOrderedSet.getFactory)
 }

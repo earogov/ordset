@@ -16,5 +16,5 @@ class UniversalSetSample1[D <: Domain[Int]](
 
   override def labels: Set[Label] = super.labels + Labels.universalSet
 
-  override def sequence: GenSegmentSeq = UniformOrderedSet(value = true)
+  override def sequence: GenSegmentSeq = UniformOrderedSet.defaultUniversal
 }

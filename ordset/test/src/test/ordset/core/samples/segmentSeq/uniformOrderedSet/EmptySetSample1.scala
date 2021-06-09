@@ -16,5 +16,5 @@ class EmptySetSample1[D <: Domain[Int]](
 
   override def labels: Set[Label] = super.labels + Labels.emptySet
 
-  override def sequence: GenSegmentSeq = UniformOrderedSet(value = false)
+  override def sequence: GenSegmentSeq = UniformOrderedSet.defaultEmpty
 }

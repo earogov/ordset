@@ -26,7 +26,7 @@ class NonuniformTreapOrderedMap[E, D <: Domain[E], V] protected (
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] =
-    UniformOrderedMap.apply(value)
+    UniformOrderedMap.apply(value, TreapOrderedMap.getFactory)
 
   @inline
   protected final override def consFromNode(

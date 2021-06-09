@@ -2,7 +2,7 @@ package ordset.core
 
 import ordset.{Hash, util}
 import ordset.core.domain.Domain
-import ordset.core.map.{NonuniformTreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
+import ordset.core.map.{NonuniformTreapOrderedMap, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
@@ -160,11 +160,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //  X--------------------X   - output
     //         unstable
     if (domainOps.segmentUpperOrd.eqv(boundSegments._1, boundSegments._2)) {
-      UniformOrderedMap.apply(
-        EagerValue.unstable
-      )(
-        domainOps, ControlValueOps.get, rngManager
-      )
+      makeUniformControlSeq(EagerValue.unstable)
     } else boundSegments match {
       case (lowerSegment: Segment.WithNext[E, D, V], upperSegment: Segment.WithPrev[E, D, V]) =>
         val boundOrd = domainOps.boundOrd
@@ -224,6 +220,18 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   }
 
   /**
+   * Creates uniform control sequence with specified `value`.
+   */
+  protected final def makeUniformControlSeq(
+    value: ControlValue[E, D, V]
+  ): UniformOrderedMap[E, D, ControlValue[E, D, V]] =
+    UniformOrderedMap.apply(
+      value, TreapOrderedMap.getFactory
+    )(
+      domainOps, ControlValueOps.get, rngManager
+    )
+
+  /**
    * Builds new control sequence for given `zsegment` and applies patch operation to existing control sequence.
    *
    * {{{
@@ -271,7 +279,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       if (lowerSegment.value.isUnstable && checkStability(lowerSegment))
         TreapSegmentSeqOps.patchSegment(
           lowerSegment.self,
-          UniformOrderedMap.apply(EagerValue.stable)(domainOps, ControlValueOps.get, rngManager)
+          makeUniformControlSeq(EagerValue.stable)
         )
       else controlSeq
 
@@ -280,7 +288,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     if (upperSegment.value.isUnstable && checkStability(upperSegment))
       TreapSegmentSeqOps.patchSegment(
         upperSegment.self,
-        UniformOrderedMap.apply(EagerValue.stable)(domainOps, ControlValueOps.get, rngManager)
+        makeUniformControlSeq(EagerValue.stable)
       )
     else newControlSeq
   }

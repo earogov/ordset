@@ -18,6 +18,6 @@ object TreapSegmentSeqOps {
     sequence: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] = segment match {
     case s: TreapSegmentBase[_, _, _] => s.patched(sequence)
-    case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.convertSegmentSeq(sequence)
+    case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(sequence)
   }
 }

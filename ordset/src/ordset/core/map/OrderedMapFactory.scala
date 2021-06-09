@@ -2,7 +2,7 @@ package ordset.core.map
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
 import ordset.random.RngManager
 
 import scala.util.Try
@@ -78,6 +78,15 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
   ): SSeq
 
   /**
+   * Converts specified `map` into ordered map of type `SSeq`.
+   */
+  def convertMap(map: OrderedMap[E, D, V]): SSeq
+  // Note
+  // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
+  // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
+  // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertMapInternal`.
+  
+  /**
    * Same as [[unsafeBuildAsc]] but wraps result with [[Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildAsc]] preconditions.
@@ -93,8 +102,8 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
     implicit rngManager: RngManager
   ): Try[SSeq] =
     Try.apply(unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidation, valuesValidation)(rngManager))
-
-
+  
+  
   /**
    * Get factory with provided parameters (see [[unsafeBuildAsc]] for parameters description).
    */
@@ -133,4 +142,17 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
      */
     final def tryBuildAsc(seq: IterableOnce[(Bound.Upper[E], V)]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
   }
+
+  // Protected section -------------------------------------------------------- //
+  protected final def convertMapInternal(map: OrderedMap[E, D, V]): SSeq =
+    unsafeBuildAsc(
+      SegmentSeqOps.getBoundValueIterableForSeq(map),
+      map.domainOps,
+      map.valueOps
+    )(
+      SeqValidationPredicate.alwaysTrue,
+      SeqValidationPredicate.alwaysTrue
+    )(
+      map.rngManager
+    )
 }
