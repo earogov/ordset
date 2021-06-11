@@ -1,7 +1,7 @@
 package ordset.core
 
 import ordset.core.value.ValueOps
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.domain.{AscOrder, Domain, DomainOps}
 import AbstractZippedSegmentSeq._
 
 // TODO: class description.
@@ -343,9 +343,9 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     else {
       var stop = false
       var nextZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = null
-      var currZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = ZippedTupleImpl(this, left, right)
+      var currZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = DefaultZippedTuple(this, left, right)
       while (!stop) {
-        nextZipped = stepForwardZipper(ZippedTupleImpl.zipper(this), currZipped.left, currZipped.right)
+        nextZipped = stepForwardZipper(DefaultZippedTuple.zipper(this), currZipped.left, currZipped.right)
         if (valueOps.neqv(currZipped.value, nextZipped.value)) {
           // We have found a bound where operator change its value => return 'currZipped'.
           stop = true
@@ -396,9 +396,9 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     else {
       var stop = false
       var prevZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = null
-      var currZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = ZippedTupleImpl(this, left, right)
+      var currZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = DefaultZippedTuple(this, left, right)
       while (!stop) {
-        prevZipped = stepBackwardZipper(ZippedTupleImpl.zipper(this), currZipped.left, currZipped.right)
+        prevZipped = stepBackwardZipper(DefaultZippedTuple.zipper(this), currZipped.left, currZipped.right)
         if (valueOps.neqv(currZipped.value, prevZipped.value)) {
           // We have found a bound where operator change its value => return 'currZipped'.
           stop = true
@@ -641,7 +641,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
 }
 
 object AbstractZippedSegmentSeq {
-  
+
   type ZippedSegment[E, D <: Domain[E], U1, U2, V, S1, S2] =
     SegmentT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] with ZippedSegmentBase[E, D, U1, U2, V, S1, S2]
 
@@ -652,7 +652,7 @@ object AbstractZippedSegmentSeq {
     SegmentT.Last[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] with ZippedSegmentBase[E, D, U1, U2, V, S1, S2]
 
   /**
-   * Pair of subsegments of original sequences.
+   * Pair of segments of original sequences.
    *
    * Preconditions:
    *
@@ -661,10 +661,19 @@ object AbstractZippedSegmentSeq {
    */
   sealed trait ZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2] {
 
+    /**
+     * Zipped sequence.
+     */
     def sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 
+    /**
+     * Segment of original sequence.
+     */
     def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
 
+    /**
+     * Segment of another original sequence.
+     */
     def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
 
     /** @return `true` if subsegments of tuple correspond to input `left` and `right`.
@@ -677,6 +686,9 @@ object AbstractZippedSegmentSeq {
       else                                false
     }
 
+    /**
+     * @return segment (either [[left]] or [[right]]) that belong to first original sequence.
+     */
     def firstSeqSegment: SegmentT[E, D, U1, S1] = {
       var segment = sequence.castSegmentToFirstSeq(left)
       if (segment != null) segment
@@ -687,6 +699,9 @@ object AbstractZippedSegmentSeq {
       }
     }
 
+    /**
+     * @return segment (either [[left]] or [[right]]) that belong to second original sequence.
+     */
     def secondSeqSegment: SegmentT[E, D, U2, S2] = {
       var segment = sequence.castSegmentToSecondSeq(left)
       if (segment != null) segment
@@ -697,29 +712,140 @@ object AbstractZippedSegmentSeq {
       }
     }
 
+    /**
+     * Value of zipped sequence.
+     */
     lazy val value: V = sequence.getSegmentValue(left, right)
   }
 
-  final case class ZippedTupleImpl[E, D <: Domain[E], U1, U2, V, S1, S2](
+  /**
+   * Default implementation of [[ZippedTuple]] (see preconditions).
+   */
+  final case class DefaultZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2](
     override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ) extends ZippedTuple[E, D, U1, U2, V, S1, S2]
 
-  object ZippedTupleImpl {
+  object DefaultZippedTuple {
 
+    /**
+     * Creates [[Zipper]] function.
+     */
     def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
       sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
-    ): (SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2], SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]) =>
-      ZippedTuple[E, D, U1, U2, V, S1, S2]
-    = (left, right) => new ZippedTupleImpl[E, D, U1, U2, V, S1, S2](sequence, left, right)
+    ): Zipper[E, D, U1, U2, V, S1, S2, DefaultZippedTuple[E, D, U1, U2, V, S1, S2]] =
+      (left, right) => new DefaultZippedTuple[E, D, U1, U2, V, S1, S2](sequence, left, right)
+  }
+
+  /**
+   * Extension of [[ZippedTuple]] (see preconditions) which tracks ordering of original segments.
+   * It distinguishes backward and forward segments.
+   */
+  sealed trait OrderedZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2]
+    extends ZippedTuple[E, D, U1, U2, V, S1, S2] {
+
+    def backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+
+    def forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+
+    override def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = backward
+
+    override def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = forward
+  }
+
+  object OrderedZippedTuple {
+
+    /**
+     * Implementation of [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segmentUpperOrd]].
+     *
+     * Additional preconditions:
+     *
+     * 1. `backward` is less then or equals to `forward` according to [[DomainOps.segmentUpperOrd]] of `sequence`.
+     */
+    final case class ByUpperBound[E, D <: Domain[E], U1, U2, V, S1, S2] private (
+      override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+      override val backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
+      override val forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+    ) extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
+
+    object ByUpperBound {
+
+      /**
+       * Creates ordered tuple from two original segments.
+       */
+      def apply[E, D <: Domain[E], U1, U2, V, S1, S2](
+        sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+        left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
+        right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+      ): ByUpperBound[E, D, U1, U2, V, S1, S2] =
+        if (isValidOrder(sequence.domainOps.segmentUpperOrd, left, right))
+          new ByUpperBound(sequence, left, right)
+        else
+          new ByUpperBound(sequence, right, left)
+
+      /**
+       * Creates [[Zipper]] function.
+       */
+      def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
+        sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
+      ): Zipper[E, D, U1, U2, V, S1, S2, ByUpperBound[E, D, U1, U2, V, S1, S2]] =
+        (left, right) => apply(sequence, left, right)
+    }
+
+    /**
+     * Implementation of [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segmentLowerOrd]].
+     *
+     * Additional preconditions:
+     *
+     * 1. `backward` is less then or equals to `forward` according to [[DomainOps.segmentLowerOrd]] of `sequence`.
+     */
+    final case class ByLowerBound[E, D <: Domain[E], U1, U2, V, S1, S2] private (
+      override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+      override val backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
+      override val forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+    ) extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
+
+    object ByLowerBound {
+
+      /**
+       * Creates ordered tuple from two original segments.
+       */
+      def apply[E, D <: Domain[E], U1, U2, V, S1, S2](
+        sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
+        left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
+        right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+      ): ByLowerBound[E, D, U1, U2, V, S1, S2] =
+        if (isValidOrder(sequence.domainOps.segmentLowerOrd, left, right))
+          new ByLowerBound(sequence, left, right)
+        else
+          new ByLowerBound(sequence, right, left)
+
+      /**
+       * Creates [[Zipper]] function.
+       */
+      def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
+        sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
+      ): Zipper[E, D, U1, U2, V, S1, S2, ByLowerBound[E, D, U1, U2, V, S1, S2]] =
+        (left, right) => apply(sequence, left, right)
+    }
+
+    /**
+     * @return `true` if `backward` and `forward` segments are ordered according to specified `order`.
+     */
+    def isValidOrder[E, D <: Domain[E], U1, U2, V, S1, S2](
+      order: AscOrder[Segment[E, D, ?]],
+      backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
+      forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+    ): Boolean =
+      order.lteqv(backward, forward)
   }
 
   /**
    * Base trait for zipped segments.
    *
    * Upper and lower bounds of zipped segments are defined by change of the operator value.
-   * Zipped segments are represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * Zipped segments are represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]])
    * which must specify the upper bound.
    * {{{
    *
@@ -756,8 +882,8 @@ object AbstractZippedSegmentSeq {
 
     override def moveTo(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
       sequence.searchFrontZipper(
-        sequence.generalFrontZipper, 
-        left.moveTo(bound), 
+        sequence.generalFrontZipper,
+        left.moveTo(bound),
         right.moveTo(bound)
       )
 
@@ -773,13 +899,17 @@ object AbstractZippedSegmentSeq {
     override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
     override def truncation(bound: Bound[E]): SegmentLikeT.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] = ???
+
+    def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1]
+
+    def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2]
   }
 
   /**
    * Zipped segment with next segment.
    *
-   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
-   * which must specify the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments 
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]])
+   * which must specify the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments
    * which are ordered by their upper bound.
    */
   sealed trait ZippedSegmentWithNext[E, D <: Domain[E], U1, U2, V, S1, S2]
@@ -798,8 +928,8 @@ object AbstractZippedSegmentSeq {
         sequence.supplyZipper[ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2]](
           sequence.withPrevFrontZipper,
           sequence.searchFrontZipper
-        ), 
-        frontBackward, 
+        ),
+        frontBackward,
         frontForward
       )
   }
@@ -807,9 +937,9 @@ object AbstractZippedSegmentSeq {
   /**
    * Zipped segment with previous segment.
    *
-   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]]) 
+   * Segment is represented by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]])
    * which must specify the upper bound.
-   * 
+   *
    * Lower bound is defined by 'backBackward' and 'backForward' subsegments and is searched lazily.
    * 'backBackward' and 'backForward' subsegments are ordered by their lower bound.
    * {{{
@@ -849,25 +979,11 @@ object AbstractZippedSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def movePrev: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2] =
-      sequence.stepBackwardPrevGenZipper(
-        sequence.withNextFrontZipper, 
-        backForward, 
-        backBackward
-      )
+      sequence.stepBackwardPrevGenZipper(sequence.withNextFrontZipper, backForward, backBackward)
 
     // Private section ---------------------------------------------------------- //
-    private lazy val back: Back = {
-      val backTuple = sequence.searchBackZipper(ZippedTupleImpl.zipper(sequence), left, right)
-      if (domainOps.segmentLowerOrd.compare(backTuple.left, backTuple.right) >= 0)
-        Back(backTuple.right, backTuple.left)
-      else
-        Back(backTuple.left, backTuple.right)
-    }
-
-    private case class Back(
-      backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
-      forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
-    )
+    protected lazy val back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
+      sequence.searchBackZipper(OrderedZippedTuple.ByLowerBound.zipper(sequence), left, right)
   }
 
   /**
@@ -892,6 +1008,13 @@ object AbstractZippedSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
+
+    // Transformation ----------------------------------------------------------- //
+    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
+      firstSeqSegment.truncation(upperBound).prepended(other)
+
+    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
+      secondSeqSegment.truncation(upperBound).prepended(other)
   }
 
   /**
@@ -915,6 +1038,13 @@ object AbstractZippedSegmentSeq {
 
     // Navigation --------------------------------------------------------------- //
     override def moveToLast: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
+
+    // Transformation ----------------------------------------------------------- //
+    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
+      back.firstSeqSegment.truncation(lowerBound).appended(other)
+
+    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
+      back.secondSeqSegment.truncation(lowerBound).appended(other)
   }
   
   /**
@@ -937,6 +1067,17 @@ object AbstractZippedSegmentSeq {
     override def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontForward
 
     override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
+
+    // Transformation ----------------------------------------------------------- //
+    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
+      firstSeqSegment.truncation(upperBound).prepended(
+        back.firstSeqSegment.truncation(lowerBound).appended(other)
+      )
+
+    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
+      secondSeqSegment.truncation(upperBound).prepended(
+        back.secondSeqSegment.truncation(lowerBound).appended(other)
+      )
   }
 
   /**
@@ -964,6 +1105,11 @@ object AbstractZippedSegmentSeq {
     override def moveToLast: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
     override def moveTo(bound: Bound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
+
+    // Transformation ----------------------------------------------------------- //
+    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] = other
+
+    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] = other
   }
 
   // Protected section -------------------------------------------------------- //

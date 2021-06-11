@@ -6,7 +6,6 @@ import ordset.util.label.Label
 import ordset.core.syntax.BoundSyntax._
 import ordset.random.RngManager
 import test.ordset.core.Labels
-import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
@@ -15,7 +14,7 @@ class EmptySetSample1[D <: Domain[Int]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager
-) extends SegmentSeqSample[Int, D, Boolean]
+) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.segmentSeq.emptySet.Sample1[D] {
 
   override def labels: Set[Label] = super.labels + Labels.emptySet
