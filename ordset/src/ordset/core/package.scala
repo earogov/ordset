@@ -30,6 +30,10 @@ package object core {
   
   type IndexedSegmentSeq[E, D <: Domain[E], V] = NonuniformIndexedSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
 
+  type NonuniformArraySegmentSeq[E, D <: Domain[E], V] = AbstractArraySegmentSeq[E, D, V]
+
+  type ArraySegmentSeq[E, D <: Domain[E], V] = NonuniformArraySegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]
+
   type NonuniformTreapSegmentSeq[E, D <: Domain[E], V] = AbstractTreapSegmentSeq[E, D, V]
   
   type TreapSegmentSeq[E, D <: Domain[E], V] = NonuniformTreapSegmentSeq[E, D, V] | UniformSegmentSeq[E, D, V]

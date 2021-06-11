@@ -2,7 +2,7 @@ package test.ordset.core.behaviors.segmentSeq
 
 import ordset.Hash
 import ordset.core.domain.Domain
-import ordset.core.Segment
+import ordset.core.{Segment, SegmentSeq}
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.SegmentSeqAssertions._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
@@ -11,7 +11,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
   this: AnyFunSpec =>
 
   def segmentSeqCanBePrepended(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqPrependedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqPrependedTest[E, D, V]]
   )(
     implicit valueHash: Hash[V]
   ): Unit =
@@ -87,7 +87,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
     }
 
   def segmentSeqCanBeAppended(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqAppendedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqAppendedTest[E, D, V]]
   )(
     implicit valueHash: Hash[V]
   ): Unit =
@@ -163,7 +163,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
     }
 
   def segmentSeqCanBeSliced(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentSeqSlicedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqSlicedTest[E, D, V]]
   )(
     implicit valueHash: Hash[V]
   ): Unit =
@@ -205,7 +205,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
     }
     
   def segmentCanBePatched(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentPatchedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentPatchedTest[E, D, V]]
   )(
     implicit valueHash: Hash[V]
   ): Unit =

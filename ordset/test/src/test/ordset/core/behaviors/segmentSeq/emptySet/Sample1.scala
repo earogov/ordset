@@ -1,6 +1,6 @@
 package test.ordset.core.behaviors.segmentSeq.emptySet
 
-import ordset.core.Bound
+import ordset.core.{Bound, SegmentSeq}
 import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
@@ -17,11 +17,11 @@ trait Sample1[D <: Domain[Int]]
     with SegmentSeqAppendedTest[Int, D, Boolean]
     with SegmentSeqSlicedTest[Int, D, Boolean]
     with SegmentPatchedTest[Int, D, Boolean] {
-  self: SegmentSeqSample[Int, D, Boolean] =>
+  self: SegmentSeqSample[Int, D, Boolean, SegmentSeq[Int, D, Boolean]] =>
 
   override def sample: String = "1"
 
-  override def bounds: IterableOnce[Bound.Upper[Int]] =
+  override def bounds: IterableOnce[GenUpperBound] =
     ArraySeq.empty
 
   override def complementary: Boolean = false

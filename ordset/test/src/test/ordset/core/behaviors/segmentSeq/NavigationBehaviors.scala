@@ -14,7 +14,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   import scala.annotation.tailrec
 
   def segmentsSupportMovePrevAndNext(
-    samples: Iterable[SegmentSeqSample[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]]]
   )(
     implicit valueHash: Hash[V]
   ): Unit = samples.foreach { sample =>
@@ -53,7 +53,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   }
 
   def segmentsSupportMoveToBound(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentMoveToBoundTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentMoveToBoundTest[E, D, V]]
   )(
     implicit valueHash: Hash[V]
   ): Unit = samples.foreach { sample =>
@@ -90,7 +90,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   }
 
   def segmentsSupportMoveToFirstAndLast(
-    samples: Iterable[SegmentSeqSample[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]]]
   )(
     implicit valueHash: Hash[V]
   ): Unit = samples.foreach { sample =>
@@ -117,7 +117,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   }
 
   def segmentsHaveNavigationIndicators(
-    samples: Iterable[SegmentSeqSample[E, D, V] with SegmentMoveToBoundTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentMoveToBoundTest[E, D, V]]
   ): Unit = samples.foreach { sample =>
 
     val boundOrd = sample.sequence.domainOps.boundOrd

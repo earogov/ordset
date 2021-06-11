@@ -1,11 +1,13 @@
 package test.ordset.core.samples.segmentSeq.zippedOrderedSet
 
+import ordset.core.ZippedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, ZippedOrderedSet}
 import ordset.util.label.Label
 import ordset.core.syntax.BoundSyntax._
 import ordset.random.RngManager
 import test.ordset.core.Labels
+import test.ordset.core.samples.segmentSeq.ZippedSeqSample
 
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
@@ -19,7 +21,7 @@ class UniversalSetSample1[D <: Domain[Int]](
 
   override def labels: Set[Label] = super.labels + Labels.universalSet
 
-  override def sequence: GenSegmentSeq =
+  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
     // f intersection c:
     //                                              in
     // X--------------------------------------------------------------------------------------------------------X

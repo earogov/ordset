@@ -1,9 +1,11 @@
 package test.ordset.core.samples.segmentSeq.treapOrderedSet
 
+import ordset.core.TreapSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.TreapOrderedSet
 import ordset.random.RngManager
 import ordset.util.label.Label
+import test.ordset.core.samples.segmentSeq.TreapSeqSample
 import test.ordset.core.{Labels, TestRngUtil}
 
 import scala.language.postfixOps
@@ -14,12 +16,12 @@ class MultiBoundedSetSample1[D <: Domain[Int]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager
-) extends TreapSegmentSeqSample[Int, D, Boolean](seed)
+) extends TreapSeqSample[Int, D, Boolean](seed)
   with test.ordset.core.behaviors.segmentSeq.multiBoundedSet.Sample1[D] {
 
   override def labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
-  override def sequence: GenSegmentSeq =
+  override def sequence: TreapSegmentSeq[Int, D, Boolean] =
     TreapOrderedSet.getFactory.unsafeBuildAsc(
       bounds, complementary, domainOps
     )(

@@ -1,6 +1,6 @@
 package test.ordset.core.behaviors.segmentSeq.multiBoundedSet
 
-import ordset.core.Bound
+import ordset.core.{Bound, SegmentSeq}
 import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
@@ -12,11 +12,11 @@ import scala.language.postfixOps
 
 trait Sample2[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean] {
-  self: SegmentSeqSample[Int, D, Boolean] =>
+  self: SegmentSeqSample[Int, D, Boolean, SegmentSeq[Int, D, Boolean]] =>
 
   override def sample: String = "2"
 
-  override def bounds: IterableOnce[Bound.Upper[Int]] =
+  override def bounds: IterableOnce[GenUpperBound] =
     ArraySeq(0 `](`, 5 `)[`, 7 `)[`, 20 `](`, 25 `)[`, 35 `](`, 40 `)[`, 60 `)[`)
 
   override def complementary: Boolean = true
