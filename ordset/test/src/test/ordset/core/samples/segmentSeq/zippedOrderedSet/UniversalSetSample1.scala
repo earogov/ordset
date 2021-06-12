@@ -19,9 +19,9 @@ class UniversalSetSample1[D <: Domain[Int]](
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.segmentSeq.universalSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.universalSet
+  override val labels: Set[Label] = super.labels + Labels.universalSet
 
-  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
+  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
     // f intersection c:
     //                                              in
     // X--------------------------------------------------------------------------------------------------------X

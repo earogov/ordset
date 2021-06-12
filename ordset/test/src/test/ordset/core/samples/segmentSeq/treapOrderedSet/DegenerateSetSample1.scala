@@ -19,9 +19,9 @@ class DegenerateSetSample1[D <: Domain[Int]](
 ) extends TreapSeqSample[Int, D, Boolean](seed)
   with test.ordset.core.behaviors.segmentSeq.degenerateSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.degenerateSeq
+  override val labels: Set[Label] = super.labels + Labels.degenerateSeq
 
-  override def sequence: TreapSegmentSeq[Int, D, Boolean] =
+  override val sequence: TreapSegmentSeq[Int, D, Boolean] =
     TreapOrderedSet.getFactory.unsafeBuildAsc(
       bounds, complementary, domainOps
     )(

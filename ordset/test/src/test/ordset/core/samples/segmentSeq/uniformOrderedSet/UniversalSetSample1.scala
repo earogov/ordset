@@ -15,7 +15,7 @@ class UniversalSetSample1[D <: Domain[Int]](
 ) extends UniformSeqSample[Int, D, Boolean]
   with test.ordset.core.behaviors.segmentSeq.universalSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.universalSet
+  override val labels: Set[Label] = super.labels + Labels.universalSet
 
-  override def sequence: UniformSegmentSeq[Int, D, Boolean] = UniformOrderedSet.defaultUniversal
+  override val sequence: UniformSegmentSeq[Int, D, Boolean] = UniformOrderedSet.defaultUniversal
 }

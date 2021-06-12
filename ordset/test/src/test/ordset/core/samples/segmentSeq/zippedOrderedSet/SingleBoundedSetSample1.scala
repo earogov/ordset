@@ -19,9 +19,9 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.segmentSeq.singleBoundedSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.singleBoundedSeq
+  override val labels: Set[Label] = super.labels + Labels.singleBoundedSeq
 
-  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
+  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
     // b union c:
     //                          in                                                 out
     // X-----------------------------------------------0](0-----------------------------------------------------X

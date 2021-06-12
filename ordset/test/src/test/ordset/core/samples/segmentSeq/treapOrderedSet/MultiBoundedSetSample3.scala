@@ -19,9 +19,9 @@ class MultiBoundedSetSample3[D <: Domain[Int]](
 ) extends TreapSeqSample[Int, D, Boolean](seed)
   with test.ordset.core.behaviors.segmentSeq.multiBoundedSet.Sample3[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.multiBoundedSeq
+  override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
-  override def sequence: TreapSegmentSeq[Int, D, Boolean] = {
+  override val sequence: TreapSegmentSeq[Int, D, Boolean] = {
     TreapOrderedSet.getFactory.unsafeBuildAsc(
       bounds, complementary, domainOps
     )(

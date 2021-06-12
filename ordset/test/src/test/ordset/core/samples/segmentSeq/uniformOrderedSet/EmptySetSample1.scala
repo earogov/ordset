@@ -15,7 +15,7 @@ class EmptySetSample1[D <: Domain[Int]](
 ) extends UniformSeqSample[Int, D, Boolean]
   with test.ordset.core.behaviors.segmentSeq.emptySet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.emptySet
+  override val labels: Set[Label] = super.labels + Labels.emptySet
 
-  override def sequence: UniformSegmentSeq[Int, D, Boolean] = UniformOrderedSet.defaultEmpty
+  override val sequence: UniformSegmentSeq[Int, D, Boolean] = UniformOrderedSet.defaultEmpty
 }

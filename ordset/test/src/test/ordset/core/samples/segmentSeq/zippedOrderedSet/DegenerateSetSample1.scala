@@ -19,9 +19,9 @@ class DegenerateSetSample1[D <: Domain[Int]](
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.segmentSeq.degenerateSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.degenerateSeq
+  override val labels: Set[Label] = super.labels + Labels.degenerateSeq
 
-  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
+  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
     // c intersection d:
     //     out   in        out                in         out         in        out               in
     // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X

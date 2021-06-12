@@ -900,8 +900,76 @@ object AbstractZippedSegmentSeq {
 
     override def truncation(bound: Bound[E]): SegmentLikeT.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] = ???
 
+    /**
+     * Applies patch operation to first original sequence within current zipped segment.
+     *
+     * Returns sequence containing
+     * <tr>
+     *   - segments {i ∈ [0, L-1]: (l,,i,,, min(u,,i,,, U(lowerBound))) -> v,,i,,}
+     *   of first original sequence for which l,,i,, `<` lowerBound
+     * </tr>
+     * <tr>
+     *   - segments {i ∈ [L, M-1]: (max(lowerBound, l,,i,,), min(upperBound, u,,i,,)) -> v,,i,,}
+     *   of `other` sequence for which l,,i,, `≤` upperBound and u,,i,, `≥` lowerBound
+     * </tr>
+     * <tr>
+     *   - segments {i ∈ [M, N-1]: (max(l,,i,,, L(upperBound)), u,,i,,) -> v,,i,,}
+     *   of first original sequence for which u,,i,, `>` upperBound
+     * </tr>
+     * <tr>where</tr>
+     * <tr>lowerBound - lower bound of current zipped segment;</tr>
+     * <tr>upperBound - upper bound of current zipped segment;</tr>
+     * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+     * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+     * <tr>v,,i,, - value of segment S,,i,,.</tr>
+     * <tr>
+     *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
+     *   (see [[Bound.provideUpper]]);
+     * </tr>
+     * <tr>
+     *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise
+     *   (see [[Bound.provideLower]]).
+     * </tr>
+     *
+     * {{{
+     * first original sequence:
+     *
+     *   X--------](---------------)[------------X
+     *        A              B             C        - values
+     *
+     * second original sequence:
+     *
+     *   X---------------)[--------------](-------X
+     *            A               B           C     - values
+     *
+     * zipped sequence:
+     *                    segment
+     *   X-------](----------------------](-------X
+     *       A    ^           B          ^    C     - values
+     *       lowerBound             upperBound
+     *
+     * operator:
+     *   A + A = A   A + B = B   B + B = B
+     *   C + C = C   C + B = B
+     *
+     * other sequence:
+     *
+     *   X--)[--------------------------------](--X
+     *     D                  E                 F   - values
+     *
+     * segment.patchedFirstSeq(other):
+     *
+     *   X-------](----------------------](-------X
+     *       A                E               C     - values
+     * }}}
+     */
     def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1]
 
+    /**
+     * Applies patch operation to second original sequence within current zipped segment.
+     *
+     * See [[patchedFirstSeq]].
+     */
     def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2]
   }
 

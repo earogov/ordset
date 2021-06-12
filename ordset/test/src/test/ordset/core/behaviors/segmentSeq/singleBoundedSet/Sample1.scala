@@ -1,11 +1,11 @@
 package test.ordset.core.behaviors.segmentSeq.singleBoundedSet
 
-import ordset.core.{Bound, SegmentSeq}
 import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
+import ordset.core.{Bound, SegmentSeq}
 import ordset.util.label.Label
-import test.ordset.core.behaviors.segmentSeq.{SegmentMoveToBoundTest, SegmentPatchedTest, SegmentSeqAppendedTest, SegmentSeqFactories, SegmentSeqPrependedTest, SegmentSeqSlicedTest}
+import test.ordset.core.behaviors.segmentSeq._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 import scala.collection.immutable.ArraySeq

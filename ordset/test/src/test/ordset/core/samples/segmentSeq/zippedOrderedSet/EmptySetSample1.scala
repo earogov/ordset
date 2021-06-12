@@ -19,9 +19,9 @@ class EmptySetSample1[D <: Domain[Int]](
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.segmentSeq.emptySet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.emptySet
+  override val labels: Set[Label] = super.labels + Labels.emptySet
 
-  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
+  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
     // f union c:
     //                                              out
     // X--------------------------------------------------------------------------------------------------------X

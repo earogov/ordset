@@ -21,7 +21,7 @@ object Labels {
 
   val uniformOrderedSet: Label = Label(classOf[UniformOrderedSet[_, _]].getSimpleName)
 
-  val uniformOrderedMap: Label = Label(classOf[UniformOrderedMap[_, _, _]].getClass.getSimpleName)
+  val uniformOrderedMap: Label = Label(classOf[UniformOrderedMap[_, _, _]].getSimpleName)
 
   val arrayOrderedSet: Label = Label(classOf[NonuniformArrayOrderedSet[_, _]].getSimpleName)
 

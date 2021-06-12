@@ -298,11 +298,11 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns sequence containing:
    * <tr>
-   *   - segments {i ∈ [0, M]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
+   *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
    *   of `other` sequence for which l,,i,, `<` `bound`;
    * </tr>
    * <tr>
-   *   - segments {i ∈ [M+1, N]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
+   *   - segments {i ∈ [M, N-1]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
    *   of original sequence for which u,,i,, `>` `bound`;
    * </tr>
    * <tr>where</tr>
@@ -381,11 +381,11 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns sequence containing:
    * <tr>
-   *   - segments {i ∈ [0, M]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
+   *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
    *   of original sequence for which l,,i,, `<` `bound`;
    * </tr>
    * <tr>
-   *   - segments {i ∈ [M+1, N]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
+   *   - segments {i ∈ [M, N-1]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
    *   of `other` sequence for which u,,i,, `>` `bound`;
    * </tr>
    * <tr>where</tr>

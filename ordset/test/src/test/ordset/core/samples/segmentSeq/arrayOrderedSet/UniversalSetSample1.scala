@@ -17,8 +17,8 @@ class UniversalSetSample1[D <: Domain[Int]](
 ) extends ArraySeqSample[Int, D, Boolean]
   with test.ordset.core.behaviors.segmentSeq.universalSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.universalSet
+  override val labels: Set[Label] = super.labels + Labels.universalSet
 
-  override def sequence: ArraySegmentSeq[Int, D, Boolean] =
+  override val sequence: ArraySegmentSeq[Int, D, Boolean] =
     ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary, domainOps)(domainOps.boundOrd.strictValidation)
 }

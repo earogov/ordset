@@ -6,12 +6,15 @@ import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
+import test.ordset.core.behaviors.zippedSeq.ZippedSeqBehaviours
 import test.ordset.core.samples.segmentSeq.zippedOrderedSet._
+import test.ordset.core.samples.zippedSeq.zippedSet.{EmptySetSampleZ1, MultiBoundedSetSampleZ1, UniversalSetSampleZ1}
 
 @RunWith(classOf[JUnitRunner])
 class ZippedOrderedSetSpec extends AnyFunSpec
   with NavigationBehaviors[Int, Domain[Int], Boolean]
-  with TransformationBehaviors[Int, Domain[Int], Boolean] {
+  with TransformationBehaviors[Int, Domain[Int], Boolean]
+  with ZippedSeqBehaviours[Int, Domain[Int], Boolean, Boolean, Boolean] {
 
   import ordset.core.instances.boolean._
   import ordset.core.instances.int._
@@ -36,6 +39,12 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     new DegenerateSetSample1[Dom]
   )
 
+  private val zippedSuit = List(
+    new EmptySetSampleZ1[Dom],
+    new UniversalSetSampleZ1[Dom],
+    new MultiBoundedSetSampleZ1[Dom]
+  )
+
   describe("Zipped ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
@@ -50,5 +59,10 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   describe("Zipped ordered set transformation operations:") {
     
 //    it should behave like segmentSeqCanBeSliced(transformSuite)
+  }
+
+  describe("Zipped ordered set specific operations:") {
+
+    it should behave like segmentCanPatchOriginalSeq(zippedSuit)
   }
 }

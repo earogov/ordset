@@ -19,9 +19,9 @@ class MultiBoundedSetSample2[D <: Domain[Int]](
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.segmentSeq.multiBoundedSet.Sample2[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.multiBoundedSeq
+  override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
-  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
+  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
     // c intersection d:
     //      in       out     in             out               in            out             in       out     in
     // X--------0](0-----5)[5--7)[7--------------------20](20----25)[25--------------35](35----40)[40--60)[60---X

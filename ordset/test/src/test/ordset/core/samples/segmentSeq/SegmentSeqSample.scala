@@ -1,8 +1,10 @@
 package test.ordset.core.samples.segmentSeq
 
+import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.SetBuilderNotation.BoundBuilder
-import ordset.core.{Bound, IntervalRelation, SegmentSeq}
+import ordset.core.value.ValueOps
+import ordset.core.{Bound, IntervalRelation, SegmentSeq, SegmentSeqOps}
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
@@ -12,13 +14,17 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   val domainOps: DomainOps[E, D],
   val rngManager: RngManager
 ) {
-  type GenBound = Bound[E]
+  final type GenBound = Bound[E]
 
-  type GenUpperBound = Bound.Upper[E]
+  final type GenUpperBound = Bound.Upper[E]
 
-  type GenIntervalRelation = IntervalRelation[E, D, V]
+  final type GenIntervalRelation = IntervalRelation[E, D, V]
 
   val x: BoundBuilder[E, D] = BoundBuilder[E, D](domainOps)
+
+  def valueOps: ValueOps[V] = sequence.valueOps
+
+  def intervalRelationHash: Hash[IntervalRelation[E, D, V]] = domainOps.intervalRelationHash(valueOps.valueHash)
 
   def sample: String
 
@@ -26,11 +32,12 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
 
   def sequence: SSeq
 
-  def bounds: IterableOnce[GenUpperBound]
+  def bounds: IterableOnce[Bound.Upper[E]] =
+    SegmentSeqOps.getUpperBoundsIterableFromSegment(sequence.firstSegment, inclusive = true)
 
-  def complementary: Boolean
+  def complementary: Boolean = sequence.firstSegment.isIncluded
 
-  def reference: Seq[GenIntervalRelation]
+  def reference: Seq[IntervalRelation[E, D, V]] = sequence.firstSegment.forwardLazyList.map(_.intervalRelation)
 
   override def toString: String = Labels.caseShow.show(labels)
 }

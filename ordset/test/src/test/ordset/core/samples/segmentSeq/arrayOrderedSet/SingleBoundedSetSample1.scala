@@ -17,8 +17,8 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
 ) extends ArraySeqSample[Int, D, Boolean]
   with test.ordset.core.behaviors.segmentSeq.singleBoundedSet.Sample1[D] {
 
-  override def labels: Set[Label] = super.labels + Labels.singleBoundedSeq
+  override val labels: Set[Label] = super.labels + Labels.singleBoundedSeq
 
-  override def sequence: ArraySegmentSeq[Int, D, Boolean] =
+  override val sequence: ArraySegmentSeq[Int, D, Boolean] =
     ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary, domainOps)(domainOps.boundOrd.strictValidation)
 }
