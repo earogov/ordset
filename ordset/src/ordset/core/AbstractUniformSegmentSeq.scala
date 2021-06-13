@@ -8,7 +8,6 @@ import AbstractUniformSegmentSeq._
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   extends AbstractSegmentSeq[E, D, V, UniformSingleSegment[E, D, V]] {
-  seq =>
 
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !isValueIncluded(value)

@@ -28,7 +28,6 @@ import ordset.core.SegmentT.{Initial, Inner, Terminal}
  */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V] 
   extends AbstractSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
-  seq =>
   
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = false

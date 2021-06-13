@@ -16,8 +16,9 @@ object TreapSegmentSeqOps {
   def patchSegment[E, D <: Domain[E], V](
     segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
     sequence: SegmentSeq[E, D, V]
-  ): TreapSegmentSeq[E, D, V] = segment match {
-    case s: TreapSegmentBase[_, _, _] => s.patched(sequence)
-    case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(sequence)
-  }
+  ): TreapSegmentSeq[E, D, V] = 
+    segment match {
+      case s: TreapSegmentBase[_, _, _] => s.patched(sequence)
+      case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(sequence)
+    }
 }

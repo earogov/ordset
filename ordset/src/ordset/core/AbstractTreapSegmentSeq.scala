@@ -15,7 +15,6 @@ import AbstractTreapSegmentSeq._
 // TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   extends AbstractSegmentSeq[E, D, V, TreapSegmentBase[E, D, V]] {
-  seq =>
   
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = false

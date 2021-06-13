@@ -37,7 +37,6 @@ import AbstractTreapSegmentSeq._
  */
 abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   extends AbstractSegmentSeq[E, D, V, Any] {
-  seq =>
 
   import AbstractLazyTreapSegmentSeq._
 
@@ -106,14 +105,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     case lazyValue: LazyValue[E, D, V] =>
       val seq = lazyValue.eval
       controlSeq.synchronized {
-        val newBaseSeq: TreapSegmentSeq[E, D, V] = TreapSegmentSeqOps.patchSegment(
-          zsegment.firstSeqSegment.self,
-          seq
-        )
-        val newControlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = patchControlSeq(
-          zsegment,
-          seq
-        )
+        val newBaseSeq: TreapSegmentSeq[E, D, V] = patchBaseSeq(zsegment, seq)
+        val newControlSeq: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = patchControlSeq(zsegment, seq)
         val newZippedSeq: ZSegmentSeq[E, D, V] = ZippedOrderedMap.apply(
           newBaseSeq, newControlSeq, Tuple2.apply, _ => false, _ => false
         )(
@@ -125,7 +118,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   }
 
   /**
-   * Builds control sequence for a given sequence `baseSeq` that was evaluated for `zsegment`.
+   * Builds control sequence for new sequence `baseSeq` that was evaluated for `zsegment`.
    * Segments of `baseSeq` that are completely inside input `zsegment` are mapped to stable control values,
    * others - to unstable (see class description).
    *
@@ -232,24 +225,73 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     )
 
   /**
-   * Builds new control sequence for given `zsegment` and applies patch operation to existing control sequence.
+   * Takes new `baseSeq` and applies patch operation to existing base sequence.
+   * All modifications of base sequence are performed within `zsegment`, everything outside of it remains unchanged.
    *
    * {{{
    *   zsegment:
    *
    *                (----------------------]
    *
-   *   baseSeq:
+   *   baseSeq (old):
+   *                             Z                             - values
+   *   X----------------------------------------------------X
+   *
+   *   baseSeq (new):
    *
    *        A         B           C          D         E       - values
    *   X--------](---------](----------](--------](---------X
    *
-   *   output:
+   *   controlSeq (output):
    *
-   *      ?          u            s            u         ?     - control values
-   *   X----)[-------------](----------](------------)[-----X
-   *                |                          |
-   *          bound segment               bound segment
+   *          Z         B         C       D         Z          - values
+   *   X-----------](------](----------](--](---------------X
+   *                ^                      ^
+   *        zsegment.lowerBound      zsegment.upperBound
+   * }}}
+   * where u - unstable segment; s - stable segment; ? - lazy segment.
+   *
+   * @param zsegment zipped segment (contains base segment and control segment).
+   * @param baseSeq sequence that was evaluated for `zsegment` to patch corresponding base segment.
+   */
+  protected final def patchBaseSeq(
+    zsegment: ZSegment[E, D, V],
+    baseSeq: SegmentSeq[E, D, V]
+  ): TreapSegmentSeq[E, D, V] =
+    // Performance note
+    // Both original sequences of `zsegment` are treap based. The result of patch operation in most cases will
+    // be also a treap based sequence. `convertMap` doesn't perform real conversion for them. Instead it just
+    // returns unmodified input sequence.
+    // The only exception - when `baseSeq` is uniform. In such a case patch operation may produce sequence
+    // of any type and `convertMap` will create new treap based instance.
+    TreapOrderedMap.getFactory.convertMap(
+      zsegment.patchedFirstSeq(baseSeq)
+    )
+
+  /**
+   * Builds new control sequence for given `zsegment` and applies patch operation to existing control sequence.
+   * All modifications of control sequence are performed within `zsegment`, everything outside of it remains unchanged.
+   *
+   * {{{
+   *   zsegment:
+   *
+   *                (----------------------]
+   *
+   *   controlSeq (old):
+   *        ?                    ?                   ?         - control values
+   *   X-----------](----------------------](---------------X
+   *
+   *   baseSeq (new):
+   *
+   *        A         B           C          D         E       - values
+   *   X--------](---------](----------](--------](---------X
+   *
+   *   controlSeq (output):
+   *
+   *          ?         u         s       u         ?          - control values
+   *   X-----------](------](----------](--](---------------X
+   *                ^                      ^
+   *        zsegment.lowerBound      zsegment.upperBound
    * }}}
    * where u - unstable segment; s - stable segment; ? - lazy segment.
    *
@@ -262,9 +304,16 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   ): TreapSegmentSeq[E, D, ControlValue[E, D, V]] =
     stabilizeBounds(
       zsegment,
-      TreapSegmentSeqOps.patchSegment(
-        zsegment.secondSeqSegment.self,
-        makeControlSeq(zsegment, baseSeq)
+      // Performance note
+      // Both original sequences of `zsegment` are treap based. The result of patch operation in most cases will
+      // be also a treap based sequence. `convertMap` doesn't perform real conversion for them. Instead it just
+      // returns unmodified input sequence.
+      // The only exception - when `controlSeq` is uniform. In such a case patch operation may produce sequence
+      // of any type and `convertMap` will create new treap based instance.
+      TreapOrderedMap.getFactory.convertMap(
+        zsegment.patchedSecondSeq(
+          makeControlSeq(zsegment, baseSeq)
+        )
       )
     )
 

@@ -7,7 +7,6 @@ import AbstractZippedSegmentSeq._
 // TODO: class description.
 abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   extends AbstractSegmentSeq[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] {
-  seq =>
   
   // Inspection --------------------------------------------------------------- //
   /** Original sequence to which zipping is applied. */
