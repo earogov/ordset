@@ -1037,6 +1037,9 @@ object AbstractZippedSegmentSeq {
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
+    lazy val back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
+      sequence.searchBackZipper(OrderedZippedTuple.ByLowerBound.zipper(sequence), left, right)
+    
     def backBackward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = back.backward
     // Cast is safe if precondition 1 is provided.
     def backForward: SegmentT.WithPrev[E, D, ? <: U1 | U2, ? <: S1 | S2] =
@@ -1047,10 +1050,6 @@ object AbstractZippedSegmentSeq {
     // Navigation --------------------------------------------------------------- //
     override def movePrev: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2] =
       sequence.stepBackwardPrevGenZipper(sequence.withNextFrontZipper, backForward, backBackward)
-
-    // Private section ---------------------------------------------------------- //
-    protected lazy val back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
-      sequence.searchBackZipper(OrderedZippedTuple.ByLowerBound.zipper(sequence), left, right)
   }
 
   /**
