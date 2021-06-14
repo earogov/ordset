@@ -298,6 +298,50 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns sequence containing:
    * <tr>
+   *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, originalFirstBound)) -> v,,i,,}
+   *   of `other` sequence for which l,,i,, `≤` originalFirstBound
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [M, N-1]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of original sequence for which l,,i,, `>` originalFirstBound
+   * </tr>
+   * <tr>where</tr>
+   * <tr>originalFirstBound - upper bound of first segment of original sequence;</tr>
+   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
+   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
+   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   *
+   * {{{
+   * original:
+   *
+   *   X------------------------](-------------X
+   *                A                   B          - values
+   *
+   * other:
+   *
+   *   X-------)[--------](--------------------X
+   *       C         D              E              - values
+   *
+   * original.appended(other):
+   *
+   *   X-------)[--------](-----](-------------X
+   *       C        D        E          B          - values 
+   * }}}
+   * Methods definitions provide invariants: 
+   * {{{
+   *   1. If original sequence is not uniform then:
+   *   sequence.prepended(other) == sequence.prepended(sequence.firstSegment.upperBound, other)
+   *   for any `other` sequence
+   *
+   *   2. If original sequence is uniform then:
+   *   sequence.prepended(other) == other
+   * }}}
+   */
+  def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  
+  /**
+   * Returns sequence containing:
+   * <tr>
    *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
    *   of `other` sequence for which l,,i,, `<` `bound`;
    * </tr>
@@ -377,7 +421,51 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    */
   def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
-  
+
+  /**
+   * Returns sequence containing:
+   * <tr>
+   *   - segments {i ∈ [0, M-1]: (l,,i,,, u,,i,,) -> v,,i,,}
+   *   of original sequence for which u,,i,, `<` originalLastBound;
+   * </tr>
+   * <tr>
+   *   - segments {i ∈ [M, N-1]: (max(l,,i,,, originalLastBound), u,,i,,) -> v,,i,,}
+   *   of `other` sequence for which u,,i,, `≥` originalLastBound;
+   * </tr>
+   * <tr>where</tr>
+   * <tr>originalLastBound - lower bound of last segment of original sequence;</tr>
+   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
+   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
+   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   *
+   * {{{
+   * original:
+   *
+   *   X--------](------------------------------X
+   *        A                    B                 - values
+   *
+   * other:
+   *
+   *   X----------------)[-----------](--------X
+   *           C               D           E       - values
+   *
+   * original.appended(other):
+   * 
+   *   X--------](------)[-----------](--------X
+   *        A        C         D           E       - values 
+   * }}}
+   * Methods definitions provide invariants: 
+   * {{{
+   *   1. If original sequence is not uniform then:
+   *   sequence.appended(other) == sequence.appended(sequence.lastSegment.lowerBound, other)
+   *   for any `other` sequence
+   *   
+   *   2. If original sequence is uniform then:
+   *   sequence.appended(other) == other
+   * }}}
+   */
+  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]) = ???
+
   /**
    * Returns sequence containing:
    * <tr>

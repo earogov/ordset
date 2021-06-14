@@ -196,7 +196,7 @@ object NonuniformArrayOrderedSet {
    *
    * Preconditions:
    *
-   * 1. `bounds` sequence must be nonempty.
+   * 1. `bounds` sequence must be non-empty.
    *
    * @param bounds array sequence of upper bounds.
    * @param complementary equals to value of the first segment. If `true` segment is included in set and vise versa.

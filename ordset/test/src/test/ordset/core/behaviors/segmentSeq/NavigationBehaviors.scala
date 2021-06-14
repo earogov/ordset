@@ -30,7 +30,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
               case seg: Segment.WithNext[E, D, V] => loop(seg.moveNext, tail)
               case _ => // end
             }
-          case _ => fail("Invalid test case: expected sequence must be non empty.")
+          case _ => fail("Invalid test case: expected sequence must be non-empty.")
         }
         loop(sample.sequence.firstSegment, sample.reference)
       }
@@ -45,7 +45,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
               case seg: Segment.WithPrev[E, D, V] => loop(seg.movePrev, tail)
               case _ => // end
             }
-          case _ => fail("Invalid test case: expected sequence must be non empty.")
+          case _ => fail("Invalid test case: expected sequence must be non-empty.")
         }
         loop(sample.sequence.lastSegment, sample.reference.reverse)
       }
@@ -95,7 +95,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
       val intervalRelHash = sample.intervalRelationHash
   
       it(s"should move to the first and last segments for $sample") {
-        if (sample.reference.isEmpty) fail("Invalid test case: expected sequence must be non empty.")
+        if (sample.reference.isEmpty) fail("Invalid test case: expected sequence must be non-empty.")
         val firstExp = sample.reference.head
         val lastExp = sample.reference.last
         @tailrec

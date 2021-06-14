@@ -12,7 +12,7 @@ import scala.collection.immutable.ArraySeq
  *
  * Upper bounds of segments are stored in `bounds` array based collection.
  *
- * <tr>`bounds` collection MUST be non empty. </tr>
+ * <tr>`bounds` collection MUST be non-empty. </tr>
  */
 abstract class AbstractArraySegmentSeq[E, D <: Domain[E], V] extends AbstractIndexedSegmentSeq[E, D, V] {
 

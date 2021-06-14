@@ -181,7 +181,7 @@ object TreeMerge {
   }
 
   /**
-   * Applies [[merge]] function to `leftNode` and `rightNode` (non empty) treaps.
+   * Applies [[merge]] function to `leftNode` and `rightNode` (non-empty) treaps.
    */
   def foldNodes[K, KK >: K, V](
     leftNode: ImmutableTreap.Node[K, V],

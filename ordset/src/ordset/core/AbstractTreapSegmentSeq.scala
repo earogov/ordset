@@ -32,8 +32,18 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
   final override lazy val firstSegment: TreapInitialSegment[E, D, V] = makeInitialSegment()
 
+  /**
+   * @return second segment of sequence.
+   */
+  override def secondSegment: TreapSegmentWithPrev[E, D, V] = firstSegment.moveNext
+  
   final override lazy val lastSegment: TreapTerminalSegment[E, D, V] = makeTerminalSegment()
 
+  /**
+   * @return penultimate segment of sequence.
+   */
+  override def penultimateSegment: TreapSegmentWithNext[E, D, V] = lastSegment.movePrev
+  
   final override def getSegment(bound: Bound[E]): TreapSegment[E, D, V] = {
     // We need to find upper bound of segment which contains input `bound`.
     // But `NodeSearch.down` function can return either upper or lower bound
@@ -125,12 +135,22 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
+  final override def prepended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
+    val segment = secondSegment
+    prependedInternal(segment.lowerBound, segment, other)
+  }
+
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
     prependedInternal(bound, getSegment(bound.provideLower), other)
 
+  final override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
+    val segment = penultimateSegment
+    appendedInternal(segment.upperBound, segment, other)
+  }
+
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
     appendedInternal(bound, getSegment(bound.provideUpper), other)
-
+  
   // Protected section -------------------------------------------------------- //
   /**
    * Treap of segments upper bounds.
@@ -162,7 +182,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   
   /**
-   * Same as [[SegmentSeqT.prepended]] but with supplied segment of original sequence such that:
+   * Same as [[SegmentSeqT.prepended]] but with additional argument `originalBoundSegment` such that:
    * {{{
    *   originalBoundSegment = this.getSegment(bound.provideLower)    (1)
    * }}}
@@ -263,7 +283,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   }
 
   /**
-   * Same as [[SegmentSeqT.appended]] but with supplied segment of original sequence such that:
+   * Same as [[SegmentSeqT.appended]] but with additional argument `originalBoundSegment` such that:
    * {{{
    *   originalBoundSegment = this.getSegment(bound.provideUpper)    (1)
    * }}}

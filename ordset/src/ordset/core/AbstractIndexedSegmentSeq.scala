@@ -23,7 +23,7 @@ import ordset.core.SegmentT.{Initial, Inner, Terminal}
  * }}}
  * Upper bound of last segment is not stored.
  *
- * <tr>`bounds` collection MUST be non empty.                   </tr>
+ * <tr>`bounds` collection MUST be non-empty.                   </tr>
  * <tr>`bounds` collection SHOULD provide fast access by index. </tr>
  */
 abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V] 
@@ -45,8 +45,18 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
   final override def firstSegment: IndexedInitialSegment[E, D, V] = IndexedInitialSegment(this)
 
+  /**
+   * @return second segment of sequence.
+   */
+  final def secondSegment: IndexedSegmentWithPrev[E, D, V] = makeSegmentWithPrev(1)
+  
   final override def lastSegment: IndexedTerminalSegment[E, D, V] = IndexedTerminalSegment(this)
 
+  /**
+   * @return penultimate segment of sequence.
+   */
+  final def penultimateSegment: IndexedSegmentWithNext[E, D, V] = makeSegmentWithNext(lastSegmentIndex - 1)
+  
   final override def getSegment(bound: Bound[E]): IndexedSegment[E, D, V] =
     makeSegment(searchSegmentFromBegin(bound))
 
@@ -76,9 +86,19 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   }
 
   // Transformation ----------------------------------------------------------- //
+  final override def prepended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
+    val segment = secondSegment
+    prependedInternal(segment.lowerBound, segment, other)
+  }
+
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
     prependedInternal(bound, getSegment(bound.provideLower), other)
 
+  final override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
+    val segment = penultimateSegment
+    appendedInternal(segment.upperBound, segment, other)
+  }
+  
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
     appendedInternal(bound, getSegment(bound.provideUpper), other)
 
@@ -86,7 +106,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   /**
    * Collection of segments upper bounds.
    *
-   * It MUST be non empty.
+   * It MUST be non-empty.
    */
   protected val bounds: Seq[Bound.Upper[E]]
 
@@ -98,7 +118,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    */
   @throws[SegmentSeqException]("if bounds collection is empty")
   protected def validate(): Unit = {
-    if (bounds.isEmpty) throw SegmentSeqException("Bounds collection must be nonempty.")
+    if (bounds.isEmpty) throw SegmentSeqException("Bounds collection must be non-empty.")
   }
 
   /**
@@ -149,7 +169,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   protected def consBelow(ind: Int): NonuniformIndexedSegmentSeq[E, D, V]
 
   /**
-   * Same as [[SegmentSeqT.prepended]] but with supplied segment of original sequence such that:
+   * Same as [[SegmentSeqT.prepended]] but with additional argument `originalBoundSegment` such that:
    * {{{
    *   originalBoundSegment = this.getSegment(bound.provideLower)    (1)
    * }}}
@@ -164,7 +184,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   ): IndexedSegmentSeq[E, D, V]
 
   /**
-   * Same as [[SegmentSeqT.appended]] but with supplied segment of original sequence such that:
+   * Same as [[SegmentSeqT.appended]] but with additional argument `originalBoundSegment` such that:
    * {{{
    *   originalBoundSegment = this.getSegment(bound.provideUpper)    (1)
    * }}}

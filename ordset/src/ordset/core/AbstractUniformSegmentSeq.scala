@@ -39,6 +39,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def sliced(bound: Bound[E]): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
     (this, this)
 
+  final override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
+  
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val upperBound = bound.provideUpper
 
@@ -50,6 +52,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
     if (rightSequence.isUniform) leftSequence
     else rightSequence.prepended(bound, leftSequence)
   }
+
+  final override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
   
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val lowerBound = bound.provideLower
