@@ -35,14 +35,14 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   /**
    * @return second segment of sequence.
    */
-  override def secondSegment: TreapSegmentWithPrev[E, D, V] = firstSegment.moveNext
+  final def secondSegment: TreapSegmentWithPrev[E, D, V] = firstSegment.moveNext
   
   final override lazy val lastSegment: TreapTerminalSegment[E, D, V] = makeTerminalSegment()
 
   /**
    * @return penultimate segment of sequence.
    */
-  override def penultimateSegment: TreapSegmentWithNext[E, D, V] = lastSegment.movePrev
+  final def penultimateSegment: TreapSegmentWithNext[E, D, V] = lastSegment.movePrev
   
   final override def getSegment(bound: Bound[E]): TreapSegment[E, D, V] = {
     // We need to find upper bound of segment which contains input `bound`.

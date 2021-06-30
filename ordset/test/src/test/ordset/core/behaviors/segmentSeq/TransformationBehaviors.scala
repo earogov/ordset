@@ -15,6 +15,22 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
   ): Unit =
     samples.foreach { sample =>
       sample.prependedCases.foreach { testCase =>
+
+        implicit val domainOps: DomainOps[E, D] = sample.domainOps
+        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+
+        it(s"should prepend $testCase to $sample") {
+          val actual = sample.sequence.prepended(testCase.prepended)
+          assertSameRelationAndSegmentSeq(testCase.expected, actual)
+        }
+      }
+    }
+  
+  def segmentSeqCanBePrependedWithBound(
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqPrependedTest[E, D, V]]
+  ): Unit =
+    samples.foreach { sample =>
+      sample.prependedWithBoundCases.foreach { testCase =>
         
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
@@ -92,6 +108,22 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
   ): Unit =
     samples.foreach { sample =>
       sample.appendedCases.foreach { testCase =>
+
+        implicit val domainOps: DomainOps[E, D] = sample.domainOps
+        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+
+        it(s"should append $testCase to $sample") {
+          val actual = sample.sequence.appended(testCase.appended)
+          assertSameRelationAndSegmentSeq(testCase.expected, actual)
+        }
+      }
+    }
+  
+  def segmentSeqCanBeAppendedWithBound(
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqAppendedTest[E, D, V]]
+  ): Unit =
+    samples.foreach { sample =>
+      sample.appendedWithBoundCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash

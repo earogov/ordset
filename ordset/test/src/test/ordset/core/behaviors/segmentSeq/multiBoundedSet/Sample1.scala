@@ -50,6 +50,120 @@ trait Sample1[D <: Domain[Int]]
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // prepended:
+        // X------------------false-----------------------X
+        //
+        // result:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("A"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
+          reference
+        ),
+        // current:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // prepended:
+        // X-------------------true-----------------------X
+        //
+        // result:
+        // X------t-------)[ ............Seq1............ X
+        //                10
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("B"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
+          (true  forAll x < 10) ::
+          (false forAll x >= 10 & x < 20) ::
+          (true  forAll x >= 20 & x < 30) ::
+          (false forAll x >= 30 & x < 40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        ),
+        // current:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // prepended:
+        // X-f-](-----true-----)[-----false-----](--true--X
+        //     -5              25               30
+        // result:
+        // X-f-](----t----)[ ............Seq1............ X
+        //     -5         10
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("C"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5 `](`, 30 `)[`, 50 `](`), complementary = false),
+          (false forAll x <= -5) ::
+          (true  forAll x >  -5 & x < 10) ::
+          (false forAll x >= 10 & x < 20) ::
+          (true  forAll x >= 20 & x < 30) ::
+          (false forAll x >= 30 & x < 40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        ),
+        // current:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // prepended:
+        // X-t-](-----false----)[------true-----](---f----X
+        //     -5              25               30
+        // result:
+        // X-t-](f)[--t---)[ ............Seq1............ X
+        //     -5  0      10
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("D"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5 `](`, 30 `)[`, 50 `](`), complementary = true),
+          (true  forAll x <= -5) ::
+          (false forAll x >  -5 & x < 0) ::
+          (true  forAll x >=  0 & x < 10) ::
+          (false forAll x >= 10 & x < 20) ::
+          (true  forAll x >= 20 & x < 30) ::
+          (false forAll x >= 30 & x < 40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        ),
+        // current:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // prepended:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // result:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("E"),
+          factoryTuple._2.unsafeBuildAsc(bounds, complementary = complementary),
+          reference
+        ),
+        // current:
+        // X---f--)[---t--)[ ............Seq1............ X
+        //        0       10
+        // prepended:
+        // X---t--)[---------------false------------------X
+        //        0
+        // result:
+        // X------t-------)[ ............Seq1............ X
+        //                10
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("F"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(0 `](`), complementary = true),
+          (true  forAll x <  10) ::
+          (false forAll x >= 10 & x < 20) ::
+          (true  forAll x >= 20 & x < 30) ::
+          (false forAll x >= 30 & x < 40) ::
+          (true  forAll x >= 40) ::
+          Nil
+        )
+      )
+    }
+  }
+
+  override def prependedWithBoundCases: Seq[SegmentSeqPrependedTest.TestCaseWithBound[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
         //   bound
         //     )
         // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
@@ -60,7 +174,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
         //        0       10      20      30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A1"),
           -10 `)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -77,7 +191,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
         //        0       10      20      30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A2"),
           0`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -94,7 +208,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X-----f----)[t-)[---f--)[---t--)[---f--)[---t--X
         //            5   10      20      30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A3"),
           5`[`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -118,7 +232,7 @@ trait Sample1[D <: Domain[Int]]
         //
         // X---------false---------](--t--)[---f--)[---t--X
         //                         20     30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A4"),
           20`]`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -139,7 +253,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X----------------false---------------------](t-X
         //                                            45
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A5"),
           45`(`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -159,7 +273,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X-----true-----)[---f--)[---t--)[---f--)[---t--X
         //                10      20      30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B1"),
           5`(`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq(5 `](`, 20 `)[`, 35 `](`), complementary = true),
@@ -182,7 +296,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X--true----](---false--)[---t--)[---f--)[---t--X
         //            5           20      30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B2"),
           15`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq(5 `](`, 20 `)[`, 35 `](`), complementary = true),
@@ -205,7 +319,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X--true----](---false--)[---t--)[---f--)[---t--X
         //            5           20      30      40
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B3"),
           20`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq(5 `](`, 20 `)[`, 35 `](`), complementary = true),
@@ -224,6 +338,120 @@ trait Sample1[D <: Domain[Int]]
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // appended:
+        // X------------------false-----------------------X
+        //
+        // result:
+        // X ......Seq1....... )[----------false----------X
+        //                     30
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30) ::
+          Nil
+        ),
+        // current:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // appended:
+        // X------------------true------------------------X
+        //
+        // result:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("B"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
+          reference
+        ),
+        // current:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // appended:
+        // X--false--](--true--)[-----false-----](--true--X
+        //           25        30               50
+        // result:
+        // X ......Seq1....... )[-----false-----](--true--X
+        //                     30               50
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("C"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(25 `](`, 30 `)[`, 50 `](`), complementary = false),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <= 50) ::
+          (true  forAll x >  50) ::
+          Nil
+        ),
+        // current:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // appended:
+        // X--true--](--false--)[-----true-----](--false--X
+        //          25         30              50
+        // result:
+        // X ......Seq1....... )[--false--)[-t-](--false--X
+        //                     30         40   50
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("D"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(25 `](`, 30 `)[`, 50 `](`), complementary = true),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30 & x <  40) ::
+          (true  forAll x >= 40 & x <= 50) ::
+          (false forAll x >  50) ::
+          Nil
+        ),
+        // current:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // appended:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // result:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("E"),
+          factoryTuple._2.unsafeBuildAsc(bounds, complementary),
+          reference
+        ),
+        // current:
+        // X ......Seq1....... )[--false--)[-----true-----X
+        //                     30         40
+        // appended:
+        // X--------------true------------)[----false-----X
+        //                                40
+        // result:
+        // X ......Seq1....... )[----------false----------X
+        //                     30
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("F"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(40 `)[`), complementary = true),
+          (false forAll x <  0) ::
+          (true  forAll x >= 0  & x <  10) ::
+          (false forAll x >= 10 & x <  20) ::
+          (true  forAll x >= 20 & x <  30) ::
+          (false forAll x >= 30) ::
+          Nil
+        )
+      )
+    }
+  }
+  
+  override def appendedWithBoundCases: Seq[SegmentSeqAppendedTest.TestCaseWithBound[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
         //   bound
         //     )
         // X---f--)[---t--)[---f--)[---t--)[---f--)[---t--X
@@ -234,7 +462,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X------------------false-----------------------X
         //                     
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A1"),
           -10`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -252,7 +480,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X------------------false-----------------------X
         //                     
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A2"),
           0`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -270,7 +498,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[t-)[------false-----------------------X
         //        0   5
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A3"),
           5`[`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -291,7 +519,7 @@ trait Sample1[D <: Domain[Int]]
         //                         t
         // X---f--)[---t--)[---f--)|(--------false--------X
         //        0       10      20
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A4"),
           20`(`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -313,7 +541,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[---t--)[---f--)[---t--)[---f--)[t-](f-X
         //        0       10      20      30      40 45
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A5"),
           45`(`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -338,7 +566,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[t-](---false--)[---true---](---false--X
         //        0   5           20          35
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B1"),
           5`(`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq(5 `](`, 20 `)[`, 35 `](`), complementary = true),
@@ -361,7 +589,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[---t--)[---f--)[---true---](---false--X
         //        0       10      20          35
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B2"),
           15`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq(5 `](`, 20 `)[`, 35 `](`), complementary = true),
@@ -384,7 +612,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X---f--)[---t--)[---f--)[---true---](---false--X
         //        0       10      20          35
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B3"),
           20`)`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq(5 `](`, 20 `)[`, 35 `](`), complementary = true),

@@ -325,9 +325,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * original.appended(other):
    *
    *   X-------)[--------](-----](-------------X
-   *       C        D        E          B          - values 
+   *       C        D        E          B          - values
    * }}}
-   * Methods definitions provide invariants: 
+   * Methods definitions provide invariants:
    * {{{
    *   1. If original sequence is not uniform then:
    *   sequence.prepended(other) == sequence.prepended(sequence.firstSegment.upperBound, other)
@@ -338,7 +338,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    */
   def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
-  
+
   /**
    * Returns sequence containing:
    * <tr>
@@ -450,21 +450,21 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *           C               D           E       - values
    *
    * original.appended(other):
-   * 
+   *
    *   X--------](------)[-----------](--------X
-   *        A        C         D           E       - values 
+   *        A        C         D           E       - values
    * }}}
-   * Methods definitions provide invariants: 
+   * Methods definitions provide invariants:
    * {{{
    *   1. If original sequence is not uniform then:
    *   sequence.appended(other) == sequence.appended(sequence.lastSegment.lowerBound, other)
    *   for any `other` sequence
-   *   
+   *
    *   2. If original sequence is uniform then:
    *   sequence.appended(other) == other
    * }}}
    */
-  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]) = ???
+  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
   /**
    * Returns sequence containing:

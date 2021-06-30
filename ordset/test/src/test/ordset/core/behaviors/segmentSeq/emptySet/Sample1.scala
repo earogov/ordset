@@ -41,6 +41,68 @@ trait Sample1[D <: Domain[Int]]
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
+        // X------------------false-----------------------X
+        // prepended:
+        // X------------------false-----------------------X
+        // result:
+        // X------------------false-----------------------X
+        //
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("A"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
+          reference
+        ),
+        // current:
+        // X------------------false-----------------------X
+        // prepended:
+        // X------------------true------------------------X
+        // result:
+        // X------------------true------------------------X
+        //
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("B"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
+          (true forAll x) ::
+          Nil
+        ),
+        // current:
+        // X------------------false-----------------------X
+        // prepended:
+        // X--------true---------](--------false----------X
+        //                       0
+        // result:
+        // X--------true---------](--------false----------X
+        //                       0
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("C"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(0`](`), complementary = true),
+          (true  forAll x <= 0) ::
+          (false forAll x >  0) ::
+          Nil
+        ),
+        // current:
+        // X------------------false-----------------------X
+        // prepended:
+        // X--------false--------](---------true----------X
+        //                       0
+        // result:
+        // X--------false--------](---------true----------X
+        //                       0
+        SegmentSeqPrependedTest.TestCase(
+          factoryTuple._1 + Label("D"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(0`](`), complementary = false),
+          (false forAll x <= 0) ::
+          (true  forAll x >  0) ::
+          Nil
+        )
+      )
+    }
+  }
+
+  override def prependedWithBoundCases: Seq[SegmentSeqPrependedTest.TestCaseWithBound[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
         //                         bound
         //                           ]
         // X------------------false-----------------------X
@@ -49,34 +111,96 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X------------------false-----------------------X
         //
-        SegmentSeqPrependedTest.TestCase(
+        SegmentSeqPrependedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A1"),
           0 `]`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
           reference
         ),
-//        // current:
-//        //                         bound
-//        //                           ]
-//        // X------------------false-----------------------X
-//        // prepended:
-//        // X------------------true------------------------X
-//        // result:
-//        // X-----------true----------](-------false-------X
-//        //                           0
-//        SegmentSeqPrependedTest.TestCase(
-//          factoryTuple._1 + Label("B1"),
-//          0`]`,
-//          factoryTuple._2.buildUnsafe(ArraySeq.empty, complementary = true),
-//          (true  forAll x <= 0) ::
-//          (false forAll x >  0) ::
-//          Nil
-//        )
+        // current:
+        //                         bound
+        //                           ]
+        // X------------------false-----------------------X
+        // prepended:
+        // X------------------true------------------------X
+        // result:
+        // X-----------true----------](-------false-------X
+        //                           0
+        SegmentSeqPrependedTest.TestCaseWithBound(
+          factoryTuple._1 + Label("B1"),
+          0`]`,
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
+          (true  forAll x <= 0) ::
+          (false forAll x >  0) ::
+          Nil
+        )
       )
     }
   }
 
   override def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[Int, D, Boolean]] = {
+    SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
+      List(
+        // current:
+        // X------------------false-----------------------X
+        // appended:
+        // X------------------false-----------------------X
+        // result:
+        // X------------------false-----------------------X
+        //
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("A"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
+          reference
+        ),
+        // current:
+        // X------------------false-----------------------X
+        // appended:
+        // X------------------true------------------------X
+        // result:
+        // X------------------true------------------------X
+        //
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("B"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),
+          (true forAll x) ::
+          Nil
+        ),
+        // current:
+        // X------------------false-----------------------X
+        // appended:
+        // X--------true---------](--------false----------X
+        //                       0
+        // result:
+        // X--------true---------](--------false----------X
+        //                       0
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("C"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(0`](`), complementary = true),
+          (true  forAll x <= 0) ::
+          (false forAll x >  0) ::
+          Nil
+        ),
+        // current:
+        // X------------------false-----------------------X
+        // appended:
+        // X--------false--------](---------true----------X
+        //                       0
+        // result:
+        // X--------false--------](---------true----------X
+        //                       0
+        SegmentSeqAppendedTest.TestCase(
+          factoryTuple._1 + Label("D"),
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(0`](`), complementary = false),
+          (false forAll x <= 0) ::
+          (true  forAll x >  0) ::
+          Nil
+        )
+      )
+    }
+  }
+
+  override def appendedWithBoundCases: Seq[SegmentSeqAppendedTest.TestCaseWithBound[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
@@ -88,7 +212,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X------------------false-----------------------X
         //
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("A1"),
           0`]`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = false),
@@ -103,7 +227,7 @@ trait Sample1[D <: Domain[Int]]
         // result:
         // X----------false----------](--------true-------X
         //                           0
-        SegmentSeqAppendedTest.TestCase(
+        SegmentSeqAppendedTest.TestCaseWithBound(
           factoryTuple._1 + Label("B1"),
           0`]`,
           factoryTuple._2.unsafeBuildAsc(ArraySeq.empty, complementary = true),

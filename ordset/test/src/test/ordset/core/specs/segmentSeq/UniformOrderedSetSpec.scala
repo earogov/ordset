@@ -38,7 +38,13 @@ class UniformOrderedSetSpec extends AnyFunSpec
 
   describe("Uniform ordered set transformation operations:") {
 
+    it should behave like segmentSeqCanBePrepended(testSuite)
+
+    it should behave like segmentSeqCanBePrependedWithBound(testSuite)
+
     it should behave like segmentSeqCanBeAppended(testSuite)
+
+    it should behave like segmentSeqCanBeAppendedWithBound(testSuite)
 
     it should behave like segmentSeqCanBeSliced(testSuite)
   }
