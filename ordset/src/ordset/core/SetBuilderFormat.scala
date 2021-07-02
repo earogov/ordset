@@ -207,12 +207,17 @@ object SetBuilderFormat { format =>
     val stringBuilder = new StringBuilder()
     var addSeparator = false
     stringBuilder.append(setBegin)
+    stringBuilder.append("\n")
     segmentIterable.foreach { s =>
-      if (addSeparator) stringBuilder.append(s"$segmentSeparator ")
+      if (addSeparator) {
+        stringBuilder.append(segmentSeparator)
+        stringBuilder.append("\n")
+      }
       val rel = s.intervalRelation
       stringBuilder.append(format.intervalRelation(rel.interval, rel.value, elementToStr, valueToStr))
       addSeparator = true
     }
+    stringBuilder.append("\n")
     stringBuilder.append(setEnd)
     stringBuilder.result()
   }

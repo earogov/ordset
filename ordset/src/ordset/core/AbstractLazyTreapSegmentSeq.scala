@@ -219,8 +219,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     // Both original sequences of `zsegment` are treap based. The result of patch operation in most cases will
     // be also a treap based sequence. `convertMap` doesn't perform real conversion for them. Instead it just
     // returns unmodified input sequence.
-    // The only exception - when `baseSeq` is uniform. In such a case patch operation may produce sequence
-    // of any type and `convertMap` will create new treap based instance.
+    // The only exception - when uniform sequence is patched by some non-treap `baseSeq`. In such a case
+    // patch operation may produce sequence of any type and `convertMap` will create new treap based instance.
     TreapOrderedMap.getFactory.convertMap(
       zsegment.patchedFirstSeq(baseSeq)
     )
@@ -258,7 +258,10 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     baseSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, ControlValue[E, D, V]] = {
 
-    // 1. Starting from `zsegment` (non inclusive) move backward until the conditions is met:
+    // Let's call as patch sequence new control sequence that will replace existing one in some region around given
+    // `zsegment`. Method builds patch sequence, inserts it into existing control sequence and returns new one.
+    //
+    // 1. Starting from `zsegment` (non inclusive) move backward until one of conditions is met:
     //    - either lazy or stable segment is found;
     //    - first segment of sequence is found.
     //
@@ -275,13 +278,15 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //    - eager stable iff all its adjacent segments are eager;
     //    - eager unstable otherwise.
     //
-    //    If `patchUpperBound` != `zsegment.upperBound` then similary define last segment of patch sequence.
+    //    If `patchUpperBound` != `zsegment.upperBound` then similarly define last segment of patch sequence.
     //
     //    If both conditions are met then:
-    //    - merge first and last segments (see p.4.1 and 4.2);
+    //    - merge first and last segments:
+    //      - build `leftPatchSequence` (see 4.1.1 and 4.1.2) and `rightPatchSequence` (see 4.2.1 and 4.2.2);
+    //      - get merged sequence as `leftPatchSequence.appended(rightPatchSequence)`;
     //    - apply received patch sequence to old control sequence within `patchLowerBound` and `patchUpperBound`
     //      and return the result.
-
+    //
     //    Otherwise go to step 3.
     //
     //                    patch sequence
@@ -305,14 +310,22 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //
     //    Call method `makeControlSeq` with parameters:
     //    - `eagerLowerBound` = (lower adjacent segment is eager)*
-    //    - `eagerLowerBound` = (lower adjacent segment is eager)*
+    //    - `eagerUpperBound` = (upper adjacent segment is eager)*
     //    * parameter is also `true` if there is no corresponding adjacent segment.
     //
     //    In example above we get:
     //    - `eagerLowerBound` == `true`
-    //    - `eagerLowerBound` == `false`
+    //    - `eagerUpperBound` == `false`
     //
     //    Let's denote received sequence as `innerPatchSequence`.
+    //
+    //    If both conditions are `true`:
+    //    - `patchLowerBound` == `zsegment.lowerBound`
+    //    - `patchUpperBound` == `zsegment.upperBound`
+    //    then apply `innerPatchSequence` to old control sequence within `patchLowerBound` and `patchUpperBound`
+    //    and return the result.
+    //
+    //    Otherwise go to step 4.
     //
     // 4. Merge `innerPatchSequence` with first or last segment of patch sequence obtained at step 2 (see 4.1 and 4.2).
     //
@@ -360,36 +373,66 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //
     // Then get merged sequence as `rightPatchSequence.prepended(innerPatchSequence)`.
 
-    case class PatchBoundInfo(
+    /**
+     * Properties of either left or right side of patch sequence.
+     */
+    abstract sealed class PatchBoundInfo(
       /**
-       * Contains info about `patchLowerBound` or `patchUpperBound` (see p.1).
-       * `null` iff first segment of patch sequence is first segment of whole control sequence
-       * (same for last segment if class represents patch upper bound info).
+       * If class represents left side info:
+       * <tr>contains `patchLowerBound` (see p.1) with corresponding segment of old control sequence;</tr>
+       * <tr>`null` iff first segment of patch sequence is first segment of whole control sequence.</tr>
+       *
+       * If class represents right side info:
+       * <tr>contains `patchUpperBound` (see p.1) with corresponding segment of old control sequence;</tr>
+       * <tr>`null` iff last segment of patch sequence is last segment of whole control sequence.</tr>
        */
-      patchBoundTruncation: SegmentLikeT.Truncation[E, D, ControlValue[E, D, V], Any] | Null,
-      /**
-       * `true` if condition from p.2 is satisfied: `patchLowerBound` != `zsegment.lowerBound`
-       * (or `patchUpperBound` != `zsegment.upperBound` for upper bound case).
-       */
-      patchBoundIsShifted: Boolean,
-      /**
-       * Either `leftPatchSequence` or `rightPatchSequence` (see p.4.1 and 4.2).
-       * `null` iff `patchBoundIsShifted` == `false`.
-       */
-      patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] | Null,
+      val patchBoundTruncation: SegmentLikeT.Truncation[E, D, ControlValue[E, D, V], Any] | Null,
       /**
        * `true` if corresponding adjacent segment of `zsegment` is eager (see p.3).
        */
-      zsegmentBoundIsEager: Boolean
+      val zsegmentBoundIsEager: Boolean,
+    )
+
+    /**
+     * [[PatchBoundInfo]] for case when condition from p.2 isn't satisfied:
+     * <tr>`patchLowerBound` == `zsegment.lowerBound` - for left side info;</tr>
+     * <tr>`patchUpperBound` == `zsegment.upperBound` - for right side info.</tr>
+     */
+    case class NonShiftedPatchBoundInfo(
+      override val patchBoundTruncation: SegmentLikeT.Truncation[E, D, ControlValue[E, D, V], Any] | Null,
+      override val zsegmentBoundIsEager: Boolean,
+    ) extends PatchBoundInfo(
+      patchBoundTruncation,
+      zsegmentBoundIsEager
+    )
+
+    /**
+     * [[PatchBoundInfo]] for case when condition from p.2 is satisfied:
+     * <tr>`patchLowerBound` != `zsegment.lowerBound` - for left side info;</tr>
+     * <tr>`patchUpperBound` != `zsegment.upperBound` - for right side info.</tr>
+     */
+    case class ShiftedPatchBoundInfo(
+      override val patchBoundTruncation: SegmentLikeT.Truncation[E, D, ControlValue[E, D, V], Any] | Null,
+      override val zsegmentBoundIsEager: Boolean,
+      /**
+       * <tr>`leftPatchSequence` - if class represents left side info;</tr>
+       * <tr>`rightPatchSequence` - if class represents right side info;</tr>
+       * (see p.4.1 and 4.2)
+       */
+      patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]]
+    ) extends PatchBoundInfo(
+      patchBoundTruncation,
+      zsegmentBoundIsEager
     )
 
     object PatchBoundInfo {
 
-      def getLowerBoundInfo: PatchBoundInfo = {
+      def getLeftSideInfo: PatchBoundInfo = {
         var nextStep = true
         var eagerAdjacent = true
         var undefinedAdjacent = true
         var patchBoundIsShifted = false
+        var patchBoundIsLazy = false
         var prevZsegment: ZSegment[E, D, V] = zsegment
         val segmentIterator = zsegment.backwardIterable.drop(1).iterator // skip `zsegment` itself
         while (segmentIterator.hasNext && nextStep) {
@@ -403,6 +446,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           if (nextStep) {
             patchBoundIsShifted = true
             prevZsegment = currZsegment
+          } else {
+            patchBoundIsLazy = currControlValue.isLazy
           }
         }
         val patchBoundTruncation = prevZsegment match {
@@ -411,27 +456,35 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           case _ =>
             null
         }
-        val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] | Null =
-          if (patchBoundIsShifted) prevZsegment match {
+        if (patchBoundIsShifted) {
+          val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = prevZsegment match {
             case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-              if (s.secondSeqSegment.value.isStable) makeUniformControlSeq(EagerValue.stable)
-              else makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upperBound)
+              // Adjacent segment of first patch segment is lazy =>
+              // first patch segment is eager unstable (see p.2) =>
+              // case 4.1.1
+              if (patchBoundIsLazy)
+                makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upperBound)
+              // otherwise case 4.1.2
+              else
+                makeUniformControlSeq(EagerValue.stable)
             case _ =>
               // `patchBoundIsShifted` = `true` =>
               // there is at least `zsegment` after `prevSegment` =>
               // `prevSegment` has next segment.
               throw new AssertionError(s"Expected that segment $prevZsegment has next segment.")
           }
-          else null
-
-        PatchBoundInfo(patchBoundTruncation, patchBoundIsShifted, patchBoundSequence, eagerAdjacent)
+          ShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent, patchBoundSequence)
+        } else {
+          NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
+        }
       }
 
-      def getUpperBoundInfo: PatchBoundInfo = {
+      def getRightSideInfo: PatchBoundInfo = {
         var nextStep = true
         var eagerAdjacent = true
         var undefinedAdjacent = true
         var patchBoundIsShifted = false
+        var patchBoundIsLazy = false
         var prevZsegment: ZSegment[E, D, V] = zsegment
         val segmentIterator = zsegment.forwardIterable.drop(1).iterator // skip `zsegment` itself
         while (segmentIterator.hasNext && nextStep) {
@@ -445,6 +498,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           if (nextStep) {
             patchBoundIsShifted = true
             prevZsegment = currZsegment
+          } else {
+            patchBoundIsLazy = currControlValue.isLazy
           }
         }
         val patchBoundTruncation = prevZsegment match {
@@ -453,46 +508,72 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           case _ =>
             null
         }
-        val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] | Null =
-          if (patchBoundIsShifted) prevZsegment match {
+        if (patchBoundIsShifted) {
+          val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = prevZsegment match {
             case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-              if (s.secondSeqSegment.value.isStable) makeUniformControlSeq(EagerValue.stable)
-              else makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lowerBound.flipLower)
+              // Adjacent segment of last patch segment is lazy =>
+              // last patch segment is eager unstable (see p.2) =>
+              // case 4.2.1
+              if (patchBoundIsLazy)
+                makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lowerBound.flipLower)
+              // otherwise case 4.2.2
+              else
+                makeUniformControlSeq(EagerValue.stable)
             case _ =>
               // `patchBoundIsShifted` = `true` =>
               // there is at least `zsegment` before `prevSegment` =>
               // `prevSegment` has previous segment.
               throw new AssertionError(s"Expected that segment $prevZsegment has previous segment.")
           }
-          else null
-
-        PatchBoundInfo(patchBoundTruncation, patchBoundIsShifted, patchBoundSequence, eagerAdjacent)
+          ShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent, patchBoundSequence)
+        } else {
+          NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
+        }
       }
     }
 
-    val lowerBoundInfo = PatchBoundInfo.getLowerBoundInfo
-    val upperBoundInfo = PatchBoundInfo.getUpperBoundInfo
-
-    // See p.2.
-    if (lowerBoundInfo.patchBoundIsShifted && upperBoundInfo.patchBoundIsShifted) {
-      // `patchBoundSequence` != `null` because `patchBoundIsShifted` == `true` (see `PatchBoundInfo` description).
-      if (lowerBoundInfo.patchBoundSequence == null) throw new AssertionError("Expected non-null value.")
-      if (upperBoundInfo.patchBoundSequence == null) throw new AssertionError("Expected non-null value.")
-      //lowerBoundInfo.patchBoundSequence.appended(upperBoundInfo.patchBoundSequence)
-
-      TreapOrderedMap.getFactory.convertMap(zippedSeq.secondSeq)
-    } else {
-
-      TreapOrderedMap.getFactory.convertMap(zippedSeq.secondSeq)
+    val leftSideInfo = PatchBoundInfo.getLeftSideInfo
+    val rightSideInfo = PatchBoundInfo.getRightSideInfo
+    val patchSequence: SegmentSeq[E, D, ControlValue[E, D, V]] = (leftSideInfo, rightSideInfo) match {
+      // See p.2.
+      case (li: ShiftedPatchBoundInfo, ri: ShiftedPatchBoundInfo) =>
+        li.patchBoundSequence.appended(ri.patchBoundSequence)
+      // See p.3 for all cases below.
+      case (li: ShiftedPatchBoundInfo, ri: NonShiftedPatchBoundInfo) =>
+        val innerPatchSequence = makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
+        li.patchBoundSequence.appended(innerPatchSequence)
+      case (li: NonShiftedPatchBoundInfo, ri: ShiftedPatchBoundInfo) =>
+        val innerPatchSequence = makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
+        ri.patchBoundSequence.prepended(innerPatchSequence)
+      case (li: NonShiftedPatchBoundInfo, ri: NonShiftedPatchBoundInfo) =>
+        makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
     }
+    val tmpSeq =
+      if (leftSideInfo.patchBoundTruncation != null) {
+        val tr: SegmentLikeT.Truncation[E, D, ControlValue[E, D, V], Any] = leftSideInfo.patchBoundTruncation
+        tr.appended(patchSequence)
+      } else {
+        patchSequence
+      }
+    val newSeq =
+      if (rightSideInfo.patchBoundTruncation != null) {
+        val tr: SegmentLikeT.Truncation[E, D, ControlValue[E, D, V], Any] = rightSideInfo.patchBoundTruncation
+        tr.prepended(tmpSeq)
+      }
+      else {
+        tmpSeq
+      }
+    // Performance note
+    // `newSeq` is always treap based. `convertMap` doesn't perform real conversion for it.
+    // Instead it just returns unmodified input sequence.
+    TreapOrderedMap.getFactory.convertMap(newSeq)
   }
-
 
   /**
    * Builds control sequence from a new sequence `baseSeq` that was evaluated for a given `zsegment`.
    *
-   * `eagerLowerBound` and `eagerUpperBound` defines bound conditions:
-   * - if indicator is `false` then corresponding adjacent segment of `zsegment` is lazy.
+   * `eagerLowerBound` and `eagerUpperBound` input arguments define bound conditions:
+   * <tr>- if indicator is `false` then corresponding adjacent segment of `zsegment` is lazy.</tr>
    *
    * Let's denote:
    * {{{
@@ -672,7 +753,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     }
   }
 
-  //  /**
+//  /**
 //   * Builds control sequence for new sequence `baseSeq` that was evaluated for `zsegment`.
 //   * Segments of `baseSeq` that are completely inside input `zsegment` are mapped to stable control values,
 //   * others - to unstable (see class description).

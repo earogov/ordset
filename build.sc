@@ -10,6 +10,7 @@ object ordset extends ScalaModule {
     "-language:implicitConversions",
     "-language:higherKinds",
     "-deprecation",
+    "-Yexplicit-nulls"
   )
 
   override def ivyDeps = Agg(

@@ -564,6 +564,8 @@ object SegmentLikeT {
      */
     def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
+    override def toString: String = s"$segment.truncation($bound)"
+
     // Protected section -------------------------------------------------------- //
 
     /**
