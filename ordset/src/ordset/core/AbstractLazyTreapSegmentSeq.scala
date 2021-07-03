@@ -99,10 +99,6 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
   protected final val lock = new Object()
 
-//  protected final def baseSeq: BaseSegmentSeq[E, D, V] = zippedSeq.firstSeq
-//
-//  protected final def controlSeq: ControlSegmentSeq[E, D, V] = zippedSeq.secondSeq
-
   protected final def eval(zsegment: ZSegment[E, D, V]): Unit =
     zsegment.value._2 match {
     case lazyValue: LazyValue[E, D, V] =>
@@ -427,59 +423,13 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
     object PatchBoundInfo {
 
-      def getLeftSideInfo: PatchBoundInfo = {
-        var nextStep = true
-        var eagerAdjacent = true
-        var undefinedAdjacent = true
-        var patchBoundIsShifted = false
-        var patchBoundIsLazy = false
-        var prevZsegment: ZSegment[E, D, V] = zsegment
-        val segmentIterator = zsegment.backwardIterable.drop(1).iterator // skip `zsegment` itself
-        while (segmentIterator.hasNext && nextStep) {
-          val currZsegment = segmentIterator.next()
-          val currControlValue = currZsegment.secondSeqSegment.value
-          if (undefinedAdjacent) {
-            undefinedAdjacent = false
-            eagerAdjacent = currControlValue.isEager
-          }
-          nextStep = currControlValue.isEager && currControlValue.isUnstable
-          if (nextStep) {
-            patchBoundIsShifted = true
-            prevZsegment = currZsegment
-          } else {
-            patchBoundIsLazy = currControlValue.isLazy
-          }
-        }
-        val patchBoundTruncation = prevZsegment match {
-          case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-            s.back.secondSeqSegment.truncation(s.lowerBound)
-          case _ =>
-            null
-        }
-        if (patchBoundIsShifted) {
-          val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = prevZsegment match {
-            case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-              // Adjacent segment of first patch segment is lazy =>
-              // first patch segment is eager unstable (see p.2) =>
-              // case 4.1.1
-              if (patchBoundIsLazy)
-                makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upperBound)
-              // otherwise case 4.1.2
-              else
-                makeUniformControlSeq(EagerValue.stable)
-            case _ =>
-              // `patchBoundIsShifted` = `true` =>
-              // there is at least `zsegment` after `prevSegment` =>
-              // `prevSegment` has next segment.
-              throw new AssertionError(s"Expected that segment $prevZsegment has next segment.")
-          }
-          ShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent, patchBoundSequence)
-        } else {
-          NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
-        }
-      }
+      def getLeftSideInfo: PatchBoundInfo = makeInfo(LeftSideFactory)
 
-      def getRightSideInfo: PatchBoundInfo = {
+      def getRightSideInfo: PatchBoundInfo = makeInfo(RightSideFactory)
+
+      // Private section ---------------------------------------------------------- //
+
+      private def makeInfo(factory: Factory): PatchBoundInfo = {
         var nextStep = true
         var eagerAdjacent = true
         var undefinedAdjacent = true
@@ -502,32 +452,98 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             patchBoundIsLazy = currControlValue.isLazy
           }
         }
-        val patchBoundTruncation = prevZsegment match {
-          case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-            s.secondSeqSegment.truncation(s.upperBound)
-          case _ =>
-            null
-        }
-        if (patchBoundIsShifted) {
-          val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = prevZsegment match {
+        factory.build(eagerAdjacent, patchBoundIsShifted, patchBoundIsLazy, prevZsegment)
+      }
+
+      private trait Factory {
+
+        def build(
+          eagerAdjacent: Boolean,
+          patchBoundIsShifted: Boolean,
+          patchBoundIsLazy: Boolean,
+          patchBoundZsegment: ZSegment[E, D, V]
+        ): PatchBoundInfo
+      }
+
+      private object LeftSideFactory extends Factory {
+
+        override def build(
+          eagerAdjacent: Boolean,
+          patchBoundIsShifted: Boolean,
+          patchBoundIsLazy: Boolean,
+          patchBoundZsegment: ZSegment[E, D, V]
+        ): PatchBoundInfo = {
+
+          val patchBoundTruncation = patchBoundZsegment match {
             case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-              // Adjacent segment of last patch segment is lazy =>
-              // last patch segment is eager unstable (see p.2) =>
-              // case 4.2.1
-              if (patchBoundIsLazy)
-                makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lowerBound.flipLower)
-              // otherwise case 4.2.2
-              else
-                makeUniformControlSeq(EagerValue.stable)
+              s.back.secondSeqSegment.truncation(s.lowerBound)
             case _ =>
-              // `patchBoundIsShifted` = `true` =>
-              // there is at least `zsegment` before `prevSegment` =>
-              // `prevSegment` has previous segment.
-              throw new AssertionError(s"Expected that segment $prevZsegment has previous segment.")
+              null
           }
-          ShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent, patchBoundSequence)
-        } else {
-          NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
+          if (patchBoundIsShifted) {
+            val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = patchBoundZsegment match {
+              case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
+                // Adjacent segment of first patch segment is lazy =>
+                // first patch segment is eager unstable (see p.2) =>
+                // case 4.1.1
+                if (patchBoundIsLazy)
+                  makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upperBound)
+                // otherwise case 4.1.2
+                else
+                  makeUniformControlSeq(EagerValue.stable)
+              case _ =>
+                // `patchBoundIsShifted` = `true` =>
+                // there is at least original `zsegment` after `boundZsegment` =>
+                // `boundZsegment` has next segment.
+                throw new AssertionError(
+                  s"Expected that segment $patchBoundZsegment has next segment."
+                )
+            }
+            ShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent, patchBoundSequence)
+          } else {
+            NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
+          }
+        }
+      }
+
+      private object RightSideFactory extends Factory {
+
+        override def build(
+          eagerAdjacent: Boolean,
+          patchBoundIsShifted: Boolean,
+          patchBoundIsLazy: Boolean,
+          patchBoundZsegment: ZSegment[E, D, V]
+        ): PatchBoundInfo = {
+
+          val patchBoundTruncation = patchBoundZsegment match {
+            case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
+              s.secondSeqSegment.truncation(s.upperBound)
+            case _ =>
+              null
+          }
+          if (patchBoundIsShifted) {
+            val patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]] = patchBoundZsegment match {
+              case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
+                // Adjacent segment of last patch segment is lazy =>
+                // last patch segment is eager unstable (see p.2) =>
+                // case 4.2.1
+                if (patchBoundIsLazy)
+                  makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lowerBound.flipLower)
+                // otherwise case 4.2.2
+                else
+                  makeUniformControlSeq(EagerValue.stable)
+              case _ =>
+                // `patchBoundIsShifted` = `true` =>
+                // there is at least original `zsegment` before `patchBoundZsegment` =>
+                // `patchBoundZsegment` has previous segment.
+                throw new AssertionError(
+                  s"Expected that segment $patchBoundZsegment has previous segment."
+                )
+            }
+            ShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent, patchBoundSequence)
+          } else {
+            NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
+          }
         }
       }
     }

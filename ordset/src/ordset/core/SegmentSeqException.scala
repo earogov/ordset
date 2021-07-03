@@ -3,7 +3,7 @@ package ordset.core
 /**
  * Exception during creating or using [[SegmentSeq]].
  */
-class SegmentSeqException(message: String, cause: Throwable) extends RuntimeException(message, cause)
+class SegmentSeqException(message: String, cause: Throwable | Null) extends RuntimeException(message, cause)
 
 object SegmentSeqException {
 

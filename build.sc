@@ -9,8 +9,7 @@ object ordset extends ScalaModule {
   override def scalacOptions = Seq(
     "-language:implicitConversions",
     "-language:higherKinds",
-    "-deprecation",
-    "-Yexplicit-nulls"
+    "-deprecation"
   )
 
   override def ivyDeps = Agg(
