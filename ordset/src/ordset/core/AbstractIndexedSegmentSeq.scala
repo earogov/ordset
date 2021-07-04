@@ -30,13 +30,23 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   extends AbstractSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
   
   // Inspection --------------------------------------------------------------- //
+  /**
+   * Collection of segments upper bounds.
+   *
+   * It MUST be non-empty.
+   */
+  val bounds: Seq[Bound.Upper[E]]
+
+  /** When false, first segment doesn't belong to set and vice versa.*/
+  val complementary: Boolean
+
   final override def isEmpty: Boolean = false
 
   final override def isUniversal: Boolean = false
 
   final override def isUniform: Boolean = false
 
-  final override def contains(bound: Bound[E]): Boolean = isValueIncluded(searchSegmentFromBegin(bound))
+  final override def contains(bound: Bound[E]): Boolean = isIndexIncluded(searchSegmentFromBegin(bound))
 
   final override def containsElement(element: E): Boolean = super.containsElement(element)
 
@@ -103,16 +113,6 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     appendedInternal(bound, getSegment(bound.provideUpper), other)
 
   // Protected section -------------------------------------------------------- //
-  /**
-   * Collection of segments upper bounds.
-   *
-   * It MUST be non-empty.
-   */
-  protected val bounds: Seq[Bound.Upper[E]]
-
-  /** When false, first segment doesn't belong to set and vice versa.*/
-  protected val complementary: Boolean
-
   /**
    * Validate state after initialization.
    */
@@ -199,6 +199,17 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   ): IndexedSegmentSeq[E, D, V]
 
   /**
+   * Preconditions:
+   *
+   * 1. `0 <= ind <= bounds.length (last segment index)`.
+   *
+   * Returns `true` if segment with given index is considered to be included in set.
+   * Segment inclusion is always alternates, therefore it's computed from index and `complementary` flag.
+   *
+   */
+  protected def isIndexIncluded(ind: Int): Boolean
+
+  /**
    * @return value of first segment.
    */
   @inline
@@ -209,18 +220,6 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    */
   @inline
   protected final def getLastSegmentValue: V = getSegmentValue(lastSegmentIndex)
-
-  /**
-   * Preconditions:
-   *
-   * 1. `0 <= ind <= bounds.length (last segment index)`.
-   *
-   * Returns `true` if segment with given index is considered to be included in set.
-   * Segment inclusion is always alternates, therefore it's computed from index and `complementary` flag.
-   *
-   */
-  @inline
-  protected final def isValueIncluded(ind: Int): Boolean = complementary ^ ((ind & 0x00000001) == 0x00000001)
 
   /**
     * Preconditions:
@@ -303,7 +302,7 @@ object AbstractIndexedSegmentSeq {
 
     override def value: V = sequence.getSegmentValue(index)
 
-    override def isIncluded: Boolean = sequence.isValueIncluded(index)
+    override def isIncluded: Boolean = sequence.isIndexIncluded(index)
 
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: IndexedInitialSegment[E, D, V] = IndexedInitialSegment(sequence)
@@ -364,6 +363,8 @@ object AbstractIndexedSegmentSeq {
       with IndexedSegmentBase[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
+    override def self: IndexedSegmentWithNext[E, D, V]
+
     override def upperBound: Bound.Upper[E] = sequence.getUpperBound(index)
 
     // Navigation --------------------------------------------------------------- //
@@ -390,6 +391,8 @@ object AbstractIndexedSegmentSeq {
       with IndexedSegmentBase[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
+    override def self: IndexedSegmentWithPrev[E, D, V]
+    
     override def lowerBound: Bound.Lower[E] = sequence.getLowerBound(index)
 
     // Navigation --------------------------------------------------------------- //

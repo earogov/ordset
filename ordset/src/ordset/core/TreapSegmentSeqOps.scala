@@ -4,9 +4,19 @@ import ordset.core.domain.Domain
 import AbstractTreapSegmentSeq._
 import AbstractUniformSegmentSeq._
 import ordset.core.map.TreapOrderedMap
+import ordset.tree.treap.immutable.ImmutableTreap
 
 object TreapSegmentSeqOps {
 
+  /**
+   * Get treap root node if sequence is non-uniform or empty treap otherwise.
+   */
+  def getRoot[E, D <: Domain[E], V](seq: TreapSegmentSeq[E, D, V]): ImmutableTreap[Bound.Upper[E], V] =
+    seq match {
+      case s: NonuniformTreapSegmentSeq[E, D, V] => s.root
+      case _: UniformSegmentSeq[E, D, V] => ImmutableTreap.Empty
+    }
+  
   /**
    * Applies patch operation (see [[SegmentLikeT.patched]]) for given segment of [[TreapSegmentSeq]].
    *

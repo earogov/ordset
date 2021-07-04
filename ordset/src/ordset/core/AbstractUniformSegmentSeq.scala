@@ -79,7 +79,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    *
    * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
    */
-  protected def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
+  protected def isValueIncluded(value: V): Boolean
 
   /**
    * Creates segment sequence:

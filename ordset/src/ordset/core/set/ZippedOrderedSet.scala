@@ -16,16 +16,17 @@ class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
 ) extends AbstractZippedSegmentSeq[E, D, Boolean, Boolean, Boolean, S1, S2]
   with OrderedSetCommons[E, D] {
 
+  // Inspection --------------------------------------------------------------- //
+  @inline
+  final override def operator(first: Boolean, second: Boolean): Boolean = operatorFunc(first, second)
+
+  @inline
+  final override def firstInvariant(value: Boolean): Boolean = invariantFunc(value)
+
+  @inline
+  final override def secondInvariant(value: Boolean): Boolean = invariantFunc(value)
+
   // Protected section -------------------------------------------------------- //
-  @inline
-  protected final override def operator(first: Boolean, second: Boolean): Boolean = operatorFunc(first, second)
-
-  @inline
-  protected final override def firstInvariant(value: Boolean): Boolean = invariantFunc(value)
-
-  @inline
-  protected final override def secondInvariant(value: Boolean): Boolean = invariantFunc(value)
-
   @inline
   protected final override def isValueIncluded(value: Boolean): Boolean = value
 

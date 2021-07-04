@@ -7,12 +7,19 @@ import scala.Specializable.{AllNumeric => spNum}
 import scala.collection.{AbstractIterable, AbstractIterator}
 import scala.{specialized => sp}
 
+/**
+ * Non-sealed superclass of [[SegmentT]] 
+ *
+ * @tparam E type of element in ordered set
+ * @tparam D type of elements domain
+ * @tparam V type of new value assigned to interval of elements
+ * @tparam S type of additional segment state
+ */
 trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   import SegmentLikeT._
 
   // Inspection --------------------------------------------------------------- //
-
   /** Sequence to which segment belongs. */
   def sequence: SegmentSeqT[E, D, V, S]
 
@@ -40,7 +47,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * X---------------)                (----------------X
    * }}}
    */
-  def isIncluded: Boolean
+  def isIncluded: Boolean = valueOps.isIncluded(value)
 
   /** @return `true` if `bound` is between segment bounds. */
   def contains(bound: Bound[E]): Boolean
@@ -124,7 +131,6 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def self: SegmentT[E, D, V, S] with S
 
   // Navigation --------------------------------------------------------------- //
-
   /** @return first segment of sequence. */
   def moveToFirst: SegmentT.First[E, D, V, S] with S = sequence.firstSegment
 
@@ -191,7 +197,6 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S]
 
   // Transformation ----------------------------------------------------------- //
-
   /**
    * Returns sequence containing
    * <tr>- segment (minBound, u,,0,,) -> v,,0,,</tr>
@@ -567,7 +572,6 @@ object SegmentLikeT {
     override def toString: String = s"$segment.truncation($bound)"
 
     // Protected section -------------------------------------------------------- //
-
     /**
      * Returns next segment in degenerate case (see [[Truncation.prepended]]) or segment itself otherwise.
      */

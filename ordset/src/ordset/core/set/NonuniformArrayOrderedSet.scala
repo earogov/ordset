@@ -26,7 +26,7 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
 
   // Protected section -------------------------------------------------------- //
   @inline
-  protected final override def getSegmentValue(ind: Int): Boolean = isValueIncluded(ind)
+  protected final override def getSegmentValue(ind: Int): Boolean = isIndexIncluded(ind)
 
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =
@@ -185,6 +185,9 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
       }
     }
   }
+
+  @inline
+  protected final override def isIndexIncluded(ind: Int): Boolean = complementary ^ ((ind & 0x00000001) == 0x00000001)
 }
 
 object NonuniformArrayOrderedSet {

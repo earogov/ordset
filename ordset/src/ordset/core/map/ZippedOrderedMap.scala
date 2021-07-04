@@ -19,16 +19,17 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
 ) extends AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
   with OrderedMapCommons[E, D, V] {
 
+  // Inspection --------------------------------------------------------------- //
+  @inline
+  final override def operator(first: U1, second: U2): V = operatorFunc(first, second)
+
+  @inline
+  final override def firstInvariant(value: U1): Boolean = firstInvariantFunc(value)
+
+  @inline
+  final override def secondInvariant(value: U2): Boolean = secondInvariantFunc(value)
+
   // Protected section -------------------------------------------------------- //
-  @inline
-  protected final override def operator(first: U1, second: U2): V = operatorFunc(first, second)
-
-  @inline
-  protected final override def firstInvariant(value: U1): Boolean = firstInvariantFunc(value)
-
-  @inline
-  protected final override def secondInvariant(value: U2): Boolean = secondInvariantFunc(value)
-
   @inline
   protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
   

@@ -109,5 +109,7 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
       ControlTupleOps.get(valueOps),
       rngManager
     )
+
+    protected override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
   }
 }

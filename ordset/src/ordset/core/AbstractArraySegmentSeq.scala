@@ -18,9 +18,10 @@ abstract class AbstractArraySegmentSeq[E, D <: Domain[E], V] extends AbstractInd
 
   import ordset.array.SortedArraySearch._
 
+  // Inspection --------------------------------------------------------------- //
+  override val bounds: ArraySeq[Bound.Upper[E]]
+  
   // Protected section -------------------------------------------------------- //
-  protected override val bounds: ArraySeq[Bound.Upper[E]]
-
   protected override def searchSegmentFromBegin(bound: Bound[E]): Int = {
     val res = binSearchClosestNotLess[Bound[E]](
       bound, bounds

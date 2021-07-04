@@ -124,8 +124,8 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * <tr></tr>
  * 
  * @tparam E type of element in ordered set
- * @tparam D type of domain
- * @tparam V type of value assigned to interval
+ * @tparam D type of elements domain
+ * @tparam V type of value assigned to interval of elements
  * @tparam S type of additional segment state
  */
 sealed trait SegmentT[E, D <: Domain[E], V, +S] extends SegmentLikeT[E, D, V, S]
@@ -147,7 +147,7 @@ object SegmentT {
   def lowerBoundDescOrder[E, D <: Domain[E]]: LowerBoundDescOrder[E, D] = new LowerBoundOrder
 
   /**
-   * Segment which has next segment. May be Initial or Inner.
+   * Segment which has next segment. May be [[Initial]] or [[Inner]].
    *
    * @see [[Segment]]
    */
@@ -158,6 +158,8 @@ object SegmentT {
 
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
 
+    override def self: SegmentT.WithNext[E, D, V, S] with S
+    
     def upperBound: Bound.Upper[E]
 
     // Navigation --------------------------------------------------------------- //
@@ -167,7 +169,7 @@ object SegmentT {
   }
 
   /**
-   * Segment which has previous segment. May be Terminal or Inner.
+   * Segment which has previous segment. May be [[Terminal]] or [[Inner]].
    *
    * @see [[Segment]]
    */
@@ -178,6 +180,8 @@ object SegmentT {
 
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
 
+    override def self: SegmentT.WithPrev[E, D, V, S] with S
+    
     def lowerBound: Bound.Lower[E]
     
     // Navigation --------------------------------------------------------------- //
@@ -187,7 +191,7 @@ object SegmentT {
   }
 
   /**
-   * First segment of sequence. Doesn't have previous segment. May be Single or Initial.
+   * First segment of sequence. Doesn't have previous segment. May be [[Single]] or [[Initial]].
    *
    * @see [[Segment]]
    */
@@ -210,7 +214,7 @@ object SegmentT {
   }
 
   /**
-   * Last segment of sequence. Doesn't have next segment. May be Single or Terminal.
+   * Last segment of sequence. Doesn't have next segment. May be [[Single]] or [[Terminal]].
    *
    * @see [[Segment]]
    */
@@ -276,7 +280,6 @@ object SegmentT {
     ) {
 
       // Protected section -------------------------------------------------------- //
-
       protected override def getPrependedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
 
       protected override def getAppendedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
@@ -325,7 +328,6 @@ object SegmentT {
     ) {
 
       // Protected section -------------------------------------------------------- //
-
       protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S =
         if (segment.hasUpperBound(bound.provideUpper)) segment.moveNext
         else segment
@@ -376,7 +378,6 @@ object SegmentT {
     ) {
 
       // Protected section -------------------------------------------------------- //
-
       protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S = segment
 
       protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
@@ -430,7 +431,6 @@ object SegmentT {
     ) {
 
       // Protected section -------------------------------------------------------- //
-
       protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S =
         if (segment.hasUpperBound(bound.provideUpper)) segment.moveNext
         else segment
