@@ -118,7 +118,7 @@
 //     * @return `true` if this segment maps input `segment`.
 //     */
 //    def isSpecifiedBy(segment: SegmentT[E, D, U, S]): Boolean =
-//      sequence.eq(segment.sequence) && sequence.domainOps.segmentUpperOrd.eqv(original, segment)
+//      sequence.originalSeq.eq(segment.sequence) && sequence.domainOps.segmentUpperOrd.eqv(original, segment)
 //
 //    override def sequence: MappedSegmentSeq[E, D, U, V, S]
 //
@@ -240,7 +240,7 @@
 //
 //    // Inspection --------------------------------------------------------------- //
 //    override def isSpecifiedBy(segment: SegmentT[E, D, U, S]): Boolean =
-//      sequence.eq(segment.sequence) && segment.isLast
+//      sequence.originalSeq.eq(segment.sequence) && segment.isLast
 //
 //    override def self: MappedTerminalSegment[E, D, U, V, S] = this
 //
@@ -277,7 +277,7 @@
 //
 //    // Inspection --------------------------------------------------------------- //
 //    override def isSpecifiedBy(segment: SegmentT[E, D, U, S]): Boolean =
-//      sequence.eq(segment.sequence) && segment.isLast
+//      sequence.originalSeq.eq(segment.sequence) && segment.isLast
 //
 //    override def self: MappedSingleSegment[E, D, U, V, S] = this
 //

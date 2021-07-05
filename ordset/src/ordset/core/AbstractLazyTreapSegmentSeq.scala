@@ -778,7 +778,94 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   }
 
   /**
-   * @return segment of lazy sequence that corresponds to input `zsegment`.
+   * Returns segment of lazy sequence that corresponds to input `zsegment`.
+   *
+   * <b>Control sequence:</b>
+   * {{{
+   *
+   *   X-----------](------------)[------------X
+   *          s            u             ?
+   *
+   *   where u - unstable eager segment; s - stable eager segment; ? - lazy segment.
+   *
+   *   Control sequence specifies which part of base sequence is lazy.
+   * }}}
+   * <b>Base sequence:</b>
+   * {{{
+   *
+   *   X-----------](------------)[------------X
+   *          A            B         any value
+   *
+   *   Base sequence contains evaluated (eager) values.
+   *   Lazy segments are allowed to have any value.
+   * }}}
+   * <b>Zipped sequence:</b>
+   * {{{
+   *
+   *     `zsegment`
+   *   X-----------](------------)[------------X
+   *      (s, A)        (u, B)    (any value, ?)
+   *
+   *   Contains tuples of control and base values.
+   * }}}
+   * <b>Output lazy sequence:</b>
+   * {{{
+   *
+   *       output
+   *   X-----------](------------)[------------X
+   *         A             -             -
+   *
+   *   Sequence  exposed as external api of class.
+   *   Only stable segments are exposed.
+   *   Lazy and eager unstable segments are evaluated into stable on demand.
+   * }}}
+   * <h3>Note</h3>
+   *
+   * After input `zsegment` is evaluated into stable one we just wrap it with [[LazySegment]] which extracts value
+   * of base sequence. We can guarantee that there will be no adjacent output segments with the same value, so no
+   * additional merging of segments is applied (see Lemma 1).
+   *
+   * <h3>Lemma 1</h3>
+   *
+   * Adjacent segments of stable zipped segment S in zipped sequence have values other then value of S.
+   *
+   * Consider cases when one stable segment of base sequence spans several control segments:
+   * {{{
+   *
+   * 1.  -----------](------------  control sequence
+   *          s            ?
+   *     -------------------------  base sequence
+   *                A
+   * }}}
+   * Case is impossible due to stable segment must be always separated from lazy one with unstable eager segment.
+   * {{{
+   *
+   * 2.  -----------](------------  control sequence
+   *          s            u
+   *     -------------------------  base sequence
+   *                A
+   * }}}
+   * The only possible previous state for case above is:
+   * {{{
+   *
+   * 2.a  ----S1-----](-----S2-----  control sequence
+   *          u             ?
+   *      -----------](------------  base sequence
+   *           A        any value
+   * }}}
+   * After evaluation lazy segment S2 should become unstable with value A, and S1 - stable.
+   * S2 will be unstable iff its right adjacent segment is lazy.
+   * S1 will be stable iff its left adjacent segment is eager.
+   * But in that case we will get:
+   * {{{
+   *
+   * 2.b  --](------------S3------------)[--  control sequence
+   *       s              u               ?
+   *      --](--------------------------)[--  base sequence
+   *                      A
+   * }}}
+   * Segments S1 and S2 will be merged into eager unstable S3. So we can't get case 2 from 2.a and
+   * case 2 is impossible. Q.E.D.
    */
   protected final def makeSegment(segment: ZSegment[E, D, V]): LazySegment[E, D, V] =
     eval(segment) match {
@@ -790,7 +877,9 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     }
 
   /**
-   * @return segment of lazy sequence that has previous segment and corresponds to input `zsegment`.
+   * Returns segment of lazy sequence that has previous segment and corresponds to input `zsegment`.
+   *
+   * @see [[makeSegment]].
    */
   protected final def makeSegmentWithPrev(segment: ZSegmentWithPrev[E, D, V]): LazySegmentWithPrev[E, D, V] =
     eval(segment) match {
@@ -800,7 +889,9 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     }
 
   /**
-   * @return segment of lazy sequence that has next segment and corresponds to input `zsegment`.
+   * Returns segment of lazy sequence that has next segment and corresponds to input `zsegment`.
+   *
+   * @see [[makeSegment]].
    */
   protected final def makeSegmentWithNext(segment: ZSegmentWithNext[E, D, V]): LazySegmentWithNext[E, D, V] =
     eval(segment) match {

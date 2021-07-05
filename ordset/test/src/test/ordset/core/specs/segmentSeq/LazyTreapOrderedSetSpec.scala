@@ -34,43 +34,77 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
   private val domainOps: DomainOps[Int, Dom] = implicitly[DomainOps[Int, Dom]]
   private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom](domainOps)
 
-  it("test 1") {
+//  it("case 1") {
+//
+//    // X-t--)[---f--](-----true-----)[------------false--------------X  seq1
+//    //      -10     -5              5
+//    //
+//    // X----------false--------)[----t---](-------f------)[-----t----X  seq2
+//    //                         2         8               17
+//    //
+//    // X-----------------------false----------------)[--t---](---f---X  seq3
+//    //                                              15      20
+//    //
+//    //        Seq1                 Seq2                  Seq3
+//    // X-----------------)[--------------------](--------------------X
+//    //                   0                     10
+//    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+//      ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
+//      complementary = true,
+//      domainOps
+//    )()
+//
+//    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+//      ArraySeq(2 `)[`, 8 `](`, 17 `)[`),
+//      complementary = false,
+//      domainOps
+//    )()
+//
+//    val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+//      ArraySeq(15 `)[`, 20 `](`),
+//      complementary = false,
+//      domainOps
+//    )()
+//
+//    val lazySeq = new LazyTreapOrderedSet(
+//      List(
+//        (0 `)`, () => seq1),
+//        (10 `]`, () => seq2),
+//        (null, () => seq3)
+//      )
+//    )
+//
+//    val segment1 = lazySeq.getSegment(5 `]`)
+//    println(segment1)
+//
+//    val segment2 = lazySeq.getSegment(15 `]`)
+//    println(segment2)
+//  }
 
-    // X-t--)[---f--](-----true-----)[------------false--------------X  seq1
-    //      -10     -5              5
-    //
-    // X----------false--------)[----t---](-------f------)[-----t----X  seq2
-    //                         2         8               17
-    //
-    // X-----------------------false----------------)[--t---](---f---X  seq3
-    //                                              15      20
-    //
-    //        Seq1                 Seq2                  Seq3
-    // X-----------------)[--------------------](--------------------X
-    //                   0                     10
-    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
-      complementary = true,
-      domainOps
-    )()
+  it("case 2") {
 
-    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(2 `)[`, 8 `](`, 17 `)[`),
-      complementary = false,
-      domainOps
-    )()
-
-    val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(15 `)[`, 20 `](`),
-      complementary = false,
-      domainOps
-    )()
+    // X-------------------------------------false--------------------------------------X  seq1
+    //
+    // X-------------------------------------false--------------------------------------X  seq2
+    //
+    // X-------------------------------------false--------------------------------------X  seq3
+    //
+    // X-------------------------------------false--------------------------------------X  seq4
+    //
+    //        Seq1                 Seq2                  Seq3                Seq4
+    // X-----------------)[--------------------](--------------------](-----------------X
+    //                   0                     10                    20
+    val seq1 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
+    val seq2 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
+    val seq3 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
+    val seq4 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
 
     val lazySeq = new LazyTreapOrderedSet(
       List(
         (0 `)`, () => seq1),
         (10 `]`, () => seq2),
-        (null, () => seq3)
+        (20 `](`, () => seq3),
+        (null, () => seq4)
       )
     )
 
