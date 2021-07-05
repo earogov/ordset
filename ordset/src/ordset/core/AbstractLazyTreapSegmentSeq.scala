@@ -437,11 +437,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         var undefinedAdjacent = true
         var patchBoundIsShifted = false
         var patchBoundIsLazy = false
-        var prevZsegment: ZSegment[E, D, V] = zsegment
-        val segmentIterator = zsegment.forwardIterable.drop(1).iterator // skip `zsegment` itself
+        var prevZsegment = zsegment
+        val segmentIterator = factory.getIterable(zsegment).drop(1).iterator // skip `zsegment` itself
         while (segmentIterator.hasNext && nextStep) {
           val currZsegment = segmentIterator.next()
-          val currControlValue = currZsegment.secondSeqSegment.value
+          val currControlValue = currZsegment.self.secondSeqSegment.value
           if (undefinedAdjacent) {
             undefinedAdjacent = false
             eagerAdjacent = currControlValue.isEager
@@ -465,6 +465,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           patchBoundIsLazy: Boolean,
           patchBoundZsegment: ZSegment[E, D, V]
         ): PatchBoundInfo
+
+        def getIterable(zsegment: ZSegment[E, D, V]): Iterable[ZSegment[E, D, V]]
       }
 
       private object LeftSideFactory extends Factory {
@@ -506,6 +508,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
           }
         }
+
+        override def getIterable(zsegment: ZSegment[E, D, V]): Iterable[ZSegment[E, D, V]] = zsegment.backwardIterable
       }
 
       private object RightSideFactory extends Factory {
@@ -547,6 +551,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             NonShiftedPatchBoundInfo(patchBoundTruncation, eagerAdjacent)
           }
         }
+
+        override def getIterable(zsegment: ZSegment[E, D, V]): Iterable[ZSegment[E, D, V]] = zsegment.forwardIterable
       }
     }
 
@@ -809,7 +815,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       s"Expected that segment $segmentStr has one of base types: inner, initial, terminal or single."
     )
   }
-  
+
   protected final def throwSegmentMustBeLastOrWithNext(segment: Segment[E, D, ?]): Nothing = {
     val segmentStr = SetBuilderFormat.segment(segment, (e: E) => e.toString, (v: Any) => v.toString)
     throw new AssertionError(

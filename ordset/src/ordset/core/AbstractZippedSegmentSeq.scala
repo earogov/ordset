@@ -660,6 +660,11 @@ object AbstractZippedSegmentSeq {
   sealed trait ZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2] {
 
     /**
+     * Value of zipped sequence.
+     */
+    lazy val value: V = sequence.getSegmentValue(left, right)
+
+    /**
      * Zipped sequence.
      */
     def sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
@@ -681,13 +686,12 @@ object AbstractZippedSegmentSeq {
       left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
       right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
     ): Boolean =
-      if (sequence.ne(left.sequence) || sequence.ne(right.sequence)) false
-      else {
+      if (validateSequences(left, right)) {
         val ord = sequence.domainOps.segmentUpperOrd
         if (ord.eqv(left, this.left)) ord.eqv(right, this.right)
         else if (ord.eqv(right, this.left)) ord.eqv(left, this.right)
         else false
-      }
+      } else false
 
     /**
      * @return segment (either [[left]] or [[right]]) that belong to first original sequence.
@@ -715,11 +719,21 @@ object AbstractZippedSegmentSeq {
       }
     }
 
+    // Protected section -------------------------------------------------------- //
     /**
-     * Value of zipped sequence.
+     * @return `true` if `left` segment belongs to one of the original sequences of zipped sequence and
+     *         `right` belongs to another one.
+     *
+     * @note sequences are identified by reference.
      */
-    lazy val value: V = sequence.getSegmentValue(left, right)
-  }
+    protected def validateSequences(
+      left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
+      right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
+    ): Boolean =
+      if (sequence.firstSeq.eq(left.sequence)) sequence.secondSeq.eq(right.sequence)
+      else if (sequence.firstSeq.eq(right.sequence)) sequence.secondSeq.eq(left.sequence)
+      else false
+}
 
   /**
    * Default implementation of [[ZippedTuple]] (see preconditions).
@@ -1105,7 +1119,7 @@ object AbstractZippedSegmentSeq {
       left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
       right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
     ): Boolean =
-      sequence.eq(left.sequence) && sequence.eq(right.sequence) && left.isLast && right.isLast
+      validateSequences(left, right) && left.isLast && right.isLast
 
     override def self: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
 
@@ -1171,7 +1185,7 @@ object AbstractZippedSegmentSeq {
       left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
       right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
     ): Boolean =
-      sequence.eq(left.sequence) && sequence.eq(right.sequence) && left.isLast && right.isLast
+      (validateSequences(left, right)) && left.isLast && right.isLast
 
     override def self: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
