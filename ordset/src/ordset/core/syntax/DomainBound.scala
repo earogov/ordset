@@ -26,8 +26,8 @@ object DomainBound {
 
   object Lower {
 
-    def apply[E, D <: Domain[E]](domainOps: DomainOps[E, D], value: E, isInclusive: Boolean): Lower[E, D] =
-      new Lower(domainOps, Bound.Lower(value, isInclusive))
+    def apply[E, D <: Domain[E]](domainOps: DomainOps[E, D], element: E, isInclusive: Boolean): Lower[E, D] =
+      new Lower(domainOps, Bound.Lower(element, isInclusive))
   }
 
   case class Upper[E, D <: Domain[E]](
@@ -37,7 +37,7 @@ object DomainBound {
 
   object Upper {
 
-    def apply[E, D <: Domain[E]](domainOps: DomainOps[E, D], value: E, isInclusive: Boolean): Upper[E, D] =
-      new Upper(domainOps, Bound.Upper(value, isInclusive))
+    def apply[E, D <: Domain[E]](domainOps: DomainOps[E, D], element: E, isInclusive: Boolean): Upper[E, D] =
+      new Upper(domainOps, Bound.Upper(element, isInclusive))
   }
 }

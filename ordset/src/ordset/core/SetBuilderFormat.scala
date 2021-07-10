@@ -20,6 +20,14 @@ object SetBuilderFormat { format =>
 
   val segmentSeparator: String = ","
 
+  val plusInfinity = "+inf"
+  
+  val minusInfinity = "-inf"
+
+  val belowAllBound: String = s"$variable ${greaterSign(false)} $minusInfinity"
+
+  val aboveAllBound: String = s"$variable ${lessSign(false)} $plusInfinity"
+
   def lessSign(isInclusive: Boolean): String = if (isInclusive) "<=" else "<"
 
   def greaterSign(isInclusive: Boolean): String = if (isInclusive) ">=" else ">"
@@ -29,13 +37,13 @@ object SetBuilderFormat { format =>
     bound: Bound.Upper[? <: E],
     elementToStr: E => String = toStringFunc[E]
   ): String =
-    s"$variable ${lessSign(bound.isInclusive)} ${elementToStr(bound.value)}"
+    s"$variable ${lessSign(bound.isInclusive)} ${elementToStr(bound.element)}"
 
   def lowerBound[E](
     bound: Bound.Lower[? <: E],
     elementToStr: E => String = toStringFunc[E]
   ): String =
-    s"$variable ${greaterSign(bound.isInclusive)} ${elementToStr(bound.value)}"
+    s"$variable ${greaterSign(bound.isInclusive)} ${elementToStr(bound.element)}"
 
   def bound[E](
     bound: Bound[? <: E],
@@ -45,8 +53,20 @@ object SetBuilderFormat { format =>
     case b: Bound.Lower[? <: E] => format.lowerBound(b, elementToStr)
   }
 
+  def extendedBound[E](
+    bound: ExtendedBound[? <: E],
+    elementToStr: E => String = toStringFunc[E]
+  ): String = bound match {
+    case b: Bound[? <: E] => format.bound(b, elementToStr)
+    case ExtendedBound.BelowAll => belowAllBound
+    case ExtendedBound.AboveAll => aboveAllBound
+  }
+
   def boundShow[E](elementShow: Show[? >: E]): Show[Bound[E]] =
     Show.show(b => format.bound(b, elementShow.show))
+
+  def extendedBoundShow[E](elementShow: Show[? >: E]): Show[ExtendedBound[E]] =
+    Show.show(b => format.extendedBound(b, elementShow.show))
 
   // Intervals ---------------------------------------------------------------- //
   val emptyInterval: String = emptySet
@@ -71,8 +91,8 @@ object SetBuilderFormat { format =>
   ): String = {
     val lowerBound = interval.lowerBound
     val upperBound = interval.upperBound
-    s"$setBegin${elementToStr(lowerBound.value)} ${lessSign(lowerBound.isInclusive)} " +
-      s"$variable ${lessSign(upperBound.isInclusive)} ${elementToStr(upperBound.value)}$setEnd"
+    s"$setBegin${elementToStr(lowerBound.element)} ${lessSign(lowerBound.isInclusive)} " +
+      s"$variable ${lessSign(upperBound.isInclusive)} ${elementToStr(upperBound.element)}$setEnd"
   }
 
   def interval[E, D <: Domain[E]](

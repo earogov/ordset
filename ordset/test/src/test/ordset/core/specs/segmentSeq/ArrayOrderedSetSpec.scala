@@ -5,11 +5,12 @@ import ordset.core.domain.Domain
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
+import test.ordset.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.samples.segmentSeq.arrayOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class ArrayOrderedSetSpec extends AnyFunSpec
+  with InspectionBehaviors[Int, Domain[Int], Boolean]
   with NavigationBehaviors[Int, Domain[Int], Boolean]
   with TransformationBehaviors[Int, Domain[Int], Boolean] {
 
@@ -29,6 +30,13 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     new DegenerateSetSample1[Dom]
   )
 
+  describe("Array based ordered set inspection operations:") {
+
+    it should behave like segmentsHaveNavigationIndicators(testSuite)
+    
+    it should behave like segmentsSupportContains(testSuite)
+  }
+  
   describe("Array based ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
@@ -36,8 +44,6 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMoveToBound(testSuite)
 
     it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
-
-    it should behave like segmentsHaveNavigationIndicators(testSuite)
   }
 
   describe("Array based ordered set transformation operations:") {

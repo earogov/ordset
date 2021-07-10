@@ -50,7 +50,9 @@
 //
 //  final override def isUniform: Boolean = ???
 //
-//  final override def contains(bound: Bound[E]): Boolean = getSegment(bound).isIncluded
+//  final override def containsBound(bound: Bound[E]): Boolean = super.containsBound(bound)
+//
+//  final override def containsExtended(bound: ExtendedBound[E]): Boolean = super.containsExtended(bound)
 //
 //  final override def containsElement(element: E): Boolean = super.containsElement(element)
 //
@@ -994,21 +996,21 @@
 //    }
 //
 //  protected final def throwSegmentMustHaveOneOfBaseTypes(segment: Segment[E, D, ?]): Nothing = {
-//    val segmentStr = SetBuilderFormat.segment(segment, (e: E) => e.toString, (v: Any) => v.toString)
+//    val segmentStr = SetBuilderFormat.segment(segment, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
 //    throw new AssertionError(
 //      s"Expected that segment $segmentStr has one of base types: inner, initial, terminal or single."
 //    )
 //  }
 //
 //  protected final def throwSegmentMustBeLastOrWithNext(segment: Segment[E, D, ?]): Nothing = {
-//    val segmentStr = SetBuilderFormat.segment(segment, (e: E) => e.toString, (v: Any) => v.toString)
+//    val segmentStr = SetBuilderFormat.segment(segment, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
 //    throw new AssertionError(
 //      s"Expected that segment $segmentStr is either last or has next segment."
 //    )
 //  }
 //
 //  protected final def throwSegmentMustBeFirstOrWithPrev(segment: Segment[E, D, ?]): Nothing = {
-//    val segmentStr = SetBuilderFormat.segment(segment, (e: E) => e.toString, (v: Any) => v.toString)
+//    val segmentStr = SetBuilderFormat.segment(segment, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
 //    throw new AssertionError(
 //      s"Expected that segment $segmentStr is either first or has previous segment."
 //    )

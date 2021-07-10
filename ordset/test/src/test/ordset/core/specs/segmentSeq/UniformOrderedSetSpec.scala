@@ -5,11 +5,12 @@ import ordset.core.domain.Domain
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
+import test.ordset.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.samples.segmentSeq.uniformOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class UniformOrderedSetSpec extends AnyFunSpec
+  with InspectionBehaviors[Int, Domain[Int], Boolean]
   with NavigationBehaviors[Int, Domain[Int], Boolean]
   with TransformationBehaviors[Int, Domain[Int], Boolean] {
 
@@ -25,6 +26,13 @@ class UniformOrderedSetSpec extends AnyFunSpec
     new UniversalSetSample1[Dom](),
   )
 
+  describe("Uniform ordered set inspection operations:") {
+
+    it should behave like segmentsHaveNavigationIndicators(testSuite)
+
+    it should behave like segmentsSupportContains(testSuite)
+  }
+  
   describe("Uniform ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
@@ -32,8 +40,6 @@ class UniformOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMoveToBound(testSuite)
 
     it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
-
-    it should behave like segmentsHaveNavigationIndicators(testSuite)
   }
 
   describe("Uniform ordered set transformation operations:") {

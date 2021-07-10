@@ -31,9 +31,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
   final override def isUniform: Boolean = false
 
-  final override def contains(bound: Bound[E]): Boolean = getSegment(bound).isIncluded
+  final override def includesBound(bound: Bound[E]): Boolean = super.includesBound(bound)
 
-  final override def containsElement(element: E): Boolean = super.containsElement(element)
+  final override def includesExtended(bound: ExtendedBound[E]): Boolean = super.includesExtended(bound)
+
+  final override def includesElement(element: E): Boolean = super.includesElement(element)
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds

@@ -248,7 +248,9 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isSingle: Boolean = true
 
-    override def contains(bound: Bound[E]): Boolean = true
+    override def containsBound(bound: Bound[E]): Boolean = true
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean = true
 
     override def restrictBound(bound: Bound[E]): Bound[E] = bound
 
@@ -298,7 +300,14 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isInitial: Boolean = true
 
-    override def contains(bound: Bound[E]): Boolean = domainOps.boundOrd.gteqv(upperBound, bound)
+    override def containsBound(bound: Bound[E]): Boolean = domainOps.boundOrd.gteqv(upperBound, bound)
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean =
+      bound match {
+        case b: Bound[E] => containsBound(b)
+        case ExtendedBound.BelowAll => true
+        case ExtendedBound.AboveAll => false
+      }
 
     override def restrictBound(bound: Bound[E]): Bound[E] =
       if (domainOps.boundOrd.gt(bound, upperBound)) upperBound
@@ -348,7 +357,14 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isTerminal: Boolean = true
 
-    override def contains(bound: Bound[E]): Boolean = domainOps.boundOrd.lteqv(lowerBound, bound)
+    override def containsBound(bound: Bound[E]): Boolean = domainOps.boundOrd.lteqv(lowerBound, bound)
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean =
+      bound match {
+        case b: Bound[E] => containsBound(b)
+        case ExtendedBound.BelowAll => false
+        case ExtendedBound.AboveAll => true
+      }
 
     override def restrictBound(bound: Bound[E]): Bound[E] =
       if (domainOps.boundOrd.lt(bound, lowerBound)) lowerBound
@@ -398,10 +414,16 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isInner: Boolean = true
 
-    override def contains(bound: Bound[E]): Boolean = {
+    override def containsBound(bound: Bound[E]): Boolean = {
       val boundOrd = domainOps.boundOrd
       boundOrd.lteqv(lowerBound, bound) && boundOrd.gteqv(upperBound, bound)
     }
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean =
+      bound match {
+        case b: Bound[E] => containsBound(b)
+        case _ => false
+      }
 
     override def restrictBound(bound: Bound[E]): Bound[E] = {
       val boundOrd = domainOps.boundOrd

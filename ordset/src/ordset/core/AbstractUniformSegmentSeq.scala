@@ -16,9 +16,11 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   final override def isUniform: Boolean = true
 
-  final override def contains(bound: Bound[E]): Boolean = isUniversal
+  final override def includesBound(bound: Bound[E]): Boolean = isUniversal
 
-  final override def containsElement(element: E): Boolean = isUniversal
+  final override def includesExtended(bound: ExtendedBound[E]): Boolean = isUniversal
+
+  final override def includesElement(element: E): Boolean = isUniversal
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = Iterable.empty

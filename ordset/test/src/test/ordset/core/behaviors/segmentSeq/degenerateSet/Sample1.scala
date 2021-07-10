@@ -3,7 +3,7 @@ package test.ordset.core.behaviors.segmentSeq.degenerateSet
 import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
-import ordset.core.{Bound, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound, IntervalRelation, SegmentSeq}
 import ordset.util.label.Label
 import test.ordset.core.behaviors.segmentSeq._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
@@ -13,6 +13,7 @@ import scala.language.postfixOps
 
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
+    with SegmentContainsTest[Int, D, Boolean]
     with SegmentSeqPrependedTest[Int, D, Boolean]
     with SegmentSeqAppendedTest[Int, D, Boolean]
     with SegmentSeqSlicedTest[Int, D, Boolean]
@@ -46,6 +47,25 @@ trait Sample1[D <: Domain[Int]]
     (-1`[`, false forAll x <  0 ) ::
     ( 0`]`, true  forAll x >= 0  & x <= 0 ) ::
     Nil
+
+  override def containsSeq: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =
+    List(
+      SegmentContainsTest.TestCase(
+        bound = -10`[`,
+        includedBounds = List(ExtendedBound.BelowAll, -10`[`, 0`)`),
+        excludedBounds = List(ExtendedBound.AboveAll, 50`)`, 0`]`, 0`(`)
+      ),
+      SegmentContainsTest.TestCase(
+        bound = 0`[`,
+        includedBounds = List(0`]`, 0`[`),
+        excludedBounds = List(ExtendedBound.BelowAll, ExtendedBound.AboveAll, -50`)`, 50`[`, 0`)`, 0`(`)
+      ),
+      SegmentContainsTest.TestCase(
+        bound = 50`[`,
+        includedBounds = List(ExtendedBound.AboveAll, 30`(`, 40`)`),
+        excludedBounds = List(ExtendedBound.BelowAll, 0`)`, 30`]`, 30`)`)
+      )
+    )
 
   override def prependedCases: Seq[SegmentSeqPrependedTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>

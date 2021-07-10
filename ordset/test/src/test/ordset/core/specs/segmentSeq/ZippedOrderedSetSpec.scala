@@ -5,13 +5,14 @@ import ordset.core.domain.Domain
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
+import test.ordset.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.behaviors.zippedSeq.ZippedSeqBehaviours
 import test.ordset.core.samples.segmentSeq.zippedOrderedSet._
 import test.ordset.core.samples.zippedSeq.zippedSet.{EmptySetSampleZ1, MultiBoundedSetSampleZ1, UniversalSetSampleZ1}
 
 @RunWith(classOf[JUnitRunner])
 class ZippedOrderedSetSpec extends AnyFunSpec
+  with InspectionBehaviors[Int, Domain[Int], Boolean]
   with NavigationBehaviors[Int, Domain[Int], Boolean]
   with TransformationBehaviors[Int, Domain[Int], Boolean]
   with ZippedSeqBehaviours[Int, Domain[Int], Boolean, Boolean, Boolean] {
@@ -45,6 +46,13 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     new MultiBoundedSetSampleZ1[Dom]
   )
 
+  describe("Zipped ordered set inspection operations:") {
+
+    it should behave like segmentsHaveNavigationIndicators(testSuite)
+
+    it should behave like segmentsSupportContains(testSuite)
+  }
+
   describe("Zipped ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
@@ -52,8 +60,6 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMoveToBound(testSuite)
 
     it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
-
-    it should behave like segmentsHaveNavigationIndicators(testSuite)
   }
 
   describe("Zipped ordered set transformation operations:") {

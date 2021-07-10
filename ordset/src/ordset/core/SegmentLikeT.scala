@@ -48,10 +48,13 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def isIncluded: Boolean = valueOps.isIncluded(value)
 
   /** @return `true` if `bound` is between segment bounds. */
-  def contains(bound: Bound[E]): Boolean
+  def containsBound(bound: Bound[E]): Boolean
+
+  /** @return `true` if `bound` is between segment bounds. */
+  def containsExtended(bound: ExtendedBound[E]): Boolean
 
   /** @return `true` if `element` is between segment bounds. */
-  def containsElement(element: E): Boolean = contains(Bound.Upper.inclusive(element))
+  def containsElement(element: E): Boolean = containsBound(Bound.Upper.inclusive(element))
 
   /** @return `true` if segment has specified upper bound. */
   def hasUpperBound(bound: Bound.Upper[E]): Boolean
@@ -118,7 +121,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return tuple of segment value and interval that corresponds to the segment in given domain. */
   def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
 
-  override def toString: String = SetBuilderFormat.segment(self, (e: E) => e.toString, (v: V) => v.toString)
+  override def toString: String = SetBuilderFormat.segment(self, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
 
   /**
    * Returns current instance with a more precise type.

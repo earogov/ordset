@@ -5,11 +5,12 @@ import ordset.core.domain.Domain
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.behaviors.segmentSeq.{NavigationBehaviors, TransformationBehaviors}
+import test.ordset.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.samples.segmentSeq.treapOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class TreapOrderedSetSpec extends AnyFunSpec
+  with InspectionBehaviors[Int, Domain[Int], Boolean]
   with NavigationBehaviors[Int, Domain[Int], Boolean]
   with TransformationBehaviors[Int, Domain[Int], Boolean] {
 
@@ -30,6 +31,13 @@ class TreapOrderedSetSpec extends AnyFunSpec
       new DegenerateSetSample1[Dom](seed)
     )
   }
+
+  describe("Treap based ordered set inspection operations:") {
+
+    it should behave like segmentsHaveNavigationIndicators(testSuite)
+
+    it should behave like segmentsSupportContains(testSuite)
+  }
   
   describe("Treap based ordered set navigation operations:") {
 
@@ -38,8 +46,6 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportMoveToBound(testSuite)
 
     it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
-
-    it should behave like segmentsHaveNavigationIndicators(testSuite)
   }
 
   describe("Treap based ordered set transformation operations:") {

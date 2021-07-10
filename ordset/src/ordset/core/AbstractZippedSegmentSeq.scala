@@ -47,10 +47,12 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   final override def isUniform: Boolean =
     firstSegmentInstance.isSingle
 
-  final override def contains(bound: Bound[E]): Boolean =
+  final override def includesBound(bound: Bound[E]): Boolean =
     isValueIncluded(getSegmentValue(firstSeq.getSegment(bound), secondSeq.getSegment(bound)))
 
-  final override def containsElement(element: E): Boolean = super.containsElement(element)
+  final override def includesExtended(bound: ExtendedBound[E]): Boolean = super.includesExtended(bound)
+
+  final override def includesElement(element: E): Boolean = super.includesElement(element)
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
@@ -613,7 +615,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   protected final def throwSegmentMustBeLastOrWithNext(
     segments: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]*
   ): Nothing = {
-    val segmentsStr = SetBuilderFormat.segmentIterable(segments, (e: E) => e.toString, (v: Any) => v.toString)
+    val segmentsStr = SetBuilderFormat.segmentIterable(segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
     throw new AssertionError(
       s"Expected that segments $segmentsStr are either last or has next segment."
     )
@@ -622,7 +624,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   protected final def throwSegmentMustBeFirstOrWithPrev(
     segments: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]*
   ): Nothing = {
-    val segmentsStr = SetBuilderFormat.segmentIterable(segments, (e: E) => e.toString, (v: Any) => v.toString)
+    val segmentsStr = SetBuilderFormat.segmentIterable(segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
     throw new AssertionError(
       s"Expected that segments $segmentsStr are either first or has previous segment."
     )
@@ -631,7 +633,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   protected final def throwSegmentMustBelongToOriginalSeqs(
     segments: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]*
   ): Nothing = {
-    val segmentsStr = SetBuilderFormat.segmentIterable(segments, (e: E) => e.toString, (v: Any) => v.toString)
+    val segmentsStr = SetBuilderFormat.segmentIterable(segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
     throw new AssertionError(
       s"Expected that segments $segmentsStr belong to one of original sequences."
     )

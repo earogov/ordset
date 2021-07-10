@@ -9,7 +9,7 @@ case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
     interval: Interval[E, D], value: V) {
 
   override def toString: String =
-    SetBuilderFormat.intervalRelation(interval, value, (e: E) => e.toString, (v: V) => v.toString)
+    SetBuilderFormat.intervalRelation(interval, value, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
 }
 
 object IntervalRelation {

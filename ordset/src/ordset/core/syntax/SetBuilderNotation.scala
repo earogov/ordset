@@ -12,13 +12,13 @@ object SetBuilderNotation {
 
     def domainOps: DomainOps[E, D]
 
-    def >(value: E): DomainBound.Lower[E, D] = DomainBound.Lower(domainOps, value, isInclusive = false)
+    def >(element: E): DomainBound.Lower[E, D] = DomainBound.Lower(domainOps, element, isInclusive = false)
 
-    def >=(value: E): DomainBound.Lower[E, D] = DomainBound.Lower(domainOps, value, isInclusive = true)
+    def >=(element: E): DomainBound.Lower[E, D] = DomainBound.Lower(domainOps, element, isInclusive = true)
 
-    def <(value: E): DomainBound.Upper[E, D] = DomainBound.Upper(domainOps, value, isInclusive = false)
+    def <(element: E): DomainBound.Upper[E, D] = DomainBound.Upper(domainOps, element, isInclusive = false)
 
-    def <=(value: E): DomainBound.Upper[E, D] = DomainBound.Upper(domainOps, value, isInclusive = true)
+    def <=(element: E): DomainBound.Upper[E, D] = DomainBound.Upper(domainOps, element, isInclusive = true)
   }
 
   object BoundBuilder {

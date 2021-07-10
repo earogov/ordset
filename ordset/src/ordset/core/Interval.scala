@@ -83,7 +83,7 @@ object Interval {
     implicit override val domainOps: DomainOps[E, D]
   ) extends WithLowerBound[E, D] {
 
-    override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, (e: E) => e.toString)
+    override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
   final case class Less[@sp(spNum) E, D <: Domain[E]](
@@ -92,7 +92,7 @@ object Interval {
     implicit override val domainOps: DomainOps[E, D]
   ) extends WithUpperBound[E, D] {
 
-    override def toString: String = SetBuilderFormat.upperBoundedInterval(this, (e: E) => e.toString)
+    override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
   final case class Between[@sp(spNum) E, D <: Domain[E]](
@@ -102,7 +102,7 @@ object Interval {
     implicit override val domainOps: DomainOps[E, D]
   ) extends WithLowerBound[E, D] with WithUpperBound[E, D] {
 
-    override def toString: String = SetBuilderFormat.boundedInterval(this, (e: E) => e.toString)
+    override def toString: String = SetBuilderFormat.boundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
   final class DefaultHash[E, D <: Domain[E]]()(

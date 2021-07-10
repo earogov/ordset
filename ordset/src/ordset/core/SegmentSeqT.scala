@@ -122,15 +122,22 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    */
   def isUniform: Boolean
   
-  /** @return `true` if sequence contains `bound`. */
-  def contains(bound: Bound[E]): Boolean
+  /** @return `true` if `bound` is included in ordered set or map. */
+  def includesBound(bound: Bound[E]): Boolean = getSegment(bound).isIncluded
 
-  /** @return `true` if sequence contains `element`. */
-  def containsElement(element: E): Boolean = 
-    contains(Bound.Upper.inclusive(element))
+  /** @return `true` if `bound` is included in ordered set or map. */
+  def includesExtended(bound: ExtendedBound[E]): Boolean =
+    bound match {
+      case b: Bound[E] => includesBound(b)
+      case ExtendedBound.BelowAll => firstSegment.isIncluded
+      case ExtendedBound.AboveAll => lastSegment.isIncluded
+    }
+
+  /** @return `true` if `element` is included in ordered set or map. */
+  def includesElement(element: E): Boolean = includesBound(Bound.Upper.inclusive(element))
 
   override def toString: String =
-    SetBuilderFormat.segmentSeq(this, (e: E) => e.toString, (v: V) => v.toString)
+    SetBuilderFormat.segmentSeq(this, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
   
   // Navigation --------------------------------------------------------------- //
   /**
