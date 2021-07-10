@@ -911,7 +911,7 @@ object AbstractZippedSegmentSeq {
 
     override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
-    override def truncation(bound: Bound[E]): SegmentLikeT.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] = ???
+    override def truncation(bound: Bound[E]): SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] = ???
 
     /**
      * Applies patch operation to first original sequence within current zipped segment.

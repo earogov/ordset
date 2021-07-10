@@ -271,10 +271,10 @@ object SegmentT {
 
   object Single {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S](
-      override val segment: SegmentT.Single[E, D, V, S] with S,
-      inputBound: Bound[E]
-    ) extends SegmentLikeT.Truncation[E, D, V, S](
+    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Single[E, D, V, S] with S](
+      override val segment: Seg,
+      inputBound: Bound[E],
+    ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound,
     ) {
@@ -319,10 +319,10 @@ object SegmentT {
 
   object Initial {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S](
-      override val segment: SegmentT.Initial[E, D, V, S] with S,
+    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Initial[E, D, V, S] with S](
+      override val segment: Seg,
       inputBound: Bound[E],
-    ) extends SegmentLikeT.Truncation[E, D, V, S](
+    ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound,
     ) {
@@ -369,10 +369,10 @@ object SegmentT {
 
   object Terminal {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S](
-      override val segment: SegmentT.Terminal[E, D, V, S] with S,
+    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Terminal[E, D, V, S] with S](
+      override val segment: Seg,
       inputBound: Bound[E]
-    ) extends SegmentLikeT.Truncation[E, D, V, S](
+    ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound
     ) {
@@ -422,10 +422,10 @@ object SegmentT {
 
   object Inner {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S](
-      segment: SegmentT.Inner[E, D, V, S] with S,
+    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Inner[E, D, V, S] with S](
+      segment: Seg,
       inputBound: Bound[E],
-    ) extends SegmentLikeT.Truncation[E, D, V, S](
+    ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound
     ) {

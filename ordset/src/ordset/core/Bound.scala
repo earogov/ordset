@@ -23,8 +23,7 @@ import scala.{specialized => sp}
  *                  lower exclusive   upper exclusive
  *                      bound              bound
  * }}}
- * 
- * 
+ *
  * @tparam E type of element
  */
 sealed trait Bound[@sp(spNum) +E] {

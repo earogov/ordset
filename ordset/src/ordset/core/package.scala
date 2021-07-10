@@ -23,6 +23,8 @@ package object core {
   
   type Segment[E, D <: Domain[E], V] = SegmentT[E, D, V, Any]
 
+  type SegmentTruncation[E, D <: Domain[E], V] = SegmentTruncationT[E, D, V, Any, SegmentLike[E, D, V]]
+
   type SegmentSeq[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
 
   
@@ -42,7 +44,7 @@ package object core {
   
   type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2] = AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 
-  type LazySegmentSeq[E, D <: Domain[E], V] = AbstractLazyTreapSegmentSeq[E, D, V]
+  // type LazySegmentSeq[E, D <: Domain[E], V] = AbstractLazyTreapSegmentSeq[E, D, V]
   
   // type MappedSegmentSeq[E, D <: Domain[E], U, V, S] = AbstractMappedSegmentSeq[E, D, U, V, S]
 }
