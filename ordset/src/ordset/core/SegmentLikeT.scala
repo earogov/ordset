@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 
@@ -59,8 +60,22 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return `true` if segment has specified upper bound. */
   def hasUpperBound(bound: Bound.Upper[E]): Boolean
 
+  /** @return `true` if segment has specified upper bound. */
+  def hasUpperExtended(bound: ExtendedBound.Upper[E]): Boolean =
+    bound match {
+      case b: Bound.Upper[E] => hasUpperBound(b)
+      case ExtendedBound.AboveAll => isLast
+    }
+
   /** @return `true` if segment has specified lower bound. */
   def hasLowerBound(bound: Bound.Lower[E]): Boolean
+
+  /** @return `true` if segment has specified lower bound. */
+  def hasLowerExtended(bound: ExtendedBound.Lower[E]): Boolean =
+    bound match {
+      case b: Bound.Lower[E] => hasLowerBound(b)
+      case ExtendedBound.BelowAll => isFirst
+    }
 
   /**
    * If `bound` is outside of segment returns closest bound of segment (either lower or upper).

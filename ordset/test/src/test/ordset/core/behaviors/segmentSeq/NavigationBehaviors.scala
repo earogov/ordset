@@ -69,25 +69,6 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   
             // `segment.contains(bound)` is valid
             assert(actualSeg.containsBound(bound), s"expected $actualSeg contains bound $bound")
-            val containsElement =
-              if (bound.isInclusive) true
-              else bound match {
-                //    )5
-                // (-----)
-                // => segment contains 5
-                case bound: Bound.Upper[E] if !actualSeg.hasUpperBound(bound) => true
-                //    5(
-                // (-----)
-                // => segment contains 5
-                case bound: Bound.Lower[E] if !actualSeg.hasLowerBound(bound) => true
-                //       )5   5(
-                // (-----)     (-----)
-                // => segment doesn't contain 5
-                case _ => false
-              }
-            if (containsElement) {
-              assert(actualSeg.containsElement(bound.element), s"expected $actualSeg contains element ${bound.element}")
-            }
   
             loop(actualSeg, tail)
           case _ => // end
