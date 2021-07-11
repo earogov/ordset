@@ -5,6 +5,7 @@ import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.core.{Bound, ExtendedBound, SegmentSeq}
 import ordset.util.label.Label
+import test.ordset.core.behaviors.TestTuple
 import test.ordset.core.behaviors.segmentSeq._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
@@ -14,6 +15,7 @@ import scala.language.postfixOps
 trait Sample1[D <: Domain[Int]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
     with SegmentContainsTest[Int, D, Boolean]
+    with SegmentRestrictBoundTest[Int, D, Boolean]
     with SegmentSeqPrependedTest[Int, D, Boolean]
     with SegmentSeqAppendedTest[Int, D, Boolean]
     with SegmentSeqSlicedTest[Int, D, Boolean]
@@ -32,7 +34,7 @@ trait Sample1[D <: Domain[Int]]
     (false forAll x >  0) ::
     Nil
 
-  override def moveToBoundSeq: Seq[(GenBound, GenIntervalRelation)] =
+  override def moveToBoundCases: Seq[(GenBound, GenIntervalRelation)] =
     ( 10`)`, false forAll x >  0) ::
     ( 15`[`, false forAll x >  0) ::
     (-10`)`, true  forAll x <= 0) ::
@@ -41,7 +43,7 @@ trait Sample1[D <: Domain[Int]]
     (  0`]`, true  forAll x <= 0) ::
     Nil
 
-  override def containsSeq: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =
+  override def containsCases: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =
     List(
       SegmentContainsTest.TestCase(
         bound = 0`]`,
@@ -54,7 +56,37 @@ trait Sample1[D <: Domain[Int]]
         excludedBounds = List(ExtendedBound.BelowAll, -10`[`, 0`]`)
       )
     )
-  
+
+  override def restrictCases: Seq[SegmentRestrictBoundTest.TestCase[Int, D, Boolean]] =
+    List(
+      SegmentRestrictBoundTest.TestCase(
+        bound = -10`]`,
+        restrictedBounds = List(
+          TestTuple(ExtendedBound.BelowAll, ExtendedBound.BelowAll),
+          TestTuple(ExtendedBound.AboveAll, 0`]`),
+          TestTuple(-10`]`, -10`]`),
+          TestTuple(0`]`, 0`]`),
+          TestTuple(0`[`, 0`[`),
+          TestTuple(0`(`, 0`]`),
+          TestTuple(0`)`, 0`)`),
+          TestTuple(10`)`, 0`]`)
+        )
+      ),
+      SegmentRestrictBoundTest.TestCase(
+        bound = 10`[`,
+        restrictedBounds = List(
+          TestTuple(ExtendedBound.BelowAll, 0`(`),
+          TestTuple(ExtendedBound.AboveAll, ExtendedBound.AboveAll),
+          TestTuple(-10`]`, 0`(`),
+          TestTuple(0`(`, 0`(`),
+          TestTuple(0`]`, 0`(`),
+          TestTuple(0`[`, 0`(`),
+          TestTuple(0`)`, 0`(`),
+          TestTuple(10`(`, 10`(`),
+        )
+      )
+    )
+
   override def prependedCases: Seq[SegmentSeqPrependedTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(

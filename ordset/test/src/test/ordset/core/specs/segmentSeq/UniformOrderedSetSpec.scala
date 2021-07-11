@@ -31,6 +31,8 @@ class UniformOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsHaveNavigationIndicators(testSuite)
 
     it should behave like segmentsSupportContains(testSuite)
+
+    it should behave like segmentsCanRestrictBound(testSuite)
   }
   
   describe("Uniform ordered set navigation operations:") {

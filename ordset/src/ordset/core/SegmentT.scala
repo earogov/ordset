@@ -158,11 +158,19 @@ object SegmentT {
 
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
 
-    override def self: SegmentT.WithNext[E, D, V, S] with S
-    
+    /**
+     * @return upper bound of segment.
+     */
     def upperBound: Bound.Upper[E]
 
+    override def upperExtended: ExtendedBound.Upper[E] = upperBound
+
+    override def self: SegmentT.WithNext[E, D, V, S] with S
+
     // Navigation --------------------------------------------------------------- //
+    /**
+     * @return next segment.
+     */
     def moveNext: SegmentT.WithPrev[E, D, V, S] with S
 
     override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, moveNext.forwardLazyList)
@@ -180,11 +188,19 @@ object SegmentT {
 
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
 
-    override def self: SegmentT.WithPrev[E, D, V, S] with S
-    
+    /**
+     * @return lower bound of segment.
+     */
     def lowerBound: Bound.Lower[E]
-    
+
+    override def lowerExtended: ExtendedBound.Lower[E] = lowerBound
+
+    override def self: SegmentT.WithPrev[E, D, V, S] with S
+
     // Navigation --------------------------------------------------------------- //
+    /**
+     * @return previous segment.
+     */
     def movePrev: SegmentT.WithNext[E, D, V, S] with S
 
     override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, movePrev.backwardLazyList)
@@ -201,6 +217,8 @@ object SegmentT {
     override def isFirst: Boolean = true
 
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+
+    override def lowerExtended: ExtendedBound.Lower[E] = ExtendedBound.BelowAll
 
     override def self: SegmentT.First[E, D, V, S] with S
 
@@ -224,6 +242,8 @@ object SegmentT {
     override def isLast: Boolean = true
 
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
+
+    override def upperExtended: ExtendedBound.Upper[E] = ExtendedBound.AboveAll
 
     override def self: SegmentT.Last[E, D, V, S] with S
 

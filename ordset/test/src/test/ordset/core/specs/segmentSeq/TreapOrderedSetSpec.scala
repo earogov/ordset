@@ -37,6 +37,8 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsHaveNavigationIndicators(testSuite)
 
     it should behave like segmentsSupportContains(testSuite)
+
+    it should behave like segmentsCanRestrictBound(testSuite)
   }
   
   describe("Treap based ordered set navigation operations:") {

@@ -73,7 +73,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
             loop(actualSeg, tail)
           case _ => // end
         }
-        loop(sample.sequence.firstSegment, sample.moveToBoundSeq)
+        loop(sample.sequence.firstSegment, sample.moveToBoundCases)
       }
     }
 

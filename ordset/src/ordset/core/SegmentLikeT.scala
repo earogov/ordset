@@ -57,6 +57,20 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return `true` if `element` is between segment bounds. */
   def containsElement(element: E): Boolean = containsBound(Bound.Upper.inclusive(element))
 
+  /**
+   * Get extended lower bound of segment:
+   * <tr>- if segment is first returns [[ExtendedBound.BelowAll]];</tr>
+   * <tr>- if segment has next segment returns its standard (limited) upper bound.</tr>
+   */
+  def lowerExtended: ExtendedBound.Lower[E]
+
+  /**
+   * Get extended upper bound of segment:
+   * <tr>- if segment is last returns [[ExtendedBound.AboveAll]];</tr>
+   * <tr>- if segment has previous segment returns its standard (limited) lower bound.</tr>
+   */
+  def upperExtended: ExtendedBound.Upper[E]
+
   /** @return `true` if segment has specified upper bound. */
   def hasUpperBound(bound: Bound.Upper[E]): Boolean
 
@@ -102,6 +116,19 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * But implementation based on formula (1) can return either 5`]` or 5`[`.
    */
   def restrictBound(bound: Bound[E]): Bound[E]
+
+  /**
+   * If `bound` is outside of segment returns closest bound of segment (either lower or upper).
+   * Otherwise returns `bound`.
+   *
+   * @see [[restrictBound]]
+   */
+  def restrictExtended(bound: ExtendedBound[E]): ExtendedBound[E] =
+    bound match {
+      case b: Bound[E] => restrictBound(b)
+      case ExtendedBound.BelowAll => lowerExtended
+      case ExtendedBound.AboveAll => upperExtended
+    }
 
   /** @return `true` if segment has specified value. */
   def hasValue(v: V): Boolean = valueOps.eqv(value, v)

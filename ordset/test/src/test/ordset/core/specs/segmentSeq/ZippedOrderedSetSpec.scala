@@ -51,6 +51,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsHaveNavigationIndicators(testSuite)
 
     it should behave like segmentsSupportContains(testSuite)
+
+    it should behave like segmentsCanRestrictBound(testSuite)
   }
 
   describe("Zipped ordered set navigation operations:") {
