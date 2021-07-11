@@ -67,7 +67,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     searchFrontZipper(generalFrontZipper, firstSeq.getSegment(bound), secondSeq.getSegment(bound))
 
   final override def getSegmentForElement(element: E): ZippedSegment[E, D, U1, U2, V, S1, S2] =
-    getSegment(Bound.Upper.inclusive(element))
+    super.getSegmentForElement(element)
 
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, V] =
@@ -587,7 +587,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     // we can immediately define operator value up to upper bound of forward segment skipping segments of
     // backward sequence below it.
     if (isInvariantSegment(forward))
-      zipper(backward.moveTo(forward.upperBound), forward)
+      zipper(backward.moveToBound(forward.upperBound), forward)
     else
       zipper(backward.moveNext, forward)
 
@@ -608,7 +608,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     // Input forward segment has previous segment => all previous segments of corresponding sequence has next segment
     // => cast is safe.
     if (isInvariantSegment(backward))
-      zipper(forward.moveTo(backward.lowerBound).asInstanceOf[SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]], backward)
+      zipper(forward.moveToBound(backward.lowerBound).asInstanceOf[SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]], backward)
     else
       zipper(forward.movePrev, backward)
 
@@ -899,8 +899,8 @@ object AbstractZippedSegmentSeq {
 
     override def moveToLast: ZippedLastSegment[E, D, U1, U2, V, S1, S2] = sequence.lastSegment
 
-    override def moveTo(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
-      sequence.searchFrontZipper(sequence.generalFrontZipper, left.moveTo(bound), right.moveTo(bound))
+    override def moveToBound(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
+      sequence.searchFrontZipper(sequence.generalFrontZipper, left.moveToBound(bound), right.moveToBound(bound))
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: SegmentSeq[E, D, V] = ???
@@ -1196,7 +1196,7 @@ object AbstractZippedSegmentSeq {
 
     override def moveToLast: ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
-    override def moveTo(bound: Bound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
+    override def moveToBound(bound: Bound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
     override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] = other

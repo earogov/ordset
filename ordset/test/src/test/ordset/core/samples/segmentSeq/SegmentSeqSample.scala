@@ -14,9 +14,6 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   val domainOps: DomainOps[E, D],
   val rngManager: RngManager
 ) {
-  final type GenBound = Bound[E]
-
-  final type GenUpperBound = Bound.Upper[E]
 
   final type GenIntervalRelation = IntervalRelation[E, D, V]
 

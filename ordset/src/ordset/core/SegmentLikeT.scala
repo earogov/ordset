@@ -163,7 +163,8 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return tuple of segment value and interval that corresponds to the segment in given domain. */
   def intervalRelation: IntervalRelation[E, D, V] = IntervalRelation(interval, value)
 
-  override def toString: String = SetBuilderFormat.segment(self, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
+  override def toString: String =
+    SetBuilderFormat.segment(self, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
 
   /**
    * Returns current instance with a more precise type.
@@ -180,8 +181,19 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return last segment of sequence. */
   def moveToLast: SegmentT.Last[E, D, V, S] with S = sequence.lastSegment
 
-  /** @return segment which contains specified bound. */
-  def moveTo(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegment(bound)
+  /** @return segment that contains specified bound. */
+  def moveToBound(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegment(bound)
+
+  /** @return segment that contains specified bound. */
+  def moveToExtended(bound: ExtendedBound[E]): SegmentT[E, D, V, S] with S =
+    bound match {
+      case b: Bound[E] => moveToBound(b)
+      case ExtendedBound.BelowAll => moveToFirst
+      case ExtendedBound.AboveAll => moveToLast
+    }
+
+  /** @return segment that contains specified element. */
+  def moveToElement(element: E): SegmentT[E, D, V, S] with S = moveToBound(Bound.Upper.inclusive(element))
 
   /** @return [[Iterable]] of all next segments of sequence starting from current. */
   def forwardIterable: Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {

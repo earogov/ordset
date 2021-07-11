@@ -60,19 +60,42 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   
       it(s"should move to the specified bound for $sample") {
         @tailrec
-        def loop(seg: Segment[E, D, V], moveSeq: Seq[(Bound[E], IntervalRelation[E, D, V])]): Unit = moveSeq match {
-          case (bound, expectedRel) :: tail =>
-            // `segment.moveTo(bound)` is valid
-            val actualSeg = seg.moveTo(bound)
-            val actualRel = actualSeg.intervalRelation
-            assert(intervalRelHash.eqv(actualRel, expectedRel), s"expected: $expectedRel, actual: $actualRel")
-  
-            // `segment.contains(bound)` is valid
-            assert(actualSeg.containsBound(bound), s"expected $actualSeg contains bound $bound")
-  
-            loop(actualSeg, tail)
-          case _ => // end
-        }
+        def loop(seg: Segment[E, D, V], moveSeq: Seq[(ExtendedBound[E], IntervalRelation[E, D, V])]): Unit =
+          moveSeq match {
+            case (bound, expectedRel) :: tail =>
+
+              val actualSeg = seg.moveToExtended(bound)
+              val actualRel = actualSeg.intervalRelation
+              assert(
+                intervalRelHash.eqv(actualRel, expectedRel),
+                s"expected: $expectedRel, actual: $actualRel, extended bound: $bound"
+              )
+
+              bound match {
+                case bound: Bound[E] =>
+                  val actualSeg = seg.moveToBound(bound)
+                  val actualRel = actualSeg.intervalRelation
+                  assert(
+                    intervalRelHash.eqv(actualRel, expectedRel),
+                    s"expected: $expectedRel, actual: $actualRel, bound: $bound"
+                  )
+
+                  if (bound.isInclusive) {
+                    val actualSeg = seg.moveToElement(bound.element)
+                    val actualRel = actualSeg.intervalRelation
+                    assert(
+                      intervalRelHash.eqv(actualRel, expectedRel),
+                      s"expected: $expectedRel, actual: $actualRel, element: ${bound.element}"
+                    )
+                  }
+
+                case _ => // no additional checks
+              }
+
+              loop(actualSeg, tail)
+            case _ => // end
+          }
+
         loop(sample.sequence.firstSegment, sample.moveToBoundCases)
       }
     }

@@ -498,7 +498,7 @@ object AbstractTreapSegmentSeq {
 
     override def moveToLast: TreapTerminalSegment[E, D, V] = sequence.lastSegment
 
-    override def moveTo(bound: Bound[E]): TreapSegment[E, D, V] = sequence.getSegment(bound)
+    override def moveToBound(bound: Bound[E]): TreapSegment[E, D, V] = sequence.getSegment(bound)
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: TreapSegmentSeq[E, D, V]

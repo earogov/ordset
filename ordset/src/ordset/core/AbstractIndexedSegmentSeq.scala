@@ -78,7 +78,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     makeSegment(searchSegmentFromBegin(bound))
 
   final override def getSegmentForElement(element: E): IndexedSegment[E, D, V] =
-    getSegment(Bound.Upper.inclusive(element))
+    super.getSegmentForElement(element)
 
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): IndexedSegmentSeq[E, D, V] = {
@@ -316,7 +316,7 @@ object AbstractIndexedSegmentSeq {
 
     override def moveToLast: IndexedTerminalSegment[E, D, V] = IndexedTerminalSegment(sequence)
 
-    override def moveTo(bound: Bound[E]): IndexedSegment[E, D, V] =
+    override def moveToBound(bound: Bound[E]): IndexedSegment[E, D, V] =
       sequence.makeSegment(sequence.searchSegmentFromIndex(index, bound))
 
     // Transformation ----------------------------------------------------------- //

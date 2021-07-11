@@ -51,7 +51,7 @@
 //    searchFrontMapper(generalFrontMapper, originalSeq.getSegment(bound))
 //
 //  final override def getSegmentForElement(element: E): MappedSegment[E, D, U, V, S] =
-//    getSegment(Bound.Upper.inclusive(element))
+//    super.getSegmentForElement(element)
 //
 //  // Protected section -------------------------------------------------------- //
 //  /**

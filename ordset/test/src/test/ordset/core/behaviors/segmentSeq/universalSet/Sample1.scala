@@ -24,7 +24,7 @@ trait Sample1[D <: Domain[Int]]
 
   override def sample: String = "1"
 
-  override def bounds: IterableOnce[GenUpperBound] =
+  override def bounds: IterableOnce[Bound.Upper[Int]] =
     ArraySeq.empty
 
   override def complementary: Boolean = true
@@ -33,7 +33,9 @@ trait Sample1[D <: Domain[Int]]
     (true forAll x) ::
     Nil
 
-  override def moveToBoundCases: Seq[(GenBound, GenIntervalRelation)] =
+  override def moveToBoundCases: Seq[(ExtendedBound[Int], GenIntervalRelation)] =
+    (ExtendedBound.BelowAll, true forAll x) ::
+    (ExtendedBound.AboveAll, true forAll x) ::
     ( 10`)`, true forAll x) ::
     ( 15`[`, true forAll x) ::
     (-10`)`, true forAll x) ::

@@ -66,9 +66,15 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg doesn't have upper extended bound ${ExtendedBound.AboveAll}"
             )
             sample.moveToBoundCases.foreach { s =>
-              val bound = s._1
-              if (boundOrd.lt(bound.provideLower, seg.lowerBound) || boundOrd.gt(bound.provideUpper, seg.upperBound)) {
-                assertSegmentDoesNotHaveBounds(seg, bound)
+              s._1 match {
+                case bound: Bound[E] =>
+                  if (
+                    boundOrd.lt(bound.provideLower, seg.lowerBound) ||
+                    boundOrd.gt(bound.provideUpper, seg.upperBound)
+                  ) {
+                    assertSegmentDoesNotHaveBounds(seg, bound)
+                  }
+                case _ => // skip extended bounds
               }
             }
   
@@ -102,8 +108,12 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             )
             sample.moveToBoundCases.foreach { s =>
               val bound = s._1
-              if (boundOrd.gt(bound.provideUpper, seg.upperBound)) {
-                assertSegmentDoesNotHaveBounds(seg, bound)
+              s._1 match {
+                case bound: Bound[E] =>
+                  if (boundOrd.gt(bound.provideUpper, seg.upperBound)) {
+                    assertSegmentDoesNotHaveBounds(seg, bound)
+                  }
+                case _ => // skip extended bounds
               }
             }
   
@@ -136,9 +146,12 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg doesn't have lower extended bound ${ExtendedBound.BelowAll}"
             )
             sample.moveToBoundCases.foreach { s =>
-              val bound = s._1
-              if (boundOrd.lt(bound.provideLower, seg.lowerBound)) {
-                assertSegmentDoesNotHaveBounds(seg, bound)
+              s._1 match {
+                case bound: Bound[E] =>
+                  if (boundOrd.lt(bound.provideLower, seg.lowerBound)) {
+                    assertSegmentDoesNotHaveBounds(seg, bound)
+                  }
+                case _ => // skip extended bounds
               }
             }
   
@@ -162,8 +175,10 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             )
 
             sample.moveToBoundCases.foreach { s =>
-              val bound = s._1
-              assertSegmentDoesNotHaveBounds(seg, bound)
+              s._1 match {
+                case bound: Bound[E] => assertSegmentDoesNotHaveBounds(seg, bound)
+                case _ => // skip extended bounds
+              }
             }
   
           case _ => sys.error("Unexpected case")
@@ -296,14 +311,14 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
 
       it(s"should restrict bounds for $sample") {
         sample.restrictCases.foreach { testCase =>
-          
+
           val seg = sample.sequence.getSegment(testCase.bound)
           testCase.restrictedBounds.foreach { boundTuple =>
-            
+
             val input = boundTuple.input
             val actual = seg.restrictExtended(input)
             assert(
-              boundTuple.expected == actual, 
+              boundTuple.expected == actual,
               s"expected segment $seg restricts extended bound $input to ${boundTuple.expected} but got $actual"
             )
             boundTuple.input match {

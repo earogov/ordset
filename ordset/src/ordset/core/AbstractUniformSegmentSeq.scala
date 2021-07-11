@@ -145,7 +145,7 @@ object AbstractUniformSegmentSeq {
 
     override def moveToLast: UniformSingleSegment[E, D, V] = this
 
-    override def moveTo(bound: Bound[E]): UniformSingleSegment[E, D, V] = this
+    override def moveToBound(bound: Bound[E]): UniformSingleSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: UniformSegmentSeq[E, D, V] = sequence

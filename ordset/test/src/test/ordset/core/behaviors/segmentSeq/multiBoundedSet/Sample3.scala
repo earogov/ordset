@@ -26,7 +26,7 @@ trait Sample3[D <: Domain[Int]]
 
   override def sample: String = "3"
 
-  override def bounds: IterableOnce[GenUpperBound] =
+  override def bounds: IterableOnce[Bound.Upper[Int]] =
     ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`, 50 `](`, 60 `](`, 70 `)[`, 80 `)[`)
 
   override def complementary: Boolean = false
@@ -44,7 +44,7 @@ trait Sample3[D <: Domain[Int]]
     (true  forAll x >= 80) ::
     Nil
 
-  override def moveToBoundCases: Seq[(GenBound, GenIntervalRelation)] =
+  override def moveToBoundCases: Seq[(ExtendedBound[Int], GenIntervalRelation)] =
     (10`)`, true  forAll x >= 0  & x <  10) ::
     (10`)`, true  forAll x >= 0  & x <  10) ::
     (30`[`, false forAll x >= 30 & x <  40) ::
@@ -52,12 +52,14 @@ trait Sample3[D <: Domain[Int]]
     (40`[`, true  forAll x >= 40 & x <= 50) ::
     (45`[`, true  forAll x >= 40 & x <= 50) ::
     (25`[`, true  forAll x >= 20 & x <  30) ::
+    (ExtendedBound.AboveAll, true  forAll x >= 80) ::
     (-5`[`, false forAll x <  0) ::
     (80`[`, true  forAll x >= 80) ::
     (70`)`, true  forAll x >  60 & x <  70) ::
     (75`[`, false forAll x >= 70 & x <  80) ::
     (70`]`, false forAll x >= 70 & x <  80) ::
     (70`[`, false forAll x >= 70 & x <  80) ::
+    (ExtendedBound.BelowAll, false forAll x <  0) ::
     Nil
 
   override def containsCases: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =

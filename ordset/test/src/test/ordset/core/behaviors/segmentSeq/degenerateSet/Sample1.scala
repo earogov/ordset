@@ -24,7 +24,7 @@ trait Sample1[D <: Domain[Int]]
 
   override def sample: String = "1"
 
-  override def bounds: IterableOnce[GenUpperBound] =
+  override def bounds: IterableOnce[Bound.Upper[Int]] =
     ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`, 30 `](`)
 
   override def complementary: Boolean = false
@@ -40,15 +40,18 @@ trait Sample1[D <: Domain[Int]]
     (true  forAll x >  30) ::
     Nil
 
-  override def moveToBoundCases: Seq[(GenBound, GenIntervalRelation)] =
+  override def moveToBoundCases: Seq[(ExtendedBound[Int], GenIntervalRelation)] = {
     (20`[`, false forAll x >= 20 & x <= 20) ::
     (20`]`, false forAll x >= 20 & x <= 20) ::
     (20`)`, true  forAll x >= 10 & x <  20) ::
+    (ExtendedBound.BelowAll, false forAll x <  0) ::
+    (ExtendedBound.AboveAll, true  forAll x >  30) ::
     (30`(`, true  forAll x >  30) ::
     (40`)`, true  forAll x >  30) ::
     (-1`[`, false forAll x <  0 ) ::
     ( 0`]`, true  forAll x >= 0  & x <= 0 ) ::
     Nil
+  }
 
   override def containsCases: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =
     List(
