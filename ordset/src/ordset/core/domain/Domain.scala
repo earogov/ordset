@@ -1,6 +1,6 @@
 package ordset.core.domain
 
-import ordset.core.Bound
+import ordset.core.{Bound, ExtendedBound}
 import ordset.util.label.Label
 import ordset.{Hash, Show}
 
@@ -29,6 +29,8 @@ object Domain {
     override implicit val longOrd: AscOrder[Long] = ordset.core.instances.long.longAscOrder
 
     override implicit val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd, intOrd)
+
+    override implicit val extendedOrd: AscOrder[ExtendedBound[E]] = ExtendedBound.defaultAscOrder(boundOrd, intOrd)
   }
 
   final class DefaultHash[E, D <: Domain[E]](
@@ -39,15 +41,19 @@ object Domain {
 
     override def eqv(x: D, y: D): Boolean =
       orderHash.eqv(x.elementOrd, y.elementOrd) &&
-        orderHash.eqv(x.intOrd, y.intOrd) &&
-        orderHash.eqv(x.longOrd, y.longOrd) &&
-        Label.defaultSetHash.eqv(x.labels, y.labels)
+      orderHash.eqv(x.intOrd, y.intOrd) &&
+      orderHash.eqv(x.longOrd, y.longOrd) &&
+      orderHash.eqv(x.boundOrd, y.boundOrd) &&
+      orderHash.eqv(x.extendedOrd, y.extendedOrd) &&
+      Label.defaultSetHash.eqv(x.labels, y.labels)
 
     override def hash(x: D): Int =
-      product4Hash(
+      product6Hash(
         orderHash.hash(x.elementOrd),
         orderHash.hash(x.intOrd),
         orderHash.hash(x.longOrd),
+        orderHash.hash(x.boundOrd),
+        orderHash.hash(x.extendedOrd),
         Label.defaultSetHash.hash(x.labels)
       )
   }
@@ -64,6 +70,7 @@ object Domain {
         s"intOrd: ${orderShow.show(t.intOrd)}, " +
         s"longOrd: ${orderShow.show(t.longOrd)}, " +
         s"boundOrd: ${orderShow.show(t.boundOrd)}" +
+        s"extendedOrd: ${orderShow.show(t.extendedOrd)}" +
         s")"
   }
 

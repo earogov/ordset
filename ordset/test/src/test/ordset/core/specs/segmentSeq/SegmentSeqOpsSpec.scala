@@ -53,56 +53,56 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq1.getSegment(20 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq1.getSegmentForBound(20 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq1.getSegment(20 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq1.getSegmentForBound(20 `)`), inclusive = true)
       )
     ))
 
     assert(listOrd.eqv(
       List(30 `)[`, 40 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegment(20 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegmentForBound(20 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       List(20 `)[`, 30 `)[`, 40 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegment(20 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegmentForBound(20 `)`), inclusive = true)
       )
     ))
 
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegment(40 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegmentForBound(40 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       List(40 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegment(40 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegmentForBound(40 `)`), inclusive = true)
       )
     ))
 
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegment(50 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegmentForBound(50 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegment(50 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableFromSegment(seq2.getSegmentForBound(50 `)`), inclusive = true)
       )
     ))
   }
@@ -112,56 +112,56 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq1.getSegment(20 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq1.getSegmentForBound(20 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq1.getSegment(20 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq1.getSegmentForBound(20 `)`), inclusive = true)
       )
     ))
 
     assert(listOrd.eqv(
       Nil,
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegment(-20 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegmentForBound(-20 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       List(0 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegment(-20 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegmentForBound(-20 `)`), inclusive = true)
       )
     ))
 
     assert(listOrd.eqv(
       List(0 `)[`, 10 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegment(20 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegmentForBound(20 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       List(0 `)[`, 10 `)[`, 20 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegment(20 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegmentForBound(20 `)`), inclusive = true)
       )
     ))
 
     assert(listOrd.eqv(
       List(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegment(50 `)`), inclusive = false)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegmentForBound(50 `)`), inclusive = false)
       )
     ))
 
     assert(listOrd.eqv(
       List(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`),
       List.from(
-        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegment(50 `)`), inclusive = true)
+        SegmentSeqOps.getUpperBoundsIterableToSegment(seq2.getSegmentForBound(50 `)`), inclusive = true)
       )
     ))
   }
@@ -170,42 +170,42 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq1.getSegment(20 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq1.getSegmentForBound(20 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq1.getSegment(20 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq1.getSegmentForBound(20 `)`), inclusive = true)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(30 `)[`, 40 `)[`), 2),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegment(20 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegmentForBound(20 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(20 `)[`, 30 `)[`, 40 `)[`), 3),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegment(20 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegmentForBound(20 `)`), inclusive = true)
     ))
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegment(40 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegmentForBound(40 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(40 `)[`), 1),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegment(40 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegmentForBound(40 `)`), inclusive = true)
     ))
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegment(50 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegmentForBound(50 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegment(50 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListFromSegment(seq2.getSegmentForBound(50 `)`), inclusive = true)
     ))
   }
 
@@ -213,42 +213,42 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq1.getSegment(20 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq1.getSegmentForBound(20 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq1.getSegment(20 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq1.getSegmentForBound(20 `)`), inclusive = true)
     ))
 
     assert(listWithSizeOrd.eqv(
       (Nil, 0),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(-20 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegmentForBound(-20 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(0 `)[`), 1),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(-20 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegmentForBound(-20 `)`), inclusive = true)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(0 `)[`, 10 `)[`), 2),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(20 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegmentForBound(20 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(0 `)[`, 10 `)[`, 20 `)[`), 3),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(20 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegmentForBound(20 `)`), inclusive = true)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`), 5),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(50 `)`), inclusive = false)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegmentForBound(50 `)`), inclusive = false)
     ))
 
     assert(listWithSizeOrd.eqv(
       (List(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`), 5),
-      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegment(50 `)`), inclusive = true)
+      SegmentSeqOps.getUpperBoundsListToSegment(seq2.getSegmentForBound(50 `)`), inclusive = true)
     ))
   }
 
@@ -277,22 +277,22 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
 
     assertSameRelationSeq(
       (false forAll x >= 0 & x < 10) :: (false forAll x >= 20 & x < 30) :: Nil,
-      toList(SegmentSeqOps.getBoundSegments(seq3.getSegment(10 `]`), seq2)).map(_.intervalRelation)
+      toList(SegmentSeqOps.getBoundSegments(seq3.getSegmentForBound(10 `]`), seq2)).map(_.intervalRelation)
     )
 
     assertSameRelationSeq(
       (false forAll x >= 0 & x < 10) :: (false forAll x >= 0 & x < 10) :: Nil,
-      toList(SegmentSeqOps.getBoundSegments(seq3.getSegment(3 `]`), seq2)).map(_.intervalRelation)
+      toList(SegmentSeqOps.getBoundSegments(seq3.getSegmentForBound(3 `]`), seq2)).map(_.intervalRelation)
     )
 
     assertSameRelationSeq(
       (false forAll x) :: (false forAll x) :: Nil,
-      toList(SegmentSeqOps.getBoundSegments(seq2.getSegment(15 `[`), seq1)).map(_.intervalRelation)
+      toList(SegmentSeqOps.getBoundSegments(seq2.getSegmentForBound(15 `[`), seq1)).map(_.intervalRelation)
     )
 
     assertSameRelationSeq(
       (false forAll x) :: (false forAll x) :: Nil,
-      toList(SegmentSeqOps.getBoundSegments(seq2.getSegment(50 `[`), seq1)).map(_.intervalRelation)
+      toList(SegmentSeqOps.getBoundSegments(seq2.getSegmentForBound(50 `[`), seq1)).map(_.intervalRelation)
     )
   }
   
@@ -305,22 +305,22 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
 
     assertSameRelationAndSegment(
       false forAll x >= 0 & x < 10,
-      SegmentSeqOps.getLowerBoundSegment(seq3.getSegment(10 `]`), seq2)
+      SegmentSeqOps.getLowerBoundSegment(seq3.getSegmentForBound(10 `]`), seq2)
     )
 
     assertSameRelationAndSegment(
       false forAll x >= 0 & x < 10,
-      SegmentSeqOps.getLowerBoundSegment(seq3.getSegment(3 `]`), seq2)
+      SegmentSeqOps.getLowerBoundSegment(seq3.getSegmentForBound(3 `]`), seq2)
     )
 
     assertSameRelationAndSegment(
       false forAll x,
-      SegmentSeqOps.getLowerBoundSegment(seq2.getSegment(15 `[`), seq1)
+      SegmentSeqOps.getLowerBoundSegment(seq2.getSegmentForBound(15 `[`), seq1)
     )
 
     assertSameRelationAndSegment(
       false forAll x,
-      SegmentSeqOps.getLowerBoundSegment(seq2.getSegment(50 `[`), seq1)
+      SegmentSeqOps.getLowerBoundSegment(seq2.getSegmentForBound(50 `[`), seq1)
     )
   }
 
@@ -333,22 +333,22 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
 
     assertSameRelationAndSegment(
       false forAll x >= 20 & x < 30,
-      SegmentSeqOps.getUpperBoundSegment(seq3.getSegment(10 `]`), seq2)
+      SegmentSeqOps.getUpperBoundSegment(seq3.getSegmentForBound(10 `]`), seq2)
     )
 
     assertSameRelationAndSegment(
       false forAll x >= 0 & x < 10,
-      SegmentSeqOps.getUpperBoundSegment(seq3.getSegment(3 `]`), seq2)
+      SegmentSeqOps.getUpperBoundSegment(seq3.getSegmentForBound(3 `]`), seq2)
     )
 
     assertSameRelationAndSegment(
       false forAll x,
-      SegmentSeqOps.getUpperBoundSegment(seq2.getSegment(15 `[`), seq1)
+      SegmentSeqOps.getUpperBoundSegment(seq2.getSegmentForBound(15 `[`), seq1)
     )
 
     assertSameRelationAndSegment(
       false forAll x,
-      SegmentSeqOps.getUpperBoundSegment(seq2.getSegment(50 `[`), seq1)
+      SegmentSeqOps.getUpperBoundSegment(seq2.getSegmentForBound(50 `[`), seq1)
     )
   }
 }

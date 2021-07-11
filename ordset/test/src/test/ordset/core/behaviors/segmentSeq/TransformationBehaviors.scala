@@ -52,7 +52,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           // `segment.prepended(otherSeq)` should equals to `sequence.prepended(segment.lowerBound, otherSeq)`
           // 2. If `segment` is first:
           // `segment.prepended(otherSeq)` should equals to `sequence`.
-          val boundSegment = sample.sequence.getSegment(testCase.bound)
+          val boundSegment = sample.sequence.getSegmentForBound(testCase.bound)
           val actual4 = boundSegment.prepended(testCase.prepended)
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
@@ -145,7 +145,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           // `segment.appended(otherSeq)` should equals to `sequence.appended(segment.upperBound, otherSeq)`
           // 2. If `segment` is last:
           // `segment.appended(otherSeq)` should equals to `sequence`.
-          val boundSegment = sample.sequence.getSegment(testCase.bound)
+          val boundSegment = sample.sequence.getSegmentForBound(testCase.bound)
           val actual4 = boundSegment.appended(testCase.appended)
           boundSegment match {
             case s: Segment.WithNext[E, D, V] =>
@@ -224,15 +224,15 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualSliced1._2)
 
           // `segment.takenBelow` should be correct
-          val actualBelow2 = sample.sequence.getSegment(testCase.bound).takenBelow
+          val actualBelow2 = sample.sequence.getSegmentForBound(testCase.bound).takenBelow
           assertSameRelationAndSegmentSeq(testCase.expectedBelow, actualBelow2)
 
           // `segment.takenAbove` should be correct
-          val actualAbove2 = sample.sequence.getSegment(testCase.bound).takenAbove
+          val actualAbove2 = sample.sequence.getSegmentForBound(testCase.bound).takenAbove
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualAbove2)
 
           // `segment.sliced` should be correct
-          val actualSliced2 = sample.sequence.getSegment(testCase.bound).sliced
+          val actualSliced2 = sample.sequence.getSegmentForBound(testCase.bound).sliced
           assertSameRelationAndSegmentSeq(testCase.expectedBelow, actualSliced2._1)
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualSliced2._2)
         }
@@ -249,7 +249,7 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
 
         it(s"should patch segment of $sample at bound ${testCase.bound} with $testCase") {
-          val actual = sample.sequence.getSegment(testCase.bound).patched(testCase.patch)
+          val actual = sample.sequence.getSegmentForBound(testCase.bound).patched(testCase.patch)
           assertSameRelationAndSegmentSeq(testCase.expected, actual)
         }
       }

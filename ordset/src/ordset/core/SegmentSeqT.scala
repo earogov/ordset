@@ -123,7 +123,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def isUniform: Boolean
   
   /** @return `true` if `bound` is included in ordered set or map. */
-  def includesBound(bound: Bound[E]): Boolean = getSegment(bound).isIncluded
+  def includesBound(bound: Bound[E]): Boolean = getSegmentForBound(bound).isIncluded
 
   /** @return `true` if `bound` is included in ordered set or map. */
   def includesExtended(bound: ExtendedBound[E]): Boolean =
@@ -152,12 +152,20 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return last segment of sequence. */
   def lastSegment: SegmentT.Last[E, D, V, S] with S
 
-  /** @return segment which contains specified `bound`. */
-  def getSegment(bound: Bound[E]): SegmentT[E, D, V, S] with S
+  /** @return segment that contains specified `bound`. */
+  def getSegmentForBound(bound: Bound[E]): SegmentT[E, D, V, S] with S
 
-  /** @return segment which contains specified `element`. */
+  /** @return segment that contains specified `bound`. */
+  def getSegmentForExtended(bound: ExtendedBound[E]): SegmentT[E, D, V, S] with S =
+    bound match {
+      case b: Bound[E] => getSegmentForBound(b)
+      case ExtendedBound.BelowAll => firstSegment
+      case ExtendedBound.AboveAll => lastSegment
+    }
+
+  /** @return segment that contains specified `element`. */
   def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = 
-    getSegment(Bound.Upper.inclusive(element))
+    getSegmentForBound(Bound.Upper.inclusive(element))
 
   // Transformation ----------------------------------------------------------- //
   /**

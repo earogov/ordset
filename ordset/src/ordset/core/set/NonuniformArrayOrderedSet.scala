@@ -247,7 +247,7 @@ object NonuniformArrayOrderedSet {
     bound: Bound[E]
   ) extends BoundsProvider[E, D] {
 
-    override val boundSegment: IndexedSegment[E, D, Boolean] = segmentSeq.getSegment(bound)
+    override val boundSegment: IndexedSegment[E, D, Boolean] = segmentSeq.getSegmentForBound(bound)
 
     override val copyLen: Int = segmentSeq.bounds.length - boundSegment.index
 
@@ -260,7 +260,7 @@ object NonuniformArrayOrderedSet {
     bound: Bound[E]
   ) extends BoundsProvider[E, D] {
 
-    override val boundSegment: IndexedSegment[E, D, Boolean] = segmentSeq.getSegment(bound)
+    override val boundSegment: IndexedSegment[E, D, Boolean] = segmentSeq.getSegmentForBound(bound)
 
     override val copyLen: Int = boundSegment.index
 
@@ -274,7 +274,7 @@ object NonuniformArrayOrderedSet {
     forward: Boolean
   ) extends BoundsProvider[E, D] {
 
-    override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegment(bound)
+    override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegmentForBound(bound)
 
     private val copyBounds: (List[Bound.Upper[E]], Int) =
       if (forward) SegmentSeqOps.getUpperBoundsListFromSegment(boundSegment, inclusive = true)

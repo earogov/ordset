@@ -1,6 +1,6 @@
 package ordset.core.domain
 
-import ordset.core.Bound
+import ordset.core.{Bound, ExtendedBound}
 import ordset.util.label.Label
 
 trait DomainLike[E] {
@@ -14,6 +14,8 @@ trait DomainLike[E] {
   implicit def longOrd: AscOrder[Long]
 
   implicit def boundOrd: AscOrder[Bound[E]]
+
+  implicit def extendedOrd: AscOrder[ExtendedBound[E]]
 }
 
 object DomainLike {
@@ -31,5 +33,7 @@ object DomainLike {
     implicit def longOrd: AscOrder[Long] = domain.longOrd
 
     override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
+
+    override implicit def extendedOrd: AscOrder[ExtendedBound[E]] = domain.extendedOrd
   }
 }

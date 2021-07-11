@@ -29,8 +29,10 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   final override def lastSegment: UniformSingleSegment[E, D, V] = segment
 
-  final override def getSegment(bound: Bound[E]): UniformSingleSegment[E, D, V] = segment
+  final override def getSegmentForBound(bound: Bound[E]): UniformSingleSegment[E, D, V] = segment
 
+  final override def getSegmentForExtended(bound: ExtendedBound[E]): UniformSingleSegment[E, D, V] = segment
+  
   final override def getSegmentForElement(element: E): UniformSingleSegment[E, D, V] = segment
 
   // Transformation ----------------------------------------------------------- //
@@ -46,7 +48,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val upperBound = bound.provideUpper
 
-    val otherBoundSegment = other.getSegment(upperBound)
+    val otherBoundSegment = other.getSegmentForBound(upperBound)
 
     val leftSequence = otherBoundSegment.takenBelow
     val rightSequence = consPrepended(bound, otherBoundSegment.value)
@@ -60,7 +62,7 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val lowerBound = bound.provideLower
     
-    val otherBoundSegment = other.getSegment(lowerBound)
+    val otherBoundSegment = other.getSegmentForBound(lowerBound)
 
     val leftSequence = consAppended(bound, otherBoundSegment.value)
     val rightSequence = otherBoundSegment.takenAbove

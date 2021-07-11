@@ -74,9 +74,12 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    */
   final def penultimateSegment: IndexedSegmentWithNext[E, D, V] = makeSegmentWithNext(lastSegmentIndex - 1)
   
-  final override def getSegment(bound: Bound[E]): IndexedSegment[E, D, V] =
+  final override def getSegmentForBound(bound: Bound[E]): IndexedSegment[E, D, V] =
     makeSegment(searchSegmentFromBegin(bound))
 
+  final override def getSegmentForExtended(bound: ExtendedBound[E]): IndexedSegment[E, D, V] = 
+    super.getSegmentForExtended(bound)
+  
   final override def getSegmentForElement(element: E): IndexedSegment[E, D, V] =
     super.getSegmentForElement(element)
 
@@ -109,7 +112,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   }
 
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-    prependedInternal(bound, getSegment(bound.provideLower), other)
+    prependedInternal(bound, getSegmentForBound(bound.provideLower), other)
 
   final override def appended(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
@@ -117,7 +120,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   }
   
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-    appendedInternal(bound, getSegment(bound.provideUpper), other)
+    appendedInternal(bound, getSegmentForBound(bound.provideUpper), other)
 
   // Protected section -------------------------------------------------------- //
   /**

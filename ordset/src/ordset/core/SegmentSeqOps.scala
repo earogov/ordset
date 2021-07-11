@@ -180,9 +180,9 @@ object SegmentSeqOps {
     seq: SegmentSeqT[E, D, V, S]
   ): (SegmentT[E, D, V, S], SegmentT[E, D, V, S]) =
     segment match {
-      case s: Segment.Inner[E, D, ?]    => (seq.getSegment(s.lowerBound), seq.getSegment(s.upperBound))
-      case s: Segment.WithNext[E, D, ?] => (seq.firstSegment, seq.getSegment(s.upperBound))
-      case s: Segment.WithPrev[E, D, ?] => (seq.getSegment(s.lowerBound), seq.lastSegment)
+      case s: Segment.Inner[E, D, ?]    => (seq.getSegmentForBound(s.lowerBound), seq.getSegmentForBound(s.upperBound))
+      case s: Segment.WithNext[E, D, ?] => (seq.firstSegment, seq.getSegmentForBound(s.upperBound))
+      case s: Segment.WithPrev[E, D, ?] => (seq.getSegmentForBound(s.lowerBound), seq.lastSegment)
       case _                            => (seq.firstSegment, seq.lastSegment)
     }
 
@@ -210,7 +210,7 @@ object SegmentSeqOps {
     seq: SegmentSeqT[E, D, V, S]
   ): SegmentT[E, D, V, S] =
     segment match {
-      case s: Segment.WithPrev[E, D, ?] => seq.getSegment(s.lowerBound)
+      case s: Segment.WithPrev[E, D, ?] => seq.getSegmentForBound(s.lowerBound)
       case _ => seq.firstSegment
     }
 
@@ -238,7 +238,7 @@ object SegmentSeqOps {
     seq: SegmentSeqT[E, D, V, S]
   ): SegmentT[E, D, V, S] =
     segment match {
-      case s: Segment.WithNext[E, D, ?] => seq.getSegment(s.upperBound)
+      case s: Segment.WithNext[E, D, ?] => seq.getSegmentForBound(s.upperBound)
       case _ => seq.lastSegment
     }
 }

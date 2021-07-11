@@ -19,6 +19,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
     samples.foreach { sample =>
 
       val boundOrd = sample.domainOps.boundOrd
+      val extendedOrd = sample.domainOps.extendedOrd
   
       it(s"should have valid navigation indicators (`hasNext`, `hasPrev`, `isFirst`, ...) for $sample") {
         @tailrec
@@ -107,7 +108,6 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg doesn't have upper extended bound ${ExtendedBound.AboveAll}"
             )
             sample.moveToBoundCases.foreach { s =>
-              val bound = s._1
               s._1 match {
                 case bound: Bound[E] =>
                   if (boundOrd.gt(bound.provideUpper, seg.upperBound)) {
@@ -215,7 +215,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
       it(s"should define whether elements and bounds belong to segment for $sample") {
         sample.containsCases.foreach { testCase =>
 
-          val seg = sample.sequence.getSegment(testCase.bound)
+          val seg = sample.sequence.getSegmentForBound(testCase.bound)
           testCase.includedBounds.foreach { bound =>
 
             assert(seg.containsExtended(bound), s"expected $seg contains extended bound $bound")
@@ -312,7 +312,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
       it(s"should restrict bounds for $sample") {
         sample.restrictCases.foreach { testCase =>
 
-          val seg = sample.sequence.getSegment(testCase.bound)
+          val seg = sample.sequence.getSegmentForBound(testCase.bound)
           testCase.restrictedBounds.foreach { boundTuple =>
 
             val input = boundTuple.input

@@ -54,7 +54,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    */
   final def penultimateSegment: TreapSegmentWithNext[E, D, V] = lastSegment.movePrev
   
-  final override def getSegment(bound: Bound[E]): TreapSegment[E, D, V] = {
+  final override def getSegmentForBound(bound: Bound[E]): TreapSegment[E, D, V] = {
     // We need to find upper bound of segment which contains input `bound`.
     // But `NodeSearch.down` function can return either upper or lower bound
     // (or more precisely - upper bound of required segment or upper bound of previous segment).
@@ -114,8 +114,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  final override def getSegmentForElement(element: E): TreapSegment[E, D, V] = super.getSegmentForElement(element)
-
+  final override def getSegmentForExtended(bound: ExtendedBound[E]): TreapSegment[E, D, V] = 
+    super.getSegmentForExtended(bound)
+  
+  final override def getSegmentForElement(element: E): TreapSegment[E, D, V] = 
+    super.getSegmentForElement(element)
+  
   // Transformation ----------------------------------------------------------- //
   final override def takenAbove(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliced(bound)._2
 
@@ -151,7 +155,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   }
 
   final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-    prependedInternal(bound, getSegment(bound.provideLower), other)
+    prependedInternal(bound, getSegmentForBound(bound.provideLower), other)
 
   final override def appended(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
@@ -159,7 +163,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   }
 
   final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-    appendedInternal(bound, getSegment(bound.provideUpper), other)
+    appendedInternal(bound, getSegmentForBound(bound.provideUpper), other)
   
   // Protected section -------------------------------------------------------- //
 
@@ -239,7 +243,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
     val upperBound = bound.provideUpper
 
-    val otherBoundSegment = other.getSegment(upperBound)
+    val otherBoundSegment = other.getSegmentForBound(upperBound)
 
     val boundValuesMatch = originalBoundSegment.hasValue(otherBoundSegment.value)
 
@@ -341,7 +345,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     val upperBound = bound.provideUpper
     val lowerBound = bound.provideLower
     
-    val otherBoundSegment = other.getSegment(lowerBound)
+    val otherBoundSegment = other.getSegmentForBound(lowerBound)
 
     val originalBoundMatch = originalBoundSegment.hasUpperBound(upperBound)
     val boundValuesMatch = originalBoundSegment.hasValue(otherBoundSegment.value)
@@ -498,7 +502,7 @@ object AbstractTreapSegmentSeq {
 
     override def moveToLast: TreapTerminalSegment[E, D, V] = sequence.lastSegment
 
-    override def moveToBound(bound: Bound[E]): TreapSegment[E, D, V] = sequence.getSegment(bound)
+    override def moveToBound(bound: Bound[E]): TreapSegment[E, D, V] = sequence.getSegmentForBound(bound)
 
     // Transformation ----------------------------------------------------------- //
     override def takenAbove: TreapSegmentSeq[E, D, V]

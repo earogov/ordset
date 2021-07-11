@@ -21,7 +21,7 @@ trait ZippedSeqBehaviours[E, D <: Domain[E], U1, U2, V] {
 
       sample.firstSeqPatchedCases.foreach { testCase =>
 
-        val segment = sample.sequence.getSegment(testCase.bound)
+        val segment = sample.sequence.getSegmentForBound(testCase.bound)
 
         it(s"should patch first original sequence of $sample within a segment $segment with $testCase") {
           val actual = segment.patchedFirstSeq(testCase.patch)
@@ -31,7 +31,7 @@ trait ZippedSeqBehaviours[E, D <: Domain[E], U1, U2, V] {
 
       sample.secondSeqPatchedCases.foreach { testCase =>
 
-        val segment = sample.sequence.getSegment(testCase.bound)
+        val segment = sample.sequence.getSegmentForBound(testCase.bound)
 
         it(s"should patch second original sequence of $sample within a segment $segment with $testCase") {
           val actual = segment.patchedSecondSeq(testCase.patch)

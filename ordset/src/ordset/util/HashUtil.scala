@@ -24,4 +24,27 @@ object HashUtil {
     h = mix(h, h4)
     finalizeHash(h, 4)
   }
+
+  val product5Hash: (Int, Int, Int, Int, Int) => Int = (h1, h2, h3, h4, h5) => {
+    import scala.util.hashing.MurmurHash3._
+    var h = productSeed
+    h = mix(h, h1)
+    h = mix(h, h2)
+    h = mix(h, h3)
+    h = mix(h, h4)
+    h = mix(h, h5)
+    finalizeHash(h, 5)
+  }
+
+  val product6Hash: (Int, Int, Int, Int, Int, Int) => Int = (h1, h2, h3, h4, h5, h6) => {
+    import scala.util.hashing.MurmurHash3._
+    var h = productSeed
+    h = mix(h, h1)
+    h = mix(h, h2)
+    h = mix(h, h3)
+    h = mix(h, h4)
+    h = mix(h, h5)
+    h = mix(h, h6)
+    finalizeHash(h, 6)
+  }
 }

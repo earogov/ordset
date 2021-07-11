@@ -1,7 +1,8 @@
 package test.ordset.core.behaviors.segmentSeq
 
-import ordset.core.domain.Domain
+import ordset.core.domain.{Domain, DomainOps}
 import org.scalatest.funspec.AnyFunSpec
+import test.ordset.core.SegmentSeqAssertions
 import test.ordset.core.SegmentSeqAssertions._
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
@@ -18,14 +19,14 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   ): Unit = 
     samples.foreach { sample =>
 
-      val intervalRelHash = sample.intervalRelationHash
+      implicit val domainOps: DomainOps[E, D] = sample.domainOps
+      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
   
       it(s"should move to the next segment if there is one for $sample") {
         @tailrec
         def loop(seg: Segment[E, D, V], expected: Seq[IntervalRelation[E, D, V]]): Unit = expected match {
           case expectedRel :: tail =>
-            val actualRel = seg.intervalRelation
-            assert(intervalRelHash.eqv(actualRel, expectedRel), s"expected: $expectedRel, actual: $actualRel")
+            assertSameRelationAndSegment(expectedRel, seg)
             seg match {
               case seg: Segment.WithNext[E, D, V] => loop(seg.moveNext, tail)
               case _ => // end
@@ -39,8 +40,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
         @tailrec
         def loop(seg: Segment[E, D, V], expected: Seq[IntervalRelation[E, D, V]]): Unit = expected match {
           case expectedRel :: tail =>
-            val actualRel = seg.intervalRelation
-            assert(intervalRelHash.eqv(actualRel, expectedRel), s"expected: $expectedRel, actual: $actualRel")
+            assertSameRelationAndSegment(expectedRel, seg)
             seg match {
               case seg: Segment.WithPrev[E, D, V] => loop(seg.movePrev, tail)
               case _ => // end
@@ -55,48 +55,53 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
     samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentMoveToBoundTest[E, D, V]]
   ): Unit = 
     samples.foreach { sample =>
-    
-      val intervalRelHash = sample.intervalRelationHash
-  
-      it(s"should move to the specified bound for $sample") {
+
+      implicit val domainOps: DomainOps[E, D] = sample.domainOps
+      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+
+      it(s"segments should move to the specified bound for $sample") {
         @tailrec
         def loop(seg: Segment[E, D, V], moveSeq: Seq[(ExtendedBound[E], IntervalRelation[E, D, V])]): Unit =
           moveSeq match {
             case (bound, expectedRel) :: tail =>
-
               val actualSeg = seg.moveToExtended(bound)
-              val actualRel = actualSeg.intervalRelation
-              assert(
-                intervalRelHash.eqv(actualRel, expectedRel),
-                s"expected: $expectedRel, actual: $actualRel, extended bound: $bound"
-              )
-
+              assertSameRelationAndSegment(expectedRel, actualSeg, s"extended bound: $bound")
               bound match {
                 case bound: Bound[E] =>
                   val actualSeg = seg.moveToBound(bound)
-                  val actualRel = actualSeg.intervalRelation
-                  assert(
-                    intervalRelHash.eqv(actualRel, expectedRel),
-                    s"expected: $expectedRel, actual: $actualRel, bound: $bound"
-                  )
-
+                  assertSameRelationAndSegment(expectedRel, actualSeg, s"bound: $bound")
                   if (bound.isInclusive) {
                     val actualSeg = seg.moveToElement(bound.element)
-                    val actualRel = actualSeg.intervalRelation
-                    assert(
-                      intervalRelHash.eqv(actualRel, expectedRel),
-                      s"expected: $expectedRel, actual: $actualRel, element: ${bound.element}"
-                    )
+                    assertSameRelationAndSegment(expectedRel, actualSeg, s"element: ${bound.element}")
                   }
-
                 case _ => // no additional checks
               }
-
               loop(actualSeg, tail)
             case _ => // end
           }
 
         loop(sample.sequence.firstSegment, sample.moveToBoundCases)
+      }
+
+      it(s"sequence should return segment for the specified bound for $sample") {
+        sample.moveToBoundCases.foreach { testCase =>
+
+          val bound = testCase._1
+          val expectedRel = testCase._2
+
+          val actualSeg = sample.sequence.getSegmentForExtended(bound)
+          assertSameRelationAndSegment(expectedRel, actualSeg, s"extended bound: $bound")
+          bound match {
+            case bound: Bound[E] =>
+              val actualSeg = sample.sequence.getSegmentForBound(bound)
+              assertSameRelationAndSegment(expectedRel, actualSeg, s"bound: $bound")
+              if (bound.isInclusive) {
+                val actualSeg = sample.sequence.getSegmentForElement(bound.element)
+                assertSameRelationAndSegment(expectedRel, actualSeg, s"element: ${bound.element}")
+              }
+            case _ => // no additional checks
+          }
+        }
       }
     }
 
@@ -105,7 +110,8 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
   ): Unit = 
     samples.foreach { sample =>
 
-      val intervalRelHash = sample.intervalRelationHash
+      implicit val domainOps: DomainOps[E, D] = sample.domainOps
+      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
   
       it(s"should move to the first and last segments for $sample") {
         if (sample.reference.isEmpty) fail("Invalid test case: expected sequence must be non-empty.")
@@ -113,16 +119,22 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
         val lastExp = sample.reference.last
         @tailrec
         def loop(seg: Segment[E, D, V]): Unit = {
-          val firstRel = seg.moveToFirst.intervalRelation
-          assert(intervalRelHash.eqv(firstRel, firstExp), s"expected: $firstExp, actual: $firstRel")
-          val lastRel = seg.moveToLast.intervalRelation
-          assert(intervalRelHash.eqv(lastRel, lastExp), s"expected: $lastExp, actual: $lastRel")
+          assertSameRelationAndSegment(firstExp, seg.moveToFirst)
+          assertSameRelationAndSegment(lastExp, seg.moveToLast)
           seg match {
             case seg: Segment.WithNext[E, D, V] => loop(seg.moveNext)
             case _ => // end
           }
         }
         loop(sample.sequence.firstSegment)
+      }
+
+      it(s"sequence should return first and last segments for $sample") {
+        if (sample.reference.isEmpty) fail("Invalid test case: expected sequence must be non-empty.")
+        val firstExp = sample.reference.head
+        val lastExp = sample.reference.last
+        assertSameRelationAndSegment(firstExp, sample.sequence.firstSegment)
+        assertSameRelationAndSegment(lastExp, sample.sequence.lastSegment)
       }
     }
 }

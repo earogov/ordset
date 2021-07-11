@@ -48,7 +48,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     firstSegmentInstance.isSingle
 
   final override def includesBound(bound: Bound[E]): Boolean =
-    isValueIncluded(getSegmentValue(firstSeq.getSegment(bound), secondSeq.getSegment(bound)))
+    isValueIncluded(getSegmentValue(firstSeq.getSegmentForBound(bound), secondSeq.getSegmentForBound(bound)))
 
   final override def includesExtended(bound: ExtendedBound[E]): Boolean = super.includesExtended(bound)
 
@@ -63,9 +63,12 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   final override def lastSegment: ZippedLastSegment[E, D, U1, U2, V, S1, S2] =
     lastFrontZipper(firstSeq.lastSegment, secondSeq.lastSegment)
 
-  final override def getSegment(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
-    searchFrontZipper(generalFrontZipper, firstSeq.getSegment(bound), secondSeq.getSegment(bound))
+  final override def getSegmentForBound(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
+    searchFrontZipper(generalFrontZipper, firstSeq.getSegmentForBound(bound), secondSeq.getSegmentForBound(bound))
 
+  final override def getSegmentForExtended(bound: ExtendedBound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] = 
+    super.getSegmentForExtended(bound)
+  
   final override def getSegmentForElement(element: E): ZippedSegment[E, D, U1, U2, V, S1, S2] =
     super.getSegmentForElement(element)
 

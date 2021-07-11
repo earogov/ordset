@@ -182,7 +182,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def moveToLast: SegmentT.Last[E, D, V, S] with S = sequence.lastSegment
 
   /** @return segment that contains specified bound. */
-  def moveToBound(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegment(bound)
+  def moveToBound(bound: Bound[E]): SegmentT[E, D, V, S] with S = sequence.getSegmentForBound(bound)
 
   /** @return segment that contains specified bound. */
   def moveToExtended(bound: ExtendedBound[E]): SegmentT[E, D, V, S] with S =
