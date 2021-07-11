@@ -1,6 +1,6 @@
 package test.ordset.core
 
-import ordset.Hash
+import ordset.{Hash, core}
 import ordset.core._
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.util.IterableUtil
@@ -108,8 +108,8 @@ object SegmentSeqAssertions {
     )
 
   def assertSameBoundValueIterable[E, D <: Domain[E], V](
-    expected: Iterable[(Bound.Upper[E], V)],
-    actual: Iterable[(Bound.Upper[E], V)],
+    expected: Iterable[(ExtendedBound.Upper[E], V)],
+    actual: Iterable[(ExtendedBound.Upper[E], V)],
     info: String = ""
   )(
     implicit
@@ -134,17 +134,10 @@ object SegmentSeqAssertions {
         valueHash.eqv(expItem._2, actItem._2),
         "different values" + debugInfo(expItem._2, actItem._2, info)
       )
-      if (expIter.hasNext) {
-        assert(
-          domainOps.boundOrd.eqv(expItem._1, actItem._1),
-          "different bounds" + debugInfo(expItem._1, actItem._1, info)
-        )
-      } else {
-        assert(
-          expItem._1 == null || actItem._1 == null,
-          "bound of last item must be null" + debugInfo(expItem._1, actItem._1, info)
-        )
-      }
+      assert(
+        domainOps.extendedOrd.eqv(expItem._1, actItem._1),
+        "different bounds" + debugInfo(expItem._1, actItem._1, info)
+      )
     }
   }
 

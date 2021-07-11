@@ -1,8 +1,9 @@
 package ordset.core.map
 
+import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core.{ExtendedBound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
 import ordset.random.RngManager
 
 import scala.util.Try
@@ -20,8 +21,8 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
    *     seq:
    *
    *         value_0       value_1       value_i        value_(n-1)
-   *      ------------) ------------] -------------] -----------
-   *               bound_0       bound_1         bound_i       null
+   *      ------------) ------------] -------------] -----------X
+   *            bound_0       bound_1         bound_i       ExtendedBound.AboveAll
    *
    *                              V V V
    *     ordered map:
@@ -34,22 +35,20 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
    *
    * Preconditions:
    *
-   * 1. `seq` must contain at least one element.
+   * 1. `seq` must contain at least one item.
    *
-   * 2. Last element must contain bound == null and some value (possibly null if it's a meaningful value for given map).
+   * 2. Last item must contain bound == [[ExtendedBound.AboveAll]] and some value.
    *
    * Preconditions 1 and 2 must be checked by factory implementation. It must throw [[SegmentSeqException]] in case of
    * failure.
    *
-   * 3. sequence of bounds must be ordered with respect to [[Domain.boundOrd]]:
+   * 3. sequence of bounds must be ordered with respect to [[Domain.extendedOrd]]:
    *
    * bound,,i-1,, `<` bound,,i,, for all i in [1, seq.size - 1]
    *
-   * Note: last bound isn't included as it equals to null.
-   *
    * 4. sequence of values must not contain identical adjacent elements:
    *
-   * value,,i-1,, != value,,i,, for all i in [1, seq.size]
+   * value,,i-1,, != value,,i,, for all i in [1, seq.size - 1]
    *
    * Preconditions 3 and 4 are controlled by `boundsValidation` and `valuesValidation` functions correspondingly
    * which throw [[SegmentSeqException]] in case of failure. Having validation functions as an additional arguments
@@ -67,11 +66,11 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
    */
   @throws[SegmentSeqException]("if unable to build valid map with specified bounds and values")
   def unsafeBuildAsc(
-    seq: IterableOnce[(Bound.Upper[E], V)],
+    seq: IterableOnce[(ExtendedBound.Upper[E], V)],
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
     valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit rngManager: RngManager
@@ -92,11 +91,11 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
    * Note [[unsafeBuildAsc]] preconditions.
    */
   def tryBuildAsc(
-    seq: IterableOnce[(Bound.Upper[E], V)],
+    seq: IterableOnce[(ExtendedBound.Upper[E], V)],
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
     valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit rngManager: RngManager
@@ -111,7 +110,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
     valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit rngManager: RngManager
@@ -125,7 +124,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
   final case class Partial(
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]],
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]],
     valuesValidation: SeqValidationPredicate[V],
     rngManager: RngManager
   ) {
@@ -134,19 +133,19 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
      * Same as [[OrderedSetFactory.unsafeBuildAsc]].
      */
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuildAsc(seq: IterableOnce[(Bound.Upper[E], V)]): SSeq =
+    def unsafeBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): SSeq =
       factory.unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidation, valuesValidation)(rngManager)
 
     /**
      * Same as [[OrderedSetFactory.tryBuildAsc]].
      */
-    final def tryBuildAsc(seq: IterableOnce[(Bound.Upper[E], V)]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
+    final def tryBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
   }
 
   // Protected section -------------------------------------------------------- //
   protected final def convertMapInternal(map: OrderedMap[E, D, V]): SSeq =
     unsafeBuildAsc(
-      SegmentSeqOps.getBoundValueIterableForSeq(map),
+      SegmentSeqOps.getExtendedBoundValueIterableForSeq(map),
       map.domainOps,
       map.valueOps
     )(

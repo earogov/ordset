@@ -135,20 +135,20 @@ object SegmentSeqOps {
    *     output:
    *
    *         value_0       value_1       value_i        value_(n-1)
-   *      ------------) ------------] -------------] -----------
-   *               bound_0       bound_1         bound_i       null
+   *      ------------) ------------] -------------] -----------X
+   *            bound_0       bound_1         bound_i       ExtendedBound.AboveAll
    *
    *     n = seq.size  - number of segments
    * }}}
    *
-   * Output iterable has at least one element. Last element has bound == null.
+   * Output iterable has at least one element. Last element has bound == [[ExtendedBound.AboveAll]].
    */
-  def getBoundValueIterableForSeq[E, D <: Domain[E], V](
+  def getExtendedBoundValueIterableForSeq[E, D <: Domain[E], V](
     seq: SegmentSeq[E, D, V]
-  ): Iterable[(Bound.Upper[E], V)] =
+  ): Iterable[(ExtendedBound.Upper[E], V)] =
     seq.firstSegment.forwardIterable.map {
       case s: Segment.WithNext[E, D, V] => (s.upperBound, s.value)
-      case _ @ s => (null, s.value)
+      case _ @ s => (ExtendedBound.AboveAll, s.value)
     }
 
   /**

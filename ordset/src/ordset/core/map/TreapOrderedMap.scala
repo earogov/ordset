@@ -1,6 +1,7 @@
 package ordset.core.map
 
-import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core
+import ordset.core.{Bound, ExtendedBound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
@@ -51,11 +52,11 @@ object TreapOrderedMap {
 
     @throws[SegmentSeqException]("if unable to build valid map with specified bounds and values")
     def unsafeBuildAsc(
-      seq: IterableOnce[(Bound.Upper[E], V)],
+      seq: IterableOnce[(ExtendedBound.Upper[E], V)],
       domainOps: DomainOps[E, D],
       valueOps: ValueOps[V]
     )(
-      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation,
+      boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
       valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
     )(
       implicit rngManager: RngManager
@@ -67,34 +68,39 @@ object TreapOrderedMap {
         val lastValue = new ValueHolder[V]()
         var buffer: List[MutableTreap.Node[Bound.Upper[E], V]] = Nil
         var root: ImmutableTreap[Bound.Upper[E], V] = null
-        var prevItem: (Bound.Upper[E], V) = null
+        var prevItem: (ExtendedBound.Upper[E], V) = null
         while (iter.hasNext) {
           if (root != null) {
-            throw new IllegalArgumentException("Item with bound == null must be last in input sequence")
+            throw new IllegalArgumentException(
+              s"Item with bound == ${ExtendedBound.AboveAll} must be last in input sequence"
+            )
           }
           val item = iter.next()
-
+          val bound = item._1
+          val value = item._2
           // Validation
           if (prevItem != null) {
-            // Exclude last item with bound == null.
-            if (item._1 != null) boundsValidation.validate(prevItem._1, item._1)
-            valuesValidation(prevItem._2, item._2)
+            boundsValidation.validate(prevItem._1, bound)
+            valuesValidation(prevItem._2, value)
           }
           // Building
-          if (item._1 != null) {
-            buffer = BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
-              buffer, item._1, rng.nextInt(), item._2
-            )(
-              boundOrd
-            )
-          } else {
-            root = BuildAsc.finalizeBuffer(buffer)
-            lastValue.set(item._2)
+          bound match {
+            case bound: Bound.Upper[E] =>
+              buffer = BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
+                buffer, bound, rng.nextInt(), value
+              )(
+                boundOrd
+              )
+            case ExtendedBound.AboveAll =>
+              root = BuildAsc.finalizeBuffer(buffer)
+              lastValue.set(value)
           }
           prevItem = item
         }
         if (root == null) {
-          throw new IllegalArgumentException("Last item in input sequence must have bound == null")
+          throw new IllegalArgumentException(
+            s"Last item in input sequence must have bound == ${ExtendedBound.AboveAll}"
+          )
         }
         root match {
           case r: ImmutableTreap.Node[Bound.Upper[E], V] =>

@@ -1,6 +1,6 @@
 package test.ordset.core.specs.segmentSeq;
 
-import ordset.core.{Bound, Segment, SegmentSeqOps}
+import ordset.core.{Bound, ExtendedBound, Segment, SegmentSeqOps}
 import ordset.core.set.ArrayOrderedSet
 import ordset.core.set.OrderedSet
 import ordset.core.domain.{Domain, DomainOps}
@@ -255,13 +255,20 @@ class SegmentSeqOpsSpec extends AnyFunSpec {
   it("should convert segment sequence to iterable of (bound, value) tuples") {
 
     assertSameBoundValueIterable(
-      List((null, false)),
-      SegmentSeqOps.getBoundValueIterableForSeq(seq1)
+      List((ExtendedBound.AboveAll, false)),
+      SegmentSeqOps.getExtendedBoundValueIterableForSeq(seq1)
     )
 
     assertSameBoundValueIterable(
-      List((0 `)[`, true), (10 `)[`, false), (20 `)[`, true), (30 `)[`, false), (40 `)[`, true), (null, false)),
-      SegmentSeqOps.getBoundValueIterableForSeq(seq2)
+      List(
+        (0 `)[`, true),
+        (10 `)[`, false),
+        (20 `)[`, true),
+        (30 `)[`, false),
+        (40 `)[`, true),
+        (ExtendedBound.AboveAll, false)
+      ),
+      SegmentSeqOps.getExtendedBoundValueIterableForSeq(seq2)
     )
   }
 
