@@ -502,6 +502,47 @@ trait Sample3[D <: Domain[Int]]
           (false forAll x >= 70 & x <  80) ::
           (true  forAll x >= 80) ::
           Nil
+        ),
+        // current:
+        //
+        // bound
+        // X
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // other:
+        // X-f-](--------------------------true---------------------------------X
+        //     -5
+        //
+        // result:
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        SegmentSeqPrependTest.TestCaseWithBound(
+          factoryTuple._1 + Label("C1"),
+          ExtendedBound.BelowAll,
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          reference
+        ),
+        // current:
+        //                                                                  bound
+        //                                                                      X
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // other:
+        // X-f-](--------------------------true---------------------------------X
+        //     -5
+        //
+        // result:
+        // X-f-](--------------------------true---------------------------------X
+        //     -5
+        SegmentSeqPrependTest.TestCaseWithBound(
+          factoryTuple._1 + Label("C2"),
+          ExtendedBound.AboveAll,
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          (false forAll x <= -5) ::
+          (true  forAll x >  -5) ::
+          Nil
         )
       )
     }
@@ -900,6 +941,47 @@ trait Sample3[D <: Domain[Int]]
           (false forAll x >  50 & x <= 60) ::
           (true  forAll x >  60) ::
           Nil
+        ),
+        // current:
+        //
+        // bound
+        // X
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // other:
+        // X-f-](----------------------------true-------------------------------X
+        //     -5
+        //
+        // result:
+        // X-f-](----------------------------true-------------------------------X
+        //     -5
+        SegmentSeqAppendTest.TestCaseWithBound(
+          factoryTuple._1 + Label("C1"),
+          ExtendedBound.BelowAll,
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          (false forAll x <= -5) ::
+          (true  forAll x >  -5) ::
+          Nil
+        ),
+        // current:
+        //                                                                  bound
+        //                                                                      X
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        //
+        // other:
+        // X-f-](----------------------------true-------------------------------X
+        //     -5
+        //
+        // result:
+        // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+        //       0      10     20     30     40     50     60     70     80
+        SegmentSeqAppendTest.TestCaseWithBound(
+          factoryTuple._1 + Label("C2"),
+          ExtendedBound.AboveAll,
+          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          reference
         )
       )
     }
@@ -1077,6 +1159,41 @@ trait Sample3[D <: Domain[Int]]
         reference,
         (true  forAll x) ::
         Nil
+      ),
+      // current:
+      //
+      // bound
+      // X
+      // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+      //       0      10     20     30     40     50     60     70     80
+      //
+      // takeBelow:
+      // X-----------------------------false----------------------------------X
+      //
+      // takeAbove:
+      // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+      //       0      10     20     30     40     50     60     70     80
+      SegmentSeqSliceTest.TestCase(
+        ExtendedBound.BelowAll,
+        (false  forAll x) :: Nil,
+        reference
+      ),
+      // current:
+      //                                                                  bound
+      //                                                                      X
+      // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+      //       0      10     20     30     40     50     60     70     80
+      //
+      // takeBelow:
+      // X--f--)[--t--)[--f--)[--t--)[--f--)[--t--](--f--](--t--)[--f--)[--t--X
+      //       0      10     20     30     40     50     60     70     80
+      //
+      // takeAbove:
+      // X-----------------------------true-----------------------------------X
+      SegmentSeqSliceTest.TestCase(
+        ExtendedBound.AboveAll,
+        reference,
+        (true  forAll x) :: Nil
       )
     )
   }
