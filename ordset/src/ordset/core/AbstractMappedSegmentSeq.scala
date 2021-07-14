@@ -135,15 +135,15 @@
 //      sequence.searchFrontMapper(sequence.generalFrontMapper, original.moveTo(bound))
 //
 //    // Transformation ----------------------------------------------------------- //
-//    override def takenAbove: SegmentSeq[E, D, V] = ???
+//    override def takeAbove: SegmentSeq[E, D, V] = ???
 //
-//    override def takenBelow: SegmentSeq[E, D, V] = ???
+//    override def takeBelow: SegmentSeq[E, D, V] = ???
 //
-//    override def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+//    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
 //
-//    override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+//    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 //
-//    override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+//    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 //
 //    override def truncation(bound: Bound[E]): SegmentLikeT.Truncation[E, D, V, MappedSegmentBase[E, D, U, V, S]] = ???
 //

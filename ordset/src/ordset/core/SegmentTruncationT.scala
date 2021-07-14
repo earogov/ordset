@@ -7,27 +7,27 @@ import ordset.core.domain.Domain
  */
 abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT[E, D, V, S]](
   val segment: Seg,
-  inputBound: Bound[E],
+  inputBound: ExtendedBound[E],
 ) {
 
   /**
    * Truncation bound.
    *
-   * Truncation bound equals to input bound limited by segment (see [[SegmentLikeT.restrictBound]]).
+   * Truncation bound equals to input bound limited by segment (see [[SegmentLikeT.restrictExtended]]).
    * So invariant is always provided:
    * {{{
-   *   segment.contains(bound) == true
+   *   segment.containsExtended(bound) == true
    * }}}
    */
-  final val bound: Bound[E] = segment.restrictBound(inputBound)
+  final val bound: ExtendedBound[E] = segment.restrictExtended(inputBound)
 
   /**
-   * Same as [[SegmentSeqT.prepended]] applied to truncation bound and `other` sequence:
+   * Same as [[SegmentSeqT.prependBelowExtended]] applied to truncation bound and `other` sequence:
    * {{{
-   *   truncation.prepended(other) == truncation.segment.sequence.prepended(truncation.bound, other)
+   *   truncation.prepend(other) == truncation.segment.sequence.prependBelowExtended(truncation.bound, other)
    * }}}
    * If segment is already known current method allows to avoid its repeated search in contrast to
-   * [[SegmentSeqT.prepended]].
+   * [[SegmentSeqT.prependBelowExtended]].
    * {{{
    *
    * original:
@@ -42,7 +42,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    *   X---)[----------------)[-----------)[---X
    *     D           E              F        G     - values
    *
-   * segment.truncation(bound).prepended(other):
+   * segment.truncation(bound).prepend(other):
    *
    *                              bound
    *                                v
@@ -50,13 +50,13 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    *     D           E           F        C        - values
    * }}}
    *
-   * <h3>Degenerate case</h3>
+   * <h3>Special case</h3>
    *
-   * If truncation bound equals to upper bound of [[segment]] the result is equivalent to [[prepended]]
+   * If truncation bound equals to the upper bound of [[segment]] the result is equivalent to [[prepend]]
    * applied to the next segment:
    * {{{
-   *   segment.truncation(bound).prepended(other) == segment.moveNext.truncation(bound).prepended(other)
-   *   if segment.hasUpperBound(bound)
+   *   segment.truncation(bound).prepend(other) == segment.moveNext.truncation(bound).prepend(other)
+   *   if segment.hasUpperExtended(bound)
    * }}}
    * {{{
    *                    segment    bound   next segment
@@ -66,17 +66,17 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    *                            upperBound
    * }}}
    *
-   * [[getPrependedBoundSegment]] returns next segment in degenerate case and segment itself otherwise.
+   * [[getSegmentForPrepending]] returns next segment in special case and segment itself otherwise.
    */
-  def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+  def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
-   * Same as [[SegmentSeqT.appended]] applied to truncation bound and `other` sequence:
+   * Same as [[SegmentSeqT.appendAboveExtended]] applied to truncation bound and `other` sequence:
    * {{{
-   *   truncation.appended(other) == truncation.segment.sequence.appended(truncation.bound, other)
+   *   truncation.append(other) == truncation.segment.sequence.appendAboveExtended(truncation.bound, other)
    * }}}
    * If segment is already known current method allows to avoid its repeated search in contrast to
-   * [[SegmentSeqT.appended]].
+   * [[SegmentSeqT.appendAboveExtended]].
    * {{{
    *
    * original:
@@ -92,7 +92,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    *   X---)[----------------)[-----------)[---X
    *     D           E              F        G     - values
    *
-   * segment.truncation(bound).appended(other):
+   * segment.truncation(bound).append(other):
    *
    *           bound
    *             v
@@ -100,13 +100,13 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    *        A           E           F        G    - values
    * }}}
    *
-   * <h3>Degenerate case</h3>
+   * <h3>Special case</h3>
    *
-   * If truncation bound equals to lower bound of [[segment]] the result is equivalent to [[appended]]
+   * If truncation bound equals to the lower bound of [[segment]] the result is equivalent to [[append]]
    * applied to the previous segment:
    * {{{
-   *   segment.truncation(bound).appended(other) == segment.movePrev.truncation(bound).appended(other)
-   *   if segment.hasLowerBound(bound)
+   *   segment.truncation(bound).append(other) == segment.movePrev.truncation(bound).append(other)
+   *   if segment.hasLowerExtended(bound)
    * }}}
    * {{{
    *   prev. segment   bound   segment
@@ -116,20 +116,50 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    *                lowerBound
    * }}}
    *
-   * [[getAppendedBoundSegment]] returns previous segment in degenerate case and segment itself otherwise.
+   * [[getSegmentForAppending]] returns previous segment in special case and segment itself otherwise.
    */
-  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+  def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   override def toString: String = s"$segment.truncation($bound)"
 
   // Protected section -------------------------------------------------------- //
   /**
-   * Returns next segment in degenerate case (see [[prepended]]) or segment itself otherwise.
+   * Returns next segment in special case of [[prepend]] or segment itself otherwise.
    */
-  protected def getPrependedBoundSegment: SegmentT[E, D, V, S] with S
+  protected def getSegmentForPrepending: SegmentT[E, D, V, S] with S
 
   /**
-   * Returns previous segment in degenerate case (see [[appended]]) or segment itself otherwise.
+   * Returns previous segment in special of [[append]] or segment itself otherwise.
    */
-  protected def getAppendedBoundSegment: SegmentT[E, D, V, S] with S
+  protected def getSegmentForAppending: SegmentT[E, D, V, S] with S
+}
+
+object SegmentTruncationT {
+  
+  // Internal utility methods ------------------------------------------------- //
+  /**
+   * Implementation of [[SegmentTruncationT.getSegmentForPrepending]] for case when [[SegmentTruncationT.segment]]
+   * has next segment.
+   */
+  protected [ordset] final def getSegmentForPrependingCaseSegmentWithNext[E, D <: Domain[E], V, S](
+    bound: ExtendedBound[E], 
+    segment: SegmentT.WithNext[E, D, V, S] with S
+  ): SegmentT[E, D, V, S] with S =
+    bound match {
+      case bound: Bound.Upper[E] if segment.hasUpperBound(bound.provideUpper) => segment.moveNext
+      case _ => segment
+    }
+
+  /**
+   * Implementation of [[SegmentTruncationT.getSegmentForAppending]] for case when [[SegmentTruncationT.segment]]
+   * has previous segment.
+   */
+  protected [ordset] final def getSegmentForAppendingCaseSegmentWithPrev[E, D <: Domain[E], V, S](
+    bound: ExtendedBound[E],
+    segment: SegmentT.WithPrev[E, D, V, S] with S 
+  ): SegmentT[E, D, V, S] with S =
+    bound match {
+      case bound: Bound.Lower[E] if segment.hasLowerBound(bound) => segment.movePrev
+      case _ => segment
+    }
 }

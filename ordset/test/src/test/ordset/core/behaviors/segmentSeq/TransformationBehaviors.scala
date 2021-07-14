@@ -2,77 +2,94 @@ package test.ordset.core.behaviors.segmentSeq
 
 import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.{Segment, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound, Segment, SegmentSeq}
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.SegmentSeqAssertions._
+import test.ordset.core.behaviors.SegmentSeqValidator
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 trait TransformationBehaviors[E, D <: Domain[E], V] {
   this: AnyFunSpec =>
 
   def segmentSeqCanBePrepended(
-    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqPrependedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqPrependTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
-      sample.prependedCases.foreach { testCase =>
+      sample.prependCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
 
-        it(s"should prepend $testCase to $sample") {
-          val actual = sample.sequence.prepended(testCase.prepended)
+        it(s"should prepend $testCase below $sample") {
+          val actual = sample.sequence.prepend(testCase.otherSeq)
           assertSameRelationAndSegmentSeq(testCase.expected, actual)
         }
       }
     }
   
-  def segmentSeqCanBePrependedWithBound(
-    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqPrependedTest[E, D, V]]
+  def segmentSeqCanBePrependedBelowBound(
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqPrependTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
-      sample.prependedWithBoundCases.foreach { testCase =>
+      sample.prependBelowBoundCases.foreach { testCase =>
         
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
-        
-        it(s"should prepend $testCase to $sample before bound ${testCase.bound}") {
-          // `sequence.prepended(bound, otherSeq)` should be correct
-          val actual1 = sample.sequence.prepended(testCase.bound, testCase.prepended)
+
+        val seqValidator = new SegmentSeqValidator(sample.sequence)
+
+        it(s"should prepend $testCase below bound ${testCase.bound} of $sample") {
+          // `sequence.prependBelowBound(bound, otherSeq)` should be correct
+          val actual1 = seqValidator.prependBelowExtended(testCase.bound, testCase.otherSeq)
           assertSameRelationAndSegmentSeq(testCase.expected, actual1)
 
-          // `sequence.prepended(bound, otherSeq)` should equals to `sequence.prepended(bound.flip, otherSeq)`
-          val actual2 = sample.sequence.prepended(testCase.bound.flip, testCase.prepended)
-          assertSameRelationAndSegmentSeq(testCase.expected, actual2)
+          // `sequence.prependBelowBound(bound, otherSeq)` should equals to
+          // `sequence.prependBelowBound(bound.flip, otherSeq)`
+          testCase.bound match {
+            case bound: Bound[E] =>
+              val actual2 = seqValidator.prependBelowExtended(bound.flip, testCase.otherSeq)
+              assertSameRelationAndSegmentSeq(testCase.expected, actual2)
+            case _ =>
+              // no additional checks
+          }
 
-          // `sequence.prepended(bound, otherSeq)` should equals to `otherSeq.appended(bound, sequence)`
-          val actual3 = testCase.prepended.appended(testCase.bound, sample.sequence)
+          // `sequence.prependBelowBound(bound, otherSeq)` should equals to
+          // `otherSeq.appendAboveBound(bound, sequence)`
+          val actual3 = new SegmentSeqValidator(testCase.otherSeq).appendAboveExtended(testCase.bound, sample.sequence)
           assertSameRelationAndSegmentSeq(testCase.expected, actual3)
 
           // 1. If `segment` has previous segment:
-          // `segment.prepended(otherSeq)` should equals to `sequence.prepended(segment.lowerBound, otherSeq)`
+          // `segment.prepend(otherSeq)` should equals to `sequence.prependBelowBound(segment.lowerBound, otherSeq)`
           // 2. If `segment` is first:
-          // `segment.prepended(otherSeq)` should equals to `sequence`.
-          val boundSegment = sample.sequence.getSegmentForBound(testCase.bound)
-          val actual4 = boundSegment.prepended(testCase.prepended)
+          // `segment.prepend(otherSeq)` should equals to `sequence`.
+          val boundSegment = sample.sequence.getSegmentForExtended(testCase.bound)
+          val actual4 = boundSegment.prepend(testCase.otherSeq)
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
-              val expected = sample.sequence.prepended(s.lowerBound, testCase.prepended)
+              val expected = seqValidator.prependBelowExtended(s.lowerBound, testCase.otherSeq)
               assertSameSegmentSeq(expected, actual4)
             case _ =>
               assertSameSegmentSeq(sample.sequence, actual4)
           }
 
-          // `segment.truncation(bound).prepended(otherSeq)` should equals to `sequence.prepended(bound, otherSeq)`
-          val actual5 = boundSegment.truncation(testCase.bound).prepended(testCase.prepended)
+          // `segment.truncation(bound).prepend(otherSeq)` should equals to
+          // `sequence.prependBelowBound(bound, otherSeq)`
+          val actual5 = boundSegment.truncation(testCase.bound).prepend(testCase.otherSeq)
           assertSameRelationAndSegmentSeq(testCase.expected, actual5)
 
-          // `segment.truncation(bound.flip).prepended(otherSeq)` should equals to `sequence.prepended(bound, otherSeq)`
-          val actual6 = boundSegment.truncation(testCase.bound.flip).prepended(testCase.prepended)
-          assertSameRelationAndSegmentSeq(testCase.expected, actual6)
+          // `segment.truncation(bound.flip).prepend(otherSeq)` should equals to
+          // `sequence.prependBelowBound(bound, otherSeq)`
+          testCase.bound match {
+            case bound: Bound[E] =>
+              val actual6 = boundSegment.truncation(bound.flip).prepend(testCase.otherSeq)
+              assertSameRelationAndSegmentSeq(testCase.expected, actual6)
+            case _ =>
+              // no additional checks
+          }
 
           // 1. If `segment` has previous segment:
-          // `segment.truncation(segment.lowerBound.flip).prepended(otherSeq)` should equals to
-          // `segment.prepended(otherSeq)`
+          // `segment.truncation(segment.lowerBound.flip).prepend(otherSeq)` should equals to
+          // `segment.prepend(otherSeq)`
           //
           //      boundSegment.lowerBound.flip
           //          v
@@ -80,8 +97,8 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           //               boundSegment
           //
           // 2. If `segment` has next segment:
-          // `segment.truncation(segment.upperBound.flip).prepended(otherSeq)` should equals to
-          // `segment.moveNext.prepended(otherSeq)`
+          // `segment.truncation(segment.upperBound.flip).prepend(otherSeq)` should equals to
+          // `segment.moveNext.prepend(otherSeq)`
           //
           //      boundSegment.upperBound.flip
           //                              v
@@ -89,12 +106,12 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           //               boundSegment
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
-              val actual7 = s.truncation(s.lowerBound.flip).prepended(testCase.prepended)
+              val actual7 = s.truncation(s.lowerBound.flip).prepend(testCase.otherSeq)
               assertSameSegmentSeq(actual4, actual7)
 
             case s: Segment.WithNext[E, D, V] =>
-              val actual7 = s.truncation(s.upperBound.flip).prepended(testCase.prepended)
-              val expected7 = s.moveNext.prepended(testCase.prepended)
+              val actual7 = s.truncation(s.upperBound.flip).prepend(testCase.otherSeq)
+              val expected7 = s.moveNext.prepend(testCase.otherSeq)
               assertSameSegmentSeq(expected7, actual7)
 
             case _ => // nothing to do
@@ -104,68 +121,84 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
     }
 
   def segmentSeqCanBeAppended(
-    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqAppendedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqAppendTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
-      sample.appendedCases.foreach { testCase =>
+      sample.appendCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
 
-        it(s"should append $testCase to $sample") {
-          val actual = sample.sequence.appended(testCase.appended)
+        it(s"should append $testCase above $sample") {
+          val actual = sample.sequence.append(testCase.otherSeq)
           assertSameRelationAndSegmentSeq(testCase.expected, actual)
         }
       }
     }
   
-  def segmentSeqCanBeAppendedWithBound(
-    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqAppendedTest[E, D, V]]
+  def segmentSeqCanBeAppendedAboveBound(
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqAppendTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
-      sample.appendedWithBoundCases.foreach { testCase =>
+      sample.appendAboveBoundCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
 
-        it(s"should append $testCase to $sample after bound ${testCase.bound}") {
-          // `sequence.appended(bound, otherSeq)` should be correct
-          val actual1 = sample.sequence.appended(testCase.bound, testCase.appended)
+        val seqValidator = new SegmentSeqValidator(sample.sequence)
+
+        it(s"should append $testCase above bound ${testCase.bound} of $sample") {
+          // `sequence.appendAboveBound(bound, otherSeq)` should be correct
+          val actual1 = seqValidator.appendAboveExtended(testCase.bound, testCase.otherSeq)
           assertSameRelationAndSegmentSeq(testCase.expected, actual1)
 
-          // `sequence.appended(bound, otherSeq)` should equals to `sequence.appended(bound.flip, otherSeq)`
-          val actual2 = sample.sequence.appended(testCase.bound.flip, testCase.appended)
-          assertSameRelationAndSegmentSeq(testCase.expected, actual2)
+          // `sequence.appendAboveBound(bound, otherSeq)` should equals to
+          // `sequence.appendAboveBound(bound.flip, otherSeq)`
+          testCase.bound match {
+            case bound: Bound[E] =>
+              val actual2 = seqValidator.appendAboveExtended(bound.flip, testCase.otherSeq)
+              assertSameRelationAndSegmentSeq(testCase.expected, actual2)
+            case _ =>
+              // no additional checks
+          }
 
-          // `sequence.appended(bound, otherSeq)` should equals to `otherSeq.prepended(bound, sequence)`
-          val actual3 = testCase.appended.prepended(testCase.bound, sample.sequence)
+          // `sequence.appendAboveBound(bound, otherSeq)` should equals to
+          // `otherSeq.prependBelowBound(bound, sequence)`
+          val actual3 = new SegmentSeqValidator(testCase.otherSeq).prependBelowExtended(testCase.bound, sample.sequence)
           assertSameRelationAndSegmentSeq(testCase.expected, actual3)
 
           // 1. If `segment` has next segment:
-          // `segment.appended(otherSeq)` should equals to `sequence.appended(segment.upperBound, otherSeq)`
+          // `segment.append(otherSeq)` should equals to `sequence.appendAboveBound(segment.upperBound, otherSeq)`
           // 2. If `segment` is last:
-          // `segment.appended(otherSeq)` should equals to `sequence`.
-          val boundSegment = sample.sequence.getSegmentForBound(testCase.bound)
-          val actual4 = boundSegment.appended(testCase.appended)
+          // `segment.append(otherSeq)` should equals to `sequence`.
+          val boundSegment = sample.sequence.getSegmentForExtended(testCase.bound)
+          val actual4 = boundSegment.append(testCase.otherSeq)
           boundSegment match {
             case s: Segment.WithNext[E, D, V] =>
-              val expected = sample.sequence.appended(s.upperBound, testCase.appended)
+              val expected = seqValidator.appendAboveExtended(s.upperBound, testCase.otherSeq)
               assertSameSegmentSeq(expected, actual4)
             case _ =>
               assertSameSegmentSeq(sample.sequence, actual4)
           }
 
-          // `segment.truncation(bound).appended(otherSeq)` should equals to `sequence.appended(bound, otherSeq)`
-          val actual5 = boundSegment.truncation(testCase.bound).appended(testCase.appended)
+          // `segment.truncation(bound).append(otherSeq)` should equals to
+          // `sequence.appendAboveBound(bound, otherSeq)`
+          val actual5 = boundSegment.truncation(testCase.bound).append(testCase.otherSeq)
           assertSameRelationAndSegmentSeq(testCase.expected, actual5)
 
-          // `segment.truncation(bound.flip).appended(otherSeq)` should equals to `sequence.appended(bound, otherSeq)`
-          val actual6 = boundSegment.truncation(testCase.bound.flip).appended(testCase.appended)
-          assertSameRelationAndSegmentSeq(testCase.expected, actual6)
+          // `segment.truncation(bound.flip).append(otherSeq)` should equals to
+          // `sequence.appendAboveBound(bound, otherSeq)`
+          testCase.bound match {
+            case bound: Bound[E] =>
+              val actual6 = boundSegment.truncation(bound.flip).append(testCase.otherSeq)
+              assertSameRelationAndSegmentSeq(testCase.expected, actual6)
+            case _ =>
+              // no additional checks
+          }
 
           // 1. If `segment` has previous segment:
-          // `segment.truncation(segment.lowerBound.flip).appended(otherSeq)` should equals to
-          // `segment.movePrev.appended(otherSeq)`
+          // `segment.truncation(segment.lowerBound.flip).append(otherSeq)` should equals to
+          // `segment.movePrev.append(otherSeq)`
           //
           //      boundSegment.lowerBound.flip
           //          v
@@ -173,8 +206,8 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           //               boundSegment
           //
           // 2. If `segment` has next segment:
-          // `segment.truncation(segment.upperBound.flip).appended(otherSeq)` should equals to
-          // `segment.appended(otherSeq)`
+          // `segment.truncation(segment.upperBound.flip).append(otherSeq)` should equals to
+          // `segment.append(otherSeq)`
           //
           //      boundSegment.upperBound.flip
           //                              v
@@ -182,12 +215,12 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           //               boundSegment
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
-              val actual7 = s.truncation(s.lowerBound.flip).appended(testCase.appended)
-              val expected7 = s.movePrev.appended(testCase.appended)
+              val actual7 = s.truncation(s.lowerBound.flip).append(testCase.otherSeq)
+              val expected7 = s.movePrev.append(testCase.otherSeq)
               assertSameSegmentSeq(expected7, actual7)
 
             case s: Segment.WithNext[E, D, V] =>
-              val actual7 = s.truncation(s.upperBound.flip).appended(testCase.appended)
+              val actual7 = s.truncation(s.upperBound.flip).append(testCase.otherSeq)
               assertSameSegmentSeq(actual4, actual7)
 
             case _ => // nothing to do
@@ -197,42 +230,45 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
     }
 
   def segmentSeqCanBeSliced(
-    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqSlicedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentSeqSliceTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
-      sample.slicedCases.foreach { testCase =>
+      sample.sliceCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
 
+        val seqValidator = new SegmentSeqValidator(sample.sequence)
+
         it(s"should slice $sample at bound ${testCase.bound}") {
-          // `sequence.takenBelow(bound)` should be correct
-          val actualBelow1 = sample.sequence.takenBelow(testCase.bound)
+          // `sequence.takeBelowBound(bound)` should be correct
+          val actualBelow1 = seqValidator.takeBelowExtended(testCase.bound)
           assertSameRelationAndSegmentSeq(testCase.expectedBelow, actualBelow1)
 
-          // `sequence.takenAbove(bound)` should be correct
-          val actualAbove1 = sample.sequence.takenAbove(testCase.bound)
+          // `sequence.takeAboveBound(bound)` should be correct
+          val actualAbove1 = seqValidator.takeAboveExtended(testCase.bound)
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualAbove1)
 
-          // `sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound))` should equals to `sequence`
-          val actualSeq1 = actualBelow1.appended(testCase.bound, actualAbove1)
+          // `sequence.takeBelowBound(bound).appendAboveBound(bound, sequence.takeAboveBound(bound))`
+          // should equals to `sequence`
+          val actualSeq1 = actualBelow1.appendAboveExtended(testCase.bound, actualAbove1)
           assertSameSegmentSeq(sample.sequence, actualSeq1)
 
-          // `sequence.sliced(bound)` should be correct
-          val actualSliced1 = sample.sequence.sliced(testCase.bound)
+          // `sequence.sliceAtBound(bound)` should be correct
+          val actualSliced1 = seqValidator.sliceAtExtended(testCase.bound)
           assertSameRelationAndSegmentSeq(testCase.expectedBelow, actualSliced1._1)
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualSliced1._2)
 
-          // `segment.takenBelow` should be correct
-          val actualBelow2 = sample.sequence.getSegmentForBound(testCase.bound).takenBelow
+          // `segment.takeBelow` should be correct
+          val actualBelow2 = sample.sequence.getSegmentForExtended(testCase.bound).takeBelow
           assertSameRelationAndSegmentSeq(testCase.expectedBelow, actualBelow2)
 
-          // `segment.takenAbove` should be correct
-          val actualAbove2 = sample.sequence.getSegmentForBound(testCase.bound).takenAbove
+          // `segment.takeAbove` should be correct
+          val actualAbove2 = sample.sequence.getSegmentForExtended(testCase.bound).takeAbove
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualAbove2)
 
-          // `segment.sliced` should be correct
-          val actualSliced2 = sample.sequence.getSegmentForBound(testCase.bound).sliced
+          // `segment.slice` should be correct
+          val actualSliced2 = sample.sequence.getSegmentForExtended(testCase.bound).slice
           assertSameRelationAndSegmentSeq(testCase.expectedBelow, actualSliced2._1)
           assertSameRelationAndSegmentSeq(testCase.expectedAbove, actualSliced2._2)
         }
@@ -240,16 +276,16 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
     }
     
   def segmentCanBePatched(
-    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentPatchedTest[E, D, V]]
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentPatchTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
-      sample.patchedCases.foreach { testCase =>
+      sample.patchCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
         implicit val valueHash: Hash[V] = sample.valueOps.valueHash
 
         it(s"should patch segment of $sample at bound ${testCase.bound} with $testCase") {
-          val actual = sample.sequence.getSegmentForBound(testCase.bound).patched(testCase.patch)
+          val actual = sample.sequence.getSegmentForBound(testCase.bound).patch(testCase.patch)
           assertSameRelationAndSegmentSeq(testCase.expected, actual)
         }
       }

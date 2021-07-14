@@ -54,11 +54,11 @@ class TreapOrderedSetSpec extends AnyFunSpec
 
     it should behave like segmentSeqCanBePrepended(testSuite)
 
-    it should behave like segmentSeqCanBePrependedWithBound(testSuite)
+    it should behave like segmentSeqCanBePrependedBelowBound(testSuite)
 
     it should behave like segmentSeqCanBeAppended(testSuite)
-    
-    it should behave like segmentSeqCanBeAppendedWithBound(testSuite)
+
+    it should behave like segmentSeqCanBeAppendedAboveBound(testSuite)
 
     it should behave like segmentSeqCanBeSliced(testSuite)
 

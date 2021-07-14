@@ -22,8 +22,7 @@ class NonuniformTreapOrderedSet[E, D <: Domain[E]] protected (
 
   // Protected section -------------------------------------------------------- //
   @inline
-  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =
-    UniformOrderedSet.apply(value, TreapOrderedSet.getFactory)
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)
 
   @inline
   protected final override def consFromNode(

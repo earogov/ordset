@@ -1,30 +1,30 @@
 package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
-import ordset.core.{Bound, IntervalRelation, SegmentSeq}
+import ordset.core.{ExtendedBound, IntervalRelation, SegmentSeq}
 import ordset.util.label.Label
 import test.ordset.core.Labels
 import test.ordset.core.behaviors.TestCaseBase
 
-trait SegmentSeqAppendedTest[E, D <: Domain[E], V] {
+trait SegmentSeqPrependTest[E, D <: Domain[E], V] {
 
-  def appendedCases: Seq[SegmentSeqAppendedTest.TestCase[E, D, V]]
+  def prependCases: Seq[SegmentSeqPrependTest.TestCase[E, D, V]]
   
-  def appendedWithBoundCases: Seq[SegmentSeqAppendedTest.TestCaseWithBound[E, D, V]]
+  def prependBelowBoundCases: Seq[SegmentSeqPrependTest.TestCaseWithBound[E, D, V]]
 }
 
-object SegmentSeqAppendedTest {
+object SegmentSeqPrependTest {
 
   case class TestCase[E, D <: Domain[E], V](
     override val labels: Set[Label],
-    appended: SegmentSeq[E, D, V],
+    otherSeq: SegmentSeq[E, D, V],
     expected: Seq[IntervalRelation[E, D, V]]
   ) extends TestCaseBase(labels)
-
+  
   case class TestCaseWithBound[E, D <: Domain[E], V](
     override val labels: Set[Label],
-    bound: Bound[E],
-    appended: SegmentSeq[E, D, V],
+    bound: ExtendedBound[E],
+    otherSeq: SegmentSeq[E, D, V],
     expected: Seq[IntervalRelation[E, D, V]]
-  ) extends TestCaseBase(labels) 
+  ) extends TestCaseBase(labels)
 }

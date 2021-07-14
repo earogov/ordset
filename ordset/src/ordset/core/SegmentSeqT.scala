@@ -189,7 +189,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
-   * original.takenAbove(bound):
+   * original.takeAboveBound(bound):
    *
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
@@ -203,24 +203,39 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
-   * original.takenAbove(bound):
+   * original.takeAboveBound(bound):
    *
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.takenAbove(bound) == sequence.getSegment(bound).takenAbove 
+   *   1. sequence.takeAboveBound(bound) == sequence.getSegmentForBound(bound).takeAbove
    *   for any bound
    *   
-   *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
+   *   2. sequence == sequence.takeBelowBound(bound).appendAboveBound(bound, sequence.takeAboveBound(bound))
    *   for any bound
    *
-   *   3. sequence == sequence.takenAbove(bound).prepended(bound, sequence.takenBelow(bound)) 
+   *   3. sequence == sequence.takeAboveBound(bound).prependBelowBound(bound, sequence.takeBelowBound(bound))
    *   for any bound
    * }}}
    */
-  def takenAbove(bound: Bound[E]): SegmentSeq[E, D, V]
+  def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V]
+
+  /**
+   * Adds support of unlimited bounds to [[takeAboveBound]]:
+   * <tr>
+   *   if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;
+   * </tr>
+   * <tr>
+   *   if `bound` is [[ExtendedBound.AboveAll]] returns uniform sequence with the value of last segment
+   *   of current sequence;
+   * </tr>
+   * <tr>
+   *   otherwise result is the same as for method [[takeAboveBound]].
+   * </tr>
+   */
+  def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing
@@ -243,7 +258,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
-   * original.takenBelow(bound):
+   * original.takeBelowBound(bound):
    *
    *   X--------](------------------------------X
    *        A               B                      - values
@@ -257,27 +272,42 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
-   * original.takenBelow(bound):
+   * original.takeBelowBound(bound):
    *
    *   X--------](------------------------------X
    *        A               B                      - values
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.takenBelow(bound) == sequence.getSegment(bound).takenBelow 
-   *   for any bound
-   *   
-   *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound)) 
+   *   1. sequence.takeBelowBound(bound) == sequence.getSegmentForBound(bound).takeBelow
    *   for any bound
    *
-   *   3. sequence == sequence.takenAbove(bound).prepended(bound, sequence.takenBelow(bound)) 
+   *   2. sequence == sequence.takeBelowBound(bound).appendAboveBound(bound, sequence.takeAboveBound(bound))
+   *   for any bound
+   *
+   *   3. sequence == sequence.takeAboveBound(bound).prependBelowBound(bound, sequence.takeBelowBound(bound))
    *   for any bound
    * }}}
    */
-   def takenBelow(bound: Bound[E]): SegmentSeq[E, D, V]
+   def takeBelowBound(bound: Bound[E]): SegmentSeq[E, D, V]
 
   /**
-   * Returns tuple of sequences: ([[takenBelow]], [[takenAbove]]).
+   * Adds support of unlimited bounds to [[takeBelowBound]]:
+   * <tr>
+   *   if `bound` is [[ExtendedBound.BelowAll]] returns uniform sequence with the value of first segment
+   *   of current sequence;
+   * </tr>
+   * <tr>
+   *   if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;
+   * </tr>
+   * <tr>
+   *   otherwise result is the same as for method [[takeBelowBound]].
+   * </tr>
+   */
+  def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V]
+
+  /**
+   * Returns tuple of sequences: ([[takeBelowBound]], [[takeAboveBound]]).
    *
    * {{{
    * original:
@@ -286,29 +316,36 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](---------)[--------)[---------X
    *        A         B         C         D        - values
    *
-   * original.sliced(bound)._1:
+   * original.sliceAtBound(bound)._1:
    *
    *   X--------](------------------------------X
    *        A               B                      - values
    *
-   * original.sliced(bound)._2:
+   * original.sliceAtBound(bound)._2:
    *
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.sliced(bound) == sequence.getSegment(bound).sliced 
+   *   1. sequence.sliceAtBound(bound) == sequence.getSegmentForBound(bound).slice
    *   for any bound
    *   
-   *   2. sequence == sequence.sliced(bound)._1.appended(bound, sequence.sliced(bound)._2) 
+   *   2. sequence == sequence.sliceAtBound(bound)._1.appendAboveBound(bound, sequence.sliceAtBound(bound)._2)
    *   for any bound
    *
-   *   3. sequence == sequence.sliced(bound)._2.prepended(bound, sequence.sliced(bound)._1) 
+   *   3. sequence == sequence.sliceAtBound(bound)._2.prependBelowBound(bound, sequence.sliceAtBound(bound)._1)
    *   for any bound
    * }}}
    */
-  def sliced(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
+  def sliceAtBound(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
+
+  /**
+   * Adds support of unlimited bounds to [[sliceAtBound]].
+   *
+   * Returns tuple of sequences: ([[takeBelowExtended]], [[takeAboveExtended]]).
+   */
+  def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
 
   /**
    * Returns sequence containing:
@@ -337,7 +374,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X-------)[--------](--------------------X
    *       C         D              E              - values
    *
-   * original.appended(other):
+   * original.prepend(other):
    *
    *   X-------)[--------](-----](-------------X
    *       C        D        E          B          - values
@@ -345,14 +382,14 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Methods definitions provide invariants:
    * {{{
    *   1. If original sequence is not uniform then:
-   *   sequence.prepended(other) == sequence.prepended(sequence.firstSegment.upperBound, other)
+   *   sequence.prepend(other) == sequence.prependBelowBound(sequence.firstSegment.upperBound, other)
    *   for any `other` sequence
    *
    *   2. If original sequence is uniform then:
-   *   sequence.prepended(other) == other
+   *   sequence.prepend(other) == other
    * }}}
    */
-  def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
   /**
    * Returns sequence containing:
@@ -391,7 +428,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------------)[-------------](--------X
    *           C               D           E       - values
    *
-   * original.prepended(bound, other):
+   * original.prependBelowBound(bound, other):
    *
    *                       bound
    *                         v
@@ -412,7 +449,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------------)[----------------](-----X
    *           C               D            E      - values
    *
-   * original.prepended(bound, other):
+   * original.prependBelowBound(bound, other):
    *
    *                             bound
    *                               v
@@ -421,21 +458,29 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.prepended(lowerBound, other) == sequence.getSegment(lowerBound).prepended(other)
+   *   1. sequence.prependBelowBound(lowerBound, other) == sequence.getSegmentForBound(lowerBound).prepend(other)
    *   for any lower bound in sequence, i.e. for `lowerBound` such that:
-   *   sequence.getSegment(lowerBound).hasLowerBound(lowerBound) == true
+   *   sequence.getSegmentForBound(lowerBound).hasLowerBound(lowerBound) == true
    *
-   *   2. sequence == sequence.takenAbove(bound).prepended(bound, sequence.takenBelow(bound))
+   *   2. sequence == sequence.takeAboveBound(bound).prependBelowBound(bound, sequence.takeBelowBound(bound))
    *   for any bound
    *
-   *   3. sequence.prepended(bound, other) == sequence.prepended(bound.flip, other)
+   *   3. sequence.prependBelowBound(bound, other) == sequence.prependBelowBound(bound.flip, other)
    *   for any bound and `other` sequence
    *   
-   *   4. sequence.prepended(bound, other) == other.appended(bound, sequence)
+   *   4. sequence.prependBelowBound(bound, other) == other.appendAboveBound(bound, sequence)
    *   for any bound and `other` sequence
    * }}}
    */
-  def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+  /**
+   * Adds support of unlimited bounds to [[prependBelowBound]]:
+   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</tr>
+   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence;</tr>
+   * <tr>otherwise result is the same as for method [[prependBelowBound]].</tr>
+   */
+  def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing:
@@ -464,7 +509,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X----------------)[-----------](--------X
    *           C               D           E       - values
    *
-   * original.appended(other):
+   * original.append(other):
    *
    *   X--------](------)[-----------](--------X
    *        A        C         D           E       - values
@@ -472,14 +517,14 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Methods definitions provide invariants:
    * {{{
    *   1. If original sequence is not uniform then:
-   *   sequence.appended(other) == sequence.appended(sequence.lastSegment.lowerBound, other)
+   *   sequence.append(other) == sequence.appendAboveBound(sequence.lastSegment.lowerBound, other)
    *   for any `other` sequence
    *
    *   2. If original sequence is uniform then:
-   *   sequence.appended(other) == other
+   *   sequence.append(other) == other
    * }}}
    */
-  def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
   /**
    * Returns sequence containing:
@@ -518,7 +563,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------------)[-------------](--------X
    *           C               D           E       - values
    *           
-   * original.appended(bound, other):
+   * original.appendAboveBound(bound, other):
    * 
    *                       bound
    *                         v
@@ -539,7 +584,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------------)[----------------](-----X
    *           C               D            E      - values
    *
-   * original.appended(bound, other):
+   * original.appendAboveBound(bound, other):
    *
    *                             bound
    *                               v
@@ -548,19 +593,27 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    * Methods definitions provide invariants:
    * {{{
-   *   1. sequence.appended(upperBound, other) == sequence.getSegment(upperBound).appended(other)
+   *   1. sequence.appendAboveBound(upperBound, other) == sequence.getSegmentForBound(upperBound).append(other)
    *   for any upper bound in sequence, i.e. for `upperBound` such that:
-   *   sequence.getSegment(upperBound).hasUpperBound(upperBound) == true
+   *   sequence.getSegmentForBound(upperBound).hasUpperBound(upperBound) == true
    *   
-   *   2. sequence == sequence.takenBelow(bound).appended(bound, sequence.takenAbove(bound))
+   *   2. sequence == sequence.takeBelowBound(bound).appendAboveBound(bound, sequence.takeAboveBound(bound))
    *   for any bound
    *   
-   *   3. sequence.appended(bound, other) == sequence.appended(bound.flip, other)
+   *   3. sequence.appendAboveBound(bound, other) == sequence.appendAboveBound(bound.flip, other)
    *   for any bound and `other` sequence
    *
-   *   4. sequence.appended(bound, other) == other.prepended(bound, sequence)
+   *   4. sequence.appendAboveBound(bound, other) == other.prependBelowBound(bound, sequence)
    *   for any bound and `other` sequence
    * }}}
    */
-  def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+  def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+
+  /**
+   * Adds support of unlimited bounds to [[appendAboveBound]]:
+   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</tr>
+   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;</tr>
+   * <tr>otherwise result is the same as for method [[appendAboveBound]].</tr>
+   */
+  def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 }

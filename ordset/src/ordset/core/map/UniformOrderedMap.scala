@@ -1,7 +1,7 @@
 package ordset.core.map
 
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationPredicate}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, ExtendedBound, SegmentSeq, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
@@ -20,12 +20,17 @@ class UniformOrderedMap[E, D <: Domain[E], V] protected (
   @inline
   protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 
+  @inline
+  protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] =
+    if (valueOps.eqv(this.value, value)) this
+    else UniformOrderedMap.apply(value, mapFactory)
+  
   protected final override def consPrepended(bound: Bound[E], firstValue: V): OrderedMap[E, D, V] =
     if (valueOps.eqv(firstValue, value))
       this
     else
       mapFactory.unsafeBuildAsc(
-        List((bound.provideUpper, firstValue), (null, value)), domainOps, valueOps
+        List((bound.provideUpper, firstValue), (ExtendedBound.AboveAll, value)), domainOps, valueOps
       )(
         SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
       )(
@@ -37,7 +42,7 @@ class UniformOrderedMap[E, D <: Domain[E], V] protected (
       this
     else
       mapFactory.unsafeBuildAsc(
-        List((bound.provideUpper, value), (null, lastValue)), domainOps, valueOps
+        List((bound.provideUpper, value), (ExtendedBound.AboveAll, lastValue)), domainOps, valueOps
       )(
         SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
       )(

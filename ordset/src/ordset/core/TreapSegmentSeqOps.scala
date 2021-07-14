@@ -18,7 +18,7 @@ object TreapSegmentSeqOps {
     }
   
   /**
-   * Applies patch operation (see [[SegmentLikeT.patched]]) for given segment of [[TreapSegmentSeq]].
+   * Applies patch operation (see [[SegmentLikeT.patch]]) for given segment of [[TreapSegmentSeq]].
    *
    * This implementation unlike one in [[AbstractTreapSegmentSeq]] guaranties that output will be also a treap
    * segment sequence. Note some performance penalty in case when conversion is required.
@@ -28,7 +28,7 @@ object TreapSegmentSeqOps {
     sequence: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] = 
     segment match {
-      case s: TreapSegmentBase[_, _, _] => s.patched(sequence)
+      case s: TreapSegmentBase[_, _, _] => s.patch(sequence)
       case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(sequence)
     }
 }

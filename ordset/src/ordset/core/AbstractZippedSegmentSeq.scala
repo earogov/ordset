@@ -73,16 +73,16 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     super.getSegmentForElement(element)
 
   // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): SegmentSeq[E, D, V] =
-    cons(firstSeq.takenAbove(bound), secondSeq.takenAbove(bound))
+  final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] =
+    cons(firstSeq.takeAboveBound(bound), secondSeq.takeAboveBound(bound))
 
-  final override def takenBelow(bound: Bound[E]): SegmentSeq[E, D, V] =
-    cons(firstSeq.takenBelow(bound), secondSeq.takenBelow(bound))
+  final override def takeBelowBound(bound: Bound[E]): SegmentSeq[E, D, V] =
+    cons(firstSeq.takeBelowBound(bound), secondSeq.takeBelowBound(bound))
 
-  final override def sliced(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
-    (takenBelow(bound), takenAbove(bound))
+  final override def sliceAtBound(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
+    (takeBelowBound(bound), takeAboveBound(bound))
 
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
   // Protected section -------------------------------------------------------- //
   /**
@@ -97,6 +97,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
    */
   protected def cons(first: SegmentSeq[E, D, U1], second: SegmentSeq[E, D, U2]): SegmentSeq[E, D, V]
 
+  protected override def consUniform(value: V): SegmentSeq[E, D, V]
+  
   /**
    * First segment of sequence. It's either initial ot single.
    */
@@ -906,17 +908,19 @@ object AbstractZippedSegmentSeq {
       sequence.searchFrontZipper(sequence.generalFrontZipper, left.moveToBound(bound), right.moveToBound(bound))
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: SegmentSeq[E, D, V] = ???
+    override def takeAbove: SegmentSeq[E, D, V] = ???
 
-    override def takenBelow: SegmentSeq[E, D, V] = ???
+    override def takeBelow: SegmentSeq[E, D, V] = ???
 
-    override def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
 
-    override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
-    override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
-    override def truncation(bound: Bound[E]): SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] = ???
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] = ???
 
     /**
      * Applies patch operation to first original sequence within current zipped segment.
@@ -975,20 +979,20 @@ object AbstractZippedSegmentSeq {
      *   X--)[--------------------------------](--X
      *     D                  E                 F   - values
      *
-     * segment.patchedFirstSeq(other):
+     * segment.patchFirstSeq(other):
      *
      *   X-------](----------------------](-------X
      *       A                E               C     - values
      * }}}
      */
-    def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1]
+    def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1]
 
     /**
      * Applies patch operation to second original sequence within current zipped segment.
      *
-     * See [[patchedFirstSeq]].
+     * See [[patchFirstSeq]].
      */
-    def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2]
+    def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2]
   }
 
   /**
@@ -1099,11 +1103,11 @@ object AbstractZippedSegmentSeq {
     override def moveToFirst: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
-      firstSeqSegment.truncation(upperBound).prepended(other)
+    override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
+      firstSeqSegment.truncation(upperBound).prepend(other)
 
-    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
-      secondSeqSegment.truncation(upperBound).prepended(other)
+    override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
+      secondSeqSegment.truncation(upperBound).prepend(other)
   }
 
   /**
@@ -1132,11 +1136,11 @@ object AbstractZippedSegmentSeq {
     override def moveToLast: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
-      back.firstSeqSegment.truncation(lowerBound).appended(other)
+    override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
+      back.firstSeqSegment.truncation(lowerBound).append(other)
 
-    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
-      back.secondSeqSegment.truncation(lowerBound).appended(other)
+    override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
+      back.secondSeqSegment.truncation(lowerBound).append(other)
   }
 
   /**
@@ -1161,14 +1165,14 @@ object AbstractZippedSegmentSeq {
     override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
-      firstSeqSegment.truncation(upperBound).prepended(
-        back.firstSeqSegment.truncation(lowerBound).appended(other)
+    override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
+      firstSeqSegment.truncation(upperBound).prepend(
+        back.firstSeqSegment.truncation(lowerBound).append(other)
       )
 
-    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
-      secondSeqSegment.truncation(upperBound).prepended(
-        back.secondSeqSegment.truncation(lowerBound).appended(other)
+    override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
+      secondSeqSegment.truncation(upperBound).prepend(
+        back.secondSeqSegment.truncation(lowerBound).append(other)
       )
   }
 
@@ -1202,9 +1206,9 @@ object AbstractZippedSegmentSeq {
     override def moveToBound(bound: Bound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def patchedFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] = other
+    override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] = other
 
-    override def patchedSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] = other
+    override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] = other
   }
 
   // Protected section -------------------------------------------------------- //

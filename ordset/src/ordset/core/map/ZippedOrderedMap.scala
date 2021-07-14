@@ -31,6 +31,9 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
 
   // Protected section -------------------------------------------------------- //
   @inline
+  protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
+  
+  @inline
   protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
   
   protected final override def cons(first: SegmentSeq[E, D, U1], second: SegmentSeq[E, D, U2]): SegmentSeq[E, D, V] =

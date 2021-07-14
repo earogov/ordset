@@ -228,7 +228,7 @@ object SegmentT {
     override def backwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, LazyList.empty)
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: SegmentSeq[E, D, V] = sequence
+    override def takeAbove: SegmentSeq[E, D, V] = sequence
   }
 
   /**
@@ -253,7 +253,7 @@ object SegmentT {
     override def forwardLazyList: LazyList[SegmentT[E, D, V, S] with S] = LazyList.cons(self, LazyList.empty)
 
     // Transformation ----------------------------------------------------------- //
-    override def takenBelow: SegmentSeq[E, D, V] = sequence
+    override def takeBelow: SegmentSeq[E, D, V] = sequence
   }
 
   /**
@@ -288,23 +288,23 @@ object SegmentT {
     override def moveToBound(bound: Bound[E]): SegmentT.Single[E, D, V, S] with S = self
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
   }
 
   object Single {
 
     abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Single[E, D, V, S] with S](
       override val segment: Seg,
-      inputBound: Bound[E],
+      inputBound: ExtendedBound[E],
     ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound,
     ) {
 
       // Protected section -------------------------------------------------------- //
-      protected override def getPrependedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
+      protected override def getSegmentForPrepending: SegmentT.Single[E, D, V, S] with S = segment
 
-      protected override def getAppendedBoundSegment: SegmentT.Single[E, D, V, S] with S = segment
+      protected override def getSegmentForAppending: SegmentT.Single[E, D, V, S] with S = segment
     }
   }
 
@@ -343,25 +343,24 @@ object SegmentT {
     override def moveToFirst: SegmentT.Initial[E, D, V, S] with S = self
     
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(other)
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(other)
   }
 
   object Initial {
 
     abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Initial[E, D, V, S] with S](
       override val segment: Seg,
-      inputBound: Bound[E],
+      inputBound: ExtendedBound[E],
     ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound,
     ) {
 
       // Protected section -------------------------------------------------------- //
-      protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S =
-        if (segment.hasUpperBound(bound.provideUpper)) segment.moveNext
-        else segment
+      protected override def getSegmentForPrepending: SegmentT[E, D, V, S] with S =
+        SegmentTruncationT.getSegmentForPrependingCaseSegmentWithNext(bound, segment)
 
-      protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S = segment
+      protected override def getSegmentForAppending: SegmentT[E, D, V, S] with S = segment
     }
   }
 
@@ -400,25 +399,24 @@ object SegmentT {
     override def moveToLast: SegmentT.Terminal[E, D, V, S] with S = self
     
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.appended(other)
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.append(other)
   }
 
   object Terminal {
 
     abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Terminal[E, D, V, S] with S](
       override val segment: Seg,
-      inputBound: Bound[E]
+      inputBound: ExtendedBound[E]
     ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound
     ) {
 
       // Protected section -------------------------------------------------------- //
-      protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S = segment
+      protected override def getSegmentForPrepending: SegmentT[E, D, V, S] with S = segment
 
-      protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
-        if (segment.hasLowerBound(bound.provideLower)) segment.movePrev
-        else segment
+      protected override def getSegmentForAppending: SegmentT[E, D, V, S] with S =
+        SegmentTruncationT.getSegmentForAppendingCaseSegmentWithPrev(bound, segment)
     }
   }
 
@@ -459,28 +457,25 @@ object SegmentT {
     override def self: SegmentT.Inner[E, D, V, S] with S
 
     // Transformation ----------------------------------------------------------- //
-    override def patched(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepended(movePrev.appended(other))
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(movePrev.append(other))
   }
 
   object Inner {
 
     abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Inner[E, D, V, S] with S](
       segment: Seg,
-      inputBound: Bound[E],
+      inputBound: ExtendedBound[E],
     ) extends SegmentTruncationT[E, D, V, S, Seg](
       segment,
       inputBound
     ) {
 
       // Protected section -------------------------------------------------------- //
-      protected override def getPrependedBoundSegment: SegmentT[E, D, V, S] with S =
-        if (segment.hasUpperBound(bound.provideUpper)) segment.moveNext
-        else segment
+      protected override def getSegmentForPrepending: SegmentT[E, D, V, S] with S =
+        SegmentTruncationT.getSegmentForPrependingCaseSegmentWithNext(bound, segment)
 
-      protected override def getAppendedBoundSegment: SegmentT[E, D, V, S] with S =
-        if (segment.hasLowerBound(bound.provideLower)) segment.movePrev
-        else segment
-      
+      protected override def getSegmentForAppending: SegmentT[E, D, V, S] with S =
+        SegmentTruncationT.getSegmentForAppendingCaseSegmentWithPrev(bound, segment)
     }
   }
 

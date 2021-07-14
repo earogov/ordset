@@ -14,11 +14,14 @@ class UniformOrderedSet[E, D <: Domain[E]] protected (
 ) extends AbstractUniformSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D] {
 
-  // Transformation ----------------------------------------------------------- //
-
   // Protected section -------------------------------------------------------- //  
   @inline
   protected final override def isValueIncluded(value: Boolean): Boolean = value
+
+  @inline
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =
+    if (valueOps.eqv(this.value, value)) this
+    else UniformOrderedSet.apply(value, setFactory)
 
   protected final override def consPrepended(bound: Bound[E], firstValue: Boolean): OrderedSet[E, D] =
     if (valueOps.eqv(firstValue, value))

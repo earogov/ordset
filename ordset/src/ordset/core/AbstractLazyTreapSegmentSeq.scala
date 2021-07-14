@@ -69,13 +69,11 @@
 //  final override def getSegmentForElement(element: E): LazySegment[E, D, V] = super.getSegmentForElement(element)
 //
 //  // Transformation ----------------------------------------------------------- //
-//  final override def takenAbove(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliced(bound)._2
+//  final override def takeAbove(bound: Bound[E]): TreapSegmentSeq[E, D, V] = slice(bound)._2
 //
-//  final override def takenBelow(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliced(bound)._1
+//  final override def takeBelow(bound: Bound[E]): TreapSegmentSeq[E, D, V] = slice(bound)._1
 //
-//  final override def sliced(bound: Bound[E]): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) = ???
-//
-//  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = ???
+//  final override def slice(bound: Bound[E]): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) = ???
 //
 //  // Protected section -------------------------------------------------------- //
 //  /**
@@ -312,7 +310,7 @@
 //    // The only exception - when uniform sequence is patched by some non-treap `baseSeq`. In such a case
 //    // patch operation may produce sequence of any type and `convertMap` will create new treap based instance.
 //    TreapOrderedMap.getFactory.convertMap(
-//      zsegment.self.patchedFirstSeq(baseSeq)
+//      zsegment.self.patchFirstSeq(baseSeq)
 //    )
 //
 //  /**
@@ -373,7 +371,7 @@
 //    //    If both conditions are met then:
 //    //    - merge first and last segments:
 //    //      - build `leftPatchSequence` (see 4.1.1 and 4.1.2) and `rightPatchSequence` (see 4.2.1 and 4.2.2);
-//    //      - get merged sequence as `leftPatchSequence.appended(rightPatchSequence)`;
+//    //      - get merged sequence as `leftPatchSequence.append(rightPatchSequence)`;
 //    //    - apply received patch sequence to old control sequence within `patchLowerBound` and `patchUpperBound`
 //    //      and return the result.
 //    //
@@ -445,7 +443,7 @@
 //    //              s
 //    // X--------------------------X    `leftPatchSequence`
 //    //
-//    // Then get merged sequence as `leftPatchSequence.appended(innerPatchSequence)`.
+//    // Then get merged sequence as `leftPatchSequence.append(innerPatchSequence)`.
 //    //
 //    // 4.2 To merge last segment with `innerPatchSequence` build `rightPatchSequence`:
 //    //
@@ -461,7 +459,7 @@
 //    //              s
 //    // X--------------------------X    `rightPatchSequence`
 //    //
-//    // Then get merged sequence as `rightPatchSequence.prepended(innerPatchSequence)`.
+//    // Then get merged sequence as `rightPatchSequence.prepend(innerPatchSequence)`.
 //
 //    /**
 //     * Properties of either left or right side of patch sequence.
@@ -652,28 +650,28 @@
 //    val patchSequence: SegmentSeq[E, D, ControlValue[E, D, V]] = (leftSideInfo, rightSideInfo) match {
 //      // See p.2.
 //      case (li: ShiftedPatchBoundInfo, ri: ShiftedPatchBoundInfo) =>
-//        li.patchBoundSequence.appended(ri.patchBoundSequence)
+//        li.patchBoundSequence.append(ri.patchBoundSequence)
 //      // See p.3 for all cases below.
 //      case (li: ShiftedPatchBoundInfo, ri: NonShiftedPatchBoundInfo) =>
 //        val innerPatchSequence = makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
-//        li.patchBoundSequence.appended(innerPatchSequence)
+//        li.patchBoundSequence.append(innerPatchSequence)
 //      case (li: NonShiftedPatchBoundInfo, ri: ShiftedPatchBoundInfo) =>
 //        val innerPatchSequence = makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
-//        ri.patchBoundSequence.prepended(innerPatchSequence)
+//        ri.patchBoundSequence.prepend(innerPatchSequence)
 //      case (li: NonShiftedPatchBoundInfo, ri: NonShiftedPatchBoundInfo) =>
 //        makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
 //    }
 //    val tmpSeq =
 //      if (leftSideInfo.patchBoundTruncation != null) {
 //        val tr: SegmentTruncation[E, D, ControlValue[E, D, V]] = leftSideInfo.patchBoundTruncation
-//        tr.appended(patchSequence)
+//        tr.append(patchSequence)
 //      } else {
 //        patchSequence
 //      }
 //    val newSeq =
 //      if (rightSideInfo.patchBoundTruncation != null) {
 //        val tr: SegmentTruncation[E, D, ControlValue[E, D, V]] = rightSideInfo.patchBoundTruncation
-//        tr.prepended(tmpSeq)
+//        tr.prepend(tmpSeq)
 //      }
 //      else {
 //        tmpSeq
@@ -1304,15 +1302,15 @@
 //    override def moveTo(bound: Bound[E]): LazySegment[E, D, V] = sequence.getSegment(bound)
 //
 //    // Transformation ----------------------------------------------------------- //
-//    override def takenAbove: SegmentSeq[E, D, V] = ???
+//    override def takeAbove: SegmentSeq[E, D, V] = ???
 //
-//    override def takenBelow: SegmentSeq[E, D, V] = ???
+//    override def takeBelow: SegmentSeq[E, D, V] = ???
 //
-//    override def sliced: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+//    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
 //
-//    override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+//    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 //
-//    override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+//    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 //
 //    override def truncation(bound: Bound[E]): SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] = ???
 //

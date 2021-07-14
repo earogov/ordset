@@ -125,10 +125,9 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
 
   // Protected section -------------------------------------------------------- //
   protected final def convertSetInternal(set: OrderedSet[E, D]): SSeq = {
-    val firstSegment = set.firstSegment
     unsafeBuildAsc(
-      SegmentSeqOps.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true),
-      firstSegment.value,
+      set.upperBounds,
+      set.firstSegment.value,
       set.domainOps
     )(
       SeqValidationPredicate.alwaysTrue

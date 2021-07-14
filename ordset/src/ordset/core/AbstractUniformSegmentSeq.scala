@@ -36,39 +36,39 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def getSegmentForElement(element: E): UniformSingleSegment[E, D, V] = segment
 
   // Transformation ----------------------------------------------------------- //
-  final override def takenAbove(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
+  final override def takeAboveBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
-  final override def takenBelow(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
+  final override def takeBelowBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
-  final override def sliced(bound: Bound[E]): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
+  final override def sliceAtBound(bound: Bound[E]): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
     (this, this)
 
-  final override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
+  final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
   
-  final override def prepended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+  final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val upperBound = bound.provideUpper
 
     val otherBoundSegment = other.getSegmentForBound(upperBound)
 
-    val leftSequence = otherBoundSegment.takenBelow
+    val leftSequence = otherBoundSegment.takeBelow
     val rightSequence = consPrepended(bound, otherBoundSegment.value)
 
     if (rightSequence.isUniform) leftSequence
-    else rightSequence.prepended(bound, leftSequence)
+    else rightSequence.prependBelowBound(bound, leftSequence)
   }
 
-  final override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
-  
-  final override def appended(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+  final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
+
+  final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val lowerBound = bound.provideLower
-    
+
     val otherBoundSegment = other.getSegmentForBound(lowerBound)
 
     val leftSequence = consAppended(bound, otherBoundSegment.value)
-    val rightSequence = otherBoundSegment.takenAbove
-    
+    val rightSequence = otherBoundSegment.takeAbove
+
     if (leftSequence.isUniform) rightSequence
-    else leftSequence.appended(bound, rightSequence)
+    else leftSequence.appendAboveBound(bound, rightSequence)
   }
 
   // Protected section -------------------------------------------------------- //
@@ -85,6 +85,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    */
   protected def isValueIncluded(value: V): Boolean
 
+  protected override def consUniform(value: V): UniformSegmentSeq[E, D, V]
+
   /**
    * Creates segment sequence:
    * <tr>(minBound, U(bound)) -> `firstValue`</tr>
@@ -93,18 +95,18 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    * <tr>minBound - minimal bound of domain;</tr>
    * <tr>maxBound - maximal bound of domain;</tr>
    * <tr>
-   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise 
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
    * </tr>
    * <tr>
-   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
+   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise
    *   (see [[Bound.provideLower]]).
    * </tr>
    * <tr></tr>
    * If `firstValue` and `this.value` are equals returns current uniform sequence (bound in result sequence is dropped).
    */
   protected def consPrepended(bound: Bound[E], firstValue: V): SegmentSeq[E, D, V]
-  
+
   /**
    * Creates segment sequence:
    * <tr>(minBound, U(bound)) -> `this.value`</tr>
@@ -113,11 +115,11 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    * <tr>minBound - minimal bound of domain;</tr>
    * <tr>maxBound - maximal bound of domain;</tr>
    * <tr>
-   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise 
+   *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
    * </tr>
    * <tr>
-   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
+   *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise
    *   (see [[Bound.provideLower]]).
    * </tr>
    * <tr></tr>
@@ -150,18 +152,18 @@ object AbstractUniformSegmentSeq {
     override def moveToBound(bound: Bound[E]): UniformSingleSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
-    override def takenAbove: UniformSegmentSeq[E, D, V] = sequence
+    override def takeAbove: UniformSegmentSeq[E, D, V] = sequence
 
-    override def takenBelow: UniformSegmentSeq[E, D, V] = sequence
+    override def takeBelow: UniformSegmentSeq[E, D, V] = sequence
 
-    override def sliced: (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
+    override def slice: (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
       (sequence, sequence)
 
-    override def prepended(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
+    override def prepend(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
 
-    override def appended(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
+    override def append(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
 
-    override def truncation(bound: Bound[E]): UniformSingleSegment.Truncation[E, D, V, this.type] =
+    override def truncation(bound: ExtendedBound[E]): UniformSingleSegment.Truncation[E, D, V, this.type] =
       new UniformSingleSegment.Truncation(this, bound)
   }
 
@@ -169,17 +171,17 @@ object AbstractUniformSegmentSeq {
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: UniformSingleSegment[E, D, V]](
       override val segment: Seg,
-      inputBound: Bound[E],
+      inputBound: ExtendedBound[E],
     ) extends SegmentT.Single.Truncation[E, D, V, UniformSingleSegment[E, D, V], Seg](
       segment,
       inputBound,
     ) {
 
-      override def prepended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.prepended(bound, other)
+      override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+        segment.sequence.prependBelowExtended(bound, other)
 
-      override def appended(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.appended(bound, other)
+      override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+        segment.sequence.appendAboveExtended(bound, other)
     }
   }
 }
