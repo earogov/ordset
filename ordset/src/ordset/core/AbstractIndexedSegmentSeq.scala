@@ -91,6 +91,8 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     else consAbove(ind)
   }
 
+  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeAboveExtended(bound)
+
   final override def takeBelowBound(bound: Bound[E]): IndexedSegmentSeq[E, D, V] = {
     val ind = searchSegmentFromBegin(bound)
     if (ind == 0) consUniform(getSegmentValue(ind))
@@ -98,12 +100,17 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     else consBelow(ind - 1)
   }
 
+  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeBelowExtended(bound)
+  
   final override def sliceAtBound(bound: Bound[E]): (IndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V]) = {
     val ind = searchSegmentFromBegin(bound)
     if (ind == 0) (consUniform(getSegmentValue(ind)), this)
     else if (ind == lastSegmentIndex) (this, consUniform(getSegmentValue(ind)))
     else (consBelow(ind - 1), consAbove(ind))
   }
+
+  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = 
+    super.sliceAtExtended(bound)
 
   // Transformation ----------------------------------------------------------- //
   final override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
@@ -114,6 +121,9 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
     prependInternal(bound, getSegmentForBound(bound.provideLower), other)
 
+  final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
+    super.prependBelowExtended(bound, other)
+  
   final override def append(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
     appendInternal(segment.upperBound, segment, other)
@@ -122,6 +132,9 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
     appendInternal(bound, getSegmentForBound(bound.provideUpper), other)
 
+  final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
+    super.appendAboveExtended(bound, other)
+  
   // Protected section -------------------------------------------------------- //
   /**
    * Validate state after initialization.

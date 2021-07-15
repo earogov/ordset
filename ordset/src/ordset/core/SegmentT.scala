@@ -287,6 +287,10 @@ object SegmentT {
 
     override def moveToBound(bound: Bound[E]): SegmentT.Single[E, D, V, S] with S = self
 
+    override def moveToExtended(bound: ExtendedBound[E]): SegmentT.Single[E, D, V, S] with S = self
+
+    override def moveToElement(element: E): SegmentT.Single[E, D, V, S] with S = self
+
     // Transformation ----------------------------------------------------------- //
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
   }

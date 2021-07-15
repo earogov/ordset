@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.internal.SegmentSeqExceptionUtil
 import ordset.core.value.ValueOps
 
 import scala.Specializable.{AllNumeric => spNum}
@@ -216,7 +217,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
         current = s.moveNext
         current
       case _ =>
-        throw new NoSuchElementException(s"Segment $current doesn't have next segment.")
+        SegmentSeqExceptionUtil.throwNoNextSegment(current)
     }
   }
 
@@ -241,7 +242,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
         current = s.movePrev
         current
       case _ =>
-        throw new NoSuchElementException(s"Segment $current doesn't have previous segment.")
+        SegmentSeqExceptionUtil.throwNoPrevSegment(current)
     }
   }
 

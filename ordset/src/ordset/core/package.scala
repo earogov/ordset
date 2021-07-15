@@ -44,7 +44,7 @@ package object core {
   
   type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2] = AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 
-  // type LazySegmentSeq[E, D <: Domain[E], V] = AbstractLazyTreapSegmentSeq[E, D, V]
+  type LazySegmentSeq[E, D <: Domain[E], V] = AbstractLazyTreapSegmentSeq[E, D, V]
   
   // type MappedSegmentSeq[E, D <: Domain[E], U, V, S] = AbstractMappedSegmentSeq[E, D, U, V, S]
 }

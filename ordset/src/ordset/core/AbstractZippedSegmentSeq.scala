@@ -76,13 +76,34 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] =
     cons(firstSeq.takeAboveBound(bound), secondSeq.takeAboveBound(bound))
 
+  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] =
+    super.takeAboveExtended(bound)
+
   final override def takeBelowBound(bound: Bound[E]): SegmentSeq[E, D, V] =
     cons(firstSeq.takeBelowBound(bound), secondSeq.takeBelowBound(bound))
+
+  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] =
+    super.takeBelowExtended(bound)
 
   final override def sliceAtBound(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
     (takeBelowBound(bound), takeAboveBound(bound))
 
+  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
+    super.sliceAtExtended(bound)
+
+  final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+  final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+  final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    super.prependBelowExtended(bound, other)
+
+  final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+  final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    super.appendAboveExtended(bound, other)
 
   // Protected section -------------------------------------------------------- //
   /**
@@ -920,7 +941,7 @@ object AbstractZippedSegmentSeq {
 
     override def truncation(
       bound: ExtendedBound[E]
-    ): SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] = ???
+    ): SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type]
 
     /**
      * Applies patch operation to first original sequence within current zipped segment.
@@ -993,6 +1014,17 @@ object AbstractZippedSegmentSeq {
      * See [[patchFirstSeq]].
      */
     def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2]
+  }
+
+  object ZippedSegmentBase {
+
+    trait TruncationBase[E, D <: Domain[E], U1, U2, V, S1, S2] {
+      self: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], ZippedSegment[E, D, U1, U2, V, S1, S2]] =>
+
+      override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+      override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    }
   }
 
   /**
@@ -1103,11 +1135,27 @@ object AbstractZippedSegmentSeq {
     override def moveToFirst: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): ZippedInitialSegment.Truncation[E, D, U1, U2, V, S1, S2, this.type] =
+      new ZippedInitialSegment.Truncation(this, bound)
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
       firstSeqSegment.truncation(upperBound).prepend(other)
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
       secondSeqSegment.truncation(upperBound).prepend(other)
+  }
+
+  object ZippedInitialSegment {
+
+    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedInitialSegment[E, D, U1, U2, V, S1, S2]](
+      override val segment: Seg,
+      inputBound: ExtendedBound[E],
+    ) extends SegmentT.Initial.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
+      segment,
+      inputBound
+    ) with ZippedSegmentBase.TruncationBase[E, D, U1, U2, V, S1, S2]
   }
 
   /**
@@ -1136,11 +1184,27 @@ object AbstractZippedSegmentSeq {
     override def moveToLast: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): ZippedTerminalSegment.Truncation[E, D, U1, U2, V, S1, S2, this.type] =
+      new ZippedTerminalSegment.Truncation(this, bound)
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
       back.firstSeqSegment.truncation(lowerBound).append(other)
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
       back.secondSeqSegment.truncation(lowerBound).append(other)
+  }
+
+  object ZippedTerminalSegment {
+
+    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2]](
+      override val segment: Seg,
+      inputBound: ExtendedBound[E],
+    ) extends SegmentT.Terminal.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
+      segment,
+      inputBound
+    ) with ZippedSegmentBase.TruncationBase[E, D, U1, U2, V, S1, S2]
   }
 
   /**
@@ -1165,6 +1229,11 @@ object AbstractZippedSegmentSeq {
     override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): ZippedInnerSegment.Truncation[E, D, U1, U2, V, S1, S2, this.type] =
+      new ZippedInnerSegment.Truncation(this, bound)
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
       firstSeqSegment.truncation(upperBound).prepend(
         back.firstSeqSegment.truncation(lowerBound).append(other)
@@ -1174,6 +1243,17 @@ object AbstractZippedSegmentSeq {
       secondSeqSegment.truncation(upperBound).prepend(
         back.secondSeqSegment.truncation(lowerBound).append(other)
       )
+  }
+
+  object ZippedInnerSegment {
+
+    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedInnerSegment[E, D, U1, U2, V, S1, S2]](
+      override val segment: Seg,
+      inputBound: ExtendedBound[E],
+    ) extends SegmentT.Inner.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
+      segment,
+      inputBound
+    ) with ZippedSegmentBase.TruncationBase[E, D, U1, U2, V, S1, S2]
   }
 
   /**
@@ -1205,10 +1285,30 @@ object AbstractZippedSegmentSeq {
 
     override def moveToBound(bound: Bound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
 
+    override def moveToExtended(bound: ExtendedBound[E]): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
+
+    override def moveToElement(element: E): ZippedSingleSegment[E, D, U1, U2, V, S1, S2] = this
+
     // Transformation ----------------------------------------------------------- //
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): ZippedSingleSegment.Truncation[E, D, U1, U2, V, S1, S2, this.type] =
+      new ZippedSingleSegment.Truncation(this, bound)
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] = other
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] = other
+  }
+
+  object ZippedSingleSegment {
+
+    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedSingleSegment[E, D, U1, U2, V, S1, S2]](
+      override val segment: Seg,
+      inputBound: ExtendedBound[E],
+    ) extends SegmentT.Single.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
+      segment,
+      inputBound
+    ) with ZippedSegmentBase.TruncationBase[E, D, U1, U2, V, S1, S2]
   }
 
   // Protected section -------------------------------------------------------- //

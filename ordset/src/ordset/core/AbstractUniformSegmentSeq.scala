@@ -38,9 +38,16 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
+  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = this
+
   final override def takeBelowBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
+  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = this
+
   final override def sliceAtBound(bound: Bound[E]): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
+    (this, this)
+
+  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
     (this, this)
 
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
@@ -57,6 +64,9 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
     else rightSequence.prependBelowBound(bound, leftSequence)
   }
 
+  final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    super.prependBelowExtended(bound, other)
+
   final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
@@ -70,6 +80,9 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
     if (leftSequence.isUniform) rightSequence
     else leftSequence.appendAboveBound(bound, rightSequence)
   }
+
+  final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    super.appendAboveExtended(bound, other)
 
   // Protected section -------------------------------------------------------- //
   /** Single segment instance. */
@@ -150,6 +163,10 @@ object AbstractUniformSegmentSeq {
     override def moveToLast: UniformSingleSegment[E, D, V] = this
 
     override def moveToBound(bound: Bound[E]): UniformSingleSegment[E, D, V] = this
+
+    override def moveToExtended(bound: ExtendedBound[E]): UniformSingleSegment[E, D, V] = this
+
+    override def moveToElement(element: E): UniformSingleSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
     override def takeAbove: UniformSegmentSeq[E, D, V] = sequence
