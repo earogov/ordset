@@ -1,11 +1,11 @@
 package test.ordset.core.specs.segmentSeq
 
-import ordset.core.AbstractLazyTreapSegmentSeq.{ControlTupleOps, ControlValue, ControlValueOps, LazyValue, ZSegmentSeq}
+import ordset.core.AbstractLazyTreapSegmentSeq.{ControlTupleOps, ControlValue, ControlValueOps, LazyValue, ZSegmentSeq, LazySegmentBase}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{TreapOrderedMap, ZippedOrderedMap}
+import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap, OrderedMapCommons}
 import ordset.core.set.{ArrayOrderedSet, OrderedSet, TreapOrderedSet}
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, ExtendedBound, Segment, SegmentSeq, SegmentSeqOps, TreapSegmentSeq}
+import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, ExtendedBound, Segment, SegmentSeq, TreapSegmentSeq}
 import ordset.random.RngManager
 import ordset.util.IterableUtil
 import ordset.{Order, core}
@@ -122,7 +122,8 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
     final override val domainOps: DomainOps[E, D],
     final override val valueOps: ValueOps[V],
     final override val rngManager: RngManager
-  ) extends AbstractLazyTreapSegmentSeq[E, D, V] {
+  ) extends AbstractLazyTreapSegmentSeq[E, D, V]
+    with OrderedMapCommons[E, D, V, LazySegmentBase[E, D, V]] {
 
     zippedSeq = ZippedOrderedMap.apply(
       TreapOrderedMap.getFactory.unsafeBuildAsc(
@@ -144,6 +145,6 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec {
       rngManager
     )
 
-    protected override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
+    protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
   }
 }

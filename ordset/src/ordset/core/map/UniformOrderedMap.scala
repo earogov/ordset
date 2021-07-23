@@ -1,5 +1,6 @@
 package ordset.core.map
 
+import ordset.core.AbstractUniformSegmentSeq.UniformSingleSegment
 import ordset.core.value.ValueOps
 import ordset.core.{AbstractUniformSegmentSeq, Bound, ExtendedBound, SegmentSeq, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
@@ -14,12 +15,9 @@ class UniformOrderedMap[E, D <: Domain[E], V] protected (
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
 ) extends AbstractUniformSegmentSeq[E, D, V]
-  with OrderedMapCommons[E, D, V] {
+  with OrderedMapCommons[E, D, V, UniformSingleSegment[E, D, V]] {
 
   // Protected section -------------------------------------------------------- //
-  @inline
-  protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
-
   @inline
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] =
     if (valueOps.eqv(this.value, value)) this

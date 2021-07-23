@@ -369,6 +369,14 @@ object AbstractIndexedSegmentSeq {
       // Trait is sealed so this is unreachable case.
       throw new AssertionError("Implementation is provided in subclasses of sealed trait.")
     }
+
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type]
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type]
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type]
   }
 
   object IndexedSegmentBase {
@@ -474,8 +482,16 @@ object AbstractIndexedSegmentSeq {
 
     override def patch(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = moveNext.prepend(other)
 
-    override def truncation(bound: ExtendedBound[E]): IndexedInitialSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
       new IndexedInitialSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object IndexedInitialSegment {
@@ -513,8 +529,16 @@ object AbstractIndexedSegmentSeq {
 
     override def patch(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = movePrev.append(other)
 
-    override def truncation(bound: ExtendedBound[E]): IndexedTerminalSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
       new IndexedTerminalSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object IndexedTerminalSegment {
@@ -556,8 +580,16 @@ object AbstractIndexedSegmentSeq {
     override def patch(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
       moveNext.prepend(movePrev.append(other))
 
-    override def truncation(bound: ExtendedBound[E]): IndexedInnerSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
       new IndexedInnerSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object IndexedInnerSegment {

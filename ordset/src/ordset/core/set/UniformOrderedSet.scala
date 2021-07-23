@@ -1,5 +1,6 @@
 package ordset.core.set
 
+import ordset.core.AbstractUniformSegmentSeq.UniformSingleSegment
 import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationPredicate, TreapSegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
@@ -12,12 +13,9 @@ class UniformOrderedSet[E, D <: Domain[E]] protected (
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
 ) extends AbstractUniformSegmentSeq[E, D, Boolean]
-  with OrderedSetCommons[E, D] {
+  with OrderedSetCommons[E, D, UniformSingleSegment[E, D, Boolean]] {
 
-  // Protected section -------------------------------------------------------- //  
-  @inline
-  protected final override def isValueIncluded(value: Boolean): Boolean = value
-
+  // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =
     if (valueOps.eqv(this.value, value)) this

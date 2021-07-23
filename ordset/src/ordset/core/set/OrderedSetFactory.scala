@@ -2,7 +2,7 @@ package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.OrderedMap
-import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
 import ordset.random.RngManager
 
 import scala.util.Try

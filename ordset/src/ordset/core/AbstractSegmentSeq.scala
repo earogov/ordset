@@ -43,6 +43,13 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
 
   // Protected section -------------------------------------------------------- //
   /**
+   * Returns `true` if segment with given value is considered to be included in set.
+   *
+   * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
+   */
+  protected def isValueIncluded(value: V): Boolean
+  
+  /**
    * Creates uniform segment sequence with specified `value`.
    */
   protected def consUniform(value: V): SegmentSeq[E, D, V]

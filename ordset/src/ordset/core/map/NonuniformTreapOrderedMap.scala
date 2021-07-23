@@ -1,5 +1,6 @@
 package ordset.core.map
 
+import ordset.core.AbstractTreapSegmentSeq.TreapSegmentBase
 import ordset.core._
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
@@ -21,7 +22,7 @@ class NonuniformTreapOrderedMap[E, D <: Domain[E], V] protected (
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
 ) extends AbstractTreapSegmentSeq[E, D, V]
-  with OrderedMapCommons[E, D, V] {
+  with OrderedMapCommons[E, D, V, TreapSegmentBase[E, D, V]] {
 
   // Protected section -------------------------------------------------------- //
   @inline
@@ -33,9 +34,6 @@ class NonuniformTreapOrderedMap[E, D <: Domain[E], V] protected (
     value: V
   ): NonuniformTreapOrderedMap[E, D, V] =
     NonuniformTreapOrderedMap.unchecked(node, value)
-
-  @inline
-  protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
 }
 
 object NonuniformTreapOrderedMap {

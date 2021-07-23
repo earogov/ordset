@@ -42,7 +42,7 @@ protected[ordset] trait MappedSegmentLikeT[E, D <: Domain[E], U, V, S1, +S2] ext
       } else current.original match {
         case s: SegmentT.WithNext[E, D, U, S1] =>
           val nextOriginal = s.moveNext
-          current = consWithPrev(nextOriginal.truncation(nextOriginal.lowerBound))
+          current = consWithPrev(nextOriginal.lowerTruncation)
           current
         case _ =>
           SegmentSeqExceptionUtil.throwNoNextSegment(current)
@@ -67,7 +67,7 @@ protected[ordset] trait MappedSegmentLikeT[E, D <: Domain[E], U, V, S1, +S2] ext
       } else current.original match {
         case s: SegmentT.WithPrev[E, D, U, S1] =>
           val prevOriginal = s.movePrev
-          current = consWithNext(prevOriginal.truncation(prevOriginal.upperBound))
+          current = consWithNext(prevOriginal.upperTruncation)
           current
         case _ =>
           SegmentSeqExceptionUtil.throwNoPrevSegment(current)

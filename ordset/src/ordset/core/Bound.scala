@@ -95,6 +95,8 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 
   override def isAboveAll: Boolean = false
 
+  override def flipLimited: ExtendedBound[E]
+  
   override def extendedOffset: Int = 0
 }
 
@@ -132,6 +134,8 @@ object Bound {
 
     override def flip: Bound[E] = this.flipUpper
 
+    override def flipLimited: ExtendedBound[E] = this.flipUpper
+    
     def flipUpper: Lower[E] = Lower(element, !isInclusive)
 
     override def offset: Int = if (isInclusive) 0 else -1
@@ -172,6 +176,8 @@ object Bound {
     override def provideLower: Bound.Lower[E] = this
 
     override def flip: Bound[E] = this.flipLower
+
+    override def flipLimited: ExtendedBound[E] = this.flipLower
 
     def flipLower: Upper[E] = Upper(element, !isInclusive)
 
@@ -273,6 +279,13 @@ sealed trait ExtendedBound[@sp(spNum) +E] {
 
   /**
    * Returns
+   * <tr>flipped bound (see [[Bound.flip]]) - if bound is limited returns;</tr>
+   * <tr>bound itself - if bound is unlimited.</tr>
+   */
+  def flipLimited: ExtendedBound[E]
+  
+  /**
+   * Returns
    * <tr> 0 - if bound is limited;</tr>
    * <tr> 1 - if bound is [[ExtendedBound.AboveAll]];</tr>
    * <tr>-1 - if bound is [[ExtendedBound.BelowAll]].</tr>
@@ -343,6 +356,8 @@ object ExtendedBound {
 
     override val isLower: Boolean = false
 
+    override def flipLimited: ExtendedBound[Nothing] = this
+
     override val extendedOffset: Int = 1
 
     override def toString: String = SetBuilderFormat.aboveAllBound
@@ -364,6 +379,8 @@ object ExtendedBound {
     override val isUpper: Boolean = false
 
     override val isLower: Boolean = true
+
+    override def flipLimited: ExtendedBound[Nothing] = this
 
     override val extendedOffset: Int = -1
 

@@ -3,8 +3,9 @@ package test.ordset.core.samples.segmentSeq
 import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.SetBuilderNotation.BoundBuilder
+import ordset.core.util.SegmentSeqUtil
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, IntervalRelation, SegmentSeq, SegmentSeqOps}
+import ordset.core.{Bound, IntervalRelation, SegmentSeq}
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
@@ -30,7 +31,7 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   def sequence: SSeq
 
   def bounds: IterableOnce[Bound.Upper[E]] =
-    SegmentSeqOps.getUpperBoundsIterableFromSegment(sequence.firstSegment, inclusive = true)
+    SegmentSeqUtil.getUpperBoundsIterableFromSegment(sequence.firstSegment, inclusive = true)
 
   def complementary: Boolean = sequence.firstSegment.isIncluded
 

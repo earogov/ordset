@@ -1,5 +1,6 @@
 package ordset.core.set
 
+import ordset.core.AbstractTreapSegmentSeq.TreapSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core._
 import ordset.random.RngManager
@@ -18,7 +19,7 @@ class NonuniformTreapOrderedSet[E, D <: Domain[E]] protected (
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
 ) extends AbstractTreapSegmentSeq[E, D, Boolean]
-  with OrderedSetCommons[E, D]{
+  with OrderedSetCommons[E, D, TreapSegmentBase[E, D, Boolean]]{
 
   // Protected section -------------------------------------------------------- //
   @inline
@@ -30,9 +31,6 @@ class NonuniformTreapOrderedSet[E, D <: Domain[E]] protected (
     value: Boolean
   ): NonuniformTreapOrderedSet[E, D] =
     NonuniformTreapOrderedSet.unchecked(node, value)
-
-  @inline
-  protected final override def isValueIncluded(value: Boolean): Boolean = value
 }
 
 object NonuniformTreapOrderedSet {

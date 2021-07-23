@@ -1,10 +1,11 @@
-package ordset.core
+package ordset.core.util
 
 import ordset.core.domain.Domain
+import ordset.core._
 
 import scala.annotation.tailrec
 
-object SegmentSeqOps {
+object SegmentSeqUtil {
 
   /**
    * Returns upper bounds of all segments from current (inclusively or exclusively) to last (inclusively).

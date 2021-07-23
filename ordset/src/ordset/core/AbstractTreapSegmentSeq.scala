@@ -11,6 +11,7 @@ import ordset.tree.treap.immutable.transform.{BuildAsc, BuildDesc, SplitOutput, 
 import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDownward, NodeUpward}
 import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitContext}
 import AbstractTreapSegmentSeq._
+import ordset.core.util.TreapSegmentSeqUtil
 
 // TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
@@ -179,6 +180,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     super.appendAboveExtended(bound, other)
   
   // Protected section -------------------------------------------------------- //
+  protected override def isValueIncluded(value: V): Boolean
+  
   protected override def consUniform(value: V): UniformSegmentSeq[E, D, V]
 
   /**
@@ -259,7 +262,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     val boundOrd = domainOps.boundOrd
     val rng = rngManager.newUnsafeUniformRng()
 
-    val originalBuffer = BuildDesc.leftFrontToBuffer(TreapSegmentSeqOps.getRoot(originalRightSequence))
+    val originalBuffer = BuildDesc.leftFrontToBuffer(TreapSegmentSeqUtil.getRoot(originalRightSequence))
 
     val buffer =
       if (boundValuesMatch) originalBuffer
@@ -378,7 +381,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     val boundOrd = domainOps.boundOrd
     val rng = rngManager.newUnsafeUniformRng()
 
-    val originalBuffer = BuildAsc.rightFrontToBuffer(TreapSegmentSeqOps.getRoot(originalLeftSequence))
+    val originalBuffer = BuildAsc.rightFrontToBuffer(TreapSegmentSeqUtil.getRoot(originalLeftSequence))
     val buffer =
       if (skipBound) originalBuffer
       else
@@ -421,15 +424,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     appendFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
     super.appendAboveExtendedInternal(bound, originalBoundSegment, other, appendFunc)
-
-
-  /**
-   * Returns `true` if segment with given value is considered to be included in set.
-   *
-   * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
-   */
-  protected def isValueIncluded(value: V): Boolean
-
+  
   /**
    * @return initial segment of sequence.
    */
@@ -552,6 +547,14 @@ object AbstractTreapSegmentSeq {
       // Trait is sealed so this is unreachable case.
       throw new AssertionError("Implementation is provided in subclasses of sealed trait.")
     }
+
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type]
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type]
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type]
   }
 
   object TreapSegmentBase {
@@ -668,8 +671,16 @@ object AbstractTreapSegmentSeq {
     // Navigation --------------------------------------------------------------- //
     override def moveToFirst: TreapInitialSegment[E, D, V] = this
 
-    override def truncation(bound: ExtendedBound[E]): TreapInitialSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
       new TreapInitialSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object TreapInitialSegment {
@@ -721,8 +732,16 @@ object AbstractTreapSegmentSeq {
 
     override def patch(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = movePrev.append(other)
 
-    override def truncation(bound: ExtendedBound[E]): TreapTerminalSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
       new TreapTerminalSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object TreapTerminalSegment {
@@ -821,8 +840,16 @@ object AbstractTreapSegmentSeq {
     override def patch(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
       moveNext.prepend(movePrev.append(other))
 
-    override def truncation(bound: ExtendedBound[E]): TreapInnerSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
       new TreapInnerSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object TreapInnerSegment {

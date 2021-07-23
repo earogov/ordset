@@ -2,8 +2,9 @@ package ordset.core.map
 
 import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.util.SegmentSeqUtil
 import ordset.core.value.ValueOps
-import ordset.core.{ExtendedBound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core.{ExtendedBound, SegmentSeqException, SeqValidationPredicate}
 import ordset.random.RngManager
 
 import scala.util.Try
@@ -145,7 +146,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
   // Protected section -------------------------------------------------------- //
   protected final def convertMapInternal(map: OrderedMap[E, D, V]): SSeq =
     unsafeBuildAsc(
-      SegmentSeqOps.getExtendedBoundValueIterableForSeq(map),
+      SegmentSeqUtil.getExtendedBoundValueIterableForSeq(map),
       map.domainOps,
       map.valueOps
     )(

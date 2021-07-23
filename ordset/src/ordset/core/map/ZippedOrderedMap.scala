@@ -1,5 +1,6 @@
 package ordset.core.map
 
+import ordset.core.AbstractZippedSegmentSeq.ZippedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.{AbstractZippedSegmentSeq, SegmentSeq}
@@ -17,7 +18,7 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
 ) extends AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
-  with OrderedMapCommons[E, D, V] {
+  with OrderedMapCommons[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] {
 
   // Inspection --------------------------------------------------------------- //
   @inline
@@ -34,8 +35,6 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
   
   @inline
-  protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
-  
   protected final override def cons(first: SegmentSeq[E, D, U1], second: SegmentSeq[E, D, U2]): SegmentSeq[E, D, V] =
     new ZippedOrderedMap(first, second, operatorFunc, firstInvariantFunc, secondInvariantFunc)
 }

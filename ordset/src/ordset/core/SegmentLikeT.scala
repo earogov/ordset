@@ -503,4 +503,20 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Returns instance that captures current segment and specified bound to perform further operations.
    */
   def truncation(bound: ExtendedBound[E]): SegmentTruncationT[E, D, V, S, this.type]
+
+  /**
+   * Returns truncation of segment at its extended lower bound:
+   * {{{
+   *   segment.lowerTruncation == segment.truncation(segment.extendedLower)
+   * }}}
+   */
+  def lowerTruncation: SegmentTruncationT[E, D, V, S, this.type]
+
+  /**
+   * Returns truncation of segment at its extended upper bound:
+   * {{{
+   *   segment.upperTruncation == segment.truncation(segment.extendedUpper)
+   * }}}
+   */
+  def upperTruncation: SegmentTruncationT[E, D, V, S, this.type]
 }

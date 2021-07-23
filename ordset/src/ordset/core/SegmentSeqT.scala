@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.util.SegmentSeqUtil
 import ordset.random.RngManager
 
 import scala.Specializable.{AllNumeric => spNum}
@@ -144,7 +145,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * @return collection of all upper bounds.
    */
   def upperBounds: Iterable[Bound.Upper[E]] = 
-    SegmentSeqOps.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true)
+    SegmentSeqUtil.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true)
 
   /** @return first segment of sequence. */
   def firstSegment: SegmentT.First[E, D, V, S] with S

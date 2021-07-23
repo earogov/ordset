@@ -141,6 +141,7 @@ object SegmentTruncationT {
    * Implementation of [[SegmentTruncationT.getSegmentForPrepending]] for case when [[SegmentTruncationT.segment]]
    * has next segment.
    */
+  @inline
   protected [ordset] final def getSegmentForPrependingCaseSegmentWithNext[E, D <: Domain[E], V, S](
     bound: ExtendedBound[E], 
     segment: SegmentT.WithNext[E, D, V, S] with S
@@ -154,6 +155,7 @@ object SegmentTruncationT {
    * Implementation of [[SegmentTruncationT.getSegmentForAppending]] for case when [[SegmentTruncationT.segment]]
    * has previous segment.
    */
+  @inline
   protected [ordset] final def getSegmentForAppendingCaseSegmentWithPrev[E, D <: Domain[E], V, S](
     bound: ExtendedBound[E],
     segment: SegmentT.WithPrev[E, D, V, S] with S 
@@ -162,4 +164,22 @@ object SegmentTruncationT {
       case bound: Bound.Lower[E] if segment.hasLowerBound(bound) => segment.movePrev
       case _ => segment
     }
+
+  /**
+   * Implementation of [[SegmentT.lowerTruncation]].
+   */
+  @inline
+  protected [ordset] final def lowerTruncation[E, D <: Domain[E], V, S](
+    segment: SegmentLikeT[E, D, V, S]
+  ): SegmentTruncationT[E, D, V, S, segment.type] =
+    segment.truncation(segment.lowerExtended)
+
+  /**
+   * Implementation of [[SegmentT.upperTruncation]].
+   */
+  @inline
+  protected [ordset] final def upperTruncation[E, D <: Domain[E], V, S](
+    segment: SegmentLikeT[E, D, V, S]
+  ): SegmentTruncationT[E, D, V, S, segment.type] =
+    segment.truncation(segment.upperExtended)
 }

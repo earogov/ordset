@@ -90,13 +90,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
   /** Value of single segment. */
   protected val value: V
-
-  /**
-   * Returns `true` if segment with given value is considered to be included in set.
-   *
-   * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
-   */
-  protected def isValueIncluded(value: V): Boolean
+  
+  protected override def isValueIncluded(value: V): Boolean
 
   protected override def consUniform(value: V): UniformSegmentSeq[E, D, V]
 
@@ -180,8 +175,16 @@ object AbstractUniformSegmentSeq {
 
     override def append(other: SegmentSeq[E, D, V]): UniformSegmentSeq[E, D, V] = sequence
 
-    override def truncation(bound: ExtendedBound[E]): UniformSingleSegment.Truncation[E, D, V, this.type] =
+    override def truncation(
+      bound: ExtendedBound[E]
+    ): SegmentTruncationT[E, D, V, UniformSingleSegment[E, D, V], this.type] =
       new UniformSingleSegment.Truncation(this, bound)
+
+    override def lowerTruncation: SegmentTruncationT[E, D, V, UniformSingleSegment[E, D, V], this.type] =
+      SegmentTruncationT.lowerTruncation(this)
+
+    override def upperTruncation: SegmentTruncationT[E, D, V, UniformSingleSegment[E, D, V], this.type] =
+      SegmentTruncationT.upperTruncation(this)
   }
 
   object UniformSingleSegment {

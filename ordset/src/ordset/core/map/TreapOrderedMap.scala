@@ -1,7 +1,7 @@
 package ordset.core.map
 
 import ordset.core
-import ordset.core.{Bound, ExtendedBound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core.{Bound, ExtendedBound, SegmentSeqException, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager

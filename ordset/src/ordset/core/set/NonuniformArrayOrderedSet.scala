@@ -1,9 +1,10 @@
 package ordset.core.set
 
 import ordset.array.SortedArraySearch
-import ordset.core.AbstractIndexedSegmentSeq.IndexedSegment
+import ordset.core.AbstractIndexedSegmentSeq.{IndexedSegment, IndexedSegmentBase}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core._
+import ordset.core.util.SegmentSeqUtil
 import ordset.random.RngManager
 
 import scala.collection.immutable.ArraySeq
@@ -16,7 +17,7 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
 ) extends AbstractArraySegmentSeq[E, D, Boolean]
-  with OrderedSetCommons[E, D] {
+  with OrderedSetCommons[E, D, IndexedSegmentBase[E, D, Boolean]] {
 
   import AbstractIndexedSegmentSeq._
   import SortedArraySearch._
@@ -277,8 +278,8 @@ object NonuniformArrayOrderedSet {
     override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegmentForBound(bound)
 
     private val copyBounds: (List[Bound.Upper[E]], Int) =
-      if (forward) SegmentSeqOps.getUpperBoundsListFromSegment(boundSegment, inclusive = true)
-      else SegmentSeqOps.getUpperBoundsListToSegment(boundSegment, inclusive = false)
+      if (forward) SegmentSeqUtil.getUpperBoundsListFromSegment(boundSegment, inclusive = true)
+      else SegmentSeqUtil.getUpperBoundsListToSegment(boundSegment, inclusive = false)
 
     override def copyLen: Int = copyBounds._2
 

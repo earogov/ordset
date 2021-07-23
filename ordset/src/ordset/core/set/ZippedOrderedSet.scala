@@ -2,6 +2,7 @@ package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.AbstractZippedSegmentSeq
+import ordset.core.AbstractZippedSegmentSeq.ZippedSegmentBase
 import ordset.random.RngManager
 
 class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
@@ -14,7 +15,7 @@ class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
 ) extends AbstractZippedSegmentSeq[E, D, Boolean, Boolean, Boolean, S1, S2]
-  with OrderedSetCommons[E, D] {
+  with OrderedSetCommons[E, D, ZippedSegmentBase[E, D, Boolean, Boolean, Boolean, S1, S2]] {
 
   // Inspection --------------------------------------------------------------- //
   @inline
@@ -31,8 +32,6 @@ class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)
 
   @inline
-  protected final override def isValueIncluded(value: Boolean): Boolean = value
-
   protected final override def cons(first: OrderedSet[E, D], second: OrderedSet[E, D]): OrderedSet[E, D] =
     new ZippedOrderedSet(first, second, operatorFunc, invariantFunc)
 }

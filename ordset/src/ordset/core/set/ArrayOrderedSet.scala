@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.{AbstractIndexedSegmentSeq, Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core.{AbstractIndexedSegmentSeq, Bound, SegmentSeqException, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 

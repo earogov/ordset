@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.{Bound, SegmentSeqException, SegmentSeqOps, SeqValidationPredicate}
+import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
