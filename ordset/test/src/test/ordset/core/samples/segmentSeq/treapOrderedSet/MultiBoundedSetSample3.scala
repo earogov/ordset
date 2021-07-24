@@ -21,7 +21,7 @@ class MultiBoundedSetSample3[D <: Domain[Int]](
 
   override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
-  override val sequence: TreapSegmentSeq[Int, D, Boolean] = {
+  override val sequence: TreapSegmentSeq[Int, D, Boolean] =
     TreapOrderedSet.getFactory.unsafeBuildAsc(
       bounds, complementary, domainOps
     )(
@@ -29,5 +29,4 @@ class MultiBoundedSetSample3[D <: Domain[Int]](
     )(
       TestRngUtil.defaultRngManager(seed)
     )
-  }
 }

@@ -64,7 +64,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * `prependFunc` is same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment`
    * such that:
    * {{{
-   *   originalBoundSegment = this.getSegmentForBound(bound.provideLower)    (1)
+   *   originalBoundSegment.containsBound(bound.provideLower) == true    (1)
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    * 
@@ -92,7 +92,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * `appendFunc` is same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` 
    * such that:
    * {{{
-   *   originalBoundSegment = this.getSegmentForBound(bound.provideUpper)    (1)
+   *   originalBoundSegment.containsBound(bound.provideUpper) == true    (1)
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *

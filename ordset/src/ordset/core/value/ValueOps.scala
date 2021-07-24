@@ -97,4 +97,18 @@ object ValueOps {
     override val valueHash: Hash[(V1, V2)] =
       ordset.instances.tuple2.tuple2Hash(valueOps1.valueHash, valueOps2.valueHash)
   }
+
+  final class MapImpl[V1, V2](
+    valueOps: ValueOps[V1],
+    mapFunc1: V1 => V2,
+    mapFunc2: V2 => V1
+  ) extends ValueOps[V2] {
+
+    override def unit: V2 = mapFunc1.apply(valueOps.unit)
+
+    override def valueHash: Hash[V2] = Hash.by(mapFunc2)(valueOps.valueHash)
+
+    override def valueIncl: InclusionPredicate[V2] = 
+      new InclusionPredicate.MapImpl(valueOps.valueIncl, mapFunc2)
+  }
 }

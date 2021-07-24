@@ -131,7 +131,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr>1. If segment of input `ztruncation` is stable then returns it.</tr>
    * <tr>2. Otherwise:</tr>
    * <tr>
-   *   2.1. Applies [[provideStable]] to input segment and receives new zipped sequence Z with stable segment
+   *   2.1. Applies [[provideStableSegment]] to input segment to build new zipped sequence Z with stable segment
    *   at bound `ztruncation.bound`.
    * </tr>
    * <tr>
@@ -145,12 +145,10 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    */
   protected final def cacheStable(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] = {
     val zsegment = ztruncation.segment
-    if (zsegment.value._2.isStable) Stable.assert(zsegment)
+    if (zsegment.value._2.isStable) Stable.unsafe(zsegment)
     else lock.synchronized {
-      val newZippedSeq = provideStable(ztruncation)
-      // Zipped sequence was changed (segment became stable) => search segment in new sequence.
-      val newZsegment = Stable.assert(newZippedSeq.getSegmentForExtended(ztruncation.bound))
-      zippedSeq = newZippedSeq
+      val newZsegment = provideStableSegment(ztruncation)
+      zippedSeq = newZsegment.self.sequence
       newZsegment
     }
   }
@@ -159,7 +157,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr>1. If segment of input `ztruncation` is eager then returns it.</tr>
    * <tr>2. Otherwise:</tr>
    * <tr>
-   *   2.1. Applies [[provideEager]] to input segment and receives new zipped sequence Z with eager segments
+   *   2.1. Applies [[provideEagerSeq]] to input segment and receives new zipped sequence Z with eager segments
    *   between bounds of `ztruncation.segment`.
    * </tr>
    * <tr>
@@ -175,7 +173,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     val zsegment = ztruncation.segment
     if (zsegment.value._2.isEager) Eager.assert(zsegment)
     else lock.synchronized {
-      val newZippedSeq = provideEager(zsegment)
+      val newZippedSeq = provideEagerSeq(zsegment)
       // Zipped sequence was changed (segment became eager) => search segment in new sequence.
       val newZsegment = Eager.assert(newZippedSeq.getSegmentForExtended(ztruncation.bound))
       zippedSeq = newZippedSeq
@@ -184,48 +182,44 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   }
 
   /**
-   * Returns zipped sequence which has stable segment at bound `ztruncation.bound`.
+   * Builds new zipped sequence (if required) with stable segment at bound `ztruncation.bound` and returns this
+   * segment.
    *
    * <h3>Algorithm</h3>
    * <tr>
    *   Let's denote as Z - zipped sequence at current step.
    * </tr>
    * <tr>
-   *   1. If segment of input `ztruncation` is already stable then return existing zipped sequence `zippedSeq` else
-   *   go to step 2 with Z = `zippedSeq`.
+   *   1. If segment of input `ztruncation` is already stable then return this segment else go to step 2
+   *   with Z = `ztruncation.segment.sequence`.
    * </tr>
    * <tr>
-   *   2. Apply [[provideEager]] to input segment to compute lazy value (if required) and get zipped sequence Z,,1,,
+   *   2. Apply [[provideEagerSeq]] to input segment to compute lazy value (if required) and get zipped sequence Z,,1,,
    *   that contains only eager segments between bounds of input segment. These segments however may be both stable
-   *   and unstable. If segment of Z,,1,, at bound `ztruncation.bound` is stable then return Z,,1,, otherwise go
-   *   to step 3 with Z = Z,,1,,.
+   *   and unstable. If segment of Z,,1,, at bound `ztruncation.bound` is stable then return this segment otherwise
+   *   go to step 3 with Z = Z,,1,,.
    * </tr>
    * <tr>
-   *   3. Get segment of sequence Z at bound `ztruncation.bound` and move to the left until meet lazy or stable
-   *   segment:
+   *   3. Get segment of sequence Z at bound `ztruncation.bound` and try to move to the previous segment:
    *   <p>
-   *     3.1. If lazy segment was found then apply [[provideEager]] to it and receive sequence Z,,2,,.
-   *     If segment of Z,,2,, at bound `ztruncation.bound` is stable then return Z,,2,, otherwise go to step 4
-   *     with Z = Z,,2,,.
+   *     3.1. If lazy segment was found then apply [[provideEagerSeq]] to it and receive sequence Z,,2,,.
+   *     If segment of Z,,2,, at bound `ztruncation.bound` is stable then return this segment otherwise
+   *     go to step 3 with Z = Z,,2,,.
    *   </p>
    *   <p>
-   *     3.2. If stable segment was found or segment was not found then go step 4 with current sequence Z.
-   *     From this moment we should always skip step 3 and follow to step 4. If for example step 4 says to go
-   *     to step 3 then we should skip 3 and come back to 4 immediately.
+   *     3.2. Otherwise go step 4 with current sequence Z.
    *   </p>
    * </tr>
    * <tr>
-   *   4. Get segment of sequence Z at bound `ztruncation.bound` and move to the right until meet lazy or stable
-   *   segment:
+   *   4. Get segment of sequence Z at bound `ztruncation.bound` and try to move to the next segment:
    *   <p>
-   *     4.1. If lazy segment was found then apply [[provideEager]] to it and receive sequence Z,,3,,.
-   *     If segment of Z,,3,, at bound `ztruncation.bound` is stable then return Z,,3,, otherwise go to step 3
-   *     with Z = Z,,3,,.
+   *     4.1. If lazy segment was found then apply [[provideEagerSeq]] to it and receive sequence Z,,3,,.
+   *     If segment of Z,,3,, at bound `ztruncation.bound` is stable then return this segment otherwise
+   *     go to step 4 with Z = Z,,3,,.
    *   </p>
    *   <p>
-   *     4.2. If stable segment was found or segment was not found then go step 3 with current sequence Z.
-   *     From this moment we should always skip step 4 and follow to step 3. If for example step 3 says to go
-   *     to step 4 then we should skip 4 and come back to 3 immediately.
+   *     4.2. Otherwise assertion error must be thrown: the only possibility that segment at bound `ztruncation.bound`
+   *     is steel unstable is that it has lazy next segment, but we haven't found it and got contradiction.
    *   </p>
    * </tr>
    * {{{
@@ -235,168 +229,88 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *                         ]
    *       S1       S2       S3      S4     S5
    *   X-------](--------)[------](-----](-------X
-   *       ?         u       u       ?       ?
+   *    (-, ?)    (A, u)   (B, u)  (-, ?)  (-, ?)
    *
-   *      step 3 (computes lazy value of segment S1)
+   *      step 3: found non lazy S2 => go to step 4
    *                          V
    *
    *                         ]
    *       S1       S2       S3      S4     S5
    *   X-------](--------)[------](-----](-------X
-   *       s         s        u      ?       ?
+   *    (-, ?)    (A, u)   (B, u)  (-, ?)  (-, ?)
    *
-   *      step 4 (computes lazy value of segment S4)
+   *      step 4: found lazy S4, compute lazy value,
+   *              received unstable S6 => go to step 4
    *                          V
    *
    *                         ]
-   *       S1       S2           S3         S4
+   *       S1       S2           S6         S5
    *   X-------](--------)[-------------](-------X
-   *       s         s           u           ?
+   *    (-, ?)    (A, u)       (B, u)     (-, ?)
    *
-   *      step 3 (does nothing as left adjacent segment is stable)
+   *      step 4: found lazy S5, compute lazy value,
+   *              received stable S7 => stop
    *                          V
    *
    *                         ]
-   *       S1       S2           S3         S4
-   *   X-------](--------)[-------------](-------X
-   *       s         s           u           ?
+   *       S1       S2           S7
+   *   X-------](--------)[----------------------X
+   *    (-, ?)    (A, u)           (B, s)
    *
-   *      step 4 (computes lazy value of segment S4)
-   *                          V
-   *
-   *                         ]
-   *       S1       S2           S3         S4
-   *   X-------](--------)[-------------](-------X
-   *       s         s           s           s
-   *
-   *             stop (segment S3 is stable)
-   *
-   *   where u - unstable eager segment; s - stable eager segment; ? - lazy segment.
+   *  where
+   *  (A, ...) - value of base sequence;
+   *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
    * }}}
-   *
-   * <h3>Termination</h3>
-   * Let's prove that algorithm terminates after finite number of steps:
-   * <tr>
-   *   Step 3 is repeatedly applied until one meets stable or first segment at the left side. Step 4 - until one meets
-   *   stable or last segment at the right side.
-   * </tr>
-   * <tr>
-   *   1. Both left and right segments are stable => all segments between them are also stable =>
-   *   segment at `ztruncation.bound` is stable => algorithm terminates.
-   * </tr>
-   * {{{
-   *      `ztruncation.bound`
-   *              ]
-   *    -----](------)[------
-   *      s              s
-   * }}}
-   * <tr>
-   *   2. Left segment is first segment of sequence and right is stable => all segments between them are eager =>
-   *   all adjacent segments of first are eager => first segment is stable => case is same as 1 => algorithm terminates.
-   * </tr>
-   * {{{
-   *      `ztruncation.bound`
-   *              ]
-   *    X----](------)[------
-   *    first            s
-   * }}}
-   * <tr>
-   *   3. Right segment is last segment of sequence and left is stable => case is similar to 3 => algorithm terminates.
-   * </tr>
-   * {{{
-   *      `ztruncation.bound`
-   *              ]
-   *    X----](------)[-----X
-   *       s           last
-   * }}}
-   * <tr>
-   *   4. Left segment is first and right is last => there is no lazy segments in sequence =>
-   *   all segments are stable => algorithm terminates.
-   * </tr>
-   * {{{
-   *      `ztruncation.bound`
-   *              ]
-   *    X----](------)[-----X
-   *    first           last
-   * }}}
-   *   Q.E.D.
    */
-  protected final def provideStable(ztruncation: ZTruncation[E, D, V]): ZSegmentSeq[E, D, V] = {
+  protected final def provideStableSegment(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] = {
 
-    def run(iterable: Iterable[ZSegment[E, D, V]]): ZSegmentSeq[E, D, V] = iterable
-      .drop(1)                          // skip initial `zsegment`
-      .find(_.value._2.isLazyOrStable)  // skip adjacent eager unstable segments
-      .map(provideEager)                // compute lazy value and return new zipped sequence
-                                        // (or return existing sequence if segment is already stable)
-      .getOrElse(zippedSeq)             // adjacent segment not found => return existing zipped sequence
-
-    @tailrec
-    def loop(
+    def getNewZSegment(
       zsegment: ZSegment[E, D, V],
       bound: ExtendedBound[E],
-      runBackward: Boolean,
-      runForward: Boolean
-    ): ZSegmentSeq[E, D, V] =
-      if (zsegment.value._2.isStable) zippedSeq
-      else {
-        var newRunBackward = runBackward
-        var newRunForward = runForward
+      newZippedSeq: ZSegmentSeq[E, D, V],
+    ): ZSegment[E, D, V] =
+      if (newZippedSeq.eq(zsegment.sequence)) zsegment   // take old segment if sequence didn't change
+      else newZippedSeq.getSegmentForExtended(bound)     // search segment in new sequence
 
-        var newZsegment = zsegment
-        var newZippedSeq = zippedSeq
-
-        var oldZsegment = newZsegment
-        var oldZippedSeq = newZippedSeq
-
-        if (runBackward) {
-          newZippedSeq = run(oldZsegment.backwardIterable)
-          if (newZippedSeq.eq(oldZippedSeq)) {
-            // sequence didn't change =>
-            // - leave old value in `newZsegment`
-            // - set flag that there is no point to go backward anymore
-            newRunBackward = false
-          } else {
-            // sequence changed =>
-            // search segment in new sequence to update `newZsegment`
-            newZsegment = newZippedSeq.getSegmentForExtended(bound)
+    @tailrec
+    def stabilizeLowerBound(zsegment: ZSegment[E, D, V], bound: ExtendedBound[E]): ZSegment[E, D, V] =
+      zsegment match {
+        case s: ZSegmentWithPrev[E, D, V] =>
+          val newZippedSeq = provideEagerSeq(s.movePrev)
+          if (newZippedSeq.eq(zsegment.sequence)) zsegment.self
+          else {
+            val newZsegment = newZippedSeq.getSegmentForExtended(bound)
+            if (newZsegment.value._2.isStable) newZsegment
+            else stabilizeLowerBound(newZsegment, bound)
           }
-        }
-        if (newZsegment.ne(oldZsegment) && newZsegment.value._2.isStable) newZippedSeq
-        else if (runForward) {
-          oldZsegment = newZsegment
-          oldZippedSeq = newZippedSeq
-
-          newZippedSeq = run(oldZsegment.forwardIterable)
-          if (newZippedSeq.eq(oldZippedSeq)) {
-            // sequence didn't change =>
-            // - leave old value in `newZsegment`
-            // - set flag that there is no point to go forward anymore
-            newRunForward = false
-          } else {
-            // sequence changed =>
-            // search segment in new sequence to update `newZsegment`
-            newZsegment = newZippedSeq.getSegmentForExtended(bound)
-          }
-          if (newZsegment.ne(oldZsegment) && newZsegment.value._2.isStable) newZippedSeq
-          else loop(newZsegment, bound, newRunBackward, newRunForward)
-
-        } else {
-          // This should never happen:
-          // segment is still unstable and there is no point to move both backwards and forwards to change it =>
-          // throw exception.
-          Stable.throwSegmentIsNotStable(newZsegment)
-        }
+        case _ => zsegment.self
       }
 
-    val zsegment = ztruncation.segment
-    if (zsegment.value._2.isStable) zippedSeq
-    else {
-      val newZippedSeq = provideEager(zsegment)
-      val newZsegment =
-        if (newZippedSeq.eq(zippedSeq)) zsegment                       // take old segment if sequence didn't change
-        else newZippedSeq.getSegmentForExtended(ztruncation.bound)     // search segment in new sequence
+    @tailrec
+    def stabilizeUpperBound(zsegment: ZSegment[E, D, V], bound: ExtendedBound[E]): ZSegment[E, D, V] =
+      zsegment match {
+        case s: ZSegmentWithNext[E, D, V] =>
+          val newZippedSeq = provideEagerSeq(s.moveNext)
+          if (newZippedSeq.eq(zsegment.sequence)) zsegment.self
+          else {
+            val newZsegment = newZippedSeq.getSegmentForExtended(bound)
+            if (newZsegment.value._2.isStable) newZsegment
+            else stabilizeUpperBound(newZsegment, bound)
+          }
+        case _ => zsegment.self
+      }
 
-      loop(newZsegment, ztruncation.bound, runBackward = true, runForward = true);
+    val bound = ztruncation.bound
+    val zsegment = ztruncation.segment
+    if (zsegment.value._2.isStable) Stable.unsafe(zsegment.self)
+    else {
+      val zsegment1 = getNewZSegment(zsegment, bound, provideEagerSeq(zsegment))
+      if (zsegment1.value._2.isStable) Stable.unsafe(zsegment1.self)
+      else {
+        val zsegment2 = stabilizeLowerBound(zsegment1, bound)
+        if (zsegment2.value._2.isStable) Stable.unsafe(zsegment2.self)
+        else Stable.assert(stabilizeUpperBound(zsegment2, bound))
+      }
     }
   }
 
@@ -411,10 +325,10 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr>- patch control sequence to indicate that `segment` is not lazy anymore (see [[patchControlSeq]]);</tr>
    * <tr>- build new zipped sequence with new base and control sequences and return it.</tr>
    * <tr></tr>
-   * If input `segment` is not lazy then return existing zipped sequence `zippedSeq`.
+   * If input `segment` is not lazy then return sequence of this segment.
    * <tr></tr>
    */
-  protected final def provideEager(zsegment: ZSegment[E, D, V]): ZSegmentSeq[E, D, V] =
+  protected final def provideEagerSeq(zsegment: ZSegment[E, D, V]): ZSegmentSeq[E, D, V] =
     zsegment.value._2 match {
       case lazyValue: LazyValue[E, D, V] =>
         val seq = lazyValue.compute
@@ -422,9 +336,120 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         val newControlSeq: ControlSegmentSeq[E, D, V] = patchControlSeq(zsegment, seq)
         makeZippedSeq(newBaseSeq, newControlSeq)
       case _ =>
-        zippedSeq
+        zsegment.self.sequence
     }
-  
+
+  /**
+   * Appends lazy sequence `other` to current sequence above specified `bound` (see [[SegmentSeqT.appendAboveBound]]).
+   * {{{
+   *
+   *  current sequence:
+   *
+   *               bound   otherBoundSegment
+   *                 ]     /
+   *  X-------](--------------)[---------X
+   *   (A, s)       (B, s)       (C, s)
+   *
+   *  other sequence:
+   *
+   *  X---------)[----------](-----------X
+   *    (D, u)      (-, ?)      (E, u)
+   *
+   *  result:
+   *
+   *  X-------](-----](-----](-----------X
+   *   (A, s)  (B, u)  (-, ?)   (E, u)
+   *
+   *  where
+   *  (A, ...) - value of base sequence;
+   *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
+   * }}}
+   * Input `originalBoundSegment` must satisfy precondition:
+   * {{{
+   *   originalBoundSegment.containsBound(bound.provideUpper) == true    (1)
+   * }}}
+   * Note if provided segment other then one defined by condition 1, the behaviour of method is undefined.
+   */
+  protected final def appendZippedInternal(
+    bound: Bound[E],
+    originalBoundSegment: ZSegment[E, D, V],
+    other: ZSegmentSeq[E, D, V]
+  ): ZSegmentSeq[E, D, V] = {
+
+    //             bound
+    //               ]
+    //  --)[--------------](--------    current sequence
+    //             s
+    //
+    //  ------)[--------------](----    other sequence
+    //                u
+    //
+    // Depending on control values of adjacent segments after merge next cases are possible:
+    //
+    //      s    u    ?
+    //  s   +    -    -
+    //  u   -    -    +
+    //  ?   -    +    +
+    //
+    // where: + means that no additional correction required; - means correction.
+    //
+    // 1) u-s, s-u and u-u cases
+    //
+    // Each unstable segment may become stable.
+    //
+    //             bound
+    //               ]
+    //  --)[--------------](--------    current sequence
+    //  s          u           ?
+    //
+    //  ------)[--------------](----    other sequence
+    //     ?          u          s
+    //
+    //  --)[---------](-------](----    result sequence
+    //  s       s         s      s
+    //
+    // 2) ?-s and s-? cases
+    //
+    // Each stable segment becomes unstable.
+    //
+    //             bound
+    //               ]
+    //  --)[--------------](--------    current sequence
+    //  u          ?           u
+    //
+    //  ------)[--------------](----    other sequence
+    //     s          s          s
+    //
+    //  --)[---------](-------](----    result sequence
+    //  u       ?         u      s
+
+    val otherBoundSegment = other.getSegmentForBound(bound.provideLower)
+    val originalControlValue = originalBoundSegment.value._2
+    val otherControlValue = otherBoundSegment.value._2
+
+    val newBaseSeq = TreapSegmentSeqUtil.appendAboveTruncation(
+      otherBoundSegment.self.firstSeqSegment.truncation(bound),
+      otherBoundSegment.sequence.firstSeq
+    )
+
+    if (
+      originalControlValue.isStable && otherControlValue.isStable ||
+      originalControlValue.isLazy && otherControlValue.isUnstable ||
+      originalControlValue.isUnstable && otherControlValue.isLazy
+    ) {
+      val newControlSeq = TreapSegmentSeqUtil.appendAboveTruncation(
+        otherBoundSegment.self.secondSeqSegment.truncation(bound),
+        otherBoundSegment.sequence.secondSeq
+      )
+      makeZippedSeq(newBaseSeq, newControlSeq)
+
+    } else if (originalControlValue.isLazy) {
+      otherBoundSegment.sequence
+    } else {
+      otherBoundSegment.sequence
+    }
+  }
+
   /**
    * Creates zipped sequence with specified base and control sequences.
    */
@@ -448,7 +473,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       makeUniformBaseSeq(valueOps.unit),
       makeUniformControlSeq(LazyValue(seqFunc))
     )
-    
+
   /**
    * Creates uniform base sequence with specified `value`.
    */
@@ -602,17 +627,17 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     // Let's call as patch sequence new control sequence that will replace existing one in some region around given
     // `zsegment`. Method builds patch sequence, inserts it into existing control sequence and returns new one.
     //
-    // 1. Starting from `zsegment` (non inclusive) move backward until one of conditions is met:
-    //    - either lazy or stable segment is found;
-    //    - first segment of sequence is found.
+    // 1. Starting from `zsegment` try to move backward:
+    //    - if `zsegment` is first then define `patchLowerBound` as lower bound of `zsegment`;
+    //    - if previous segment is stable or lazy then define `patchLowerBound` as lower bound of `zsegment`;
+    //    - if previous segment is eager unstable then define `patchLowerBound` as lower bound of previous segment.
     //
-    // Let's denote lower bound of last visited unstable eager segment as `patchLowerBound`.
-    // Similarly define `patchUpperBound`.
+    //    Similarly define `patchUpperBound`.
     //
     //   ?      u       u                         u       s
     // ----](------)[------](----------------](------)[--------   zipped seq
-    //      ^                    zsegment            ^
-    //   patchLowerBound                       patchUpperBound
+    //              ^            zsegment            ^
+    //       patchLowerBound                   patchUpperBound
     //
     // 2. If `patchLowerBound` != `zsegment.lowerBound` then define first segment of patch sequence as
     //    segment of zipped sequence at bound `patchLowerBound` with control value:
@@ -630,12 +655,12 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //
     //    Otherwise go to step 3.
     //
-    //                    patch sequence
-    //      +----------------------------------------+
-    //   ?  |   u                    s               |    s
+    //                         patch sequence
+    //              +--------------------------------+
+    //   ?      u   |                s               |    s
     // ----](------)[--------------------------------)[--------   new control seq
-    //      ^                                        ^
-    //   patchLowerBound                       patchUpperBound
+    //              ^                                ^
+    //      patchLowerBound                    patchUpperBound
     //
     // 3. If one or both conditions are `true`:
     //    - `patchLowerBound` == `zsegment.lowerBound`
@@ -646,8 +671,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //                    segment                   segment
     //   ?      u      u  /                        /    ?
     // ----](------)[------](----------------](----------------   zipped seq
-    //      ^                    zsegment    ^
-    //   patchLowerBound                patchUpperBound
+    //              ^            zsegment    ^
+    //     patchLowerBound                 patchUpperBound
     //
     //    Call method `makeControlSeq` with parameters:
     //    - `eagerLowerBound` = (lower adjacent segment is eager)*
@@ -670,14 +695,14 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //
     // 4. Merge `innerPatchSequence` with first or last segment of patch sequence obtained at step 2 (see 4.1 and 4.2).
     //
-    //               patch sequence
-    //      +--------------------------------+
-    //      |                  inner patch   |
-    //      |               +----------------+
-    //   ?  |   u           | s           u  |        ?
+    //                     patch sequence
+    //              +------------------------+
+    //              |          inner patch   |
+    //              |       +----------------+
+    //   ?      u   |       | s           u  |        ?
     // ----](------)[-----------------)[-----](----------------   new control seq
-    //      ^                                ^
-    //   patchLowerBound                patchUpperBound
+    //              ^                        ^
+    //     patchLowerBound             patchUpperBound
     //
     //   Apply patch sequence to old control sequence within `patchLowerBound` and `patchUpperBound` and
     //   return the result
@@ -704,7 +729,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //                 u
     //              (-----)            last patch segment
     //        s     |       u
-    // X------------)[------------X    `rightPatchSequence`
+    // X-----------](-------------X    `rightPatchSequence`
     //
     // 4.2.2
     //                 s
@@ -720,14 +745,12 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     abstract sealed class PatchBoundInfo(
       /**
        * If class represents left side info:
-       * <tr>contains `patchLowerBound` (see p.1) with corresponding segment of old control sequence;</tr>
-       * <tr>`null` iff first segment of patch sequence is first segment of whole control sequence.</tr>
+       * <tr>contains `patchLowerBound` (see p.1) with corresponding segment of old control sequence.</tr>
        *
        * If class represents right side info:
-       * <tr>contains `patchUpperBound` (see p.1) with corresponding segment of old control sequence;</tr>
-       * <tr>`null` iff last segment of patch sequence is last segment of whole control sequence.</tr>
+       * <tr>contains `patchUpperBound` (see p.1) with corresponding segment of old control sequence.</tr>
        */
-      val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]] | Null,
+      val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
       /**
        * `true` if corresponding adjacent segment of `zsegment` is eager (see p.3).
        */
@@ -740,7 +763,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
      * <tr>`patchUpperBound` == `zsegment.upperBound` - for right side info.</tr>
      */
     case class NonShiftedPatchBoundInfo(
-      override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]] | Null,
+      override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
       override val zsegmentBoundIsEager: Boolean,
     ) extends PatchBoundInfo(
       patchBoundTruncation,
@@ -753,7 +776,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
      * <tr>`patchUpperBound` != `zsegment.upperBound` - for right side info.</tr>
      */
     case class ShiftedPatchBoundInfo(
-      override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]] | Null,
+      override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
       override val zsegmentBoundIsEager: Boolean,
       /**
        * <tr>`leftPatchSequence` - if class represents left side info;</tr>
@@ -779,7 +802,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         var undefinedAdjacent = true
         var patchBoundIsShifted = false
         var patchBoundIsLazy = false
-        var prevZsegment = zsegment
+        var patchBoundSegment = zsegment
         val segmentIterator = factory.getIterable(zsegment).drop(1).iterator // skip `zsegment` itself
         while (segmentIterator.hasNext && nextStep) {
           val currZsegment = segmentIterator.next()
@@ -787,16 +810,18 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           if (undefinedAdjacent) {
             undefinedAdjacent = false
             eagerAdjacent = currControlValue.isEager
+            nextStep = currControlValue.isEagerUnstable
+          } else {
+            nextStep = false
           }
-          nextStep = currControlValue.isEagerUnstable
           if (nextStep) {
             patchBoundIsShifted = true
-            prevZsegment = currZsegment
+            patchBoundSegment = currZsegment
           } else {
             patchBoundIsLazy = currControlValue.isLazy
           }
         }
-        factory.build(eagerAdjacent, patchBoundIsShifted, patchBoundIsLazy, prevZsegment)
+        factory.build(eagerAdjacent, patchBoundIsShifted, patchBoundIsLazy, patchBoundSegment)
       }
 
       private trait Factory {
@@ -820,12 +845,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           patchBoundZsegment: ZSegment[E, D, V]
         ): PatchBoundInfo = {
 
-          val patchBoundTruncation = patchBoundZsegment match {
-            case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-              s.back.secondSeqSegment.truncation(s.lowerBound)
-            case _ =>
-              null
-          }
+          val patchBoundTruncation = patchBoundZsegment.self.secondSeqSegment.lowerTruncation
           if (patchBoundIsShifted) {
             val patchBoundSequence: ControlSegmentSeq[E, D, V] = patchBoundZsegment match {
               case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
@@ -863,12 +883,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           patchBoundZsegment: ZSegment[E, D, V]
         ): PatchBoundInfo = {
 
-          val patchBoundTruncation = patchBoundZsegment match {
-            case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
-              s.secondSeqSegment.truncation(s.upperBound)
-            case _ =>
-              null
-          }
+          val patchBoundTruncation = patchBoundZsegment.self.secondSeqSegment.upperTruncation
           if (patchBoundIsShifted) {
             val patchBoundSequence: ControlSegmentSeq[E, D, V] = patchBoundZsegment match {
               case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
@@ -914,21 +929,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       case (li: NonShiftedPatchBoundInfo, ri: NonShiftedPatchBoundInfo) =>
         makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsEager, ri.zsegmentBoundIsEager)
     }
-    val tmpSeq =
-      if (leftSideInfo.patchBoundTruncation != null) {
-        val tr: SegmentTruncation[E, D, ControlValue[E, D, V]] = leftSideInfo.patchBoundTruncation
-        tr.append(patchSequence)
-      } else {
-        patchSequence
-      }
-    val newSeq =
-      if (rightSideInfo.patchBoundTruncation != null) {
-        val tr: SegmentTruncation[E, D, ControlValue[E, D, V]] = rightSideInfo.patchBoundTruncation
-        tr.prepend(tmpSeq)
-      }
-      else {
-        tmpSeq
-      }
+    val tmpSeq =leftSideInfo.patchBoundTruncation.append(patchSequence)
+    val newSeq = rightSideInfo.patchBoundTruncation.prepend(tmpSeq)
     // Performance note
     // `newSeq` is always treap based. `convertMap` doesn't perform real conversion for it.
     // Instead it just returns unmodified input sequence.
@@ -1004,7 +1006,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     baseSeq: SegmentSeq[E, D, V],
     eagerLowerBound: Boolean,
     eagerUpperBound: Boolean
-  ): ControlSegmentSeq[E, D, V] = {
+  ): ControlSegmentSeq[E, D, V] =
     //
     //       !(-----------]!       - zsegment
     // X------------------------X  - output
@@ -1117,7 +1119,6 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           )
       }
     }
-  }
 
   /**
    * Returns segment of lazy sequence that corresponds to input `ztruncation`.
@@ -1453,6 +1454,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     def assert[E, D <: Domain[E], V](segment: outer.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
       if (segment.value._2.isStable) tagged(segment) else throwSegmentIsNotStable(segment)
 
+    /**
+     * Marks input segment with [[Stable]] tag. Stability check must be provided by caller.
+     */
+    def unsafe[E, D <: Domain[E], V](segment: outer.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
+      tagged(segment)
+
     def throwSegmentIsNotStable[E, D <: Domain[E], V](zsegment: outer.ZSegment[E, D, V]): Nothing =
       throw AssertionError(s"Expected that segment $zsegment is stable.")
 
@@ -1617,9 +1624,9 @@ object AbstractLazyTreapSegmentSeq { outer =>
     private lazy val instance: ControlValueOps[Any, Domain[Any], Any] = new ControlValueOps()
   }
 
-  object ControlTupleOps {
+  object ZValueOps {
 
-    def get[E, D <: Domain[E], V](valueOps: ValueOps[V]): ValueOps[(V, ControlValue[E, D, V])] =
+    def get[E, D <: Domain[E], V](valueOps: ValueOps[V]): ValueOps[ZValue[E, D, V]] =
       new ValueOps.Tuple2Impl[V, ControlValue[E, D, V]](
         InclusionPredicate.alwaysIncluded,
         valueOps,

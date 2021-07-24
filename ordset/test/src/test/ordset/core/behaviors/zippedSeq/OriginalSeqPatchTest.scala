@@ -5,14 +5,14 @@ import ordset.core.domain.Domain
 import ordset.util.label.Label
 import test.ordset.core.behaviors.TestCaseBase
 
-trait OriginalSeqPatchedTest[E, D <: Domain[E], U1, U2] {
+trait OriginalSeqPatchTest[E, D <: Domain[E], U1, U2] {
 
-  def firstSeqPatchedCases: Seq[OriginalSeqPatchedTest.TestCase[E, D, U1]]
+  def firstSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[E, D, U1]]
 
-  def secondSeqPatchedCases: Seq[OriginalSeqPatchedTest.TestCase[E, D, U2]]
+  def secondSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[E, D, U2]]
 }
 
-object OriginalSeqPatchedTest {
+object OriginalSeqPatchTest {
   
   case class TestCase[E, D <: Domain[E], U](
     override val labels: Set[Label],

@@ -1,150 +1,31 @@
 package test.ordset.core.specs.segmentSeq
 
-import ordset.core.AbstractLazyTreapSegmentSeq.{ControlTupleOps, ControlValue, ControlValueOps, LazyValue, ZSegmentSeq, LazySegmentBase}
-import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap, OrderedMapCommons}
-import ordset.core.set.{ArrayOrderedSet, OrderedSet, TreapOrderedSet}
-import ordset.core.value.ValueOps
-import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, ExtendedBound, Segment, SegmentSeq, TreapSegmentSeq}
-import ordset.random.RngManager
-import ordset.util.IterableUtil
-import ordset.{Order, core}
+import ordset.core.domain.Domain
+import ordset.core.set.OrderedSet
 import org.junit.runner.RunWith
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatestplus.junit.JUnitRunner
-
-import scala.collection.immutable.ArraySeq
-import scala.language.postfixOps
+import test.ordset.core.behaviors.lazyTreapSeq.LazyTreapSeqBehaviours
+import test.ordset.core.samples.segmentSeq.lazyTreapOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
-class LazyTreapOrderedSetSpec extends AnyFunSpec {
+class LazyTreapOrderedSetSpec extends AnyFunSpec
+  with LazyTreapSeqBehaviours[Int, Domain[Int], Boolean] {
 
   import ordset.core.instances.boolean._
   import ordset.core.instances.int._
-  import ordset.core.syntax.BoundSyntax._
-  import ordset.core.syntax.SetBuilderNotation._
-  import ordset.instances.list._
-  import ordset.instances.tuple2._
-  import test.ordset.core.SegmentSeqAssertions._
   import test.ordset.core.TestRngUtil.Implicits._
 
   type Dom = Domain[Int]
+  type SegmentSeq = OrderedSet[Int, Dom]
 
-  private val valueOps: ValueOps[Boolean] = implicitly[ValueOps[Boolean]]
-  private val domainOps: DomainOps[Int, Dom] = implicitly[DomainOps[Int, Dom]]
-  private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom](domainOps)
+  private val lazySuit = List(
+    new EmptySetSampleLT1[Dom],
+    new MultiBoundedSetSampleLT1[Dom],
+  )
 
-//  it("case 1") {
-//
-//    // X-t--)[---f--](-----true-----)[------------false--------------X  seq1
-//    //      -10     -5              5
-//    //
-//    // X----------false--------)[----t---](-------f------)[-----t----X  seq2
-//    //                         2         8               17
-//    //
-//    // X-----------------------false----------------)[--t---](---f---X  seq3
-//    //                                              15      20
-//    //
-//    //        Seq1                 Seq2                  Seq3
-//    // X-----------------)[--------------------](--------------------X
-//    //                   0                     10
-//    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-//      ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
-//      complementary = true,
-//      domainOps
-//    )()
-//
-//    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-//      ArraySeq(2 `)[`, 8 `](`, 17 `)[`),
-//      complementary = false,
-//      domainOps
-//    )()
-//
-//    val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-//      ArraySeq(15 `)[`, 20 `](`),
-//      complementary = false,
-//      domainOps
-//    )()
-//
-//    val lazySeq = new LazyTreapOrderedSet(
-//      List(
-//        (0 `)`, () => seq1),
-//        (10 `]`, () => seq2),
-//        (null, () => seq3)
-//      )
-//    )
-//
-//    val segment1 = lazySeq.getSegment(5 `]`)
-//    println(segment1)
-//
-//    val segment2 = lazySeq.getSegment(15 `]`)
-//    println(segment2)
-//  }
+  describe("Lazy treap ordered set specific operations:") {
 
-  it("case 2") {
-
-    // X-------------------------------------false--------------------------------------X  seq1
-    //
-    // X-------------------------------------false--------------------------------------X  seq2
-    //
-    // X-------------------------------------false--------------------------------------X  seq3
-    //
-    // X-------------------------------------false--------------------------------------X  seq4
-    //
-    //        Seq1                 Seq2                  Seq3                Seq4
-    // X-----------------)[--------------------](--------------------](-----------------X
-    //                   0                     10                    20
-    val seq1 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
-    val seq2 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
-    val seq3 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
-    val seq4 = TreapOrderedSet.getFactory[Int, Dom].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
-
-    val lazySeq = new LazyTreapOrderedSet(
-      List(
-        (0 `)`, () => seq1),
-        (10 `]`, () => seq2),
-        (20 `](`, () => seq3),
-        (ExtendedBound.AboveAll, () => seq4)
-      )
-    )
-
-    val segment1 = lazySeq.getSegmentForBound(5 `]`)
-    println(segment1)
-
-    val segment2 = lazySeq.getSegmentForBound(15 `]`)
-    println(segment2)
-  }
-
-  private class LazyTreapOrderedSet[E, D <: Domain[E], V](
-    initControlSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
-  )(
-    implicit
-    final override val domainOps: DomainOps[E, D],
-    final override val valueOps: ValueOps[V],
-    final override val rngManager: RngManager
-  ) extends AbstractLazyTreapSegmentSeq[E, D, V]
-    with OrderedMapCommons[E, D, V, LazySegmentBase[E, D, V]] {
-
-    zippedSeq = ZippedOrderedMap.apply(
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((ExtendedBound.AboveAll, valueOps.unit)),
-        domainOps,
-        valueOps
-      )(),
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
-        initControlSeq.map(p => (p._1, LazyValue(p._2))),
-        domainOps,
-        ControlValueOps.get
-      )(),
-      Tuple2.apply,
-      _ => false,
-      _ => false
-    )(
-      domainOps,
-      ControlTupleOps.get(valueOps),
-      rngManager
-    )
-
-    protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
+    it should behave like sequenceProperlyCacheLazyValues(lazySuit)
   }
 }

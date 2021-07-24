@@ -11,7 +11,7 @@ trait ZippedSeqBehaviours[E, D <: Domain[E], U1, U2, V] {
   this: AnyFunSpec =>
 
   def segmentCanPatchOriginalSeq(
-    samples: Iterable[ZippedSeqSample[E, D, U1, U2, V] with OriginalSeqPatchedTest[E, D, U1, U2]]
+    samples: Iterable[ZippedSeqSample[E, D, U1, U2, V] with OriginalSeqPatchTest[E, D, U1, U2]]
   ): Unit =
     samples.foreach { sample =>
 
@@ -19,7 +19,7 @@ trait ZippedSeqBehaviours[E, D <: Domain[E], U1, U2, V] {
       implicit val valueHash1: Hash[U1] = sample.sequence.firstSeq.valueOps.valueHash
       implicit val valueHash2: Hash[U2] = sample.sequence.secondSeq.valueOps.valueHash
 
-      sample.firstSeqPatchedCases.foreach { testCase =>
+      sample.firstSeqPatchCases.foreach { testCase =>
 
         val segment = sample.sequence.getSegmentForBound(testCase.bound)
 
@@ -29,7 +29,7 @@ trait ZippedSeqBehaviours[E, D <: Domain[E], U1, U2, V] {
         }
       }
 
-      sample.secondSeqPatchedCases.foreach { testCase =>
+      sample.secondSeqPatchCases.foreach { testCase =>
 
         val segment = sample.sequence.getSegmentForBound(testCase.bound)
 

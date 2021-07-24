@@ -1,57 +1,26 @@
-package test.ordset.core.samples.zippedSeq.zippedSet
+package test.ordset.core.behaviors.zippedSeq.multiBoundedSet
 
-import ordset.core.ZippedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
+import ordset.core.syntax.BoundSyntax._
+import ordset.core.syntax.SetBuilderNotation._
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
-import test.ordset.core.behaviors.zippedSeq.OriginalSeqPatchedTest
+import test.ordset.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import test.ordset.core.samples.segmentSeq.ZippedSeqSample
-import ordset.core.syntax.BoundSyntax._
-import ordset.core.syntax.SetBuilderNotation._
 
-import scala.language.postfixOps
 import scala.collection.immutable.ArraySeq
+import scala.language.postfixOps
 
-class MultiBoundedSetSampleZ1[D <: Domain[Int]](
-  implicit
-  override val domainOps: DomainOps[Int, D],
-  override val rngManager: RngManager
-) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
-    with OriginalSeqPatchedTest[Int, D, Boolean, Boolean] {
+trait SampleZ1[D <: Domain[Int]]
+  extends OriginalSeqPatchTest[Int, D, Boolean, Boolean] {
+  self: ZippedSeqSample[Int, D, Boolean, Boolean, Boolean] =>
 
   override val sample: String = "Z1"
 
-  override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
-
-  val firstSeq: TreapOrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
-    ArraySeq(10`](`, 20`](`, 30`)[`),
-    complementary = true,
-    domainOps
-  )()
-
-  val secondSeq: TreapOrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
-    ArraySeq(5`)[`, 15`)[`, 25`](`, 35`](`),
-    complementary = false,
-    domainOps
-  )()
-
-  // a:
-  // X-----t----](------f-----](-------t-----)[-------f------X
-  //            10            20             30
-  // b:
-  // X--f--)[-----t----)[------f-----](------t-------](---f--X
-  //       5           15            25              35
-  //
-  // a intersection b:
-  // X--f--)[-t-](---------f---------](---t--)[------f-------X
-  //       5    10                   25      30
-  override def sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
-    ZippedOrderedSet.intersection(firstSeq, secondSeq)
-
-  override def firstSeqPatchedCases: Seq[OriginalSeqPatchedTest.TestCase[Int, D, Boolean]] = List(
-    OriginalSeqPatchedTest.TestCase(
+  override def firstSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
+    OriginalSeqPatchTest.TestCase(
       labels = Set(Label("A1")),
       bound = 15`[`,
       patch = UniformOrderedSet.defaultEmpty,
@@ -62,7 +31,7 @@ class MultiBoundedSetSampleZ1[D <: Domain[Int]](
         (false forAll x >= 30) ::
         Nil
     ),
-    OriginalSeqPatchedTest.TestCase(
+    OriginalSeqPatchTest.TestCase(
       labels = Set(Label("A2")),
       bound = 0`(`,
       patch = ArrayOrderedSet.unchecked(
@@ -78,7 +47,7 @@ class MultiBoundedSetSampleZ1[D <: Domain[Int]](
         (false forAll x >= 30) ::
         Nil
     ),
-    OriginalSeqPatchedTest.TestCase(
+    OriginalSeqPatchTest.TestCase(
       labels = Set(Label("A3")),
       bound = 35`(`,
       patch = ArrayOrderedSet.unchecked(
@@ -95,8 +64,8 @@ class MultiBoundedSetSampleZ1[D <: Domain[Int]](
     )
   )
 
-  override def secondSeqPatchedCases: Seq[OriginalSeqPatchedTest.TestCase[Int, D, Boolean]] = List(
-    OriginalSeqPatchedTest.TestCase(
+  override def secondSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
+    OriginalSeqPatchTest.TestCase(
       labels = Set(Label("B1")),
       bound = 15`[`,
       patch = ArrayOrderedSet.unchecked(
@@ -111,7 +80,7 @@ class MultiBoundedSetSampleZ1[D <: Domain[Int]](
         (false forAll x >  35) ::
         Nil
     ),
-    OriginalSeqPatchedTest.TestCase(
+    OriginalSeqPatchTest.TestCase(
       labels = Set(Label("B2")),
       bound = 0`(`,
       patch = UniformOrderedSet.defaultUniversal,
@@ -122,7 +91,7 @@ class MultiBoundedSetSampleZ1[D <: Domain[Int]](
         (false forAll x >  35) ::
         Nil
     ),
-    OriginalSeqPatchedTest.TestCase(
+    OriginalSeqPatchTest.TestCase(
       labels = Set(Label("B3")),
       bound = 40`(`,
       patch = ArrayOrderedSet.unchecked(

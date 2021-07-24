@@ -13,6 +13,14 @@ object InclusionPredicate {
   
   implicit def optionInclusion[V]: InclusionPredicate[Option[V]] = optionInclusionInstance
 
+  final class MapImpl[-V1, -V2](
+    inclPredicate: InclusionPredicate[V1],
+    mapFunc: V2 => V1
+  ) extends InclusionPredicate[V2] {
+    
+    override def apply(v: V2): Boolean = inclPredicate.apply(mapFunc.apply(v))
+  }
+  
   // Private section ---------------------------------------------------------- //
   private lazy val optionInclusionInstance = new InclusionPredicate[Option[Any]] {
     override def apply(v1: Option[Any]): Boolean = v1.isDefined

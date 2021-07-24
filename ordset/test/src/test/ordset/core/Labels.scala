@@ -45,4 +45,7 @@ object Labels {
 
   val caseShow: Show[Set[Label]] =
     Label.customSetShow("case(", ", ", ")")(Label.defaultShow)
+
+  val packageShow: Show[Set[Label]] =
+    Label.customSetShow("package(", ", ", ")")(Label.defaultShow)
 }

@@ -8,7 +8,6 @@ import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
 import test.ordset.core.behaviors.zippedSeq.ZippedSeqBehaviours
 import test.ordset.core.samples.segmentSeq.zippedOrderedSet._
-import test.ordset.core.samples.zippedSeq.zippedSet.{EmptySetSampleZ1, MultiBoundedSetSampleZ1, UniversalSetSampleZ1}
 
 @RunWith(classOf[JUnitRunner])
 class ZippedOrderedSetSpec extends AnyFunSpec

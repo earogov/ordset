@@ -2,7 +2,7 @@ package test.ordset.core.samples.segmentSeq.zippedOrderedSet
 
 import ordset.core.ZippedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.{ArrayOrderedSet, ZippedOrderedSet}
+import ordset.core.set.{ArrayOrderedSet, OrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
 import ordset.random.RngManager
 import ordset.util.label.Label
@@ -20,45 +20,44 @@ class DegenerateSetSample1[D <: Domain[Int]](
   with test.ordset.core.behaviors.segmentSeq.degenerateSet.Sample1[D] {
 
   override val labels: Set[Label] = super.labels + Labels.degenerateSeq
-
-  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
-    // c intersection d:
-    //     out   in        out                in         out         in        out               in
-    // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X
-    //
-    // d:
-    //                                              in
-    // X--------------------------------------------------------------------------------------------------------X
-    //
-    // c = a union b:
-    //     out   in        out                in         out         in        out               in
-    // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X
-    //
-    // b:
-    //     out   in                           out                                                in
-    // X--------0)|(0---------------------------------------------------------30](------------------------------X
-    //
-    // a:
-    //     out   in        out                in         out         in                          out
-    // X--------0)|(0--------------10)[10--------------20)|(20---------------30)[30-----------------------------X
-    ZippedOrderedSet.intersection(
-      // d
-      ArrayOrderedSet.unchecked[Int, D](
-        ArraySeq.empty,
-        complementary = true
-      ),
-      // c
-      ZippedOrderedSet.union(
-        // b
-        ArrayOrderedSet.unchecked[Int, D](
-          ArraySeq(0 `)[`, 0 `](`, 30 `](`),
-          complementary = false
-        ),
-        // a
-        ArrayOrderedSet.unchecked[Int, D](
-          ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`),
-          complementary = false
-        )
-      )
+  
+  override val firstSeq: OrderedSet[Int, D] = ArrayOrderedSet.unchecked[Int, D](
+    ArraySeq.empty,
+    complementary = true
+  )
+  
+  override val secondSeq: OrderedSet[Int, D] = ZippedOrderedSet.union(
+    // b
+    ArrayOrderedSet.unchecked[Int, D](
+      ArraySeq(0 `)[`, 0 `](`, 30 `](`),
+      complementary = false
+    ),
+    // a
+    ArrayOrderedSet.unchecked[Int, D](
+      ArraySeq(0 `)[`, 0 `](`, 10 `)[`, 20 `)[`, 20 `](`, 30 `)[`),
+      complementary = false
     )
+  )
+
+  // firstSeq intersection secondSeq:
+  //     out   in        out                in         out         in        out               in
+  // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X
+  //
+  // firstSeq:
+  //                                              in
+  // X--------------------------------------------------------------------------------------------------------X
+  //
+  // secondSeq = a union b:
+  //     out   in        out                in         out         in        out               in
+  // X--------0)|(0--------------10)[10--------------20)|(20---------------30)|(30----------------------------X
+  //
+  // b:
+  //     out   in                           out                                                in
+  // X--------0)|(0---------------------------------------------------------30](------------------------------X
+  //
+  // a:
+  //     out   in        out                in         out         in                          out
+  // X--------0)|(0--------------10)[10--------------20)|(20---------------30)[30-----------------------------X
+  override val sequence: ZippedSegmentSeq[Int, D, Boolean, Boolean, Boolean, Any, Any] =
+    ZippedOrderedSet.intersection(firstSeq, secondSeq)
 }

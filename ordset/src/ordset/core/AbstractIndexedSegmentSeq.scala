@@ -188,7 +188,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   /**
    * Same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment` such that:
    * {{{
-   *   originalBoundSegment = this.getSegmentForBound(bound.provideLower)    (1)
+   *   originalBoundSegment.containsBound(bound.provideLower) == true     (1)
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
@@ -211,7 +211,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   /**
    * Same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` such that:
    * {{{
-   *   originalBoundSegment = this.getSegmentForBound(bound.provideUpper)    (1)
+   *   originalBoundSegment.containsBound(bound.provideUpper) == true     (1)
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
