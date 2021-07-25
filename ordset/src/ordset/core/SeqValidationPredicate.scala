@@ -81,7 +81,7 @@ object SeqValidationPredicate {
   /**
    * Same as [[validateIterable]] but applies function `op` <u>before</u> each validation.
    *
-   * Note `op` is always applied to the first element.
+   * Note, `op` is always applied to the first element.
    */
   @throws[IllegalArgumentException]("if validation is failed")
   def foldIterableBefore[E, R](
@@ -113,7 +113,7 @@ object SeqValidationPredicate {
   /**
    * Same as [[validateIterable]] but applies function `op` <u>after</u> each validation.
    *
-   * Note `op` is always applied to the first element.
+   * Note, `op` is always applied to the first element.
    */
   @throws[IllegalArgumentException]("if validation is failed")
   def foldIterableAfter[E, R](

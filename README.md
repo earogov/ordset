@@ -39,7 +39,7 @@ $ mill mill.bsp.BSP/install
 - Now you can update IDEA modules definition with button `Reload All BSP Projects` on `bsp` toolbar.
 Syntax highlight will be also available in `build.sc` file (Mill build configuration).
 
-Note: project restart may be required for the changes to take effect.
+Note, project restart may be required for the changes to take effect.
 
 ### Copyright and License
 

@@ -345,7 +345,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *
    *  current sequence:
    *
-   *               bound   otherBoundSegment
+   *               bound   otherBoundZsegment
    *                 ]     /
    *  X-------](--------------)[---------X
    *   (A, s)       (B, s)       (C, s)
@@ -364,15 +364,15 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *  (A, ...) - value of base sequence;
    *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
    * }}}
-   * Input `originalBoundSegment` must satisfy precondition:
+   * Input `originalBoundZsegment` must satisfy precondition:
    * {{{
-   *   originalBoundSegment.containsBound(bound.provideUpper) == true    (1)
+   *   originalBoundZsegment.containsBound(bound.provideUpper) == true    (1)
    * }}}
-   * Note if provided segment other then one defined by condition 1, the behaviour of method is undefined.
+   * Note, if provided segment other then one defined by condition 1, the behaviour of method is undefined.
    */
   protected final def appendZippedInternal(
     bound: Bound[E],
-    originalBoundSegment: ZSegment[E, D, V],
+    originalBoundZsegment: ZSegment[E, D, V],
     other: ZSegmentSeq[E, D, V]
   ): ZSegmentSeq[E, D, V] = {
 
@@ -423,31 +423,47 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //  --)[---------](-------](----    result sequence
     //  u       ?         u      s
 
-    val otherBoundSegment = other.getSegmentForBound(bound.provideLower)
-    val originalControlValue = originalBoundSegment.value._2
-    val otherControlValue = otherBoundSegment.value._2
+//    val originalBoundControlSegment = originalBoundZsegment.self.secondSeqSegment
+//
+//    val otherBoundZsegment = other.getSegmentForBound(bound.provideLower)
+//    val originalControlValue = originalBoundZsegment.value._2
+//    val otherControlValue = otherBoundZsegment.value._2
+//
+//    val newBaseSeq = TreapSegmentSeqUtil.appendAboveTruncation(
+//      originalBoundZsegment.self.firstSeqSegment.truncation(bound),
+//      otherBoundZsegment.sequence.firstSeq
+//    )
+//
+//    val newControlSeq = {
+//      // s-s, u-?, ?-u, ?-?
+//      if (
+//        originalControlValue.isStable && otherControlValue.isStable ||
+//        originalControlValue.isLazy && otherControlValue.isUnstable ||  // note lazy value is also unstable
+//        originalControlValue.isUnstable && otherControlValue.isLazy
+//      ) {
+//        TreapSegmentSeqUtil.appendAboveTruncation(
+//          originalBoundControlSegment.truncation(bound),
+//          otherBoundZsegment.sequence.secondSeq
+//        )
+//      // ?-s
+//      } else if (originalControlValue.isLazy) {
+//        TreapSegmentSeqUtil.appendAboveTruncation(
+//          originalBoundControlSegment.truncation(bound),
+//          otherBoundZsegment..upperTruncation.prepend(makeUniformControlSeq(EagerValue.unstable))
+//        )
+//      // s-?
+//      } else if (otherControlValue.isLazy) {
+//        TreapSegmentSeqUtil.prependBelowTruncation(
+//          otherBoundZsegment.truncation(bound),
+//          originalBoundControlSegment.lowerTruncation.append(makeUniformControlSeq(EagerValue.unstable)),
+//        )
+//      } else {
+//        null
+//      }
+//    }
+//    makeZippedSeq(newBaseSeq, newControlSeq)
 
-    val newBaseSeq = TreapSegmentSeqUtil.appendAboveTruncation(
-      otherBoundSegment.self.firstSeqSegment.truncation(bound),
-      otherBoundSegment.sequence.firstSeq
-    )
-
-    if (
-      originalControlValue.isStable && otherControlValue.isStable ||
-      originalControlValue.isLazy && otherControlValue.isUnstable ||
-      originalControlValue.isUnstable && otherControlValue.isLazy
-    ) {
-      val newControlSeq = TreapSegmentSeqUtil.appendAboveTruncation(
-        otherBoundSegment.self.secondSeqSegment.truncation(bound),
-        otherBoundSegment.sequence.secondSeq
-      )
-      makeZippedSeq(newBaseSeq, newControlSeq)
-
-    } else if (originalControlValue.isLazy) {
-      otherBoundSegment.sequence
-    } else {
-      otherBoundSegment.sequence
-    }
+    null
   }
 
   /**
@@ -593,7 +609,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
   /**
    * Builds new control sequence for a given `zsegment` and applies patch operation to existing control sequence.
-   * Note modifications of control sequence may lay outside of `zsegment`. In example below left adjacent segment
+   * Note, modifications of control sequence may lay outside of `zsegment`. In example below left adjacent segment
    * was updated to actualize stability indicators.
    * {{{
    *

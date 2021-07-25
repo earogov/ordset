@@ -107,7 +107,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
 
   // Protected section -------------------------------------------------------- //
   protected override def isValueIncluded(value: V): Boolean
-  
+
   /**
    * Creates zipped segment sequence.
    */
@@ -943,6 +943,112 @@ object AbstractZippedSegmentSeq {
     override def upperTruncation: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type]
 
     /**
+     * Returns truncation of first <u>original</u> sequence at lower bound of <u>zipped</u> segment.
+     * {{{
+     *
+     *            B1               B2
+     *      S1    (          S2    )
+     *   --------------](----------)[-----  first original seq
+     *   --------](-----------)[----------  second original seq
+     *   --------](----------------)[-----  zipped seq
+     *              current segment
+     *
+     *   firstSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   firstSeqUpperTruncation - truncation with segment S2 and bound B2.
+     * }}}
+     *
+     * Note, in general case:
+     * {{{
+     *   segment.firstSeqLowerTruncation != segment.firstSeqSegment.lowerTruncation
+     * }}}
+     * because of `segment.firstSeqSegment` is a segment of first original sequence at upper bound of zipped segment
+     * (S2 in example above).
+     */
+    def firstSeqLowerTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] = {
+      // Implementation is only for first zipped segment. Must be overridden if segment has previous segment.
+      sequence.firstSeq.firstSegment.lowerTruncation
+    }
+
+    /**
+     * Returns truncation of first <u>original</u> sequence at upper bound of <u>zipped</u> segment.
+     * {{{
+     *
+     *            B1               B2
+     *      S1    (          S2    )
+     *   --------------](----------)[-----  first original seq
+     *   --------](-----------)[----------  second original seq
+     *   --------](----------------)[-----  zipped seq
+     *              current segment
+     *
+     *   firstSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   firstSeqUpperTruncation - truncation with segment S2 and bound B2.
+     * }}}
+     *
+     * Note, in general case:
+     * {{{
+     *   segment.firstSeqUpperTruncation != segment.firstSeqSegment.upperTruncation
+     * }}}
+     * because of upper bound of `segment.firstSeqSegment` may differ from upper bound of zipped segment.
+     */
+    def firstSeqUpperTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] = {
+      // Implementation is only for last zipped segment. Must be overridden if segment has next segment.
+      sequence.firstSeq.lastSegment.upperTruncation
+    }
+
+    /**
+     * Returns truncation of second <u>original</u> sequence at lower bound of <u>zipped</u> segment.
+     * {{{
+     *
+     *            B1               B2
+     *            (   S1           )   S2
+     *   --------](-----------)[----------  second original seq
+     *   --------------](----------)[-----  first original seq
+     *   --------](----------------)[-----  zipped seq
+     *              current segment
+     *
+     *   secondSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   secondSeqUpperTruncation - truncation with segment S2 and bound B2.
+     * }}}
+     *
+     * Note, in general case:
+     * {{{
+     *   segment.secondSeqLowerTruncation != segment.secondSeqSegment.lowerTruncation
+     * }}}
+     * because of `segment.secondSeqSegment` is a segment of second original sequence at upper bound of zipped segment
+     * (S2 in example above).
+     */
+    def secondSeqLowerTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2] with S2] = {
+      // Implementation is only for first zipped segment. Must be overridden if segment has previous segment.
+      sequence.secondSeq.firstSegment.lowerTruncation
+    }
+
+    /**
+     * Returns truncation of second <u>original</u> sequence at upper bound of <u>zipped</u> segment.
+     * {{{
+     *
+     *            B1               B2
+     *            (   S1           )   S2
+     *   --------](-----------)[----------  second original seq
+     *   --------------](----------)[-----  first original seq
+     *   --------](----------------)[-----  zipped seq
+     *              current segment
+     *
+     *   secondSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   secondSeqUpperTruncation - truncation with segment S2 and bound B2.
+     * }}}
+     *
+     * Note, in general case:
+     * {{{
+     *   segment.secondSeqUpperTruncation != segment.secondSeqSegment.upperTruncation
+     * }}}
+     * because of upper bound of `segment.secondSeqSegment` may differ from upper bound of zipped segment.
+     */
+    def secondSeqUpperTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2] with S2] = {
+      // Implementation is only for last zipped segment. Must be overridden if segment has next segment.
+      sequence.secondSeq.lastSegment.upperTruncation
+    }
+
+    /**
      * Applies patch operation to first original sequence within current zipped segment.
      *
      * Returns sequence containing
@@ -1055,6 +1161,13 @@ object AbstractZippedSegmentSeq {
         frontBackward,
         frontForward
       )
+
+    // Transformation ----------------------------------------------------------- //
+    override def firstSeqUpperTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] =
+      firstSeqSegment.self.truncation(upperBound)
+
+    override def secondSeqUpperTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2] with S2] =
+      secondSeqSegment.self.truncation(upperBound)
   }
 
   /**
@@ -1108,6 +1221,13 @@ object AbstractZippedSegmentSeq {
     // Navigation --------------------------------------------------------------- //
     override def movePrev: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2] =
       sequence.stepBackwardPrevGenZipper(sequence.withNextFrontZipper, backForward, backBackward)
+
+    // Transformation ----------------------------------------------------------- //
+    override def firstSeqLowerTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] =
+      back.firstSeqSegment.self.truncation(lowerBound)
+
+    override def secondSeqLowerTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2] with S2] =
+      back.secondSeqSegment.self.truncation(lowerBound)
   }
 
   /**
@@ -1146,10 +1266,10 @@ object AbstractZippedSegmentSeq {
       SegmentTruncationT.upperTruncation(this)
 
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
-      firstSeqSegment.truncation(upperBound).prepend(other)
+      firstSeqUpperTruncation.prepend(other)
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
-      secondSeqSegment.truncation(upperBound).prepend(other)
+      secondSeqUpperTruncation.prepend(other)
   }
 
   object ZippedInitialSegment {
@@ -1199,12 +1319,12 @@ object AbstractZippedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] =
       SegmentTruncationT.upperTruncation(this)
-    
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
-      back.firstSeqSegment.truncation(lowerBound).append(other)
+      firstSeqLowerTruncation.append(other)
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
-      back.secondSeqSegment.truncation(lowerBound).append(other)
+      secondSeqLowerTruncation.append(other)
   }
 
   object ZippedTerminalSegment {
@@ -1250,16 +1370,12 @@ object AbstractZippedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] =
       SegmentTruncationT.upperTruncation(this)
-    
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] =
-      firstSeqSegment.truncation(upperBound).prepend(
-        back.firstSeqSegment.truncation(lowerBound).append(other)
-      )
+      firstSeqUpperTruncation.prepend(firstSeqLowerTruncation.append(other))
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] =
-      secondSeqSegment.truncation(upperBound).prepend(
-        back.secondSeqSegment.truncation(lowerBound).append(other)
-      )
+      secondSeqUpperTruncation.prepend(secondSeqLowerTruncation.append(other))
   }
 
   object ZippedInnerSegment {
@@ -1317,7 +1433,7 @@ object AbstractZippedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type] =
       SegmentTruncationT.upperTruncation(this)
-    
+
     override def patchFirstSeq(other: SegmentSeq[E, D, U1]): SegmentSeq[E, D, U1] = other
 
     override def patchSecondSeq(other: SegmentSeq[E, D, U2]): SegmentSeq[E, D, U2] = other

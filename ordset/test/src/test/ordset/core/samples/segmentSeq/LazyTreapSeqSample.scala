@@ -43,7 +43,7 @@ abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
   /**
    * Returns lazy sequence.
    *
-   * Note during tests state of sequence may be changed: lazy values are computed and cached.
+   * Note, during tests state of sequence may be changed: lazy values are computed and cached.
    * One can use [[restoreSequence]] to rollback to initial state.
    */
   override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lazySeq

@@ -29,7 +29,7 @@ package ordset.util
  *   }
  * }}}
  *
- * Note example is simplified, so other implementations without `_` syntax are possible.
+ * Note, example is simplified, so other implementations without `_` syntax are possible.
  * But sometimes `_` is very handy.
  *
  * @tparam V type of value.
