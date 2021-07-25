@@ -1572,6 +1572,8 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override def isEagerUnstable: Boolean = !stable
 
     override def isLazyOrStable: Boolean = stable
+
+    override def toString: String = s"EagerValue(${if (stable) "stable" else "unstable"})"
   }
 
   object EagerValue {

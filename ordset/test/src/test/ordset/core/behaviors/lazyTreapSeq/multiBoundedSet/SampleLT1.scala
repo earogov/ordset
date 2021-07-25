@@ -106,6 +106,37 @@ trait SampleLT1[D <: Domain[Int]]
           )
         )
       )
+    ),
+    LazyTreapSeqCacheTest.TestPackage(
+      Set(Label("B")),
+      List(
+        LazyTreapSeqCacheTest.TestCase(
+          12`(`,
+          false forAll (x > 8 & x < 15),
+          List(
+            someLazyZvalue forAll (x < 0),
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
+          )
+        ),
+        LazyTreapSeqCacheTest.TestCase(
+          -30`(`,
+          true forAll (x < -10),
+          List(
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x < -10),
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= -10 & x <= -5),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x > -5 & x < 0),
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
+          )
+        )
+      )
     )
   )
 }

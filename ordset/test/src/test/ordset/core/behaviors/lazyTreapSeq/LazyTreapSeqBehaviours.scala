@@ -20,14 +20,14 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
       implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
 
       sample.lazyCacheCases.foreach { testPackage =>
-        
-        // Respore initial state of lazy sequence.
-        sample.restoreSequence
-        
-        testPackage.cases.foreach { testCase =>
-          
-          it(s"should return segment of $sample at bound ${testCase.bound} ($testPackage) and properly cache lazy value") {
-            
+
+        it(s"should return segments of $sample and properly cache lazy values for all cases in $testPackage") {
+
+          // Respore initial state of lazy sequence.
+          sample.restoreSequence
+
+          testPackage.cases.foreach { testCase =>
+
             val segment1 = sample.sequence.getSegmentForExtended(testCase.bound)
             assertSameRelationAndSegment(testCase.expectedSegment, segment1)
             assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq)
