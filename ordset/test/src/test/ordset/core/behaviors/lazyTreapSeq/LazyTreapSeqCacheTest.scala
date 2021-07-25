@@ -18,14 +18,26 @@ trait LazyTreapSeqCacheTest[E, D <: Domain[E], V] {
 
 object LazyTreapSeqCacheTest {
 
-  case class TestCase[E, D <: Domain[E], V](
-    bound: ExtendedBound[E],
-    expectedSegment: IntervalRelation[E, D, V],
-    expectedState: Seq[IntervalRelation[E, D, ZValue[E, D, V]]]
-  ) {
+  sealed trait TestCase[E, D <: Domain[E], V] {
+
+    def bound: ExtendedBound[E]
+
+    def expectedState: Seq[IntervalRelation[E, D, ZValue[E, D, V]]]
 
     override def toString: String = TestShowUtil.caseWithBoundToString(bound)
   }
+
+  case class SegmentTestCase[E, D <: Domain[E], V](
+    override val bound: ExtendedBound[E],
+    expectedSegment: IntervalRelation[E, D, V],
+    override val expectedState: Seq[IntervalRelation[E, D, ZValue[E, D, V]]]
+  ) extends TestCase[E, D, V]
+
+  case class ValueTestCase[E, D <: Domain[E], V](
+    override val bound: ExtendedBound[E],
+    expectedValue: V,
+    override val expectedState: Seq[IntervalRelation[E, D, ZValue[E, D, V]]]
+  ) extends TestCase[E, D, V]
 
   case class TestPackage[E, D <: Domain[E], V](
     override val labels: Set[Label],

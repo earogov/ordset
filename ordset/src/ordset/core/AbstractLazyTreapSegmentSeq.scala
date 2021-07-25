@@ -870,7 +870,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           patchBoundZsegment: ZSegment[E, D, V]
         ): PatchBoundInfo = {
 
-          val patchBoundTruncation = patchBoundZsegment.self.secondSeqSegment.lowerTruncation
+          val patchBoundTruncation = patchBoundZsegment.self.secondSeqLowerTruncation
           if (patchBoundIsShifted) {
             val patchBoundSequence: ControlSegmentSeq[E, D, V] = patchBoundZsegment match {
               case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
@@ -908,7 +908,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
           patchBoundZsegment: ZSegment[E, D, V]
         ): PatchBoundInfo = {
 
-          val patchBoundTruncation = patchBoundZsegment.self.secondSeqSegment.upperTruncation
+          val patchBoundTruncation = patchBoundZsegment.self.secondSeqUpperTruncation
           if (patchBoundIsShifted) {
             val patchBoundSequence: ControlSegmentSeq[E, D, V] = patchBoundZsegment match {
               case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
@@ -1064,7 +1064,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             // X------------------------------X   - output
             //            unstable
             if (eagerLowerBound == eagerUpperBound) {
-              makeUniformControlSeq(EagerValue.stable)
+              makeUniformControlSeq(EagerValue.unstable)
 
               // `eagerLowerBound` and `eagerUpperBound` are different.
               //

@@ -68,7 +68,7 @@ trait SampleLT1[D <: Domain[Int]]
     LazyTreapSeqCacheTest.TestPackage(
       Set(Label("A")),
       List(
-        LazyTreapSeqCacheTest.TestCase(
+        LazyTreapSeqCacheTest.SegmentTestCase(
           5`(`,
           true forAll (x >= 2 & x <= 8),
           List(
@@ -79,7 +79,7 @@ trait SampleLT1[D <: Domain[Int]]
             someLazyZvalue forAll (x > 10)
           )
         ),
-        LazyTreapSeqCacheTest.TestCase(
+        LazyTreapSeqCacheTest.SegmentTestCase(
           17`(`,
           true forAll (x >= 15 & x <= 20),
           List(
@@ -91,7 +91,7 @@ trait SampleLT1[D <: Domain[Int]]
             (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
           )
         ),
-        LazyTreapSeqCacheTest.TestCase(
+        LazyTreapSeqCacheTest.SegmentTestCase(
           -5`(`,
           true forAll (x > -5 & x < 0),
           List(
@@ -110,7 +110,7 @@ trait SampleLT1[D <: Domain[Int]]
     LazyTreapSeqCacheTest.TestPackage(
       Set(Label("B")),
       List(
-        LazyTreapSeqCacheTest.TestCase(
+        LazyTreapSeqCacheTest.SegmentTestCase(
           12`(`,
           false forAll (x > 8 & x < 15),
           List(
@@ -122,7 +122,7 @@ trait SampleLT1[D <: Domain[Int]]
             (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
           )
         ),
-        LazyTreapSeqCacheTest.TestCase(
+        LazyTreapSeqCacheTest.SegmentTestCase(
           -30`(`,
           true forAll (x < -10),
           List(

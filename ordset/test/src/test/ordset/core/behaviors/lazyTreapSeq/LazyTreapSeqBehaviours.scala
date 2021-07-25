@@ -23,19 +23,27 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
 
         it(s"should return segments of $sample and properly cache lazy values for all cases in $testPackage") {
 
-          // Respore initial state of lazy sequence.
+          // Restore initial state of lazy sequence.
           sample.restoreSequence
 
-          testPackage.cases.foreach { testCase =>
-
-            val segment1 = sample.sequence.getSegmentForExtended(testCase.bound)
-            assertSameRelationAndSegment(testCase.expectedSegment, segment1)
-            assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq)
-
-            // Repeated call must return the same segment and leave the same state.
-            val segment2 = sample.sequence.getSegmentForExtended(testCase.bound)
-            assertSameRelationAndSegment(testCase.expectedSegment, segment2)
-            assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq)
+          testPackage.cases.foreach {
+            case testCase: LazyTreapSeqCacheTest.SegmentTestCase[_, _, _] =>
+              // Repeated call must return the same segment and leave the same state.
+              (1 to 2) foreach { i =>
+                val segment = sample.sequence.getSegmentForExtended(testCase.bound)
+                assertSameRelationAndSegment(testCase.expectedSegment, segment, s"iteration $i")
+                assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq, s"iteration $i")
+              }
+            case testCase: LazyTreapSeqCacheTest.ValueTestCase[_, _, _] =>
+              // Repeated call must return the same value and leave the same state.
+              (1 to 2) foreach { i =>
+                val seqValue = sample.sequence.getValueForExtended(testCase.bound)
+                assert(
+                  valueHash.eqv(seqValue, testCase.expectedValue),
+                  s"expected value ${testCase.expectedValue} for bound ${testCase.bound} at iteration $i"
+                )
+                assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq, s"iteration $i")
+              }
           }
         }
       }
