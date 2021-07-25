@@ -51,7 +51,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
       }
     }
 
-  def segmentsSupportMoveToBound(
+  def supportMoveToBound(
     samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]] with SegmentMoveToBoundTest[E, D, V]]
   ): Unit = 
     samples.foreach { sample =>
@@ -105,7 +105,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
       }
     }
 
-  def segmentsSupportMoveToFirstAndLast(
+  def supportMoveToFirstAndLast(
     samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]]]
   ): Unit = 
     samples.foreach { sample =>

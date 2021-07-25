@@ -334,4 +334,48 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
         }
       }
     }
+
+  def supportReturnValueForBound(
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]]]
+  ): Unit =
+    samples.foreach { sample =>
+
+      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+
+      it(s"should return value associated with segment for $sample") {
+
+        def checkSequenceValueForBound(bound: ExtendedBound[E], refRelation: IntervalRelation[E, D, V]): Unit = {
+          val refValue = refRelation.value
+          val seqValue = sample.sequence.getValueForExtended(bound)
+          assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for extended bound $bound")
+          bound match {
+            case bound: Bound[E] =>
+              val seqValue = sample.sequence.getValueForBound(bound)
+              assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for bound $bound")
+              if (bound.isInclusive) {
+                val element = bound.element
+                val seqValue = sample.sequence.getValueForElement(element)
+                assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for element $element")
+              }
+            case _ => // no additional checks
+          }
+        }
+
+        val iterator = sample.sequence.firstSegment.forwardIterator
+        sample.reference.foreach { refRelation =>
+
+          assert(iterator.hasNext, s"no segment corresponds to reference interval relation $refRelation")
+
+          val refValue = refRelation.value
+
+          // `segment.value` is correct
+          val segment = iterator.next()
+          assert(valueHash.eqv(segment.value, refValue), s"segment $segment should have value $refValue")
+
+          // `sequence.getValueForBound` etc are correct
+          checkSequenceValueForBound(segment.lowerExtended, refRelation)
+          checkSequenceValueForBound(segment.upperExtended, refRelation)
+        }
+      }
+    }
 }

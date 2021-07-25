@@ -120,6 +120,19 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   
   final override def getSegmentForElement(element: E): TreapSegment[E, D, V] = 
     super.getSegmentForElement(element)
+
+  final override def getValueForBound(bound: Bound[E]): V =
+    getSegmentForBound(bound).value
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V =
+    bound match {
+      case bound: Bound[E] => getValueForBound(bound)
+      case ExtendedBound.BelowAll => firstSegment.value
+      case ExtendedBound.AboveAll => lastSegment.value
+    }
+
+  final override def getValueForElement(element: E): V = 
+    super.getValueForElement(element)
   
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliceAtBound(bound)._2

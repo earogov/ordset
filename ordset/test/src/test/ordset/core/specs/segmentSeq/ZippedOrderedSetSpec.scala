@@ -52,15 +52,17 @@ class ZippedOrderedSetSpec extends AnyFunSpec
     it should behave like segmentsSupportContains(testSuite)
 
     it should behave like segmentsCanRestrictBound(testSuite)
+
+    it should behave like supportReturnValueForBound(testSuite)
   }
 
   describe("Zipped ordered set navigation operations:") {
 
     it should behave like segmentsSupportMovePrevAndNext(testSuite)
 
-    it should behave like segmentsSupportMoveToBound(testSuite)
+    it should behave like supportMoveToBound(testSuite)
 
-    it should behave like segmentsSupportMoveToFirstAndLast(testSuite)
+    it should behave like supportMoveToFirstAndLast(testSuite)
   }
 
   describe("Zipped ordered set transformation operations:") {

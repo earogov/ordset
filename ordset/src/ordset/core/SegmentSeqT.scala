@@ -168,6 +168,34 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = 
     getSegmentForBound(Bound.Upper.inclusive(element))
 
+  /**
+   * Returns value of segment that contains specified `bound`:
+   * {{{
+   *   getValueForBound(bound) == getSegmentForBound(bound).value
+   *   for any bound
+   * }}}
+   */
+  def getValueForBound(bound: Bound[E]): V
+
+  /**
+   * Returns value of segment that contains specified `bound`:
+   * {{{
+   *   getValueForExtended(bound) == getSegmentForExtended(bound).value
+   *   for any bound
+   * }}}
+   */
+  def getValueForExtended(bound: ExtendedBound[E]): V
+
+  /**
+   * Returns value of segment that contains specified `element`:
+   * {{{
+   *   getValueForElement(element) == getSegmentForElement(element).value
+   *   for any element
+   * }}}
+   */
+  def getValueForElement(element: E): V =
+    getValueForBound(Bound.Upper.inclusive(element))
+
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing

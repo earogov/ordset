@@ -72,6 +72,21 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   final override def getSegmentForElement(element: E): ZippedSegment[E, D, U1, U2, V, S1, S2] =
     super.getSegmentForElement(element)
 
+  final override def getValueForBound(bound: Bound[E]): V =
+    getSegmentValue(firstSeq.getSegmentForBound(bound), secondSeq.getSegmentForBound(bound))
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V =
+    bound match {
+      case bound: Bound[E] => getSegmentForBound(bound).value
+      // First segment is cached => we can use it instead of value computation.
+      case ExtendedBound.BelowAll => firstSegment.value
+      // Last segment is not cached => compute value.
+      case ExtendedBound.AboveAll =>  getSegmentValue(firstSeq.lastSegment, secondSeq.lastSegment)
+    }
+
+  final override def getValueForElement(element: E): V =
+    super.getValueForElement(element)
+
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] =
     cons(firstSeq.takeAboveBound(bound), secondSeq.takeAboveBound(bound))

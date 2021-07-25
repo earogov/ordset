@@ -35,6 +35,12 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   
   final override def getSegmentForElement(element: E): UniformSingleSegment[E, D, V] = segment
 
+  final override def getValueForBound(bound: Bound[E]): V = value
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V = value
+
+  final override def getValueForElement(element: E): V = value
+  
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
