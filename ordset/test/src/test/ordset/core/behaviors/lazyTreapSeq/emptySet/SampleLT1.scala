@@ -49,57 +49,88 @@ trait SampleLT1[D <: Domain[Int]]
   }
 
   override def lazyCacheCases: Iterable[LazyTreapSeqCacheTest.TestPackage[Int, D, Boolean]] = List(
+//    LazyTreapSeqCacheTest.TestPackage(
+//      Set(Label("A")),
+//      List(
+//        LazyTreapSeqCacheTest.SegmentTestCase(
+//          ExtendedBound.BelowAll,
+//          false forAll x,
+//          List(
+//            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+//          )
+//        ),
+//        LazyTreapSeqCacheTest.SegmentTestCase(
+//          15`]`,
+//          false forAll x,
+//          List(
+//            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+//          )
+//        )
+//      )
+//    ),
+//    LazyTreapSeqCacheTest.TestPackage(
+//      Set(Label("B")),
+//      List(
+//        LazyTreapSeqCacheTest.SegmentTestCase(
+//          5`(`,
+//          false forAll x,
+//          List(
+//            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+//          )
+//        ),
+//        LazyTreapSeqCacheTest.SegmentTestCase(
+//          ExtendedBound.AboveAll,
+//          false forAll x,
+//          List(
+//            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+//          )
+//        )
+//      )
+//    ),
+//    LazyTreapSeqCacheTest.TestPackage(
+//      Set(Label("C")),
+//      List(
+//        LazyTreapSeqCacheTest.SegmentTestCase(
+//          ExtendedBound.AboveAll,
+//          false forAll x,
+//          List(
+//            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+//          )
+//        ),
+//        LazyTreapSeqCacheTest.SegmentTestCase(
+//          ExtendedBound.BelowAll,
+//          false forAll x,
+//          List(
+//            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+//          )
+//        )
+//      )
+//    ),
     LazyTreapSeqCacheTest.TestPackage(
-      Set(Label("A")),
+      Set(Label("D")),
       List(
-        LazyTreapSeqCacheTest.SegmentTestCase(
-          ExtendedBound.BelowAll,
-          false forAll x,
+        LazyTreapSeqCacheTest.ValueTestCase(
+          5 `)`,
+          false,
           List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+            someLazyZvalue forAll (x < 0),
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 10),
+            someLazyZvalue forAll (x > 10 & x <= 20),
+            someLazyZvalue forAll (x > 20)
+          )
+        ),
+        LazyTreapSeqCacheTest.ValueTestCase(
+          15 `)`,
+          false,
+          List(
+            someLazyZvalue forAll (x < 0),
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 20),
+            someLazyZvalue forAll (x > 20)
           )
         ),
         LazyTreapSeqCacheTest.SegmentTestCase(
-          15`]`,
-          false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
-        )
-      )
-    ),
-    LazyTreapSeqCacheTest.TestPackage(
-      Set(Label("B")),
-      List(
-        LazyTreapSeqCacheTest.SegmentTestCase(
-          5`(`,
-          false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
-        ),
-        LazyTreapSeqCacheTest.SegmentTestCase(
-          ExtendedBound.AboveAll,
-          false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
-        )
-      )
-    ),
-    LazyTreapSeqCacheTest.TestPackage(
-      Set(Label("C")),
-      List(
-        LazyTreapSeqCacheTest.SegmentTestCase(
-          ExtendedBound.AboveAll,
-          false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
-        ),
-        LazyTreapSeqCacheTest.SegmentTestCase(
-          ExtendedBound.BelowAll,
-          false forAll x,
+          -5 `)`,
+          false forAll (x < 0),
           List(
             (false, EagerValue.stable[Int, D, Boolean]) forAll x
           )

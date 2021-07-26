@@ -16,30 +16,88 @@ import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqUtil}
 import ordset.util.tag.Tag
 
 import scala.annotation.tailrec
+
 /**
+ * Segment sequence that may contain lazy segments - value of such segment is a function that returns some new segment
+ * sequence. After being computed new sequence is merged into internal treap structure and then all its segments are
+ * accessed directly with standard cost of balanced tree search.
+ *
+ * <h2>Implementation</h2>
+ *
+ * Lazy treap sequence consists of three internal sequences.
+ *
+ * <b>1. Base sequence</b>
+ *
+ * Base sequence - is a treap sequence that contains computed (eager) values.
+ * Lazy segments are allowed to have any value.
  * {{{
  *
- *   base sequence:
  *
- *              A               B               C            - base values
- *   X-------------------](----------](-------------------X
- *
- *   control sequence:
- *
- *        ?         u           s          u         ?       - control values
- *   X--------](---------](----------](--------](---------X
+ *   X-----------](------------)[------------X
+ *          A            B         any value
  * }}}
- * where
  *
- * ? - lazy segment: value hasn't been computed yet, computation will produce new segment sequence instead
- *     of given segment.
+ * <b>2. Control sequence</b>
  *
- * u - unstable eager segment: value has been computed, but segment type is undefined (initial, inner, terminal or
- *     single) because of some adjacent segments are lazy.
+ * Control sequence - is a treap sequence that specifies which part of base sequence is lazy and which is eager.
+ * {{{
  *
- * s - stable eager segment: value had been computed and segment type is defined, all adjacent segments are eager
- *     (stable or unstable).
  *
+ *   X-----------](------------)[------------X
+ *         s             u            ?
+ * }}}
+ *
+ *  where
+ *
+ *  ? - lazy segment: value hasn't been computed yet, computation will produce new segment sequence instead
+ *      of given segment.
+ *
+ *  u - unstable eager segment: value has been computed, but segment type is undefined (initial, inner, terminal or
+ *      single) because of some adjacent segments are lazy.
+ *
+ *  s - stable eager segment: value had been computed and segment type is defined.
+ *
+ * <b>3. Zipped sequence</b>
+ *
+ * Zipped sequence merges base and control sequences. Value of zipped segment is a tuple:
+ * <tr>(value of base segment, control value)</tr>
+ * {{{
+ *
+ *
+ *   X-----------](------------)[------------X
+ *      (A, s)        (B, u)    (?, any value)
+ * }}}
+ *
+ * <h3>Output lazy sequence</h3>
+ *
+ * External api of class is represented by lazy segments that wrap zipped segments. The basic rule is that:
+ * <tr><u>only stable segments are exposed outside.</u></tr>
+ * <tr></tr>
+ * Lazy and eager unstable segments are transformed into stable one on demand. In that case:
+ * <tr>- new versions of base, control and zipped sequences are created such that required segment become stable;</tr>
+ * <tr>- new versions of sequences are cached (with synchronization);</tr>
+ * <tr>- stable segment is created and returned.</tr>
+ *
+ * <h3>Stability condition</h3>
+ *
+ * Eager segment is stable iff it has no adjacent segments such that:
+ * <tr>1. Segment is lazy.</tr>
+ * {{{
+ *
+ *                ?        u
+ *           X--------](--------
+ *             /              \
+ *    lazy adjacent       segment is unstable
+ * }}}
+ * <tr>2. Segment is unstable, has the same value as current segment and has adjacent lazy segment.</tr>
+ * {{{
+ *               ?         u         u
+ *          X--------](--------](---------
+ *              -      /   A        A   \
+ *     unstable adjacent               segment is unstable
+ *       segment with
+ *      the same value
+ * }}}
  */
 abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   extends AbstractSegmentSeq[E, D, V, LazySegmentBase[E, D, V]] {
@@ -652,7 +710,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     // Let's call as patch sequence new control sequence that will replace existing one in some region around given
     // `zsegment`. Method builds patch sequence, inserts it into existing control sequence and returns new one.
     //
-    // 1. Starting from `zsegment` try to move backward:
+    // 1. Starting from `zsegment` try to move backward to the previous segment:
     //    - if `zsegment` is first then define `patchLowerBound` as lower bound of `zsegment`;
     //    - if previous segment is stable or lazy then define `patchLowerBound` as lower bound of `zsegment`;
     //    - if previous segment is eager unstable then define `patchLowerBound` as lower bound of previous segment.
@@ -965,29 +1023,34 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   /**
    * Builds control sequence from a new sequence `baseSeq` that was computed for a given `zsegment`.
    *
-   * `eagerLowerBound` and `eagerUpperBound` input arguments define bound conditions:
-   * <tr>- if indicator is `false` then corresponding adjacent segment of `zsegment` is lazy.</tr>
-   *
+   * `stableLowerBound` and `stableUpperBound` input arguments define bound conditions:
+   * <tr>
+   *   - if indicator is `true` then corresponding bound will be present after all subsequent computations of
+   *   lazy values in sequence.
+   * </tr>
+   * <tr></tr>
    * Let's denote:
    * {{{
    *               zsegment
    *       !(------------------]!
    *      /                      \
-   *   eagerLowerBound == true    eagerUpperBound == true
+   *   stableLowerBound == true   stableUpperBound == true
    *
    *               zsegment
    *       ?(-------------------]?
    *      /                       \
-   *   eagerLowerBound == false    eagerUpperBound == false
+   *   stableLowerBound == false   stableUpperBound == false
    * }}}
+   * <tr></tr>
    *
    * Segments of `baseSeq` are mapped to the segments of output control sequence. Output segment may get either
-   * `stable` or `unstable` control value. Segment is stable iff all its adjacent segments are eager (non-lazy).
+   * `stable` or `unstable` control value (see stability condition in class description [[AbstractLazyTreapSegmentSeq]]).
+   * <tr></tr>
    *
-   * Corollaries.
-   *
-   * 1. If some side is lazy then corresponding bound segment of new control sequence MUST be unstable.
+   * 1. If some bound is marked as "unstable" (for example `stableLowerBound` == false) then corresponding bound segment
+   * of new control sequence MUST be unstable.
    * {{{
+   *
    *               zsegment
    *       ?(-------------------
    *
@@ -996,7 +1059,9 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *     unstable
    * }}}
    *
-   * 2. If some side is eager than bound segment MAY be stable (depending on the other adjacent segment).
+   * 2. If some bound is marked as "stable" then bound segment MAY be stable depending on other adjacent segment.
+   * <tr></tr>
+   * 2.1.
    * {{{
    *             zsegment
    *       !(--------------]?
@@ -1004,6 +1069,30 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *   output:
    *   -----------)[-------------
    *      stable      unstable
+   * }}}
+   *
+   * Note, output segments are created according to input new base sequence. As for any sequence all base segments
+   * have different values => stability condition (see [[AbstractLazyTreapSegmentSeq]]) for left segment is always
+   * satisfied.
+   * <tr></tr>
+   * 2.2.
+   * {{{
+   *             zsegment
+   *       !(--------------]?
+   *
+   *   output:
+   *   ---------)[------](-------
+   *     stable   stable
+   * }}}
+   * <tr></tr>
+   * 2.3.
+   * {{{
+   *             zsegment
+   *       !(--------------]?
+   *
+   *   output:
+   *   --------------------------
+   *            unstable
    * }}}
    *
    * 3. Segments of `baseSeq` that are completely inside input `zsegment` are mapped to stable control values.
@@ -1022,21 +1111,20 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *
    * @param zsegment zipped segment (contains base segment and control segment).
    * @param baseSeq sequence that was computed for `zsegment` to patch corresponding base segment.
-   * @param eagerLowerBound `true` if `zsegment` is first segment of sequence or if previous segment has eager control
-   *                        value.
-   * @param eagerUpperBound `true` if `zsegment` is last segment of sequence or if next segment has eager control value.
+   * @param stableLowerBound `true` if lower bound will be present after all computations of lazy values in sequence.
+   * @param stableUpperBound `true` if upper bound will be present after all computations of lazy values in sequence.
    */
   protected final def makeControlSeq(
     zsegment: ZSegment[E, D, V],
     baseSeq: SegmentSeq[E, D, V],
-    eagerLowerBound: Boolean,
-    eagerUpperBound: Boolean
+    stableLowerBound: Boolean,
+    stableUpperBound: Boolean
   ): ControlSegmentSeq[E, D, V] =
     //
     //       !(-----------]!       - zsegment
     // X------------------------X  - output
     //           stable
-    if (eagerLowerBound && eagerUpperBound) {
+    if (stableLowerBound && stableUpperBound) {
       makeUniformControlSeq(EagerValue.stable)
 
     } else {
@@ -1048,7 +1136,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       //            \
       //        stable if both `eagerLowerBound` and `eagerUpperBound` are `true`
       if (domainOps.segmentUpperOrd.eqv(boundSegments._1, boundSegments._2)) {
-        makeUniformControlSeq(EagerValue.cons(isStable = eagerLowerBound && eagerUpperBound))
+        makeUniformControlSeq(EagerValue.cons(isStable = stableLowerBound && stableUpperBound))
 
       } else boundSegments match {
         case (lowerSegment: Segment.WithNext[E, D, V], upperSegment: Segment.WithPrev[E, D, V]) =>
@@ -1063,7 +1151,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             //      ?(----------------]?          - zsegment
             // X------------------------------X   - output
             //            unstable
-            if (eagerLowerBound == eagerUpperBound) {
+            if (stableLowerBound == stableUpperBound) {
               makeUniformControlSeq(EagerValue.unstable)
 
               // `eagerLowerBound` and `eagerUpperBound` are different.
@@ -1079,8 +1167,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
               //       stable        unstable
             } else {
               makeSingleBoundedControlSeq(
-                EagerValue.cons(eagerLowerBound),
-                EagerValue.cons(eagerUpperBound),
+                EagerValue.cons(stableLowerBound),
+                EagerValue.cons(stableUpperBound),
                 lowerSegment.upperBound
               )
             }
@@ -1095,7 +1183,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             // X-)[-----)[----](----)[-----](--X  - baseSeq
             // X--------)[-------                 - output
             //  unstable
-            if (!eagerLowerBound) {
+            if (!stableLowerBound) {
               buffer =
                 BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
                   buffer,
@@ -1110,7 +1198,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             // X-)[-----)[----](----)[-----](--X  - baseSeq
             //                ------)[---------X  - output
             //                stable   unstable
-            if (!eagerUpperBound) {
+            if (!stableUpperBound) {
               buffer =
                 BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
                   buffer,
@@ -1124,7 +1212,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             val root = BuildAsc.finalizeBuffer(buffer)
             root match {
               case root: ImmutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]] =>
-                makeNonuniformControlSeq(root, EagerValue.cons(eagerUpperBound))
+                makeNonuniformControlSeq(root, EagerValue.cons(stableUpperBound))
               // The case when both `eagerLowerBound` and `eagerUpperBound` are `true` was considered before =>
               // either `eagerLowerBound` or `eagerUpperBound` is `false` =>
               // there was at least one write to `buffer` =>
@@ -1149,46 +1237,6 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * Returns segment of lazy sequence that corresponds to input `ztruncation`.
    * `ztruncation` captures segment of zipped sequence and some bound inside this segment.
    *
-   * <b>Control sequence:</b>
-   * {{{
-   *
-   *   X-----------](------------)[------------X
-   *          s            u             ?
-   *
-   *   where u - unstable eager segment; s - stable eager segment; ? - lazy segment.
-   *
-   *   Control sequence specifies which part of base sequence is lazy.
-   * }}}
-   * <b>Base sequence:</b>
-   * {{{
-   *
-   *   X-----------](------------)[------------X
-   *          A            B         any value
-   *
-   *   Base sequence contains computed (eager) values.
-   *   Lazy segments are allowed to have any value.
-   * }}}
-   * <b>Zipped sequence:</b>
-   * {{{
-   *
-   *     `ztruncation`
-   *          ]
-   *   X-----------](------------)[------------X
-   *      (s, A)        (u, B)    (any value, ?)
-   *
-   *   Contains tuples of control and base values.
-   * }}}
-   * <b>Output lazy sequence:</b>
-   * {{{
-   *
-   *       output
-   *   X-----------](------------)[------------X
-   *         A             -             -
-   *
-   *   Sequence exposed as external api of class.
-   *   Only stable segments are exposed.
-   *   Lazy and eager unstable segments are transformed into stable on demand.
-   * }}}
    * <h3>Note</h3>
    *
    * After segment of input `ztruncation` is transformed into stable one we just wrap it with [[LazySegment]]
@@ -1218,8 +1266,9 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * The only possible previous state for case 2 is:
    * {{{
    *
-   * 2.a  ----S1-----](-----S2-----  control sequence
-   *          u             ?
+   * 2.a       S1           S2
+   *      -----------](------------  control sequence
+   *           u            ?
    *      -----------](------------  base sequence
    *           A        any value
    * }}}
@@ -1229,7 +1278,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * But in that case we will get:
    * {{{
    *
-   * 2.b  --](------------S3------------)[--  control sequence
+   * 2.b                  S3
+   *      --](--------------------------)[--  control sequence
    *       s              u               ?
    *      --](--------------------------)[--  base sequence
    *                      A

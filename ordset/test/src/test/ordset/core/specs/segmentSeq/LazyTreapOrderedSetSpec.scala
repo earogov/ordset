@@ -20,8 +20,8 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
   type SegmentSeq = OrderedSet[Int, Dom]
 
   private val lazySuit = List(
-//    new EmptySetSampleLT1[Dom],
-    new SingleBounedSetSampleLT1[Dom],
+    new EmptySetSampleLT1[Dom],
+//    new SingleBounedSetSampleLT1[Dom],
 //    new MultiBoundedSetSampleLT1[Dom],
 //    new MultiBoundedSetSampleLT2[Dom],
   )

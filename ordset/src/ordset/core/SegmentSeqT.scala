@@ -43,10 +43,8 @@ import scala.{specialized => sp}
  * <tr>N - number of segment in sequence.</tr>
  * <tr></tr>
  *  
- * All implementations of segment sequence MUST provide basic property:
+ * All implementations of segment sequence MUST provide basic properties:
  * <tr>1. <u>segments cover universal set without gaps and overlapping</u>.                 </tr>
- * <tr>                                                                                     </tr>
- * Also for performance reasons implementations SHOULD provide property:
  * <tr>2. <u>adjacent segment have different values</u>.                                    </tr>
  * <tr>                                                                                     </tr>
  *

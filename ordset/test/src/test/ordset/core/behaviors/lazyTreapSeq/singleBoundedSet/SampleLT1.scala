@@ -72,6 +72,37 @@ trait SampleLT1[D <: Domain[Int]]
           )
         )
       )
+    ),
+    LazyTreapSeqCacheTest.TestPackage(
+      Set(Label("B")),
+      List(
+        LazyTreapSeqCacheTest.ValueTestCase(
+          -15 `)`,
+          false,
+          List(
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x < -10),
+            someLazyZvalue forAll (x >= -10 & x <= 10),
+            someLazyZvalue forAll (x > 10)
+          )
+        ),
+        LazyTreapSeqCacheTest.ValueTestCase(
+          5 `)`,
+          true,
+          List(
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x < 0),
+            (true, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 10),
+            someLazyZvalue forAll (x > 10)
+          )
+        ),
+        LazyTreapSeqCacheTest.ValueTestCase(
+          15 `)`,
+          true,
+          List(
+            (false, EagerValue.stable[Int, D, Boolean]) forAll (x < 0),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 0)
+          )
+        )
+      )
     )
   )
 }
