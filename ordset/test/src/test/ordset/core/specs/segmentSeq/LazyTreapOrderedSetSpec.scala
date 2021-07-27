@@ -21,9 +21,9 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
 
   private val lazySuit = List(
     new EmptySetSampleLT1[Dom],
-//    new SingleBounedSetSampleLT1[Dom],
-//    new MultiBoundedSetSampleLT1[Dom],
-//    new MultiBoundedSetSampleLT2[Dom],
+    new SingleBounedSetSampleLT1[Dom],
+    new MultiBoundedSetSampleLT1[Dom],
+    new MultiBoundedSetSampleLT2[Dom],
   )
 
   describe("Lazy treap ordered set specific operations:") {
