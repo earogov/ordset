@@ -23,7 +23,7 @@ package ordset.random
  *   sequentially by one thread or concurrently.
  * </tr>
  * <tr>
- * * for same reasonably high amount of requests.
+ * * for sоme reasonably high amount of requests.
  * </tr>
  */
 trait RngManager {

@@ -1,7 +1,7 @@
 package test.ordset.core.behaviors.lazyTreapSeq.emptySet
 
 import ordset.core.AbstractLazyTreapSegmentSeq.EagerValue
-import ordset.core.ExtendedBound
+import ordset.core.{ExtendedBound, IntervalRelation}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
@@ -22,6 +22,10 @@ trait SampleLT1[D <: Domain[Int]]
 
   override val sample: String = "LT1"
 
+  override val reference: Seq[IntervalRelation[Int, D, Boolean]] = List(
+    false forAll x
+  )
+  
   // Protected section -------------------------------------------------------- //
 
   // X-------------------------------------false--------------------------------------X  seq1
@@ -55,16 +59,12 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.SegmentTestCase(
           ExtendedBound.BelowAll,
           false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
+          zippedReference
         ),
         LazyTreapSeqCacheTest.SegmentTestCase(
           15`]`,
           false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
+          zippedReference
         )
       )
     ),
@@ -74,16 +74,12 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.SegmentTestCase(
           5`(`,
           false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
+          zippedReference
         ),
         LazyTreapSeqCacheTest.SegmentTestCase(
           ExtendedBound.AboveAll,
           false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
+          zippedReference
         )
       )
     ),
@@ -93,16 +89,12 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.SegmentTestCase(
           ExtendedBound.AboveAll,
           false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
+          zippedReference
         ),
         LazyTreapSeqCacheTest.SegmentTestCase(
           ExtendedBound.BelowAll,
           false forAll x,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
-          )
+          zippedReference
         )
       )
     ),
@@ -131,9 +123,27 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.SegmentTestCase(
           -5 `)`,
           false forAll x,
+          zippedReference
+        )
+      )
+    ),
+    LazyTreapSeqCacheTest.TestPackage(
+      Set(Label("E")),
+      List(
+        LazyTreapSeqCacheTest.ValueTestCase(
+          -5 `)`,
+          false,
           List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll x
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x < 0),
+            someLazyZvalue forAll (x >= 0 & x <= 10),
+            someLazyZvalue forAll (x > 10 & x <= 20),
+            someLazyZvalue forAll (x > 20)
           )
+        ),
+        LazyTreapSeqCacheTest.SegmentTestCase(
+          25 `)`,
+          false forAll x,
+          zippedReference
         )
       )
     )

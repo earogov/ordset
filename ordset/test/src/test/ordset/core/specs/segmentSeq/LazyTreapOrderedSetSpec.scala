@@ -29,5 +29,9 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
   describe("Lazy treap ordered set specific operations:") {
 
     it should behave like sequenceProperlyCacheLazyValues(lazySuit)
+
+    it should behave like sequenceHasValidStateAfterSequentialRandomAccess(lazySuit)
+
+    it should behave like sequenceHasValidStateAfterConcurrentRandomAccess(lazySuit)
   }
 }

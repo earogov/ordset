@@ -5,7 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
-import ordset.core.ExtendedBound
+import ordset.core.{ExtendedBound, IntervalRelation}
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
@@ -22,6 +22,18 @@ trait SampleLT1[D <: Domain[Int]]
 
   override val sample: String = "LT1"
 
+  override val reference: Seq[IntervalRelation[Int, D, Boolean]] = List(
+    true forAll (x < -10),
+    false forAll (x >= -10 & x <= -5),
+    true forAll (x > -5 & x < 0),
+    false forAll (x >= 0 & x < 2),
+    true forAll (x >= 2 & x <= 8),
+    false forAll (x > 8 & x < 15),
+    true forAll (x >= 15 & x <= 20),
+    false forAll (x > 20)
+  )
+    
+  
   // Protected section -------------------------------------------------------- //
   
   // X-t--)[---f--](-----true-----)[------------false--------------X  seq1
@@ -94,16 +106,7 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.SegmentTestCase(
           -5`(`,
           true forAll (x > -5 & x < 0),
-          List(
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x < -10),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= -10 & x <= -5),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x > -5 & x < 0),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
-          )
+          zippedReference
         )
       )
     ),
@@ -125,16 +128,40 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.SegmentTestCase(
           -30`(`,
           true forAll (x < -10),
+          zippedReference
+        )
+      )
+    ),
+    LazyTreapSeqCacheTest.TestPackage(
+      Set(Label("C")),
+      List(
+        LazyTreapSeqCacheTest.ValueTestCase(
+          1`(`,
+          false,
           List(
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x < -10),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= -10 & x <= -5),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x > -5 & x < 0),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            someLazyZvalue forAll (x < 0),
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x > 8 & x <= 10),
+            someLazyZvalue forAll (x > 10),
+          )
+        ),
+        LazyTreapSeqCacheTest.ValueTestCase(
+          11`(`,
+          false,
+          List(
+            someLazyZvalue forAll (x < 0),
+            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
             (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
             (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
             (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
             (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
           )
+        ),
+        LazyTreapSeqCacheTest.ValueTestCase(
+          -11`(`,
+          true,
+          zippedReference
         )
       )
     )

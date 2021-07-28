@@ -1,7 +1,7 @@
 package test.ordset.core.behaviors.lazyTreapSeq.singleBoundedSet
 
 import ordset.core.AbstractLazyTreapSegmentSeq.EagerValue
-import ordset.core.ExtendedBound
+import ordset.core.{ExtendedBound, IntervalRelation}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
@@ -21,6 +21,11 @@ trait SampleLT1[D <: Domain[Int]]
   self: LazyTreapSeqSample[Int, D, Boolean] =>
 
   override val sample: String = "LT1"
+
+  override val reference: Seq[IntervalRelation[Int, D, Boolean]] = List(
+    false forAll (x < 0),
+    true forAll (x >= 0)
+  )
 
   // Protected section -------------------------------------------------------- //
 
@@ -97,10 +102,7 @@ trait SampleLT1[D <: Domain[Int]]
         LazyTreapSeqCacheTest.ValueTestCase(
           15 `)`,
           true,
-          List(
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x < 0),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 0)
-          )
+          zippedReference
         )
       )
     )

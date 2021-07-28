@@ -1351,7 +1351,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * @see [[makeSegment]].
    */
   protected final def makeLastSegment: LazyLastSegment[E, D, V] =
-    cacheStable(zippedSeq.firstSegment.upperTruncation) match {
+    cacheStable(zippedSeq.lastSegment.upperTruncation) match {
       case s: ZSegmentTerminal[E, D, V] @unchecked => LazyTerminalSegment(this, s)
       case s: ZSegmentSingle[E, D, V] @unchecked => LazySingleSegment(this, s)
       case s => throwSegmentMustBeTerminalOrSingle(s) // just to remove warning

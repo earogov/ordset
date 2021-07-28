@@ -6,10 +6,21 @@ import ordset.{Hash, Show, util}
 import scala.{specialized => sp}
 
 case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
-    interval: Interval[E, D], value: V) {
+    interval: Interval[E, D], 
+    value: V
+) {
 
+  /**
+   * Creates new interval relation with specified value.
+   */
+  def withValue[U](newValue: U): IntervalRelation[E, D, U] = new IntervalRelation(interval, newValue)
+
+  def mapValue[U](mapFunc: V => U): IntervalRelation[E, D, U] = withValue(mapFunc.apply(value))
+  
   override def toString: String =
-    SetBuilderFormat.intervalRelation(interval, value, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
+    SetBuilderFormat.intervalRelation(
+      interval, value, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V]
+    )
 }
 
 object IntervalRelation {

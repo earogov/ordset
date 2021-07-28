@@ -26,7 +26,7 @@ trait Sample3[D <: Domain[Int]]
 
   override def sample: String = "3"
 
-  override def bounds: IterableOnce[Bound.Upper[Int]] =
+  override def bounds: Iterable[Bound.Upper[Int]] =
     ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`, 50 `](`, 60 `](`, 70 `)[`, 80 `)[`)
 
   override def complementary: Boolean = false

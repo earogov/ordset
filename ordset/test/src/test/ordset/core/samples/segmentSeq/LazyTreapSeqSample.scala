@@ -2,7 +2,7 @@ package test.ordset.core.samples.segmentSeq
 
 import ordset.{Hash, util}
 import ordset.core.AbstractLazyTreapSegmentSeq.{ControlValue, ControlValueHash, ControlValueOps, EagerValue, LazySegmentBase, LazyValue, ZSegmentSeq, ZValue, ZValueOps}
-import ordset.core.{AbstractLazyTreapSegmentSeq, ExtendedBound, LazySegmentSeq, SegmentSeq}
+import ordset.core.{AbstractLazyTreapSegmentSeq, ExtendedBound, IntervalRelation, LazySegmentSeq, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.{OrderedMapCommons, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
@@ -26,11 +26,13 @@ abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
   /**
    * Implementation of lazy value for test.
    *
-   * Should be used for equality checks only ([[testZvalueOps]] considers all lazy values equal).
+   * Should be used only for equality checks of lazy values ([[testZvalueOps]] considers all lazy values equal).
    * When called throws [[UnsupportedOperationException]].
    */
-  lazy val someLazyValue: () => SegmentSeq[E, D, V] =
-    () => throw new UnsupportedOperationException("Implementa")
+  lazy val someLazyValue: () => SegmentSeq[E, D, V] = () =>
+    throw new UnsupportedOperationException(
+      "Function should be never called, it's intended to use only for equality checks of lazy values."
+    )
 
   /**
    * Implementation of lazy [[ZValue]] for test.
@@ -39,6 +41,12 @@ abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
    * When called throws [[UnsupportedOperationException]].
    */
   lazy val someLazyZvalue: ZValue[E, D, V] = (valueOps.unit, LazyValue(someLazyValue))
+
+  /**
+   * Reference list of interval relations that equivalent to [[lazySeq.getZippedSeq]] after all lazy value are computed.
+   */
+  lazy val zippedReference: Seq[IntervalRelation[E, D, ZValue[E, D, V]]] =
+    reference.map(_.mapValue((_, EagerValue.stable)))
 
   /**
    * Returns lazy sequence.
