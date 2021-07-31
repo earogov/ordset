@@ -137,9 +137,19 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return `true` if there is next segment after current, i.e. if it's [[SegmentT.WithNext]]. */
   def hasNext: Boolean = false
 
+  /**
+   * @return `true` if there is next segment after current that satisfies specified predicate.
+   */
+  def hasNextSuchThat(p: SegmentT.WithPrev[E, D, V, S] with S => Boolean): Boolean = false
+
   /** @return `true` if there is previous segment before current, i.e. if it's [[SegmentT.WithPrev]]. */
   def hasPrev: Boolean = false
-
+  
+  /**
+   * @return `true` if there is previous segment before current that satisfies specified predicate.
+   */
+  def hasPrevSuchThat(p: SegmentT.WithNext[E, D, V, S] with S => Boolean): Boolean = false
+  
   /** @return `true` if segment is [[SegmentT.First]]. */
   def isFirst: Boolean = false
 

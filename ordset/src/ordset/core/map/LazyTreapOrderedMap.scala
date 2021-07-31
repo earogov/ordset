@@ -1,7 +1,7 @@
 package ordset.core.map
 
-import ordset.core.AbstractLazyTreapSegmentSeq.{BaseSegmentSeq, EagerValue, ZSegmentSeq, LazySegmentBase}
-import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, SegmentSeq}
+import ordset.core.AbstractLazyTreapSegmentSeq.{BaseSegmentSeq, EagerValue, LazySegmentBase, ZSegmentSeq}
+import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, LazySegmentSeq, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
@@ -24,6 +24,8 @@ class LazyTreapOrderedMap[E, D <: Domain[E], V] protected (
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
+
+  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] = ???
 
 //  protected final def initializeZippedSeq(
 //    baseMap: OrderedMap[E, D, V],

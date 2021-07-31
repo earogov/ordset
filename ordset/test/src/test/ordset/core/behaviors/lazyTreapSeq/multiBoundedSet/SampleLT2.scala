@@ -74,7 +74,7 @@ trait SampleLT2[D <: Domain[Int]]
       domainOps
     )()
 
-    new LazyTreapSeqSample.LazyTreapSegmentSeq(
+    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(
       List(
         (0 `)`, () => seq1),
         (10 `]`, () => seq2),

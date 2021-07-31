@@ -124,13 +124,11 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
   ): Unit = {
     val rng = rngManager.newUnsafeUniformRng()
     (1 to (2 * boundsArray.length)).foreach { _ =>
-      val index = math.abs(rng.nextInt()) % boundsArray.length
+      val rnd = rng.nextInt()
+      val index = math.abs(rnd) % boundsArray.length
       val bound = boundsArray(index)
-      if (rng.nextInt() > 0) {
-        sequence.getSegmentForExtended(bound)
-      } else {
-        sequence.getValueForExtended(bound)
-      }
+      if (rnd > 0) sequence.getSegmentForExtended(bound)
+      else sequence.getValueForExtended(bound)
     }
   }
 }

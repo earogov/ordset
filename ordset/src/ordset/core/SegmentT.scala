@@ -156,6 +156,8 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def hasNext: Boolean = true
 
+    override def hasNextSuchThat(p: SegmentT.WithPrev[E, D, V, S] with S => Boolean): Boolean = p.apply(moveNext)
+
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
 
     /**
@@ -185,6 +187,8 @@ object SegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def hasPrev: Boolean = true
+
+    override def hasPrevSuchThat(p: SegmentT.WithNext[E, D, V, S] with S => Boolean): Boolean = p.apply(movePrev)
 
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
 

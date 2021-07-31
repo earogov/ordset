@@ -44,7 +44,7 @@ trait SampleLT1[D <: Domain[Int]]
     val seq2 = TreapOrderedSet.getFactory[Int, D].unsafeBuildAsc(ArraySeq(0 `)[`), complementary = false, domainOps)()
     val seq3 = TreapOrderedSet.getFactory[Int, D].unsafeBuildAsc(ArraySeq.empty, complementary = true, domainOps)()
 
-    new LazyTreapSeqSample.LazyTreapSegmentSeq(
+    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(
       List(
         (-10 `)`, () => seq1),
         ( 10 `]`, () => seq2),

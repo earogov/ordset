@@ -20,6 +20,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
 
       val boundOrd = sample.domainOps.boundOrd
       val extendedOrd = sample.domainOps.extendedOrd
+      val segmentOrd = sample.domainOps.segmentUpperOrd
   
       it(s"should have valid navigation indicators (`hasNext`, `hasPrev`, `isFirst`, ...) for $sample") {
         @tailrec
@@ -33,7 +34,24 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             assert(!seg.isFirst, s"expected $seg is not first segment")
             assert(!seg.isLast, s"expected $seg is not last segment")
             assert(!seg.isSingle, s"expected $seg is not single segment")
-  
+
+            assert(
+              seg.hasNextSuchThat(segmentOrd.eqv(_, seg.moveNext)),
+              s"expected $seg has next segment ${seg.moveNext}"
+            )
+            assert(
+              !seg.hasNextSuchThat(_ => false),
+              s"expected $seg doesn't have next segment that satisfies predicate (_) => false"
+            )
+            assert(
+              seg.hasPrevSuchThat(segmentOrd.eqv(_, seg.movePrev)),
+              s"expected $seg has previous segment ${seg.movePrev}"
+            )
+            assert(
+              !seg.hasPrevSuchThat(_ => false),
+              s"expected $seg doesn't have previous segment that satisfies predicate (_) => false"
+            )
+
             assert(
               seg.hasLowerBound(seg.lowerBound),
               s"expected $seg has lower bound ${seg.lowerBound}"
@@ -90,7 +108,20 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             assert(!seg.isLast, s"expected $seg is not last segment")
             assert(!seg.hasPrev, s"expected $seg does not have previous segment")
             assert(!seg.isTerminal, s"expected $seg is not terminal segment")
-  
+
+            assert(
+              seg.hasNextSuchThat(segmentOrd.eqv(_, seg.moveNext)),
+              s"expected $seg has next segment ${seg.moveNext}"
+            )
+            assert(
+              !seg.hasNextSuchThat(_ => false),
+              s"expected $seg doesn't have next segment that satisfies predicate (_) => false"
+            )
+            assert(
+              !seg.hasPrevSuchThat(_ => true),
+              s"expected $seg doesn't have previous segment that satisfies predicate (_) => true"
+            )
+
             assert(
               seg.hasUpperBound(seg.upperBound),
               s"expected $seg has upper bound ${seg.upperBound}"
@@ -128,7 +159,20 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             assert(!seg.isFirst, s"expected $seg is not first segment")
             assert(!seg.hasNext, s"expected $seg does not have next segment")
             assert(!seg.isInitial, s"expected $seg is not initial segment")
-  
+
+            assert(
+              !seg.hasNextSuchThat(_ => true),
+              s"expected $seg doesn't have next segment that satisfies predicate (_) => true"
+            )
+            assert(
+              seg.hasPrevSuchThat(segmentOrd.eqv(_, seg.movePrev)),
+              s"expected $seg has previous segment ${seg.movePrev}"
+            )
+            assert(
+              !seg.hasPrevSuchThat(_ => false),
+              s"expected $seg doesn't have previous segment that satisfies predicate (_) => false"
+            )
+
             assert(
               seg.hasLowerBound(seg.lowerBound),
               s"expected $seg has lower bound ${seg.lowerBound}"
@@ -164,6 +208,15 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             assert(!seg.hasNext, s"expected $seg does not have next segment")
             assert(!seg.hasPrev, s"expected $seg does not have previous segment")
             assert(!seg.isInner, s"expected $seg is not inner segment")
+
+            assert(
+              !seg.hasNextSuchThat(_ => true),
+              s"expected $seg doesn't have next segment that satisfies predicate (_) => true"
+            )
+            assert(
+              !seg.hasPrevSuchThat(_ => true),
+              s"expected $seg doesn't have previous segment that satisfies predicate (_) => true"
+            )
 
             assert(
               seg.hasLowerExtended(ExtendedBound.BelowAll),

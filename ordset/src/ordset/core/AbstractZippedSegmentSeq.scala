@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{AscOrder, Domain, DomainOps}
+import ordset.core.internal.SegmentSeqExceptionUtil._
 import AbstractZippedSegmentSeq._
 
 // TODO: class description.
@@ -158,7 +159,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
           case (firstSegment: SegmentT[E, D, U1, S1], secondSegment: SegmentT[E, D, U2, S2]) =>
             operator(firstSegment.value, secondSegment.value)
           case (null, null) =>
-            throwSegmentMustBelongToOriginalSeqs(left, right)
+            throwSegmentsMustBelongToOriginalSeqs(left, right)
         }
     }
   }
@@ -177,7 +178,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     else {
       val secondSegment = castSegmentToSecondSeq(segment)
       if (secondSegment != null) secondInvariant(secondSegment.value)
-      else throwSegmentMustBelongToOriginalSeqs(segment)
+      else throwSegmentsMustBelongToOriginalSeqs(segment)
     }
   }
 
@@ -256,7 +257,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
       case (ll: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2], rl: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2]) =>
         ZippedSingleSegment[E, D, U1, U2, V, S1, S2](this, ll, rl)
       case _ =>
-        throwSegmentMustBeLastOrWithNext(left, right) // just to remove warning
+        throwSegmentsMustBeLastOrWithNext(left, right) // just to remove warning
     }
 
   /**
@@ -305,7 +306,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
       case (ll: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2], rl: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2]) =>
         ZippedTerminalSegment[E, D, U1, U2, V, S1, S2](this, ll, rl)
       case _ =>
-        throwSegmentMustBeLastOrWithNext(left, right) // just to remove warning
+        throwSegmentsMustBeLastOrWithNext(left, right) // just to remove warning
     }
 
   /**
@@ -477,7 +478,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
         // Unable to make step forward => return zipped segment for current left and right values.
         case _ => zipper(left, right)
       }
-      case _ => throwSegmentMustBeLastOrWithNext(left) // just to remove warning
+      case _ => throwSegmentsMustBeLastOrWithNext(left) // just to remove warning
     }
 
   /**
@@ -509,7 +510,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
         // Unable to make step backward => return zipped segment for current left and right values.
         case _ => zipper(left, right)
       }
-      case _ => throwSegmentMustBeFirstOrWithPrev(left) // just to remove warning
+      case _ => throwSegmentsMustBeFirstOrWithPrev(left) // just to remove warning
     }
 
   /** Same as [[stepForwardZipper]] function but with stricter input types. */
@@ -521,7 +522,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     right match {
       case rn: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2] => stepForwardNextNextZipper(zipper, left, rn)
       case rl: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2] => stepForwardNextLastZipper(zipper, left, rl)
-      case _ => throwSegmentMustBeLastOrWithNext(right) // just to remove warning
+      case _ => throwSegmentsMustBeLastOrWithNext(right) // just to remove warning
     }
 
   /** Same as [[stepBackwardZipper]] function but with stricter input types. */
@@ -648,28 +649,12 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     else
       zipper(forward.movePrev, backward)
 
-  protected final def throwSegmentMustBeLastOrWithNext(
+  protected final def throwSegmentsMustBelongToOriginalSeqs(
     segments: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]*
   ): Nothing = {
-    val segmentsStr = SetBuilderFormat.segmentIterable(segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
-    throw new AssertionError(
-      s"Expected that segments $segmentsStr are either last or has next segment."
+    val segmentsStr = SetBuilderFormat.segmentIterable(
+      segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any]
     )
-  }
-
-  protected final def throwSegmentMustBeFirstOrWithPrev(
-    segments: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]*
-  ): Nothing = {
-    val segmentsStr = SetBuilderFormat.segmentIterable(segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
-    throw new AssertionError(
-      s"Expected that segments $segmentsStr are either first or has previous segment."
-    )
-  }
-
-  protected final def throwSegmentMustBelongToOriginalSeqs(
-    segments: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]*
-  ): Nothing = {
-    val segmentsStr = SetBuilderFormat.segmentIterable(segments, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[Any])
     throw new AssertionError(
       s"Expected that segments $segmentsStr belong to one of original sequences."
     )
@@ -740,7 +725,7 @@ object AbstractZippedSegmentSeq {
       else {
         segment = sequence.castSegmentToFirstSeq(right)
         if (segment != null) segment
-        else sequence.throwSegmentMustBelongToOriginalSeqs(left, right)
+        else sequence.throwSegmentsMustBelongToOriginalSeqs(left, right)
       }
     }
 
@@ -753,7 +738,7 @@ object AbstractZippedSegmentSeq {
       else {
         segment = sequence.castSegmentToSecondSeq(right)
         if (segment != null) segment
-        else sequence.throwSegmentMustBelongToOriginalSeqs(left, right)
+        else sequence.throwSegmentsMustBelongToOriginalSeqs(left, right)
       }
     }
 

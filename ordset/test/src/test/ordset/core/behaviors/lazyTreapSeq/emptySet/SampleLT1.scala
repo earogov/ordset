@@ -42,7 +42,7 @@ trait SampleLT1[D <: Domain[Int]]
   override protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[Int, D, Boolean] = {
     val seq = TreapOrderedSet.getFactory[Int, D].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
 
-    new LazyTreapSeqSample.LazyTreapSegmentSeq(
+    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(
       List(
         (0 `)`, () => seq),
         (10 `]`, () => seq),

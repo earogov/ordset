@@ -60,13 +60,13 @@ object TreapSegmentSeqUtil {
       TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
       SegmentT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]]
     ],
-    sequence: SegmentSeq[E, D, V]
+    otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
-    truncation.prepend(sequence) match {
+    truncation.prepend(otherSeq) match {
       case seq: TreapSegmentSeq[E, D, V] => seq
       case seq => TreapOrderedMap.getFactory.convertMap(seq)
     }
-
+  
   /**
    * Applies [[SegmentTruncationT.append]] operation to the given truncation of [[TreapSegmentSeq]].
    *
@@ -81,9 +81,9 @@ object TreapSegmentSeqUtil {
       TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
       SegmentT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]]
     ],
-    sequence: SegmentSeq[E, D, V]
+    otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
-    truncation.append(sequence) match {
+    truncation.append(otherSeq) match {
       case seq: TreapSegmentSeq[E, D, V] => seq
       case seq => TreapOrderedMap.getFactory.convertMap(seq)
     }
@@ -96,10 +96,10 @@ object TreapSegmentSeqUtil {
    */
   def patchSegment[E, D <: Domain[E], V](
     segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
-    sequence: SegmentSeq[E, D, V]
+    otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     segment match {
-      case s: TreapSegmentBase[_, _, _] => s.patch(sequence)
-      case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(sequence)
+      case s: TreapSegmentBase[_, _, _] => s.patch(otherSeq)
+      case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(otherSeq)
     }
 }

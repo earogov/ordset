@@ -155,8 +155,8 @@ object LazyTreapSeqSample {
     }
   }
 
-  class LazyTreapSegmentSeq[E, D <: Domain[E], V](
-    initControlSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
+  class LazyTreapSegmentSeq[E, D <: Domain[E], V] protected (
+    initZippedSeq: ZSegmentSeq[E, D, V]
   )(
     implicit
     final override val domainOps: DomainOps[E, D],
@@ -166,30 +166,49 @@ object LazyTreapSeqSample {
     with OrderedMapCommons[E, D, V, LazySegmentBase[E, D, V]] {
 
     // Initialization ----------------------------------------------------------- //
-    zippedSeq = ZippedOrderedMap.apply(
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((ExtendedBound.AboveAll, valueOps.unit)),
-        domainOps,
-        valueOps
-      )(),
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
-        initControlSeq.map(p => (p._1, LazyValue(p._2))),
-        domainOps,
-        ControlValueOps.get
-      )(),
-      Tuple2.apply,
-      _ => false,
-      _ => false
-    )(
-      domainOps,
-      ZValueOps.get(valueOps),
-      rngManager
-    )
+    zippedSeq = initZippedSeq
 
     // Inspection --------------------------------------------------------------- //
     def getZippedSeq: ZSegmentSeq[E, D, V] = zippedSeq
 
     // Protected section -------------------------------------------------------- //
-    protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
+    protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] =
+      UniformOrderedMap.default(value)
+
+    protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
+      new LazyTreapSegmentSeq(zippedSeq)
+  }
+
+  object LazyTreapSegmentSeq {
+
+    def totallyLazy[E, D <: Domain[E], V](
+      initControlSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
+    )(
+      implicit
+      domainOps: DomainOps[E, D],
+      valueOps: ValueOps[V],
+      rngManager: RngManager
+    ): LazyTreapSegmentSeq[E, D, V] = {
+      val initZippedSeq: ZSegmentSeq[E, D, V] = ZippedOrderedMap.apply(
+        TreapOrderedMap.getFactory.unsafeBuildAsc(
+          List((ExtendedBound.AboveAll, valueOps.unit)),
+          domainOps,
+          valueOps
+        )(),
+        TreapOrderedMap.getFactory.unsafeBuildAsc(
+          initControlSeq.map(p => (p._1, LazyValue(p._2))),
+          domainOps,
+          ControlValueOps.get
+        )(),
+        Tuple2.apply,
+        _ => false,
+        _ => false
+      )(
+        domainOps,
+        ZValueOps.get(valueOps),
+        rngManager
+      )
+      new LazyTreapSegmentSeq(initZippedSeq)
+    }
   }
 }
