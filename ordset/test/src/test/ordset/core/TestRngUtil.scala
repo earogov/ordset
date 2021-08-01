@@ -10,9 +10,18 @@ object TestRngUtil {
   object Implicits {
 
     /**
-     * Constant seeds are used for tests reproducibility.
+     * Default random manager for tests.
+     * 
+     * To provide reproducibility:
+     * <tr>
+     *   - Constant seeds are used.
+     * </tr>
+     * <tr>
+     *   - `def` is used instead of `lazy val`. Instance, shared between multiple tests, may have unpredictable 
+     *   state that depends on tests order, concurrent access in one of the tests, etc.
+     * </tr>
      */
-    implicit lazy val defaultRngManager: RngManager =
+    implicit def defaultRngManager: RngManager =
       new KISSThreadLocalRngManager(0xa19f0b2d0c48ea51L, 0x0e87fa311d2d0fL)
   }
 }

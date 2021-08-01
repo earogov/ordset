@@ -145,6 +145,13 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def upperBounds: Iterable[Bound.Upper[E]] = 
     SegmentSeqUtil.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true)
 
+  /**
+   * @return collection of extended upper bounds. It's always non-empty with last element equals to 
+   *         [[ExtendedBound.AboveAll]].
+   */
+  def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = 
+    firstSegment.forwardIterable.map(_.upperExtended)
+  
   /** @return first segment of sequence. */
   def firstSegment: SegmentT.First[E, D, V, S] with S
 

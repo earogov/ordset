@@ -4,13 +4,14 @@ import ordset.Hash
 import ordset.core.AbstractLazyTreapSegmentSeq._
 import ordset.core.{ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.random.RngManager
+import ordset.random.{RngManager, UnsafeUniformRng}
 import test.ordset.core.samples.segmentSeq.LazyTreapSeqSample
 import test.ordset.core.SegmentSeqAssertions._
 import org.scalatest.funspec.AnyFunSpec
+import test.ordset.core.RandomUtil
 
 import java.util.concurrent.{Executors, TimeUnit}
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.{ArraySeq, HashMap}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -76,8 +77,10 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
         // Restore initial state of lazy sequence.
         sample.restoreSequence
 
-        val boundsArray = sample.extendedBounds.toArray
-        randomAccess(sample.sequence, boundsArray, sample.rngManager)
+        val rng =  sample.rngManager.newUnsafeUniformRng()
+        val boundsArr = ArraySeq.from(sample.extendedBounds)
+
+        randomAccess(sample.sequence, boundsArr, rng)
 
         assertSameRelationAndSegmentSeq(sample.reference, sample.sequence)
         // After first assertion sequence will be totally stable => we can compare zipped sequence with reference.
@@ -99,11 +102,12 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
         // Restore initial state of lazy sequence.
         sample.restoreSequence
 
-        val boundsArray = sample.extendedBounds.toArray
+        val boundsArr = ArraySeq.from(sample.extendedBounds)
         val future = Future.sequence((1 to tasksNum).map( _ =>
+          val rng =  sample.rngManager.newUnsafeUniformRng()
           Future {
             try {
-              randomAccess(sample.sequence, boundsArray, sample.rngManager)
+              randomAccess(sample.sequence, boundsArr, rng)
             } catch {
               case e: AssertionError => fail(e)
             }
@@ -119,16 +123,15 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
 
   private def randomAccess(
     sequence: SegmentSeq[E, D, V],
-    boundsArray: Array[ExtendedBound.Upper[E]],
-    rngManager: RngManager
+    bounds: ArraySeq[ExtendedBound.Upper[E]],
+    rng: UnsafeUniformRng
   ): Unit = {
-    val rng = rngManager.newUnsafeUniformRng()
-    (1 to (2 * boundsArray.length)).foreach { _ =>
+    (1 to (2 * bounds.length)).foreach { _ =>
       val rnd = rng.nextInt()
-      val index = math.abs(rnd) % boundsArray.length
-      val bound = boundsArray(index)
-      if (rnd > 0) sequence.getSegmentForExtended(bound)
-      else sequence.getValueForExtended(bound)
+      RandomUtil.randomPick(bounds, rnd).foreach { bound =>
+        if (rnd > 0) sequence.getSegmentForExtended(bound)
+        else sequence.getValueForExtended(bound)
+      }
     }
   }
 }

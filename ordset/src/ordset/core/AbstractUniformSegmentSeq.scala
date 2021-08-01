@@ -25,6 +25,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = Iterable.empty
 
+  final override def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = Iterable.single(ExtendedBound.AboveAll)
+
   final override def firstSegment: UniformSingleSegment[E, D, V] = segment
 
   final override def lastSegment: UniformSingleSegment[E, D, V] = segment

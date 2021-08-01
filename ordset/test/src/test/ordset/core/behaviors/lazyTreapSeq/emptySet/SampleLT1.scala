@@ -52,7 +52,7 @@ trait SampleLT1[D <: Domain[Int]]
     )
   }
 
-  override def lazyCacheCases: Iterable[LazyTreapSeqCacheTest.TestPackage[Int, D, Boolean]] = List(
+  override lazy val lazyCacheCases: Iterable[LazyTreapSeqCacheTest.TestPackage[Int, D, Boolean]] = List(
     LazyTreapSeqCacheTest.TestPackage(
       Set(Label("A")),
       List(

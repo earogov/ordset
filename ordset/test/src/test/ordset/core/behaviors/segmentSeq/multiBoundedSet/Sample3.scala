@@ -24,14 +24,11 @@ trait Sample3[D <: Domain[Int]]
     with SegmentPatchTest[Int, D, Boolean] {
   self: SegmentSeqSample[Int, D, Boolean, SegmentSeq[Int, D, Boolean]] =>
 
-  override def sample: String = "3"
+  override val sample: String = "3"
+  
+  override val complementary: Boolean = false
 
-  override def bounds: Iterable[Bound.Upper[Int]] =
-    ArraySeq(0 `)[`, 10 `)[`, 20 `)[`, 30 `)[`, 40 `)[`, 50 `](`, 60 `](`, 70 `)[`, 80 `)[`)
-
-  override def complementary: Boolean = false
-
-  override def reference: Seq[GenIntervalRelation] =
+  override val reference: Seq[GenIntervalRelation] =
     (false forAll x <  0) ::
     (true  forAll x >= 0  & x <  10) ::
     (false forAll x >= 10 & x <  20) ::
@@ -44,7 +41,7 @@ trait Sample3[D <: Domain[Int]]
     (true  forAll x >= 80) ::
     Nil
 
-  override def moveToBoundCases: Seq[(ExtendedBound[Int], GenIntervalRelation)] =
+  override lazy val moveToBoundCases: Seq[(ExtendedBound[Int], GenIntervalRelation)] =
     (10`)`, true  forAll x >= 0  & x <  10) ::
     (10`)`, true  forAll x >= 0  & x <  10) ::
     (30`[`, false forAll x >= 30 & x <  40) ::
@@ -62,7 +59,7 @@ trait Sample3[D <: Domain[Int]]
     (ExtendedBound.BelowAll, false forAll x <  0) ::
     Nil
 
-  override def containsCases: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =
+  override lazy val containsCases: Seq[SegmentContainsTest.TestCase[Int, D, Boolean]] =
     List(
       SegmentContainsTest.TestCase(
         bound = 0`)`,
@@ -81,7 +78,7 @@ trait Sample3[D <: Domain[Int]]
       )
     )
 
-  override def restrictCases: Seq[SegmentRestrictBoundTest.TestCase[Int, D, Boolean]] =
+  override lazy val restrictCases: Seq[SegmentRestrictBoundTest.TestCase[Int, D, Boolean]] =
     List(
       SegmentRestrictBoundTest.TestCase(
         bound = -10`[`,
@@ -124,7 +121,7 @@ trait Sample3[D <: Domain[Int]]
       )
     )
 
-  override def prependCases: Seq[SegmentSeqPrependTest.TestCase[Int, D, Boolean]] = {
+  override lazy val prependCases: Seq[SegmentSeqPrependTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
@@ -292,7 +289,7 @@ trait Sample3[D <: Domain[Int]]
     }
   }
   
-  override def prependBelowBoundCases: Seq[SegmentSeqPrependTest.TestCaseWithBound[Int, D, Boolean]] = {
+  override lazy val prependBelowBoundCases: Seq[SegmentSeqPrependTest.TestCaseWithBound[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
@@ -548,7 +545,7 @@ trait Sample3[D <: Domain[Int]]
     }
   }
 
-  override def appendCases: Seq[SegmentSeqAppendTest.TestCase[Int, D, Boolean]] = {
+  override lazy val appendCases: Seq[SegmentSeqAppendTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
@@ -719,7 +716,7 @@ trait Sample3[D <: Domain[Int]]
     }
   }
   
-  override def appendAboveBoundCases: Seq[SegmentSeqAppendTest.TestCaseWithBound[Int, D, Boolean]] = {
+  override lazy val appendAboveBoundCases: Seq[SegmentSeqAppendTest.TestCaseWithBound[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:
@@ -987,7 +984,7 @@ trait Sample3[D <: Domain[Int]]
     }
   }
 
-  override def sliceCases: Seq[SegmentSeqSliceTest.TestCase[Int, D, Boolean]] = {
+  override lazy val sliceCases: Seq[SegmentSeqSliceTest.TestCase[Int, D, Boolean]] = {
     List(
       // current:
       //  bound
@@ -1198,7 +1195,7 @@ trait Sample3[D <: Domain[Int]]
     )
   }
 
-  override def patchCases: Seq[SegmentPatchTest.TestCase[Int, D, Boolean]] = {
+  override lazy val patchCases: Seq[SegmentPatchTest.TestCase[Int, D, Boolean]] = {
     SegmentSeqFactories.getOrderedSetFactories.flatMap { factoryTuple =>
       List(
         // current:

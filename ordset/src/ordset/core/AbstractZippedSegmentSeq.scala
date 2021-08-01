@@ -58,7 +58,9 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
 
-  final override def firstSegment: ZippedFirstSegment[E, D, U1, U2, V, S1, S2] =
+  final override def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = super.extendedUpperBounds
+
+  final override def firstSegment: ZippedFirstSegment[E, D, U1, U2, V, S1, S2] = 
     firstSegmentInstance
 
   final override def lastSegment: ZippedLastSegment[E, D, U1, U2, V, S1, S2] =

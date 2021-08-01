@@ -60,6 +60,8 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = bounds
 
+  final override def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = bounds.appended(ExtendedBound.AboveAll)
+
   final override def firstSegment: IndexedInitialSegment[E, D, V] = IndexedInitialSegment(this)
 
   /**
@@ -213,7 +215,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
-  protected final override def prependBelowExtendedInternal[Seg <: Segment[E, D, V]](
+  protected final override def prependBelowExtendedInternal[Seg](
     bound: ExtendedBound[E],
     originalBoundSegment: Seg,
     other: SegmentSeq[E, D, V],
@@ -236,7 +238,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
-  protected final override def appendAboveExtendedInternal[Seg <: Segment[E, D, V]](
+  protected final override def appendAboveExtendedInternal[Seg](
     bound: ExtendedBound[E],
     originalBoundSegment: Seg,
     other: SegmentSeq[E, D, V],

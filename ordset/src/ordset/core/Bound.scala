@@ -87,6 +87,18 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
    */
   def offset: Int
 
+  /**
+   * @return new bound with specified element. New bound has the same type (upper or lower) and inclusion flag
+   *         as original one.
+   */
+  def withElement[F](element: F): Bound[F]
+
+  /**
+   * @return new bound with value mapped by `mapFunc`. New bound has the same type (upper or lower) and inclusion flag
+   *         as original one.
+   */
+  def mapElement[F](mapFunc: E => F): Bound[F] = withElement(mapFunc(element))
+
   override def isLimited: Boolean = true
 
   override def isUnlimited: Boolean = false
@@ -140,6 +152,8 @@ object Bound {
 
     override def offset: Int = if (isInclusive) 0 else -1
 
+    override def withElement[F](element: F): Bound[F] = Upper(element, isInclusive)
+
     override def toString: String = SetBuilderFormat.upperBound(this, SetBuilderFormat.toStringFunc[E])
   }
 
@@ -182,6 +196,8 @@ object Bound {
     def flipLower: Upper[E] = Upper(element, !isInclusive)
 
     override def offset: Int = if (isInclusive) 0 else 1
+
+    override def withElement[F](element: F): Bound[F] = Lower(element, isInclusive)
 
     override def toString: String = SetBuilderFormat.lowerBound(this, SetBuilderFormat.toStringFunc[E])
   }

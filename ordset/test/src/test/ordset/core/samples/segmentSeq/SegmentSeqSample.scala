@@ -5,7 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.SetBuilderNotation.BoundBuilder
 import ordset.core.util.SegmentSeqUtil
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, ExtendedBound, IntervalRelation, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound, Interval, IntervalRelation, SegmentSeq}
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
@@ -31,7 +31,7 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   /**
    * Typeclass for equality checks and hash calculation of [[IntervalRelation]].
    */
-  def intervalRelationHash: Hash[IntervalRelation[E, D, V]] = domainOps.intervalRelationHash(valueOps.valueHash)
+  lazy val intervalRelationHash: Hash[IntervalRelation[E, D, V]] = domainOps.intervalRelationHash(valueOps.valueHash)
 
   /**
    * ID of sequence under test.
@@ -51,15 +51,18 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   /**
    * Upper bounds of [[sequence]].
    */
-  def bounds: Iterable[Bound.Upper[E]] =
-    SegmentSeqUtil.getUpperBoundsIterableFromSegment(sequence.firstSegment, inclusive = true)
+  lazy val bounds: Seq[Bound.Upper[E]] =
+    reference.map(rel => rel.interval match
+      case int: Interval.WithUpperBound[_, _] => int.upperBound
+      case _ => null
+    ).takeWhile(_ != null)
 
   /**
    * Extended upper bounds of [[sequence]].
    *
    * Same as [[bounds]] but with additional last bound equals to [[ExtendedBound.Upper]].
    */
-  def extendedBounds: Iterable[ExtendedBound.Upper[E]] = sequence.firstSegment.forwardIterable.map(_.upperExtended)
+  lazy val extendedBounds: Seq[ExtendedBound.Upper[E]] = bounds.appended(ExtendedBound.AboveAll)
   
   /**
    * If `true` then first segment is included in ordered set.

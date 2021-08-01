@@ -41,6 +41,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
 
+  final override def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = super.extendedUpperBounds
+
   final override lazy val firstSegment: TreapInitialSegment[E, D, V] = makeInitialSegment()
 
   /**
@@ -312,7 +314,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  protected final override def prependBelowExtendedInternal[Seg <: Segment[E, D, V]](
+  protected final override def prependBelowExtendedInternal[Seg](
     bound: ExtendedBound[E],
     originalBoundSegment: Seg,
     other: SegmentSeq[E, D, V],
@@ -430,7 +432,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  protected final override def appendAboveExtendedInternal[Seg <: Segment[E, D, V]](
+  protected final override def appendAboveExtendedInternal[Seg](
     bound: ExtendedBound[E],
     originalBoundSegment: Seg,
     other: SegmentSeq[E, D, V],
@@ -671,6 +673,9 @@ object AbstractTreapSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: TreapInitialSegment[E, D, V] = this
 
+    // Navigation --------------------------------------------------------------- //
+    override def moveToFirst: TreapInitialSegment[E, D, V] = this
+
     // Transformation ----------------------------------------------------------- //
     override def takeAbove: NonuniformTreapSegmentSeq[E, D, V] = sequence
 
@@ -680,9 +685,6 @@ object AbstractTreapSegmentSeq {
       (takeBelow, takeAbove)
 
     override def patch(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = moveNext.prepend(other)
-
-    // Navigation --------------------------------------------------------------- //
-    override def moveToFirst: TreapInitialSegment[E, D, V] = this
 
     override def truncation(
       bound: ExtendedBound[E]

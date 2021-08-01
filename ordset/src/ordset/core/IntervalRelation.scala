@@ -15,7 +15,10 @@ case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
    */
   def withValue[U](newValue: U): IntervalRelation[E, D, U] = new IntervalRelation(interval, newValue)
 
-  def mapValue[U](mapFunc: V => U): IntervalRelation[E, D, U] = withValue(mapFunc.apply(value))
+  /**
+   * Creates new interval relation with value mapped by `mapFunc`.
+   */
+  def mapValue[U](mapFunc: V => U): IntervalRelation[E, D, U] = withValue(mapFunc(value))
   
   override def toString: String =
     SetBuilderFormat.intervalRelation(

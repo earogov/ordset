@@ -19,7 +19,7 @@ trait SampleZ1[D <: Domain[Int]]
 
   override val sample: String = "Z1"
 
-  override def firstSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
+  override lazy val firstSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
     OriginalSeqPatchTest.TestCase(
       labels = Set(Label("A1")),
       bound = 15`[`,
@@ -35,7 +35,7 @@ trait SampleZ1[D <: Domain[Int]]
     )
   )
 
-  override def secondSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
+  override lazy val secondSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
     OriginalSeqPatchTest.TestCase(
       labels = Set(Label("B1")),
       bound = 15`[`,

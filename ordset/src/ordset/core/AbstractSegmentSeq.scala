@@ -70,7 +70,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * 
    * Note, if provided segment other then one defined by condition 1, the behaviour of function is undefined.
    */
-  protected def prependBelowExtendedInternal[Seg <: Segment[E, D, V]](
+  protected def prependBelowExtendedInternal[Seg](
     bound: ExtendedBound[E],
     originalBoundSegment: Seg,
     other: SegmentSeq[E, D, V],
@@ -98,7 +98,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    *
    * Note, if provided segment other then one defined by condition 1, the behaviour of function is undefined.
    */
-  protected def appendAboveExtendedInternal[Seg <: Segment[E, D, V]](
+  protected def appendAboveExtendedInternal[Seg](
     bound: ExtendedBound[E],
     originalBoundSegment: Seg,
     other: SegmentSeq[E, D, V],
