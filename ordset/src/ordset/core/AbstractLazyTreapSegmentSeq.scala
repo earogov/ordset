@@ -932,48 +932,36 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //
     //    Similarly define `patchUpperBound`.
     //
-    //   ?      u       u                         u       s
-    // ----](------)[------](----------------](------)[--------   zipped seq
-    //              ^            zsegment            ^
-    //       patchLowerBound                   patchUpperBound
+    //      ?      u       u                         u       s
+    //    ----](------)[------](----------------](------)[--------   zipped seq
+    //                 ^            zsegment            ^
+    //          patchLowerBound                   patchUpperBound
     //
-    // 2. If `patchLowerBound` != `zsegment.lowerBound` then define first segment of patch sequence as
-    //    segment of zipped sequence at bound `patchLowerBound` with control value:
+    //    Let's call patch bound shifted if `patchLowerBound` != `zsegment.lowerBound` and non-shifted otherwise.
+    //
+    // 2. Define isolation flag for lower bound of `zsegment`:
+    //    - if left adjacent segment of `zsegment` is eager unstable and has the same base value as new base sequence
+    //    at lower bound of `zsegment` then bound is non-isolated, otherwise - isolated.
+    //
+    //    Similarly define isolation flag for upper bound of `zsegment`.
+    //
+    // 3. If patch lower bound is shifted then define first segment of patch sequence as segment of zipped sequence
+    //    at bound `patchLowerBound` with control value:
     //    - eager stable iff all its adjacent segments are eager;
     //    - eager unstable otherwise.
     //
-    //    If `patchUpperBound` != `zsegment.upperBound` then similarly define last segment of patch sequence.
+    //    If patch upper bound is shifted then similarly define last segment of patch sequence.
     //
-    //    If both conditions are met then:
-    //    - merge first and last segments:
-    //      - build `leftPatchSequence` (see 4.1.1 and 4.1.2) and `rightPatchSequence` (see 4.2.1 and 4.2.2);
-    //      - get merged sequence as `leftPatchSequence.append(rightPatchSequence)`;
-    //    - apply received patch sequence to old control sequence within `patchLowerBound` and `patchUpperBound`
-    //      and return the result.
-    //
-    //    Otherwise go to step 3.
-    //
-    //                         patch sequence
-    //              +--------------------------------+
-    //   ?      u   |                s               |    s
-    // ----](------)[--------------------------------)[--------   new control seq
-    //              |                                |
-    //      patchLowerBound                    patchUpperBound
-    //
-    // 3. If one or both conditions are `true`:
-    //    - `patchLowerBound` == `zsegment.lowerBound`
-    //    - `patchUpperBound` == `zsegment.upperBound`
-    //
-    //                  lower bound     upper bound
-    //   ?      u       u   |                |        ?
-    // ----](------)[------](----------------](----------------   zipped seq
-    //         S1   |   S2       zsegment    |        S3
-    //     patchLowerBound                 patchUpperBound
-    //
-    //    Call method `makeControlSeq` with parameters:
+    // 4. Call method `makeControlSeq` with parameters:
     //    - `stableLowerBound` = (lower bound of `zsegment` satisfies stability condition*)
     //    - `stableUpperBound` = (upper bound of `zsegment` satisfies stability condition*)
     //    * see class description.
+    //
+    //                     lower bound     upper bound
+    //      ?      u       u   |                |        ?
+    //    ----](------)[------](----------------](----------------   zipped seq
+    //            S1   |   S2       zsegment    |        S3
+    //        patchLowerBound                 patchUpperBound
     //
     //    In example above we have:
     //
@@ -984,60 +972,96 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //
     //    Let's denote received sequence as `innerPatchSequence`.
     //
-    //    If both conditions are `true`:
-    //    - `patchLowerBound` == `zsegment.lowerBound`
-    //    - `patchUpperBound` == `zsegment.upperBound`
+    //    If both patch bounds are non-shifted then insert `innerPatchSequence` into old control sequence within
+    //    `patchLowerBound` and `patchUpperBound` and return the result.
     //
-    //    then apply `innerPatchSequence` to old control sequence within `patchLowerBound` and `patchUpperBound`
-    //    and return the result.
+    //    Otherwise go to step 5.
     //
-    //    Otherwise go to step 4.
+    // 5. Merge `innerPatchSequence` with first or last segment of patch sequence obtained at step 3 (see 5.1 and 5.2).
     //
-    // 4. Merge `innerPatchSequence` with first or last segment of patch sequence obtained at step 2 (see 4.1 and 4.2).
+    //                        patch sequence
+    //                 +------------------------+
+    //                 |          inner patch   |
+    //                 |       +----------------+
+    //      ?      u   |       | s           u  |        ?
+    //    ----](------)[-----------------)[-----](----------------   new control seq
+    //                 ^                        ^
+    //        patchLowerBound             patchUpperBound
     //
-    //                     patch sequence
-    //              +------------------------+
-    //              |          inner patch   |
-    //              |       +----------------+
-    //   ?      u   |       | s           u  |        ?
-    // ----](------)[-----------------)[-----](----------------   new control seq
-    //              ^                        ^
-    //     patchLowerBound             patchUpperBound
+    //    Insert patch sequence into old control sequence within `patchLowerBound` and `patchUpperBound` and
+    //    return the result
     //
-    //   Apply patch sequence to old control sequence within `patchLowerBound` and `patchUpperBound` and
-    //   return the result
+    // 5.1 To merge first segment with `innerPatchSequence` build `leftPatchSequence`.
     //
-    // 4.1 To merge first segment with `innerPatchSequence` build `leftPatchSequence`:
+    // 5.1.1 If first patch segment is unstable.
     //
-    // 4.1.1
-    //           u
-    //        (-----)                  first patch segment
-    //        u     |       s
-    // X------------)[------------X    `leftPatchSequence`
+    //    - If lower bound of `zsegment` is isolated (see p.2).
     //
-    // 4.1.2
-    //           s
-    //        (-----)                  first patch segment
-    //              s
-    // X--------------------------X    `leftPatchSequence`
+    //              u
+    //           (-----)                  first patch segment
+    //           u     |       s
+    //    X------------)[------------X    `leftPatchSequence`
     //
-    // Then get merged sequence as `leftPatchSequence.append(innerPatchSequence)`.
+    //    - If lower bound of `zsegment` is non-isolated (see p.2).
     //
-    // 4.2 To merge last segment with `innerPatchSequence` build `rightPatchSequence`:
-    //
-    // 4.2.1
+    //              u
+    //           (-----)                  first patch segment
     //                 u
-    //              (-----)            last patch segment
-    //        s     |       u
-    // X-----------](-------------X    `rightPatchSequence`
+    //    X--------------------------X    `leftPatchSequence`
     //
-    // 4.2.2
-    //                 s
-    //              (-----)            last patch segment
+    // 5.1.2 If first patch segment is stable.
+    //
+    //    - If lower bound of `zsegment` is isolated (see p.2).
+    //
     //              s
-    // X--------------------------X    `rightPatchSequence`
+    //           (-----)                  first patch segment
+    //           s     |       u
+    //    X------------)[------------X    `leftPatchSequence`
     //
-    // Then get merged sequence as `rightPatchSequence.prepend(innerPatchSequence)`.
+    //    - If lower bound of `zsegment` is non-isolated (see p.2).
+    //
+    //              s
+    //           (-----)                  first patch segment
+    //                 s
+    //    X--------------------------X    `leftPatchSequence`
+    //
+    // 5.1.3 Get merged sequence as `leftPatchSequence.append(innerPatchSequence)`.
+    //
+    // 5.2 To merge last segment with `innerPatchSequence` build `rightPatchSequence`.
+    //
+    // 5.2.1 If last patch segment is unstable.
+    //
+    //    - If upper bound of `zsegment` is isolated (see p.2).
+    //
+    //                    u
+    //                 (-----)            last patch segment
+    //           s     |       u
+    //    X-----------](-------------X    `rightPatchSequence`
+    //
+    //   - If upper bound of `zsegment` is non-isolated (see p.2).
+    //
+    //                    u
+    //                 (-----)            last patch segment
+    //                 u
+    //    X--------------------------X    `rightPatchSequence`
+    //
+    // 5.2.2 If last patch segment is stable.
+    //
+    //    - If upper bound of `zsegment` is isolated (see p.2).
+    //
+    //                    s
+    //                 (-----)            last patch segment
+    //           u     |       s
+    //    X-----------](-------------X    `rightPatchSequence`
+    //
+    //    - If upper bound of `zsegment` is non-isolated (see p.2).
+    //
+    //                    s
+    //                 (-----)            last patch segment
+    //                 s
+    //    X--------------------------X    `rightPatchSequence`
+    //
+    // 5.2.3 Get merged sequence as `rightPatchSequence.prepend(innerPatchSequence)`.
 
     /**
      * Properties of either left or right side of patch sequence.
@@ -1052,7 +1076,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
        */
       val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
       /**
-       * `true` if corresponding bound of `zsegment` satisfies stability condition (see p.3).
+       * `true` if corresponding bound of `zsegment` satisfies stability condition (see p.4).
        */
       val zsegmentBoundIsStable: Boolean,
       /**
@@ -1062,7 +1086,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     )
 
     /**
-     * [[PatchBoundInfo]] for case when condition from p.2 isn't satisfied:
+     * [[PatchBoundInfo]] for case when bound is non-shifted (p.1):
      * <tr>`patchLowerBound` == `zsegment.lowerBound` - for left side info;</tr>
      * <tr>`patchUpperBound` == `zsegment.upperBound` - for right side info.</tr>
      */
@@ -1077,7 +1101,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     )
 
     /**
-     * [[PatchBoundInfo]] for case when condition from p.2 is satisfied:
+     * [[PatchBoundInfo]] for case when bound is shifted (p.1):
      * <tr>`patchLowerBound` != `zsegment.lowerBound` - for left side info;</tr>
      * <tr>`patchUpperBound` != `zsegment.upperBound` - for right side info.</tr>
      */
@@ -1088,7 +1112,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       /**
        * <tr>`leftPatchSequence` - if class represents left side info;</tr>
        * <tr>`rightPatchSequence` - if class represents right side info;</tr>
-       * (see p.4.1 and 4.2)
+       * (see p.5.1 and 5.2)
        */
       patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]]
     ) extends PatchBoundInfo(
@@ -1195,21 +1219,21 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             val patchBoundSequence: ControlSegmentSeq[E, D, V] = patchBoundZsegment match {
               case s: ZippedSegmentWithNext[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
                 // Adjacent segment of first patch segment is lazy =>
-                // first patch segment is eager unstable (see p.2) =>
-                // case 4.1.1
+                // first patch segment is eager unstable =>
+                // case 5.1.1
                 if (patchBoundIsLazy)
                   if (isolatedAdjacent)
                     makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upperBound)
                   else
                     makeUniformControlSeq(EagerValue.unstable)
-                // otherwise case 4.1.2
+                // otherwise case 5.1.2
                 else
                   if (isolatedAdjacent)
                     makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.upperBound)
                   else
                     makeUniformControlSeq(EagerValue.stable)
               case _ =>
-                // `patchBoundIsShifted` = `true` =>
+                // `patchBoundIsShifted` == `true` =>
                 // there is at least original `zsegment` after `boundZsegment` =>
                 // `boundZsegment` has next segment.
                 throw new AssertionError(
@@ -1247,21 +1271,21 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
             val patchBoundSequence: ControlSegmentSeq[E, D, V] = patchBoundZsegment match {
               case s: ZippedSegmentWithPrev[E, D, V, ControlValue[E, D, V], ZValue[E, D, V], _, _] =>
                 // Adjacent segment of last patch segment is lazy =>
-                // last patch segment is eager unstable (see p.2) =>
-                // case 4.2.1
+                // last patch segment is eager unstable =>
+                // case 5.2.1
                 if (patchBoundIsLazy)
                   if (isolatedAdjacent)
                     makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lowerBound.flipLower)
                   else
                     makeUniformControlSeq(EagerValue.unstable)
-                // otherwise case 4.2.2
+                // otherwise case 5.2.2
                 else
                   if (isolatedAdjacent)
                     makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.lowerBound.flipLower)
                   else
                     makeUniformControlSeq(EagerValue.stable)
               case _ =>
-                // `patchBoundIsShifted` = `true` =>
+                // `patchBoundIsShifted` == `true` =>
                 // there is at least original `zsegment` before `patchBoundZsegment` =>
                 // `patchBoundZsegment` has previous segment.
                 throw new AssertionError(
@@ -1285,15 +1309,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     val leftSideInfo = PatchBoundInfo.getLeftSideInfo(zsegment, baseSeq)
     val rightSideInfo = PatchBoundInfo.getRightSideInfo(zsegment, baseSeq)
     val patchSequence: SegmentSeq[E, D, ControlValue[E, D, V]] = (leftSideInfo, rightSideInfo) match {
-      // See p.2.
+      // See p.4 and 5.
       case (li: ShiftedPatchBoundInfo, ri: ShiftedPatchBoundInfo) =>
         val innerPatchSequence = makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsStable, ri.zsegmentBoundIsStable)
         ri.patchBoundSequence.prepend(li.patchBoundSequence.append(innerPatchSequence))
-//        if (li.patchBoundSequence.firstSegment.value.isStable && ri.patchBoundSequence.lastSegment.value.isStable)
-//          makeUniformControlSeq(EagerValue.stable)
-//        else
-//          li.patchBoundSequence.append(ri.patchBoundSequence)
-      // See p.3 for all cases below.
+      // See p.5 for all cases below.
       case (li: ShiftedPatchBoundInfo, ri: NonShiftedPatchBoundInfo) =>
         val innerPatchSequence = makeControlSeq(zsegment, baseSeq, li.zsegmentBoundIsStable, ri.zsegmentBoundIsStable)
         li.patchBoundSequence.append(innerPatchSequence)
