@@ -5,7 +5,7 @@ import ordset.core.AbstractLazyTreapSegmentSeq._
 import ordset.core.{ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.{RngManager, UnsafeUniformRng}
-import test.ordset.core.samples.segmentSeq.LazyTreapSeqSample
+import test.ordset.core.samples.segmentSeq.{LazyTreapSeqSample, LazyTreapSeqUtil}
 import test.ordset.core.SegmentSeqAssertions._
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.RandomUtil
@@ -18,14 +18,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
   this: AnyFunSpec =>
 
-  private val tasksNum = 3
-  private val timeout = Duration(5, TimeUnit.SECONDS)
-
-  private implicit val fixedExecutionContext: ExecutionContext =
-    ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(tasksNum))
-
   def sequenceProperlyCacheLazyValues(
-    samples: Iterable[LazyTreapSeqSample[E, D, V] with LazyTreapSeqCacheTest[E, D, V]]
+    samples: Iterable[LazyTreapSeqSample.Fixed[E, D, V] with LazyTreapSeqCacheTest[E, D, V]]
   ): Unit =
     samples.foreach { sample =>
 
@@ -37,26 +31,26 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
 
         it(s"should return segments of $sample and properly cache lazy values for all cases in $testPackage") {
 
-          // Restore initial state of lazy sequence.
-          sample.restoreSequence
+          // Get copy of sequence. Further operation will on affect on state of original.
+          val seq = sample.sequence
 
           testPackage.cases.foreach {
             case testCase: LazyTreapSeqCacheTest.SegmentTestCase[_, _, _] =>
               // Repeated call must return the same segment and leave the same state.
               (1 to 2) foreach { i =>
-                val segment = sample.sequence.getSegmentForExtended(testCase.bound)
+                val segment = seq.getSegmentForExtended(testCase.bound)
                 assertSameRelationAndSegment(testCase.expectedSegment, segment, s"iteration $i")
-                assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq, s"iteration $i")
+                assertSameRelationAndSegmentSeq(testCase.expectedState, seq.getZippedSeq, s"iteration $i")
               }
             case testCase: LazyTreapSeqCacheTest.ValueTestCase[_, _, _] =>
               // Repeated call must return the same value and leave the same state.
               (1 to 2) foreach { i =>
-                val seqValue = sample.sequence.getValueForExtended(testCase.bound)
+                val seqValue = seq.getValueForExtended(testCase.bound)
                 assert(
                   valueHash.eqv(seqValue, testCase.expectedValue),
                   s"expected value ${testCase.expectedValue} for bound ${testCase.bound} at iteration $i"
                 )
-                assertSameRelationAndSegmentSeq(testCase.expectedState, sample.sequence.getZippedSeq, s"iteration $i")
+                assertSameRelationAndSegmentSeq(testCase.expectedState, seq.getZippedSeq, s"iteration $i")
               }
           }
         }
@@ -64,7 +58,9 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
     }
 
   def sequenceHasValidStateAfterSequentialRandomAccess(
-    samples: Iterable[LazyTreapSeqSample[E, D, V]]
+    samples: Iterable[LazyTreapSeqSample.Fixed[E, D, V]]
+  )(
+    implicit rngManager: RngManager
   ): Unit =
     samples.foreach { sample =>
 
@@ -74,40 +70,43 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
 
       it(s"should have valid state of $sample after sequential random access") {
 
-        // Restore initial state of lazy sequence.
-        sample.restoreSequence
+        // Get copy of sequence. Further operation will on affect on state of original.
+        val seq = sample.sequence
 
-        val rng =  sample.rngManager.newUnsafeUniformRng()
-        val boundsArr = ArraySeq.from(sample.extendedBounds)
+        LazyTreapSeqUtil.shuffleLazySeq(seq, sample.extendedBounds)
 
-        randomAccess(sample.sequence, boundsArr, rng)
-
-        assertSameRelationAndSegmentSeq(sample.reference, sample.sequence)
+        assertSameRelationAndSegmentSeq(sample.reference, seq)
         // After first assertion sequence will be totally stable => we can compare zipped sequence with reference.
-        assertSameRelationAndSegmentSeq(sample.zippedReference, sample.sequence.getZippedSeq)
+        assertSameRelationAndSegmentSeq(sample.zippedReference, seq.getZippedSeq)
       }
     }
 
   def sequenceHasValidStateAfterConcurrentRandomAccess(
-    samples: Iterable[LazyTreapSeqSample[E, D, V]]
+    samples: Iterable[LazyTreapSeqSample.Fixed[E, D, V]]
+  )(
+    implicit rngManager: RngManager
   ): Unit =
     samples.foreach { sample =>
+
+      val tasksNum = 3
+      val timeout = Duration(5, TimeUnit.SECONDS)
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
       implicit val valueHash: Hash[V] = sample.valueOps.valueHash
       implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
 
+      implicit val fixedExecutionContext: ExecutionContext =
+        ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(tasksNum))
+
       it(s"should have valid state of $sample after concurrent random access") {
 
-        // Restore initial state of lazy sequence.
-        sample.restoreSequence
+        // Get copy of sequence. Further operation will on affect on state of original.
+        val seq = sample.sequence
 
-        val boundsArr = ArraySeq.from(sample.extendedBounds)
         val future = Future.sequence((1 to tasksNum).map( _ =>
-          val rng =  sample.rngManager.newUnsafeUniformRng()
           Future {
             try {
-              randomAccess(sample.sequence, boundsArr, rng)
+              LazyTreapSeqUtil.shuffleLazySeq(seq, sample.extendedBounds)
             } catch {
               case e: AssertionError => fail(e)
             }
@@ -115,23 +114,9 @@ trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
         ))
         Await.result(future, timeout)
 
-        assertSameRelationAndSegmentSeq(sample.reference, sample.sequence)
+        assertSameRelationAndSegmentSeq(sample.reference, seq)
         // After first assertion sequence will be totally stable => we can compare zipped sequence with reference.
-        assertSameRelationAndSegmentSeq(sample.zippedReference, sample.sequence.getZippedSeq)
+        assertSameRelationAndSegmentSeq(sample.zippedReference, seq.getZippedSeq)
       }
     }
-
-  private def randomAccess(
-    sequence: SegmentSeq[E, D, V],
-    bounds: ArraySeq[ExtendedBound.Upper[E]],
-    rng: UnsafeUniformRng
-  ): Unit = {
-    (1 to (2 * bounds.length)).foreach { _ =>
-      val rnd = rng.nextInt()
-      RandomUtil.randomPick(bounds, rnd).foreach { bound =>
-        if (rnd > 0) sequence.getSegmentForExtended(bound)
-        else sequence.getValueForExtended(bound)
-      }
-    }
-  }
 }

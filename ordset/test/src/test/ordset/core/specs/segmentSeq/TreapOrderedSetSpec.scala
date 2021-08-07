@@ -21,7 +21,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
   type Dom = Domain[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
-  private val testSuite = Range(1, 11).flatMap { seed =>
+  private val testSuite = (1 to 10).flatMap { seed =>
     List(
       new EmptySetSample1[Dom](seed),
       new UniversalSetSample1[Dom](seed),

@@ -21,7 +21,7 @@ abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
    * <tr>- all lazy control values are considered equals and have same hash code;</tr>
    * <tr>- all other control values are compared according to `valueOps` of sequence.</tr>
    */
-  lazy val testZvalueOps: ValueOps[ZValue[E, D, V]] = TestZValueOps.get(lazySeq.getZippedSeq.valueOps)
+  lazy val testZvalueOps: ValueOps[ZValue[E, D, V]] = TestZValueOps.get(sequence.getZippedSeq.valueOps)
 
   /**
    * Implementation of lazy value for test.
@@ -47,42 +47,77 @@ abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
    */
   lazy val zippedReference: Seq[IntervalRelation[E, D, ZValue[E, D, V]]] =
     reference.map(_.mapValue((_, EagerValue.stable)))
-
-  /**
-   * Returns lazy sequence.
-   *
-   * Note, during tests state of sequence may be changed: lazy values are computed and cached.
-   * One can use [[restoreSequence]] to rollback to initial state.
-   */
-  override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lazySeq
-
-  /**
-   * Restores initial state of lazy sequence.
-   *
-   * Creates sequence with [[initializeSequence]] and saves into [[lazySeq]] field.
-   * Update is synchronized with [[lock]].
-   */
-  def restoreSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lock.synchronized {
-    lazySeq = initializeSequence
-    lazySeq
-  }
-
-  // Protected section -------------------------------------------------------- //
-  /**
-   * Stores current lazy sequence.
-   */
-  @volatile
-  protected var lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = initializeSequence
-
-  protected final val lock = new Object
-
-  /**
-   * Creates initial lazy sequence.
-   */
-  protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V]
 }
 
 object LazyTreapSeqSample {
+
+  /**
+   * Sample with lazy sequence which internal state is modified during access (lazy values are computed and cached).
+   * [[restoreSequence]] can be used to rollback to the initial state.
+   */
+  abstract class Restorable[E, D <: Domain[E], V](
+    implicit
+    override val domainOps: DomainOps[E, D],
+    override val rngManager: RngManager
+  ) extends LazyTreapSeqSample[E, D, V] {
+
+    /**
+     * Returns lazy sequence.
+     *
+     * Note, during tests state of sequence may be changed (lazy values are computed and cached).
+     * Use [[restoreSequence]] to rollback to the initial state.
+     */
+    override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lazySeq
+
+    /**
+     * Restores initial state of lazy sequence.
+     *
+     * Creates sequence with [[initializeSequence]] and saves it into [[lazySeq]] field.
+     * Update is synchronized with [[lock]].
+     */
+    def restoreSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lock.synchronized {
+      lazySeq = initializeSequence
+      lazySeq
+    }
+
+    // Protected section -------------------------------------------------------- //
+    @volatile
+    protected var lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = initializeSequence
+
+    protected final val lock = new Object
+
+    /**
+     * Creates initial lazy sequence.
+     */
+    protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V]
+  }
+
+  /**
+   * Sample with lazy sequence which internal state is kept fixed during access. Each time [[sequence]] is called
+   * it returns sequence with exactly the same lazy and eager parts.
+   */
+  abstract class Fixed[E, D <: Domain[E], V](
+    implicit
+    override val domainOps: DomainOps[E, D],
+    override val rngManager: RngManager
+  ) extends LazyTreapSeqSample[E, D, V] {
+
+    /**
+     * Returns lazy sequence.
+     *
+     * Note, each method call returns copy of sequence. So during tests state of original sequence never changes
+     * (lazy and eager parts stay the same).
+     */
+    override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = LazyTreapSegmentSeq.clone(lazySeq)
+
+    // Protected section -------------------------------------------------------- //
+    protected val lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = initializeSequence
+
+    /**
+     * Creates initial lazy sequence.
+     */
+    protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V]
+  }
 
   /**
    * Implementation of [[ordset.Hash]] for [[ControlValue]] for tests:
@@ -155,6 +190,11 @@ object LazyTreapSeqSample {
     }
   }
 
+  /**
+   * Implementation of [[AbstractLazyTreapSegmentSeq]] for tests. It provides:
+   * <tr>- access to zipped sequence;</tr>
+   * <tr>- simplified creation and clone operation.</tr>
+   */
   class LazyTreapSegmentSeq[E, D <: Domain[E], V] protected (
     initZippedSeq: ZSegmentSeq[E, D, V]
   )(
@@ -181,6 +221,9 @@ object LazyTreapSeqSample {
 
   object LazyTreapSegmentSeq {
 
+    /**
+     * Creates sequence that consists only from lazy segments.
+     */
     def totallyLazy[E, D <: Domain[E], V](
       initControlSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
     )(
@@ -210,5 +253,15 @@ object LazyTreapSeqSample {
       )
       new LazyTreapSegmentSeq(initZippedSeq)
     }
+
+    /**
+     * Creates new lazy sequence with the same internal state as original. The point is that access to the clone
+     * will keep internal state of original unmodified.
+     */
+    def clone[E, D <: Domain[E], V](
+      original: LazyTreapSegmentSeq[E, D, V]
+    ): LazyTreapSegmentSeq[E, D, V] =
+      new LazyTreapSegmentSeq(original.getZippedSeq)(original.domainOps, original.valueOps, original.rngManager)
+
   }
 }

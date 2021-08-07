@@ -18,7 +18,7 @@ import scala.language.postfixOps
 
 trait SampleLT2[D <: Domain[Int]]
   extends LazyTreapSeqCacheTest[Int, D, Boolean] {
-  self: LazyTreapSeqSample[Int, D, Boolean] =>
+  self: LazyTreapSeqSample.Fixed[Int, D, Boolean] =>
 
   override val sample: String = "LT2"
 
@@ -31,58 +31,6 @@ trait SampleLT2[D <: Domain[Int]]
     true forAll (x >= 25 & x < 30),
     false forAll (x >= 30)
   )
-
-  // Protected section -------------------------------------------------------- //
-
-  // X-f--)[---t--](------f------)[---------------t------------------------------------X  seq1
-  //      -10     -5              5
-  //
-  // X--------t--------)[---------f----------](----------t-----------------------------X  seq2
-  //                   0                     10
-  //
-  // X-----------------------f-------------------)[-t-](-f-)[------t------)[-----f-----X  seq3
-  //                                             15   20   25             35
-  //
-  // X--------t--------)[--------------------------------f-----------------------------X  seq4
-  //                   0
-  //
-  //        seq1                 seq2                  seq3                  seq4
-  // X-----------------)[--------------------](--------------------)[------------------X
-  //                   0                     10                    30
-  override protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[Int, D, Boolean] = {
-    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
-      complementary = false,
-      domainOps
-    )()
-
-    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(0 `)[`, 10 `](`),
-      complementary = true,
-      domainOps
-    )()
-
-    val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(15 `)[`, 20 `](`, 25 `)[`, 35 `)[`),
-      complementary = false,
-      domainOps
-    )()
-
-    val seq4 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      ArraySeq(0 `)[`),
-      complementary = true,
-      domainOps
-    )()
-
-    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(
-      List(
-        (0 `)`, () => seq1),
-        (10 `]`, () => seq2),
-        (30 `)`, () => seq3),
-        (AboveAll, () => seq4)
-      )
-    )
-  }
 
   override lazy val lazyCacheCases: Iterable[LazyTreapSeqCacheTest.TestPackage[Int, D, Boolean]] = List(
     LazyTreapSeqCacheTest.TestPackage(

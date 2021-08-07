@@ -18,7 +18,7 @@ import scala.language.postfixOps
 
 trait SampleLT1[D <: Domain[Int]]
   extends LazyTreapSeqCacheTest[Int, D, Boolean] {
-  self: LazyTreapSeqSample[Int, D, Boolean] =>
+  self: LazyTreapSeqSample.Fixed[Int, D, Boolean] =>
 
   override val sample: String = "LT1"
 
@@ -26,32 +26,6 @@ trait SampleLT1[D <: Domain[Int]]
     false forAll x
   )
   
-  // Protected section -------------------------------------------------------- //
-
-  // X-------------------------------------false--------------------------------------X  seq1
-  //
-  // X-------------------------------------false--------------------------------------X  seq2
-  //
-  // X-------------------------------------false--------------------------------------X  seq3
-  //
-  // X-------------------------------------false--------------------------------------X  seq4
-  //
-  //        seq1                 seq2                  seq3                seq4
-  // X-----------------)[--------------------](--------------------](-----------------X
-  //                   0                     10                    20
-  override protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[Int, D, Boolean] = {
-    val seq = TreapOrderedSet.getFactory[Int, D].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
-
-    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(
-      List(
-        (0 `)`, () => seq),
-        (10 `]`, () => seq),
-        (20 `](`, () => seq),
-        (ExtendedBound.AboveAll, () => seq)
-      )
-    )
-  }
-
   override lazy val lazyCacheCases: Iterable[LazyTreapSeqCacheTest.TestPackage[Int, D, Boolean]] = List(
     LazyTreapSeqCacheTest.TestPackage(
       Set(Label("A")),
