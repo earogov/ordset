@@ -14,10 +14,12 @@ import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 class SingleBounedSetSampleLT1[D <: Domain[Int]](
+  shuffled: Boolean
+)(
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager
-) extends LazyTreapSeqSample.Fixed[Int, D, Boolean]
+) extends LazyTreapSeqSample.Fixed[Int, D, Boolean](shuffled)
   with test.ordset.core.behaviors.lazyTreapSeq.singleBoundedSet.SampleLT1[D] {
 
   override val labels: Set[Label] = super.labels + Labels.singleBoundedSeq

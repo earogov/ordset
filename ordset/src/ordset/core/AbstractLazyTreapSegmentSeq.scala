@@ -146,15 +146,27 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     super.getValueForElement(element)
 
   // Transformation ----------------------------------------------------------- //
-  final override def takeAboveBound(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliceAtBound(bound)._2
+  final override def takeAboveBound(bound: Bound[E]): LazySegmentSeq[E, D, V] = {
+    val newBaseSeq = TreapSegmentSeqUtil.takeAboveBound(zippedSeq.firstSeq, bound)
+    val newControlSeq = TreapSegmentSeqUtil.takeAboveBound(zippedSeq.secondSeq, bound)
+    consLazy(makeZippedSeq(newBaseSeq, newControlSeq))
+  }
 
   final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeAboveExtended(bound)
 
-  final override def takeBelowBound(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliceAtBound(bound)._1
+  final override def takeBelowBound(bound: Bound[E]): LazySegmentSeq[E, D, V] = {
+    val newBaseSeq = TreapSegmentSeqUtil.takeBelowBound(zippedSeq.firstSeq, bound)
+    val newControlSeq = TreapSegmentSeqUtil.takeBelowBound(zippedSeq.secondSeq, bound)
+    consLazy(makeZippedSeq(newBaseSeq, newControlSeq))
+  }
 
   final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeBelowExtended(bound)
 
-  final override def sliceAtBound(bound: Bound[E]): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) = ???
+  final override def sliceAtBound(bound: Bound[E]): (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = {
+    val baseSlice = TreapSegmentSeqUtil.sliceAtBound(zippedSeq.firstSeq, bound)
+    val controlSlice = TreapSegmentSeqUtil.sliceAtBound(zippedSeq.secondSeq, bound)
+    (consLazy(makeZippedSeq(baseSlice._1, controlSlice._1)), consLazy(makeZippedSeq(baseSlice._2, controlSlice._2)))
+  }
 
   final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
     super.sliceAtExtended(bound)
@@ -162,7 +174,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     prependBelowExtended(firstSegment.upperExtended, other)
 
-  final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+  final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
     prependInternal(bound, zippedSeq.getSegmentForBound(bound.provideLower), other)
 
   final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -171,7 +183,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     appendAboveExtended(lastSegment.lowerExtended, other)
 
-  final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+  final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
     appendInternal(bound, zippedSeq.getSegmentForBound(bound.provideUpper), other)
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -199,7 +211,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
   protected override def isValueIncluded(value: V): Boolean
 
-  protected override def consUniform(value: V): SegmentSeq[E, D, V]
+  protected override def consUniform(value: V): LazySegmentSeq[E, D, V]
 
   /**
    * Creates lazy sequence from specified zipped sequence.
@@ -2019,15 +2031,21 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override def moveToElement(element: E): LazySegment[E, D, V] = sequence.getSegmentForElement(element)
 
     // Transformation ----------------------------------------------------------- //
-    override def takeAbove: SegmentSeq[E, D, V] = ???
+    override def takeAbove: LazySegmentSeq[E, D, V]
 
-    override def takeBelow: SegmentSeq[E, D, V] = ???
+    override def takeBelow: LazySegmentSeq[E, D, V]
 
-    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+    override def slice: (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V])
 
-    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def prepend(other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] = {
+      // Default implementation for first segment. Must be overridden if segment has previous segment.
+      sequence
+    }
 
-    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def append(other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] = {
+      // Default implementation for last segment. Must be overridden if segment has next segment.
+      sequence
+    }
 
     override def truncation(
       bound: ExtendedBound[E]
@@ -2091,6 +2109,10 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence.makeSegmentWithPrev(nextSegment.truncation(nextSegment.lowerBound))
     }
 
+    // Transformation ----------------------------------------------------------- //
+    override def append(other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
+      sequence.appendInternal(upperBound, original, other)
+
     // Protected section -------------------------------------------------------- //
     protected override def original: Stable.ZSegmentWithNext[E, D, V]
   }
@@ -2110,6 +2132,10 @@ object AbstractLazyTreapSegmentSeq { outer =>
       val prevSegment = original.movePrev
       sequence.makeSegmentWithNext(prevSegment.truncation(prevSegment.upperBound))
     }
+
+    // Transformation ----------------------------------------------------------- //
+    override def prepend(other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
+      sequence.prependInternal(lowerBound, original, other)
 
     // Protected section -------------------------------------------------------- //
     protected override def original: Stable.ZSegmentWithPrev[E, D, V]
@@ -2131,6 +2157,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override def moveToFirst: LazyInitialSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: LazySegmentSeq[E, D, V] = sequence
+
+    override def takeBelow: LazySegmentSeq[E, D, V] = sequence.consUniform(value)
+
+    override def slice: (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = (takeBelow, takeAbove)
+
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
@@ -2170,6 +2202,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override def moveToLast: LazyTerminalSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: LazySegmentSeq[E, D, V] = sequence.consUniform(value)
+
+    override def takeBelow: LazySegmentSeq[E, D, V] = sequence
+
+    override def slice: (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = (takeBelow, takeAbove)
+
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
@@ -2207,6 +2245,20 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override def self: LazyInnerSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: LazySegmentSeq[E, D, V] = {
+      val newBaseSeq = TreapSegmentSeqUtil.takeAboveSegment(original.self.firstSeqSegment.self)
+      val newControlSeq = TreapSegmentSeqUtil.takeAboveSegment(original.self.secondSeqSegment.self)
+      sequence.consLazy(sequence.makeZippedSeq(newBaseSeq, newControlSeq))
+    }
+
+    override def takeBelow: LazySegmentSeq[E, D, V] = {
+      val newBaseSeq = TreapSegmentSeqUtil.takeBelowSegment(original.self.back.firstSeqSegment.self)
+      val newControlSeq = TreapSegmentSeqUtil.takeBelowSegment(original.self.back.secondSeqSegment.self)
+      sequence.consLazy(sequence.makeZippedSeq(newBaseSeq, newControlSeq))
+    }
+
+    override def slice: (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = (takeBelow, takeAbove)
+
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
@@ -2254,6 +2306,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override def moveToElement(element: E): LazySingleSegment[E, D, V] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: LazySegmentSeq[E, D, V] = sequence
+
+    override def takeBelow: LazySegmentSeq[E, D, V] = sequence
+
+    override def slice: (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = (sequence, sequence)
+
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =

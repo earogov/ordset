@@ -11,12 +11,13 @@ import test.ordset.core.{Labels, TestRngUtil}
 import scala.language.postfixOps
 
 class SingleBoundedSetSample1[D <: Domain[Int]](
-  seed: Long
+  seed: Long,
+  shuffled: Boolean
 )(
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager
-) extends LazyTreapSeqSample.Fixed[Int, D, Boolean]
+) extends LazyTreapSeqSample.Fixed[Int, D, Boolean](shuffled)
   with test.ordset.core.behaviors.segmentSeq.singleBoundedSet.Sample1[D] {
 
   override val labels: Set[Label] = super.labels + Labels.seed(seed) + Labels.singleBoundedSeq

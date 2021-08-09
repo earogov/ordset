@@ -95,8 +95,13 @@ object LazyTreapSeqSample {
   /**
    * Sample with lazy sequence which internal state is kept fixed during access. Each time [[sequence]] is called
    * it returns sequence with exactly the same lazy and eager parts.
+   *
+   * If `shuffled` == `false` then sequence is returned in totally lazy state. Otherwise state is randomized
+   * to provide some parts to be eager.
    */
   abstract class Fixed[E, D <: Domain[E], V](
+    shuffled: Boolean
+  )(
     implicit
     override val domainOps: DomainOps[E, D],
     override val rngManager: RngManager
@@ -111,7 +116,9 @@ object LazyTreapSeqSample {
     override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = LazyTreapSegmentSeq.clone(lazySeq)
 
     // Protected section -------------------------------------------------------- //
-    protected val lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = initializeSequence
+    protected lazy val lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] =
+      if (shuffled) LazyTreapSeqUtil.shuffleLazySeq(initializeSequence, extendedBounds)
+      else initializeSequence
 
     /**
      * Creates initial lazy sequence.
@@ -212,8 +219,13 @@ object LazyTreapSeqSample {
     def getZippedSeq: ZSegmentSeq[E, D, V] = zippedSeq
 
     // Protected section -------------------------------------------------------- //
-    protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] =
-      UniformOrderedMap.default(value)
+    protected final override def consUniform(value: V): LazySegmentSeq[E, D, V] =
+      new LazyTreapSegmentSeq(
+        makeZippedSeq(
+          makeUniformBaseSeq(value),
+          makeUniformControlSeq(EagerValue.stable)
+        )
+      )
 
     protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
       new LazyTreapSegmentSeq(zippedSeq)
@@ -262,6 +274,5 @@ object LazyTreapSeqSample {
       original: LazyTreapSegmentSeq[E, D, V]
     ): LazyTreapSegmentSeq[E, D, V] =
       new LazyTreapSegmentSeq(original.getZippedSeq)(original.domainOps, original.valueOps, original.rngManager)
-
   }
 }

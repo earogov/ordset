@@ -12,16 +12,17 @@ object SegmentSeqFactories {
     domainOps: DomainOps[E, D]
   ): List[(Set[Label], OrderedSetFactory[E, D, OrderedSet[E, D]]#Partial)] =
     List(
-      (
-        Set(Labels.arrayOrderedSet),
-        ArrayOrderedSet.getFactory.provided(domainOps)()(TestRngUtil.Implicits.defaultRngManager)
-      )
-    ).appendedAll(
-      Range(1, 6).map { seed =>
+      List(
+        (
+          Set(Labels.arrayOrderedSet),
+          ArrayOrderedSet.getFactory.provided(domainOps)()(TestRngUtil.Implicits.defaultRngManager)
+        )
+      ),
+      (1 to 5).map { seed =>
         (
           Set(Labels.treapOrderedSet, Labels.seed(seed)),
           TreapOrderedSet.getFactory.provided(domainOps)()(TestRngUtil.defaultRngManager(seed))
         )
       }
-    )
+    ).flatten
 }

@@ -12,8 +12,8 @@ object TreapSegmentSeqUtil {
   /**
    * Get treap root node if sequence is non-uniform or empty treap otherwise.
    */
-  def getRoot[E, D <: Domain[E], V](seq: TreapSegmentSeq[E, D, V]): ImmutableTreap[Bound.Upper[E], V] =
-    seq match {
+  def getRoot[E, D <: Domain[E], V](sequence: TreapSegmentSeq[E, D, V]): ImmutableTreap[Bound.Upper[E], V] =
+    sequence match {
       case s: NonuniformTreapSegmentSeq[E, D, V] => s.root
       case _: UniformSegmentSeq[E, D, V] => ImmutableTreap.Empty
     }
@@ -23,7 +23,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeBelow[E, D <: Domain[E], V](
+  def takeBelowSegment[E, D <: Domain[E], V](
     segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
@@ -33,11 +33,33 @@ object TreapSegmentSeqUtil {
     }
 
   /**
+   * Applies [[SegmentSeqT.takeBelowBound]] operation to the given [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def takeBelowBound[E, D <: Domain[E], V](
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    bound: Bound[E]
+  ): TreapSegmentSeq[E, D, V] =
+    takeBelowSegment(sequence.getSegmentForBound(bound))
+
+  /**
+   * Applies [[SegmentSeqT.takeBelowExtended]] operation to the given [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def takeBelowExtended[E, D <: Domain[E], V](
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    bound: ExtendedBound[E]
+  ): TreapSegmentSeq[E, D, V] =
+    takeBelowSegment(sequence.getSegmentForExtended(bound))
+
+  /**
    * Applies [[SegmentLikeT.takeAbove]] operation to the given segment of [[TreapSegmentSeq]].
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeAbove[E, D <: Domain[E], V](
+  def takeAboveSegment[E, D <: Domain[E], V](
     segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
@@ -45,6 +67,64 @@ object TreapSegmentSeqUtil {
       case s: TreapSegmentBase[_, _, _] => s.takeAbove
       case s: UniformSingleSegment[_, _, _] => s.takeAbove
     }
+
+  /**
+   * Applies [[SegmentSeqT.takeAboveBound]] operation to the given [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def takeAboveBound[E, D <: Domain[E], V](
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    bound: Bound[E]
+  ): TreapSegmentSeq[E, D, V] =
+    takeAboveSegment(sequence.getSegmentForBound(bound))
+
+  /**
+   * Applies [[SegmentSeqT.takeAboveExtended]] operation to the given [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def takeAboveExtended[E, D <: Domain[E], V](
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    bound: ExtendedBound[E]
+  ): TreapSegmentSeq[E, D, V] =
+    takeAboveSegment(sequence.getSegmentForExtended(bound))
+
+  /**
+   * Applies [[SegmentLikeT.slice]] operation to the given segment of [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def sliceSegment[E, D <: Domain[E], V](
+    segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+  ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
+    // We have to pattern match here due to type inference issue.
+    segment match {
+      case s: TreapSegmentBase[_, _, _] => s.slice
+      case s: UniformSingleSegment[_, _, _] => s.slice
+    }
+
+  /**
+   * Applies [[SegmentSeqT.sliceAtBound]] operation to the given [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def sliceAtBound[E, D <: Domain[E], V](
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    bound: Bound[E]
+  ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
+    sliceSegment(sequence.getSegmentForBound(bound))
+
+  /**
+   * Applies [[SegmentSeqT.sliceAtExtended]] operation to the given [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   */
+  def sliceAtExtended[E, D <: Domain[E], V](
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    bound: ExtendedBound[E]
+  ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
+    sliceSegment(sequence.getSegmentForExtended(bound))
 
   /**
    * Applies [[SegmentTruncationT.prepend]] operation to the given truncation of [[TreapSegmentSeq]].
