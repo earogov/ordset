@@ -5,6 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.TreapOrderedSet
 import ordset.random.RngManager
 import ordset.util.label.Label
+import test.ordset.core.implementations.domain.BoundSelector
 import test.ordset.core.samples.segmentSeq.TreapSeqSample
 import test.ordset.core.{Labels, TestRngUtil}
 
@@ -15,7 +16,8 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
 )(
   implicit
   override val domainOps: DomainOps[Int, D],
-  override val rngManager: RngManager
+  override val rngManager: RngManager,
+  override val boundSelector: BoundSelector[Int]
 ) extends TreapSeqSample[Int, D, Boolean](seed)
   with test.ordset.core.behaviors.segmentSeq.singleBoundedSet.Sample1[D] {
 

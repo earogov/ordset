@@ -5,10 +5,11 @@ import ordset.core.AbstractLazyTreapSegmentSeq._
 import ordset.core.{ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.{RngManager, UnsafeUniformRng}
-import test.ordset.core.samples.segmentSeq.{LazyTreapSeqSample, LazyTreapSeqUtil}
+import test.ordset.core.samples.segmentSeq.LazyTreapSeqSample
 import test.ordset.core.SegmentSeqAssertions._
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.RandomUtil
+import test.ordset.core.implementations.segmentSeq.lazyTreap.LazyTreapSeqUtil
 
 import java.util.concurrent.{Executors, TimeUnit}
 import scala.collection.immutable.{ArraySeq, HashMap}

@@ -730,7 +730,7 @@ trait Sample3[D <: Domain[Int]]
         //
         // result:
         // X-----------------------------false----------------------------------X
-        //                
+        //
         SegmentSeqAppendTest.TestCaseWithBound(
           factoryTuple._1 + Label("A1"),
           -10`]`,

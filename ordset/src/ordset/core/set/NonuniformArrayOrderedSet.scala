@@ -1,5 +1,6 @@
 package ordset.core.set
 
+import ordset.util.BooleanUtil
 import ordset.array.SortedArraySearch
 import ordset.core.AbstractIndexedSegmentSeq.{IndexedSegment, IndexedSegmentBase}
 import ordset.core.domain.{Domain, DomainOps}
@@ -188,7 +189,7 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
   }
 
   @inline
-  protected final override def isIndexIncluded(ind: Int): Boolean = complementary ^ ((ind & 0x00000001) == 0x00000001)
+  protected final override def isIndexIncluded(ind: Int): Boolean = BooleanUtil.inverseN(complementary, ind)
 }
 
 object NonuniformArrayOrderedSet {

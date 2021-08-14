@@ -7,8 +7,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatestplus.junit.JUnitRunner
 import test.ordset.core.behaviors.lazyTreapSeq.LazyTreapSeqBehaviours
 import test.ordset.core.behaviors.segmentSeq.TransformationBehaviors
-import test.ordset.core.domain.BoundSelector
-import test.ordset.core.samples.segmentSeq.LazyTreapSeqUtil
+import test.ordset.core.implementations.domain.BoundSelector
+import test.ordset.core.implementations.segmentSeq.lazyTreap.LazyTreapSeqUtil
 import test.ordset.core.samples.segmentSeq.lazyTreapOrderedSet._
 import test.ordset.core.{RandomUtil, SegmentSeqAssertions, TestRngUtil}
 

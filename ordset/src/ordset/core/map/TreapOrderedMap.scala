@@ -50,7 +50,7 @@ object TreapOrderedMap {
 
   private class Factory[E, D <: Domain[E], V] extends OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] {
 
-    @throws[SegmentSeqException]("if unable to build valid map with specified bounds and values")
+    @throws[SegmentSeqException]("if preconditions are violated")
     def unsafeBuildAsc(
       seq: IterableOnce[(ExtendedBound.Upper[E], V)],
       domainOps: DomainOps[E, D],

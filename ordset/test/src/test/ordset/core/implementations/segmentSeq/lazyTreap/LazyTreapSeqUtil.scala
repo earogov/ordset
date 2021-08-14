@@ -1,10 +1,11 @@
-package test.ordset.core.samples.segmentSeq
+package test.ordset.core.implementations.segmentSeq.lazyTreap
 
 import ordset.core.domain.Domain
 import ordset.core.{Bound, ExtendedBound, LazySegmentSeq, SegmentSeq}
 import ordset.random.RngManager
 import test.ordset.core.RandomUtil
-import test.ordset.core.domain.BoundSelector
+import test.ordset.core.implementations.domain.BoundSelector
+import test.ordset.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
@@ -46,7 +47,7 @@ object LazyTreapSeqUtil {
     implicit
     boundSelector: BoundSelector[E],
     rngManager: RngManager
-  ): LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = {
+  ): LazyTreapSegmentSeq[E, D, V] = {
 
     def split(lowerBound: ExtendedBound[E], upperBound: ExtendedBound[E]): Seq[ExtendedBound[E]] = {
       val ord = seq.domainOps.extendedOrd
@@ -138,6 +139,6 @@ object LazyTreapSeqUtil {
 
     val controlSeq = buildControlSeq(splittedBounds, boundsIndexList, List.empty)
 
-    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(controlSeq)(seq.domainOps, seq.valueOps, seq.rngManager)
+    LazyTreapSegmentSeq.totallyLazy(controlSeq)(seq.domainOps, seq.valueOps, seq.rngManager)
   }
 }

@@ -1,10 +1,13 @@
 package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.OrderedMap
-import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.map.{OrderedMap, OrderedMapFactory}
+import ordset.core.value.ValueOps
+import ordset.core.{Bound, ExtendedBound, SegmentSeqException, SeqValidationPredicate}
 import ordset.random.RngManager
+import ordset.util.BooleanUtil
 
+import scala.collection.mutable.ListBuffer
 import scala.util.Try
 
 /**
@@ -66,11 +69,11 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
   /**
    * Converts specified `set` into ordered set of type `SSeq`.
    */
-  def convertSet(set: OrderedSet[E, D]): SSeq
   // Note
   // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
   // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
   // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertSetInternal`.
+  def convertSet(set: OrderedSet[E, D]): SSeq
   
   /**
    * Same as [[unsafeBuildAsc]] but wraps result with [[Try]] catching non-fatal [[Throwable]].
@@ -134,5 +137,67 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
     )(
       set.rngManager
     )
+  }
+}
+
+object OrderedSetFactory {
+
+  /**
+   * Creates [[OrderedSetFactory]] from specified [[OrderedMapFactory]].
+   */
+  def fromMapFactory[E, D <: Domain[E], SSeq <: OrderedSet[E, D]](
+    mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
+  ): OrderedSetFactory[E, D, SSeq] =
+    new MapFactoryWrapper(mapFactory)
+
+  /**
+   * Wraps specified [[OrderedMapFactory]] to provide [[OrderedSetFactory]]. 
+   * 
+   * @note [[convertSet]] may be suboptimal. We can't determine the case when conversion isn't required, 
+   *       because we can't pattern match to type `SSeq`. So method should be redefined in classes with
+   *       concrete `SSeq` type.
+   */
+  class MapFactoryWrapper[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]](
+    mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
+  ) extends OrderedSetFactory[E, D, SSeq] {
+
+    @throws[SegmentSeqException]("if preconditions are violated")
+    def unsafeBuildAsc(
+      bounds: IterableOnce[Bound.Upper[E]],
+      complementary: Boolean,
+      domainOps: DomainOps[E, D]
+    )(
+      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+    )(
+      implicit rngManager: RngManager
+    ): SSeq = {
+      var value = complementary
+      val boundsWithValues =
+        SeqValidationPredicate.foldIterableAfter[Bound.Upper[E], ListBuffer[(ExtendedBound.Upper[E], Boolean)]](
+          bounds,
+          boundsValidation,
+          ListBuffer.empty,
+          (buf, bnd) => {
+            buf.addOne((bnd, value))
+            value = !value
+            buf
+          }
+        )
+      val lastItem = (ExtendedBound.AboveAll, BooleanUtil.inverseN(complementary, boundsWithValues.size))
+      boundsWithValues.addOne(lastItem)
+
+      mapFactory.unsafeBuildAsc(
+        boundsWithValues,
+        domainOps,
+        ValueOps.booleanValueOps
+      )(
+        SeqValidationPredicate.alwaysTrue,  // bounds have been already validated
+        SeqValidationPredicate.alwaysTrue   // values always alternate => no validation required
+      )(
+        rngManager
+      )
+    }
+
+    override def convertSet(set: OrderedSet[E, D]): SSeq = convertSetInternal(set)
   }
 }

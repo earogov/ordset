@@ -65,7 +65,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
    * @param valuesValidation function for values validation (precondition 4).
    * @param rngManager generator of random sequences.
    */
-  @throws[SegmentSeqException]("if unable to build valid map with specified bounds and values")
+  @throws[SegmentSeqException]("if preconditions are violated")
   def unsafeBuildAsc(
     seq: IterableOnce[(ExtendedBound.Upper[E], V)],
     domainOps: DomainOps[E, D],
@@ -80,11 +80,11 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
   /**
    * Converts specified `map` into ordered map of type `SSeq`.
    */
-  def convertMap(map: OrderedMap[E, D, V]): SSeq
   // Note
   // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
   // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
   // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertMapInternal`.
+  def convertMap(map: OrderedMap[E, D, V]): SSeq
   
   /**
    * Same as [[unsafeBuildAsc]] but wraps result with [[Try]] catching non-fatal [[Throwable]].

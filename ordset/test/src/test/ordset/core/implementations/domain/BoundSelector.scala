@@ -1,4 +1,4 @@
-package test.ordset.core.domain
+package test.ordset.core.implementations.domain
 
 import ordset.Order
 import ordset.core.{Bound, ExtendedBound}

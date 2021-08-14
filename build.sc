@@ -13,7 +13,7 @@ object ordset extends ScalaModule {
   )
 
   override def ivyDeps = Agg(
-    ivy"org.typelevel::cats-core:2.4.2",
+    ivy"org.typelevel::cats-core:2.4.2"
   )
 
   object test extends Tests {

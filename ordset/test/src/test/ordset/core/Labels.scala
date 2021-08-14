@@ -4,6 +4,7 @@ import ordset.Show
 import ordset.core.map.UniformOrderedMap
 import ordset.core.set.{NonuniformArrayOrderedSet, NonuniformTreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.util.label.Label
+import test.ordset.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 
 object Labels {
 
@@ -19,15 +20,17 @@ object Labels {
 
   val universalSet: Label = Label("universal set")
 
-  val uniformOrderedSet: Label = Label(classOf[UniformOrderedSet[_, _]].getSimpleName)
+  val uniformOrderedSet: Label = Label("uniform set")
 
-  val uniformOrderedMap: Label = Label(classOf[UniformOrderedMap[_, _, _]].getSimpleName)
+  val uniformOrderedMap: Label = Label("uniform map")
 
-  val arrayOrderedSet: Label = Label(classOf[NonuniformArrayOrderedSet[_, _]].getSimpleName)
+  val arrayOrderedSet: Label = Label("array set")
 
-  val treapOrderedSet: Label = Label(classOf[NonuniformTreapOrderedSet[_, _]].getSimpleName)
+  val treapOrderedSet: Label = Label("treap set")
 
-  val zippedOrderedSet: Label = Label(classOf[ZippedOrderedSet[_, _, _, _]].getSimpleName)
+  val lazyTreapOrderedSet: Label = Label("lazy treap set")
+
+  val zippedOrderedSet: Label = Label("zipped set")
 
   def sample(n: Int): Label = Label(s"sample $n")
 

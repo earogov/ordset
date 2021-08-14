@@ -9,11 +9,13 @@ import ordset.core.{Bound, ExtendedBound, Interval, IntervalRelation, SegmentSeq
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
+import test.ordset.core.implementations.domain.BoundSelector
 
 abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, V]](
   implicit
   val domainOps: DomainOps[E, D],
-  val rngManager: RngManager
+  val rngManager: RngManager,
+  val boundSelector: BoundSelector[E]
 ) {
 
   final type GenIntervalRelation = IntervalRelation[E, D, V]

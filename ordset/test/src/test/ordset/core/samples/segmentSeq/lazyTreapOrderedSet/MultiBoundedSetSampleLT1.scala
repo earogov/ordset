@@ -5,9 +5,11 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.TreapOrderedSet
 import ordset.random.RngManager
 import ordset.util.label.Label
-import ordset.core.syntax.BoundSyntax._
-import ordset.core.syntax.SetBuilderNotation._
+import ordset.core.syntax.BoundSyntax.*
+import ordset.core.syntax.SetBuilderNotation.*
 import test.ordset.core.Labels
+import test.ordset.core.implementations.domain.BoundSelector
+import test.ordset.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 import test.ordset.core.samples.segmentSeq.LazyTreapSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -18,7 +20,8 @@ class MultiBoundedSetSampleLT1[D <: Domain[Int]](
 )(
   implicit
   override val domainOps: DomainOps[Int, D],
-  override val rngManager: RngManager
+  override val rngManager: RngManager,
+  override val boundSelector: BoundSelector[Int]
 ) extends LazyTreapSeqSample.Fixed[Int, D, Boolean](shuffled)
   with test.ordset.core.behaviors.lazyTreapSeq.multiBoundedSet.SampleLT1[D] {
 
@@ -38,7 +41,7 @@ class MultiBoundedSetSampleLT1[D <: Domain[Int]](
   //        seq1                 seq2                  seq3
   // X-----------------)[--------------------](--------------------X
   //                   0                     10
-  override protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[Int, D, Boolean] = {
+  override protected def initializeSequence: LazyTreapSegmentSeq[Int, D, Boolean] = {
     val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
       complementary = true,
@@ -57,7 +60,7 @@ class MultiBoundedSetSampleLT1[D <: Domain[Int]](
       domainOps
     )()
 
-    LazyTreapSeqSample.LazyTreapSegmentSeq.totallyLazy(
+    LazyTreapSegmentSeq.totallyLazy(
       List(
         (0 `)`, () => seq1),
         (10 `]`, () => seq2),

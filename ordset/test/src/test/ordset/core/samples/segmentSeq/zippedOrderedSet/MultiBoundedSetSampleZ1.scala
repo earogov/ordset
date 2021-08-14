@@ -2,13 +2,14 @@ package test.ordset.core.samples.segmentSeq.zippedOrderedSet
 
 import ordset.core.ZippedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set._
-import ordset.core.syntax.BoundSyntax._
-import ordset.core.syntax.SetBuilderNotation._
+import ordset.core.set.*
+import ordset.core.syntax.BoundSyntax.*
+import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels
 import test.ordset.core.behaviors.zippedSeq.OriginalSeqPatchTest
+import test.ordset.core.implementations.domain.BoundSelector
 import test.ordset.core.samples.segmentSeq.ZippedSeqSample
 
 import scala.collection.immutable.ArraySeq
@@ -17,7 +18,8 @@ import scala.language.postfixOps
 class MultiBoundedSetSampleZ1[D <: Domain[Int]](
   implicit
   override val domainOps: DomainOps[Int, D],
-  override val rngManager: RngManager
+  override val rngManager: RngManager,
+  override val boundSelector: BoundSelector[Int]
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
   with test.ordset.core.behaviors.zippedSeq.multiBoundedSet.SampleZ1[D] {
   

@@ -8,13 +8,16 @@ import ordset.core.map.{OrderedMapCommons, TreapOrderedMap, UniformOrderedMap, Z
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.random.RngManager
 import ordset.util.HashUtil.product1Hash
-import test.ordset.core.samples.segmentSeq.LazyTreapSeqSample.TestZValueOps
+import test.ordset.core.implementations.domain.BoundSelector
+import test.ordset.core.implementations.segmentSeq.lazyTreap.{LazyTreapSegmentSeq, LazyTreapSeqUtil}
+import test.ordset.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq.TestZValueOps
 
 abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
   implicit
   override val domainOps: DomainOps[E, D],
-  override val rngManager: RngManager
-) extends SegmentSeqSample[E, D, V, LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V]] {
+  override val rngManager: RngManager,
+  override val boundSelector: BoundSelector[E]
+) extends SegmentSeqSample[E, D, V, LazyTreapSegmentSeq[E, D, V]] {
 
   /**
    * Implementation of [[ValueOps]] for [[ZValue]] for tests:
@@ -58,7 +61,8 @@ object LazyTreapSeqSample {
   abstract class Restorable[E, D <: Domain[E], V](
     implicit
     override val domainOps: DomainOps[E, D],
-    override val rngManager: RngManager
+    override val rngManager: RngManager,
+    override val boundSelector: BoundSelector[E]
   ) extends LazyTreapSeqSample[E, D, V] {
 
     /**
@@ -67,7 +71,7 @@ object LazyTreapSeqSample {
      * Note, during tests state of sequence may be changed (lazy values are computed and cached).
      * Use [[restoreSequence]] to rollback to the initial state.
      */
-    override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lazySeq
+    override def sequence: LazyTreapSegmentSeq[E, D, V] = lazySeq
 
     /**
      * Restores initial state of lazy sequence.
@@ -75,21 +79,21 @@ object LazyTreapSeqSample {
      * Creates sequence with [[initializeSequence]] and saves it into [[lazySeq]] field.
      * Update is synchronized with [[lock]].
      */
-    def restoreSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = lock.synchronized {
+    def restoreSequence: LazyTreapSegmentSeq[E, D, V] = lock.synchronized {
       lazySeq = initializeSequence
       lazySeq
     }
 
     // Protected section -------------------------------------------------------- //
     @volatile
-    protected var lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = initializeSequence
+    protected var lazySeq: LazyTreapSegmentSeq[E, D, V] = initializeSequence
 
     protected final val lock = new Object
 
     /**
      * Creates initial lazy sequence.
      */
-    protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V]
+    protected def initializeSequence: LazyTreapSegmentSeq[E, D, V]
   }
 
   /**
@@ -104,7 +108,8 @@ object LazyTreapSeqSample {
   )(
     implicit
     override val domainOps: DomainOps[E, D],
-    override val rngManager: RngManager
+    override val rngManager: RngManager,
+    override val boundSelector: BoundSelector[E]
   ) extends LazyTreapSeqSample[E, D, V] {
 
     /**
@@ -113,166 +118,16 @@ object LazyTreapSeqSample {
      * Note, each method call returns copy of sequence. So during tests state of original sequence never changes
      * (lazy and eager parts stay the same).
      */
-    override def sequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] = LazyTreapSegmentSeq.clone(lazySeq)
+    override def sequence: LazyTreapSegmentSeq[E, D, V] = LazyTreapSegmentSeq.clone(lazySeq)
 
     // Protected section -------------------------------------------------------- //
-    protected lazy val lazySeq: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V] =
+    protected lazy val lazySeq: LazyTreapSegmentSeq[E, D, V] =
       if (shuffled) LazyTreapSeqUtil.shuffleLazySeq(initializeSequence, extendedBounds)
       else initializeSequence
 
     /**
      * Creates initial lazy sequence.
      */
-    protected def initializeSequence: LazyTreapSeqSample.LazyTreapSegmentSeq[E, D, V]
-  }
-
-  /**
-   * Implementation of [[ordset.Hash]] for [[ControlValue]] for tests:
-   * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-   * <tr>- all other control values are compared according to input `valueHash`.</tr>
-   */
-  final class TestControlValueHash[E, D <: Domain[E], V](
-    val valueHash: Hash[ControlValue[E, D, V]]
-  ) extends Hash[ControlValue[E, D, V]] {
-
-    import util.HashUtil._
-    import TestControlValueHash._
-
-    override def hash(x: ControlValue[E, D, V]): Int = x match {
-      case _: LazyValue[_, _, _] => lazyHash
-      case _ => valueHash.hash(x)
-    }
-
-    override def eqv(x: ControlValue[E, D, V], y: ControlValue[E, D, V]): Boolean = (x, y) match {
-      case (_: LazyValue[_, _, _], _: LazyValue[_, _, _]) => true
-      case _ => valueHash.eqv(x, y)
-    }
-  }
-
-  object TestControlValueHash {
-
-    protected lazy val lazyHash: Int = TestControlValueHash.##
-  }
-
-  object TestControlValueOps {
-
-    /**
-     * Implementation of [[ValueOps]] for [[ControlValue]] for tests:
-     * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-     * <tr>- all other control values are compared according to input `valueOps`.</tr>
-     */
-    def get[E, D <: Domain[E], V](valueOps: ValueOps[ControlValue[E, D, V]]): ValueOps[ControlValue[E, D, V]] =
-      new ControlValueOps(
-        valueOps.unit,
-        TestControlValueHash(valueOps.valueHash),
-        valueOps.valueIncl
-      )
-  }
-
-  object TestZValueOps {
-
-    /**
-     * Implementation of [[ValueOps]] for [[ZValue]] for tests:
-     * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-     * <tr>- all other control values are compared according to input `valueOps`.</tr>
-     */
-    def get[E, D <: Domain[E], V](valueOps: ValueOps[ZValue[E, D, V]]): ValueOps[ZValue[E, D, V]] = {
-      val firstOps: ValueOps[V] =
-        new ValueOps.MapImpl[ZValue[E, D, V], V](
-          valueOps,
-          _._1,
-          (_, valueOps.unit._2)
-        )
-      val secondOps: ValueOps[ControlValue[E, D, V]] =
-        new ValueOps.MapImpl[ZValue[E, D, V], ControlValue[E, D, V]](
-          valueOps,
-          _._2,
-          (valueOps.unit._1, _)
-        )
-      new ValueOps.Tuple2Impl[V, ControlValue[E, D, V]](
-        valueOps.valueIncl,
-        firstOps,
-        TestControlValueOps.get(secondOps)
-      )
-    }
-  }
-
-  /**
-   * Implementation of [[AbstractLazyTreapSegmentSeq]] for tests. It provides:
-   * <tr>- access to zipped sequence;</tr>
-   * <tr>- simplified creation and clone operation.</tr>
-   */
-  class LazyTreapSegmentSeq[E, D <: Domain[E], V] protected (
-    initZippedSeq: ZSegmentSeq[E, D, V]
-  )(
-    implicit
-    final override val domainOps: DomainOps[E, D],
-    final override val valueOps: ValueOps[V],
-    final override val rngManager: RngManager
-  ) extends AbstractLazyTreapSegmentSeq[E, D, V]
-    with OrderedMapCommons[E, D, V, LazySegmentBase[E, D, V]] {
-
-    // Initialization ----------------------------------------------------------- //
-    zippedSeq = initZippedSeq
-
-    // Inspection --------------------------------------------------------------- //
-    def getZippedSeq: ZSegmentSeq[E, D, V] = zippedSeq
-
-    // Protected section -------------------------------------------------------- //
-    protected final override def consUniform(value: V): LazySegmentSeq[E, D, V] =
-      new LazyTreapSegmentSeq(
-        makeZippedSeq(
-          makeUniformBaseSeq(value),
-          makeUniformControlSeq(EagerValue.stable)
-        )
-      )
-
-    protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
-      new LazyTreapSegmentSeq(zippedSeq)
-  }
-
-  object LazyTreapSegmentSeq {
-
-    /**
-     * Creates sequence that consists only from lazy segments.
-     */
-    def totallyLazy[E, D <: Domain[E], V](
-      initControlSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
-    )(
-      implicit
-      domainOps: DomainOps[E, D],
-      valueOps: ValueOps[V],
-      rngManager: RngManager
-    ): LazyTreapSegmentSeq[E, D, V] = {
-      val initZippedSeq: ZSegmentSeq[E, D, V] = ZippedOrderedMap.apply(
-        TreapOrderedMap.getFactory.unsafeBuildAsc(
-          List((ExtendedBound.AboveAll, valueOps.unit)),
-          domainOps,
-          valueOps
-        )(),
-        TreapOrderedMap.getFactory.unsafeBuildAsc(
-          initControlSeq.map(p => (p._1, LazyValue(p._2))),
-          domainOps,
-          ControlValueOps.get
-        )(),
-        Tuple2.apply,
-        _ => false,
-        _ => false
-      )(
-        domainOps,
-        ZValueOps.get(valueOps),
-        rngManager
-      )
-      new LazyTreapSegmentSeq(initZippedSeq)
-    }
-
-    /**
-     * Creates new lazy sequence with the same internal state as original. The point is that access to the clone
-     * will keep internal state of original unmodified.
-     */
-    def clone[E, D <: Domain[E], V](
-      original: LazyTreapSegmentSeq[E, D, V]
-    ): LazyTreapSegmentSeq[E, D, V] =
-      new LazyTreapSegmentSeq(original.getZippedSeq)(original.domainOps, original.valueOps, original.rngManager)
+    protected def initializeSequence: LazyTreapSegmentSeq[E, D, V]
   }
 }

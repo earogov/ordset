@@ -645,21 +645,21 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         )
       // s-u
       } else if (originalControlValue.isStable) {
-        // s-u, no lazy segments after unstable =>
-        // unstable becomes stable (both control segments can be merged)
+        // s-u, there is no lazy segments after unstable =>
+        // unstable becomes stable (both control segments are merged)
         if (!otherBoundZsegment.hasNextSuchThat(_.value._2.isLazy)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             originalBoundZsegment.self.secondSeqLowerTruncation,
             takeAboveAndPrependControlValue(otherBoundZsegment, EagerValue.stable)
           )
-        // s-u, same base values, lazy segment after unstable =>
-        // stable becomes unstable (both control segments can be merged)
+        // s-u, same base values, there is lazy segment after unstable =>
+        // stable becomes unstable (both control segments are merged)
         } else if (valueOps.eqv(originalBoundZsegment.value._1, otherBoundZsegment.value._1)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             originalBoundZsegment.self.secondSeqLowerTruncation,
             takeAboveAndPrependControlValue(otherBoundZsegment, EagerValue.unstable)
           )
-        // s-u, different base values, lazy segment after unstable =>
+        // s-u, different base values, there is lazy segment after unstable =>
         // no correction
         } else {
           TreapSegmentSeqUtil.appendAboveTruncation(
@@ -669,21 +669,21 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         }
       // u-s
       } else if (otherControlValue.isStable) {
-        // u-s, no lazy segments before unstable =>
-        // unstable becomes stable (both control segments can be merged)
+        // u-s, there is no lazy segments before unstable =>
+        // unstable becomes stable (both control segments are merged)
         if (!otherBoundZsegment.hasPrevSuchThat(_.value._2.isLazy)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             originalBoundZsegment.self.secondSeqLowerTruncation,
             takeAboveAndPrependControlValue(otherBoundZsegment, EagerValue.stable)
           )
-        // u-s, same base values, lazy segment before unstable =>
-        // stable becomes unstable (both control segments can be merged)
+        // u-s, same base values, there is lazy segment before unstable =>
+        // stable becomes unstable (both control segments are merged)
         } else if (valueOps.eqv(originalBoundZsegment.value._1, otherBoundZsegment.value._1)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             originalBoundZsegment.self.secondSeqLowerTruncation,
             takeAboveAndPrependControlValue(otherBoundZsegment, EagerValue.unstable)
           )
-        // u-s, different values, lazy segment before unstable =>
+        // u-s, different base values, there is lazy segment before unstable =>
         // no correction
         } else {
           TreapSegmentSeqUtil.appendAboveTruncation(
@@ -697,30 +697,37 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         val rightIsLazy = otherBoundZsegment.hasNextSuchThat(_.value._2.isLazy)
         if (leftIsLazy == rightIsLazy) {
           // u-u, surrounded by lazy segments =>
-          // both segments stay unstable and can be merged
+          // both segments stay unstable and are merged
           if (leftIsLazy) {
             TreapSegmentSeqUtil.appendAboveTruncation(
               originalBoundZsegment.self.secondSeqLowerTruncation,
               otherBoundZsegment.self.secondSeqUpperTruncation.segment.takeAbove
             )
-          // u-u, none side has adjacent lazy segment =>
-          // both segments become stable and can be merged
+          // u-u, no one side has adjacent lazy segment =>
+          // both segments become stable and are merged
           } else {
             TreapSegmentSeqUtil.appendAboveTruncation(
               originalBoundZsegment.self.secondSeqLowerTruncation,
               takeAboveAndPrependControlValue(otherBoundZsegment, EagerValue.stable)
             )
           }
+        } else if (valueOps.eqv(originalBoundZsegment.value._1, otherBoundZsegment.value._1)) {
+          // u-u, same base values, there is lazy segment before left unstable or
+          // there is lazy segment after right unstable => both segments stay unstable and are merged
+          TreapSegmentSeqUtil.appendAboveTruncation(
+            originalBoundZsegment.self.secondSeqLowerTruncation,
+            otherBoundZsegment.self.secondSeqUpperTruncation.segment.takeAbove
+          )
         } else {
-          // u-u, lazy segment before left unstable, no lazy segments after right unstable =>
-          // right unstable becomes stable
+          // u-u, different base values, there is lazy segment before left unstable,
+          // there is no lazy segments after right unstable => right unstable becomes stable
           if (leftIsLazy) {
             TreapSegmentSeqUtil.appendAboveTruncation(
               controlSeqTruncation(originalBoundZsegment, bound),
               takeAboveAndPrependControlValue(otherBoundZsegment, EagerValue.stable)
             )
-          // u-u, no lazy segments before left unstable, lazy segment after right unstable =>
-          // left unstable becomes stable
+          // u-u, different base values, there is no lazy segments before left unstable,
+          // there is lazy segment after right unstable => left unstable becomes stable
           } else {
             TreapSegmentSeqUtil.prependBelowTruncation(
               controlSeqTruncation(otherBoundZsegment, bound),
