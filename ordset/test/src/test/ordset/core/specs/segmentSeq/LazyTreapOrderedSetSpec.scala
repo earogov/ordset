@@ -38,10 +38,10 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
     getRandomSamples(false)
   ).flatten
 
-  private val transformationSuite = getRandomSamples(true)
+  private val defaultSuite = getRandomSamples(true)
 
   private def getRandomSamples(shuffled: Boolean) = List(
-    (1 to 1).flatMap { seed =>
+    (1 to 3).flatMap { seed =>
       List(
         new EmptySetSample1[Dom](seed, shuffled),
         new SingleBoundedSetSample1[Dom](seed, shuffled),
@@ -55,6 +55,41 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
     }
   ).flatten
 
+  describe("Lazy treap ordered set inspection operations:") {
+
+    it should behave like segmentsHaveNavigationIndicators(defaultSuite)
+
+    it should behave like segmentsSupportContains(defaultSuite)
+
+    it should behave like segmentsCanRestrictBound(defaultSuite)
+
+    it should behave like supportReturnValueForBound(defaultSuite)
+  }
+
+  describe("Lazy treap ordered set navigation operations:") {
+
+    it should behave like segmentsSupportMovePrevAndNext(defaultSuite)
+
+    it should behave like supportMoveToBound(defaultSuite)
+
+    it should behave like supportMoveToFirstAndLast(defaultSuite)
+  }
+
+  describe("Lazy treap ordered set transformation operations:") {
+
+    it should behave like segmentSeqCanBePrepended(defaultSuite)
+
+    it should behave like segmentSeqCanBePrependedBelowBound(defaultSuite)
+
+    it should behave like segmentSeqCanBeAppended(defaultSuite)
+
+    it should behave like segmentSeqCanBeAppendedAboveBound(defaultSuite)
+
+    it should behave like segmentSeqCanBeSliced(defaultSuite)
+
+    it should behave like segmentCanBePatched(defaultSuite)
+  }
+
   describe("Lazy treap ordered set specific operations:") {
 
     it should behave like sequenceProperlyCacheLazyValues(cacheSuite)
@@ -62,20 +97,5 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
     it should behave like sequenceHasValidStateAfterSequentialRandomAccess(accessSuite)
 
     it should behave like sequenceHasValidStateAfterConcurrentRandomAccess(accessSuite)
-  }
-
-  describe("Lazy treap ordered set transformation operations:") {
-
-    it should behave like segmentSeqCanBePrepended(transformationSuite)
-
-    it should behave like segmentSeqCanBePrependedBelowBound(transformationSuite)
-
-    it should behave like segmentSeqCanBeAppended(transformationSuite)
-
-    it should behave like segmentSeqCanBeAppendedAboveBound(transformationSuite)
-
-    it should behave like segmentSeqCanBeSliced(transformationSuite)
-
-    it should behave like segmentCanBePatched(transformationSuite)
   }
 }
