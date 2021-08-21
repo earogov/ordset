@@ -127,6 +127,26 @@ object TreapSegmentSeqUtil {
     sliceSegment(sequence.getSegmentForExtended(bound))
 
   /**
+   * Applies [[SegmentT.prepend]] operation to the given segment of [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   * Note some performance penalty in case when conversion is required.
+   */
+  def prependBelowSegment[E, D <: Domain[E], V](
+    segment: SegmentT[
+      E,
+      D,
+      V,
+      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    ],
+    otherSeq: SegmentSeq[E, D, V]
+  ): TreapSegmentSeq[E, D, V] =
+    segment.prepend(otherSeq) match {
+      case seq: TreapSegmentSeq[E, D, V] => seq
+      case seq => TreapOrderedMap.getFactory.convertMap(seq)
+    }
+  
+  /**
    * Applies [[SegmentTruncationT.prepend]] operation to the given truncation of [[TreapSegmentSeq]].
    *
    * Implementation guaranties that output is also a treap segment sequence.
@@ -143,6 +163,26 @@ object TreapSegmentSeqUtil {
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     truncation.prepend(otherSeq) match {
+      case seq: TreapSegmentSeq[E, D, V] => seq
+      case seq => TreapOrderedMap.getFactory.convertMap(seq)
+    }
+
+  /**
+   * Applies [[SegmentT.append]] operation to the given segment of [[TreapSegmentSeq]].
+   *
+   * Implementation guaranties that output is also a treap segment sequence.
+   * Note some performance penalty in case when conversion is required.
+   */
+  def appendAboveSegment[E, D <: Domain[E], V](
+    segment: SegmentT[
+      E,
+      D,
+      V,
+      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    ],
+    otherSeq: SegmentSeq[E, D, V]
+  ): TreapSegmentSeq[E, D, V] =
+    segment.append(otherSeq) match {
       case seq: TreapSegmentSeq[E, D, V] => seq
       case seq => TreapOrderedMap.getFactory.convertMap(seq)
     }

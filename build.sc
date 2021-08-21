@@ -4,7 +4,7 @@ import scalalib._
 
 object ordset extends ScalaModule {
 
-  def scalaVersion = "3.0.0-RC1"
+  def scalaVersion = "3.0.0"
 
   override def scalacOptions = Seq(
     "-language:implicitConversions",
@@ -13,18 +13,18 @@ object ordset extends ScalaModule {
   )
 
   override def ivyDeps = Agg(
-    ivy"org.typelevel::cats-core:2.4.2"
+    ivy"org.typelevel::cats-core:2.6.1"
   )
 
   object test extends Tests {
 
-    def testFrameworks = Seq("org.scalatest.tools.Framework")
+    override def testFramework = "org.scalatest.tools.Framework"
 
     override def moduleDeps = Seq(commonsRandom)
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.5",
-      ivy"org.scalatestplus::junit-4-13:3.2.5.0"
+      ivy"org.scalatest::scalatest:3.2.9",
+      ivy"org.scalatestplus::junit-4-13:3.2.9.0"
     )
 
     /**
@@ -41,7 +41,7 @@ object ordset extends ScalaModule {
 
 object commonsRandom extends ScalaModule {
 
-  def scalaVersion = "3.0.0-RC1"
+  def scalaVersion = "3.0.0"
 
   override def scalacOptions = Seq(
     "-language:implicitConversions",
@@ -58,11 +58,11 @@ object commonsRandom extends ScalaModule {
 
   object test extends Tests {
 
-    def testFrameworks = Seq("org.scalatest.tools.Framework")
+    override def testFramework = "org.scalatest.tools.Framework"
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.5",
-      ivy"org.scalatestplus::junit-4-13:3.2.5.0"
+      ivy"org.scalatest::scalatest:3.2.9",
+      ivy"org.scalatestplus::junit-4-13:3.2.9.0"
     )
   }
 }

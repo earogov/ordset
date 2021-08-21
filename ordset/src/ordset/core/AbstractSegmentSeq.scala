@@ -68,7 +68,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    * 
-   * Note, if provided segment other then one defined by condition 1, the behaviour of function is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behaviour of function is undefined.
    */
   protected def prependBelowExtendedInternal[Seg](
     bound: ExtendedBound[E],
@@ -96,7 +96,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
-   * Note, if provided segment other then one defined by condition 1, the behaviour of function is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behaviour of function is undefined.
    */
   protected def appendAboveExtendedInternal[Seg](
     bound: ExtendedBound[E],
