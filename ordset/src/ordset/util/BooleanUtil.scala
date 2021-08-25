@@ -2,6 +2,10 @@ package ordset.util
 
 object BooleanUtil {
 
+  val truePredicate1: Any => Boolean = _ => true
+
+  val falsePredicate1: Any => Boolean = _ => false
+
   /**
    * Takes `initial` value and applies inversion operation to it `n` times.
    *

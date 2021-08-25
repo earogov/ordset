@@ -4,10 +4,11 @@ import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.internal.SegmentSeqExceptionUtil
 import ordset.core.value.ValueOps
+import ordset.random.RngManager
 
-import scala.Specializable.{AllNumeric => spNum}
+import scala.Specializable.AllNumeric as spNum
 import scala.collection.{AbstractIterable, AbstractIterator}
-import scala.{specialized => sp}
+import scala.specialized as sp
 
 /**
  * Non-sealed superclass of [[SegmentT]] 
@@ -20,14 +21,17 @@ import scala.{specialized => sp}
 trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   // Inspection --------------------------------------------------------------- //
-  /** Sequence to which segment belongs. */
-  def sequence: SegmentSeqT[E, D, V, S]
-
   /** Domain operations. */
-  def domainOps: DomainOps[E, D] = sequence.domainOps
+  implicit def domainOps: DomainOps[E, D] = sequence.domainOps
 
   /** Value operations (equality type class, etc). */
-  def valueOps: ValueOps[V] = sequence.valueOps
+  implicit def valueOps: ValueOps[V] = sequence.valueOps
+
+  /** Random numbers generator. */
+  implicit def rngManager: RngManager = sequence.rngManager
+
+  /** Sequence to which segment belongs. */
+  def sequence: SegmentSeqT[E, D, V, S]
 
   /** Value associated with segment. */
   def value: V
@@ -508,6 +512,13 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    */
   def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+
+  /**
+   * Returns lazy segment sequence which is equivalent to the result of [[patch]] operation.
+   * Unlike [[patch]] it doesn't requires inserted sequence to be known immediatelly. 
+   * Execution of `mapFunc` function is delayed until corresponding segment is requested.
+   */
+  def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns instance that captures current segment and specified bound to perform further operations.

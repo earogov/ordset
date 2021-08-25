@@ -2,11 +2,12 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.map.{LazyTreapOrderedMap, TreapOrderedMap, UniformOrderedMap}
 import ordset.core.util.SegmentSeqUtil
 import ordset.random.RngManager
 
-import scala.Specializable.{AllNumeric => spNum}
-import scala.{specialized => sp}
+import scala.Specializable.AllNumeric as spNum
+import scala.specialized as sp
 
 /**
  * Segment sequence encodes ordered sets and maps of elements, such that^*1^:
@@ -45,11 +46,11 @@ import scala.{specialized => sp}
  *  
  * All implementations of segment sequence MUST provide basic properties:
  * <tr>1. <u>segments cover universal set without gaps and overlapping</u>.                 </tr>
- * <tr>2. <u>adjacent segment have different values</u>.                                    </tr>
+ * <tr>2. <u>adjacent segments have different values</u>.                                   </tr>
  * <tr>                                                                                     </tr>
  *
  * To define ordered set we assume `V` = `Boolean` and consider it as a 'inclusion in set' flag.
- * Then example 1 will look like:
+ * Then example 1 will the following:
  * {{{
  *
  *                                         Segment 3
@@ -650,4 +651,122 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>otherwise result is the same as for method [[appendAboveBound]].</tr>
    */
   def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
+
+  /**
+   * Builds lazy segment sequence using original sequence (current) and `lazySeq`.
+   * <tr>
+   *   `lazySeq` is a segment sequence with optional lazy values (functions that returns another segment sequences).
+   * </tr>
+   * <tr></tr>
+   * <tr>
+   *   If segment of `lazySeq` has [[None]] value then corresponding segments of output sequence have the same
+   *   values as `baseSeq`.
+   * </tr>
+   * <tr>
+   *   If segment of `lazySeq` has [[Some]] value with a function F: `() => segmentSeqF`, then corresponding
+   *   segments of output sequence are lazy. Function F will be computed only if lazy segment is requested.
+   *   Values of lazy segments are completely defined by `segmentSeqF` and corresponding values of original
+   *   sequence are ignored.
+   * </tr>
+   * {{{
+   *
+   * original:
+   *
+   * X------------](-------------)[-------------X
+   *         A             B              C       - values
+   *
+   * `lazySeq`:
+   *
+   * X------](-------------------------)[-------X
+   *   None     Some(() => orderedMapF)    None   - values
+   *
+   * `segmentSeqF`:
+   * 
+   * X---](---------](---------)[----------](---X
+   *   D        E         F           G       H   - values
+   *
+   * output sequence after
+   * computation of all lazy values:
+   *
+   * X------](------](---------)[------)[-------X
+   *     A       E         F        G        C    - values
+   * }}}
+   */
+  def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    LazyTreapOrderedMap.apply(this, lazySeq)(domainOps, valueOps, rngManager)
+
+  /**
+   * Returns lazy segment sequence which is equivalent to one received by applying [[SegmentLikeT.flatMap]] to
+   * each segment of original sequence (current) with map function:
+   *
+   * () `=>` mapFunc(S,,i,,)
+   *
+   * where S,,i,, - i-th segment of original sequence
+   *
+   * Example
+   *
+   * Assume `mapFunc` returns:
+   * <tr>- seq1 for segment S1</tr>
+   * <tr>- seq2 for segment S2</tr>
+   * <tr>- seq3 for segment S3</tr>
+   * {{{
+   *
+   * original:
+   *
+   *   X------------)[-------------)[------------X
+   *         S1             S2            S3       - segments
+   *
+   * seq1:
+   *
+   *   X-----](----------------------------------X
+   *      A                    B                   - values
+   *
+   * seq2:
+   *
+   *   X------------------)[---------------------X
+   *             B                    C            - values
+   *
+   * seq3:
+   *
+   *   X---------------------------------)[------X
+   *                     C                    D    - values
+   *
+   * output lazy sequence:
+   *
+   *   X------------)[-------------)[------------X
+   *  () => mapFunc(S1)      |              |      - values
+   *                  () => mapFunc(S2)     |
+   *                                () => mapFunc(S3)
+   *
+   * output lazy sequence after
+   * computation of all lazy values:
+   *
+   *   X-----](-----------)[-------------)[------X
+   *      A          B            C           D    - values
+   * }}}
+   */
+  def flatMap[U](
+    mapFunc: SegmentT[E, D, V, S] => SegmentSeq[E, D, U]
+  )(
+    implicit valueOps: ValueOps[U]
+  ): SegmentSeq[E, D, U] = {
+    val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
+      firstSegment.forwardIterable.map(s => (s.upperExtended, Some(() => mapFunc(s)))),
+      domainOps,
+      OptionalSeqSupplier.ValueOpsImpl.get
+    )(
+      SeqValidationPredicate.alwaysTrue,
+      SeqValidationPredicate.alwaysTrue
+    )(
+      rngManager
+    )
+    LazyTreapOrderedMap.apply(
+      UniformOrderedMap.default(valueOps.unit),
+      lazySeq
+    )(
+      domainOps,
+      valueOps,
+      rngManager
+    )
+  }
 }

@@ -1,7 +1,7 @@
 package ordset.core
 
 import ordset.{Hash, util}
-import ordset.core.domain.Domain
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.{NonuniformTreapOrderedMap, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.tree.treap.immutable.ImmutableTreap
@@ -14,6 +14,9 @@ import AbstractTreapSegmentSeq.*
 import AbstractUniformSegmentSeq.*
 import AbstractLazyTreapSegmentSeq.*
 import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqUtil}
+import ordset.random.{RngManager, UnsafeUniformRng}
+import ordset.util.BooleanUtil
+import ordset.util.HashUtil.product1Hash
 import ordset.util.tag.Tag
 
 import scala.annotation.tailrec
@@ -970,9 +973,15 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     controlSeq: ControlSegmentSeq[E, D, V]
   ): ZSegmentSeq[E, D, V] =
     ZippedOrderedMap.apply(
-      baseSeq, controlSeq, Tuple2.apply, _ => false, _ => false
+      baseSeq,
+      controlSeq,
+      Tuple2.apply,
+      BooleanUtil.falsePredicate1,
+      BooleanUtil.falsePredicate1
     )(
-      domainOps, zippedSeq.valueOps, rngManager
+      domainOps,
+      zippedSeq.valueOps,
+      rngManager
     )
 
   /**
@@ -999,7 +1008,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       case other: TreapSegmentSeq[E, D, V] =>
         makeZippedSeq(other, makeUniformControlSeq(EagerValue.stable))
       case _ =>
-        makeZippedSeq(makeUniformBaseSeq(valueOps.unit), makeUniformControlSeq(LazyValue(() => other)))
+        makeUniformLazyZippedSeq(() => other)
     }
 
   /**
@@ -1903,6 +1912,8 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   type ZValue[E, D <: Domain[E], V] = (V, ControlValue[E, D, V])
 
+  type InitialZValue[E, D <: Domain[E], V] = Either[V, () => SegmentSeq[E, D, V]]
+
   type BaseSegmentBase[E, D <: Domain[E], V] = TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
 
   type ControlSegmentBase[E, D <: Domain[E], V] =
@@ -2002,6 +2013,8 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   type LazyLastSegment[E, D <: Domain[E], V] =
     SegmentT.Last[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
+
+  type InitialLazySeq[E, D <: Domain[E], V] = SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]
 
   /**
    * Types indicating that segment is stable, i.e. that its value, bounds and type (initial, inner, etc.)
@@ -2185,6 +2198,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     def unstable[E, D <: Domain[E], V]: EagerValue[E, D, V] = unstableInstance.asInstanceOf
 
+    // Private section ---------------------------------------------------------- //
     private lazy val stableInstance: EagerValue[Any, Domain[Any], Any] = new EagerValue(true)
 
     private lazy val unstableInstance: EagerValue[Any, Domain[Any], Any] = new EagerValue(false)
@@ -2195,10 +2209,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     import util.HashUtil._
 
-    override def hash(x: ControlValue[E, D, V]): Int = x match {
-      case x: LazyValue[_, _, _] => System.identityHashCode(x)
-      case x: EagerValue[_, _, _] => product1Hash(x.isStable.##)
-    }
+    override def hash(x: ControlValue[E, D, V]): Int = x.##
 
     override def eqv(x: ControlValue[E, D, V], y: ControlValue[E, D, V]): Boolean = (x, y) match {
       case (x: LazyValue[_, _, _], y: LazyValue[_, _, _]) => x.eq(y)
@@ -2211,6 +2222,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     def get[E, D <: Domain[E], V]: Hash[ControlValue[E, D, V]] = instance.asInstanceOf
 
+    // Private section ---------------------------------------------------------- //
     private lazy val instance: ControlValueHash[Any, Domain[Any], Any] = new ControlValueHash
   }
 
@@ -2224,6 +2236,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     def get[E, D <: Domain[E], V]: ValueOps[ControlValue[E, D, V]] = instance.asInstanceOf
 
+    // Private section ---------------------------------------------------------- //
     private lazy val instance: ControlValueOps[Any, Domain[Any], Any] = new ControlValueOps()
   }
 
@@ -2235,6 +2248,184 @@ object AbstractLazyTreapSegmentSeq { outer =>
         valueOps,
         ControlValueOps.get
       )
+  }
+
+  object InitialZValue {
+
+    /**
+     * Returns operator for zipped sequence that builds [[InitialZValue]].
+     */
+    def getOperator[E, D <: Domain[E], V]: (V, OptionalSeqSupplier.Type[E, D, V]) => InitialZValue[E, D, V] =
+      operator.asInstanceOf[(V, OptionalSeqSupplier.Type[E, D, V]) => InitialZValue[E, D, V]]
+
+    /**
+     * Builds [[ControlValue]] from [[InitialZValue]].
+     *
+     * @param stableBounds if `true` then both lower and upper bounds of segment are stable,
+     *                     i.e. they will not change after any subsequent computations of lazy values in sequence.
+     * @param initialZValue either eager or lazy value of segment (format is used for initialization of lazy sequence).
+     */
+    def mapToControlValue[E, D <: Domain[E], V](
+      stableBounds: Boolean,
+      initialZValue: InitialZValue[E, D, V]
+    ): ControlValue[E, D, V] =
+      initialZValue match {
+        case Left(_) => EagerValue.cons(stableBounds)
+        case Right(f) => LazyValue(f)
+      }
+
+    // Private section ---------------------------------------------------------- //
+    private lazy val operator: (Any, OptionalSeqSupplier.Type[Any, Domain[Any], Any]) => InitialZValue[Any, Domain[Any], Any] =
+      initOperator
+
+    private def initOperator[E, D <: Domain[E], V]: (V, OptionalSeqSupplier.Type[E, D, V]) => InitialZValue[E, D, V] =
+      (v, opt) => opt match {
+        case Some(f) => Right(f)
+        case _ => Left(v)
+      }
+  }
+
+  final class InitialZValueHash[E, D <: Domain[E], V](
+    val valueHash: Hash[V]
+  ) extends Hash[InitialZValue[E, D, V]] {
+
+    override def hash(x: InitialZValue[E, D, V]): Int = x match {
+      case Left(v) => product1Hash(valueHash.hash(v))
+      case Right(f) => product1Hash(System.identityHashCode(f))
+    }
+
+    override def eqv(x: InitialZValue[E, D, V], y: InitialZValue[E, D, V]): Boolean = (x, y) match {
+      case (Left(vx), Left(vy)) => valueHash.eqv(vx, vy)
+      case (Right(fx), Right(fy)) => fx.eq(fy)
+      case _ => false
+    }
+  }
+
+  object InitialZValueOps {
+
+    def get[E, D <: Domain[E], V](valueOps: ValueOps[V]): ValueOps[InitialZValue[E, D, V]] =
+      new ValueOps.DefaultImpl(
+        Left(valueOps.unit),
+        new InitialZValueHash(valueOps.valueHash),
+        InclusionPredicate.alwaysIncluded
+      )
+  }
+
+  object Builder {
+    
+    /**
+     * Creates lazy segment sequence using two input sequences:
+     * <tr>1. `baseSeq` - segment sequence with base values;</tr>
+     * <tr>2. `lazySeq` - segment sequence with optional lazy values.</tr>
+     * <tr></tr>
+     * <tr>
+     *   If segment of `lazySeq` has [[None]] value then corresponding segments of output sequence have the same
+     *   values as `baseSeq`.
+     * </tr>
+     * <tr>
+     *   If segment of `lazySeq` has [[Some]] value with a function F: `() => segmentSeqF`, then corresponding segments
+     *   of output sequence are lazy. Their values are completely defined by sequence `segmentSeqF` and corresponding
+     *   values of `baseSeq` are ignored.
+     * </tr>
+     * {{{
+     *
+     *         A             B              C
+     * X------------](-------------)[-------------X  `baseSeq`
+     *
+     *   None     Some(() => segmentSeqF)    None
+     * X------](-------------------------)[-------X  `lazySeq`
+     *
+     *   D        E         F           G       H
+     * X---](---------](---------)[----------](---X  `segmentSeqF`
+     *
+     *     A       E         F        G        C
+     * X------](------](---------)[------)[-------X  output sequence after
+     *                                               lazy value computation
+     * }}}
+     */
+    final def makeZippedSeqForInitialization[E, D <: Domain[E], V](
+      baseSeq: SegmentSeq[E, D, V],
+      lazySeq: InitialLazySeq[E, D, V]
+    )(
+      implicit
+      domainOps: DomainOps[E, D],
+      valueOps: ValueOps[V],
+      rngManager: RngManager
+    ): ZSegmentSeq[E, D, V] = {
+
+      // TODO provide separate implementation for case when `baseSeq` is lazy.
+      // TODO rewrite current implementation to exclude full traversing of `baseSeq`.
+
+      @tailrec
+      def buildBuffer(
+        stableLowerBound: Boolean,
+        segment: Segment[E, D, InitialZValue[E, D, V]],
+        buffer: List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]],
+        rng: UnsafeUniformRng
+      ): List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]] =
+        segment match {
+          case segment: Segment.WithNext[E, D, InitialZValue[E, D, V]] =>
+            val nextSegment = segment.moveNext
+            val stableBounds = stableLowerBound && nextSegment.value.isLeft
+            val controlValue = InitialZValue.mapToControlValue(stableBounds, segment.value)
+
+            // TODO provide different adjacent values
+            val newBuffer = BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
+              buffer, segment.upperBound, rng.nextInt(), controlValue
+            )(
+              domainOps.boundOrd
+            )
+            buildBuffer(controlValue.isEager, nextSegment, newBuffer, rng)
+
+          case _ => buffer
+        }
+
+      val initialZippedSeq = ZippedOrderedMap.apply(
+        baseSeq,
+        lazySeq,
+        InitialZValue.getOperator[E, D, V],
+        BooleanUtil.falsePredicate1,
+        BooleanUtil.falsePredicate1
+      )(
+        domainOps,
+        InitialZValueOps.get(valueOps),
+        rngManager
+      )
+
+      val rng = rngManager.newUnsafeUniformRng()
+
+      val buffer = buildBuffer(
+        stableLowerBound = true,
+        initialZippedSeq.firstSegment,
+        List.empty[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]],
+        rng
+      )
+      val lastSegment = initialZippedSeq.lastSegment
+      val stableBounds = !lastSegment.hasPrevSuchThat(_.value.isRight)
+      val lastValue = InitialZValue.mapToControlValue(stableBounds, lastSegment.value)
+      val root = BuildAsc.finalizeBuffer(buffer)
+
+      val controlSeq = TreapOrderedMap.unchecked(
+        root,
+        lastValue
+      )(
+        domainOps,
+        ControlValueOps.get,
+        rngManager
+      )
+
+      ZippedOrderedMap.apply(
+        TreapOrderedMap.getFactory.convertMap(baseSeq),
+        controlSeq,
+        Tuple2.apply,
+        BooleanUtil.falsePredicate1,
+        BooleanUtil.falsePredicate1
+      )(
+        domainOps,
+        ZValueOps.get(valueOps),
+        rngManager
+      )
+    }
   }
 
   /**

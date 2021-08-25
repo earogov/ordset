@@ -147,10 +147,7 @@ object SegmentSeqUtil {
   def getExtendedBoundValueIterableForSeq[E, D <: Domain[E], V](
     seq: SegmentSeq[E, D, V]
   ): Iterable[(ExtendedBound.Upper[E], V)] =
-    seq.firstSegment.forwardIterable.map {
-      case s: Segment.WithNext[E, D, V] => (s.upperBound, s.value)
-      case _ @ s => (ExtendedBound.AboveAll, s.value)
-    }
+    seq.firstSegment.forwardIterable.map(s => (s.upperExtended, s.value))
 
   /**
    * Returns tuple of segments of sequence `seq`:

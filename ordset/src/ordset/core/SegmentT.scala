@@ -1,6 +1,7 @@
 package ordset.core
 
-import ordset.core.domain._
+import ordset.core.domain.*
+import ordset.core.map.{LazyTreapOrderedMap, UniformOrderedMap, TreapOrderedMap}
 import ordset.util
 import ordset.util.label.Label
 import ordset.util.types.SingleValue
@@ -297,6 +298,17 @@ object SegmentT {
 
     // Transformation ----------------------------------------------------------- //
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other
+
+    override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val lazySeq = UniformOrderedMap.default(
+        Some(mapFunc)
+      )(
+        domainOps,
+        OptionalSeqSupplier.ValueOpsImpl.get,
+        rngManager
+      )
+      LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
+    }
   }
 
   object Single {
@@ -352,6 +364,20 @@ object SegmentT {
     
     // Transformation ----------------------------------------------------------- //
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(other)
+
+    override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List((upperBound, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
+        domainOps,
+        OptionalSeqSupplier.ValueOpsImpl.get
+      )(
+        SeqValidationPredicate.alwaysTrue,
+        SeqValidationPredicate.alwaysTrue
+      )(
+        rngManager
+      )
+      LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
+    }
   }
 
   object Initial {
@@ -408,6 +434,20 @@ object SegmentT {
     
     // Transformation ----------------------------------------------------------- //
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.append(other)
+
+    override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List((lowerBound.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc))),
+        domainOps,
+        OptionalSeqSupplier.ValueOpsImpl.get
+      )(
+        SeqValidationPredicate.alwaysTrue,
+        SeqValidationPredicate.alwaysTrue
+      )(
+        rngManager
+      )
+      LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
+    }
   }
 
   object Terminal {
@@ -466,6 +506,20 @@ object SegmentT {
 
     // Transformation ----------------------------------------------------------- //
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(movePrev.append(other))
+
+    override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List((lowerBound.flipLower, None), (upperBound, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
+        domainOps,
+        OptionalSeqSupplier.ValueOpsImpl.get
+      )(
+        SeqValidationPredicate.alwaysTrue,
+        SeqValidationPredicate.alwaysTrue
+      )(
+        rngManager
+      )
+      LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
+    }
   }
 
   object Inner {

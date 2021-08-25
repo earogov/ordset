@@ -8,6 +8,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
+import ordset.util.BooleanUtil
 import test.ordset.core.implementations.domain.BoundSelector
 
 
@@ -70,8 +71,8 @@ object LazyTreapSegmentSeq {
         ControlValueOps.get
       )(),
       Tuple2.apply,
-      _ => false,
-      _ => false
+      BooleanUtil.falsePredicate1,
+      BooleanUtil.falsePredicate1
     )(
       domainOps,
       ZValueOps.get(valueOps),

@@ -1,8 +1,9 @@
 package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
+import ordset.util.BooleanUtil
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.core.SegmentSeqAssertions._
+import test.ordset.core.SegmentSeqAssertions.*
 import test.ordset.core.samples.segmentSeq.SegmentSeqSample
 
 trait InspectionBehaviors[E, D <: Domain[E], V] {
@@ -40,7 +41,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg has next segment ${seg.moveNext}"
             )
             assert(
-              !seg.hasNextSuchThat(_ => false),
+              !seg.hasNextSuchThat(BooleanUtil.falsePredicate1),
               s"expected $seg doesn't have next segment that satisfies predicate (_) => false"
             )
             assert(
@@ -48,7 +49,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg has previous segment ${seg.movePrev}"
             )
             assert(
-              !seg.hasPrevSuchThat(_ => false),
+              !seg.hasPrevSuchThat(BooleanUtil.falsePredicate1),
               s"expected $seg doesn't have previous segment that satisfies predicate (_) => false"
             )
 
@@ -114,11 +115,11 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg has next segment ${seg.moveNext}"
             )
             assert(
-              !seg.hasNextSuchThat(_ => false),
+              !seg.hasNextSuchThat(BooleanUtil.falsePredicate1),
               s"expected $seg doesn't have next segment that satisfies predicate (_) => false"
             )
             assert(
-              !seg.hasPrevSuchThat(_ => true),
+              !seg.hasPrevSuchThat(BooleanUtil.truePredicate1),
               s"expected $seg doesn't have previous segment that satisfies predicate (_) => true"
             )
 
@@ -161,7 +162,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             assert(!seg.isInitial, s"expected $seg is not initial segment")
 
             assert(
-              !seg.hasNextSuchThat(_ => true),
+              !seg.hasNextSuchThat(BooleanUtil.truePredicate1),
               s"expected $seg doesn't have next segment that satisfies predicate (_) => true"
             )
             assert(
@@ -169,7 +170,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s"expected $seg has previous segment ${seg.movePrev}"
             )
             assert(
-              !seg.hasPrevSuchThat(_ => false),
+              !seg.hasPrevSuchThat(BooleanUtil.falsePredicate1),
               s"expected $seg doesn't have previous segment that satisfies predicate (_) => false"
             )
 
@@ -210,11 +211,11 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             assert(!seg.isInner, s"expected $seg is not inner segment")
 
             assert(
-              !seg.hasNextSuchThat(_ => true),
+              !seg.hasNextSuchThat(BooleanUtil.truePredicate1),
               s"expected $seg doesn't have next segment that satisfies predicate (_) => true"
             )
             assert(
-              !seg.hasPrevSuchThat(_ => true),
+              !seg.hasPrevSuchThat(BooleanUtil.truePredicate1),
               s"expected $seg doesn't have previous segment that satisfies predicate (_) => true"
             )
 

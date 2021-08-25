@@ -28,9 +28,12 @@ class UniformOrderedMap[E, D <: Domain[E], V] protected (
       this
     else
       mapFactory.unsafeBuildAsc(
-        List((bound.provideUpper, firstValue), (ExtendedBound.AboveAll, value)), domainOps, valueOps
+        List((bound.provideUpper, firstValue), (ExtendedBound.AboveAll, value)), 
+        domainOps, 
+        valueOps
       )(
-        SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
+        SeqValidationPredicate.alwaysTrue, 
+        SeqValidationPredicate.alwaysTrue
       )(
         rngManager
       )
@@ -40,9 +43,12 @@ class UniformOrderedMap[E, D <: Domain[E], V] protected (
       this
     else
       mapFactory.unsafeBuildAsc(
-        List((bound.provideUpper, value), (ExtendedBound.AboveAll, lastValue)), domainOps, valueOps
+        List((bound.provideUpper, value), (ExtendedBound.AboveAll, lastValue)), 
+        domainOps, 
+        valueOps
       )(
-        SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
+        SeqValidationPredicate.alwaysTrue, 
+        SeqValidationPredicate.alwaysTrue
       )(
         rngManager
       )
