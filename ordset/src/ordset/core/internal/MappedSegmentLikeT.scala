@@ -1,6 +1,6 @@
 package ordset.core.internal
 
-import ordset.core.{Bound, Interval, IntervalRelation, SegmentLikeT, SegmentT, SegmentTruncationT}
+import ordset.core.{Bound, Interval, IntervalRelation, SegmentLikeT, SegmentT, Segment, SegmentTruncationT}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 
@@ -20,7 +20,7 @@ protected[ordset] trait MappedSegmentLikeT[E, D <: Domain[E], U, V, S1, +S2]
   extends SegmentLikeT[E, D, V, S2]  {
 
   // Inspection --------------------------------------------------------------- //
-  override lazy val value: V = mapFunc(original.value)
+  override lazy val value: V = segmentMapFunc(original)
 
   override def self: SegmentT[E, D, V, S2] with MappedSegmentLikeT[E, D, U, V, S1, S2] with S2
 
@@ -31,7 +31,7 @@ protected[ordset] trait MappedSegmentLikeT[E, D <: Domain[E], U, V, S1, +S2]
   protected def original: SegmentT[E, D, U, S1]
 
   /**
-   * Function to map segment value.
+   * Function to map segment.
    */
-  protected def mapFunc: U => V
+  protected def segmentMapFunc: Segment[E, D, U] => V
 }

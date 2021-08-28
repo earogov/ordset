@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.core.AbstractIndexedSegmentSeq.IndexedSegment
 import ordset.core.domain.Domain
+import ordset.core.map.LazyTreapOrderedMap
 
 abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[E, D, V, S] {
 
@@ -109,4 +110,23 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
       case ExtendedBound.BelowAll => other
       case ExtendedBound.AboveAll => this
     }
+
+  /**
+   * Implementation of [[SegmentSeqT.patchLazy]].
+   *
+   * Current sequence is used as a base sequence of [[LazyTreapOrderedMap]].
+   * Note, this may cause immediate conversion of current sequence into treap based one.
+   */
+  def patchLazyBaseSeqInternal(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    LazyTreapOrderedMap.apply(this, lazySeq)(domainOps, valueOps, rngManager)
+
+  /**
+   * Implementation of [[SegmentSeqT.patchLazy]].
+   *
+   * Segments of `lazySeq` that has [[None]] value are replaced with function `() => this`. Then new version of
+   * `lazySeq` is used to create [[LazyTreapOrderedMap]]. The result sequence will have completely lazy initial
+   * state. So conversion of current sequence into treap based will take place on demand (but with some overhead
+   * compared to [[patchLazyBaseSeqInternal]]).
+   */
+  def patchLazyFlatmapInternal(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] = ???
 }

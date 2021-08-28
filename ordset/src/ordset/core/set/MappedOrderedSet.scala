@@ -8,7 +8,7 @@ import ordset.util.BooleanUtil
 
 class MappedOrderedSet[E, D <: Domain[E], S] protected (
   override final val originalSeq: OrderedSetT[E, D, S],
-  final val mapFunc: Boolean => Boolean
+  override final val segmentMapFunc: SetSegment[E, D] => Boolean
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
@@ -22,36 +22,18 @@ class MappedOrderedSet[E, D <: Domain[E], S] protected (
 
   @inline
   protected final override def cons(original: OrderedSet[E, D]): OrderedSet[E, D] =
-    new MappedOrderedSet(original, mapFunc)
+    new MappedOrderedSet(original, segmentMapFunc)
 }
 
 object MappedOrderedSet {
 
   def apply[E, D <: Domain[E], S](
     original: OrderedSetT[E, D, S],
-    mapFunc: Boolean => Boolean
+    segmentMapFunc: SetSegment[E, D] => Boolean
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): MappedOrderedSet[E, D, S] =
-    new MappedOrderedSet(original, mapFunc)
-
-  def identity[E, D <: Domain[E], S](
-    original: OrderedSetT[E, D, S]
-  )(
-    implicit
-    domainOps: DomainOps[E, D],
-    rngManager: RngManager
-  ): MappedOrderedSet[E, D, S] =
-    new MappedOrderedSet(original, BooleanUtil.identityOperator1)
-
-  def inversion[E, D <: Domain[E], S](
-    original: OrderedSetT[E, D, S]
-  )(
-    implicit
-    domainOps: DomainOps[E, D],
-    rngManager: RngManager
-  ): MappedOrderedSet[E, D, S] =
-    new MappedOrderedSet(original, BooleanUtil.inversionOperator1)
+    new MappedOrderedSet(original, segmentMapFunc)
 }

@@ -65,18 +65,9 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
   )(
     implicit rngManager: RngManager
   ): SSeq
-
-  /**
-   * Converts specified `set` into ordered set of type `SSeq`.
-   */
-  // Note
-  // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
-  // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
-  // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertSetInternal`.
-  def convertSet(set: OrderedSet[E, D]): SSeq
   
   /**
-   * Same as [[unsafeBuildAsc]] but wraps result with [[Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuildAsc]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildAsc]] preconditions.
    */
@@ -90,6 +81,68 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
     implicit rngManager: RngManager
   ): Try[SSeq] =
     Try.apply(unsafeBuildAsc(bounds, complementary, domainOps)(boundsValidation)(rngManager))
+
+  /**
+   * Returns uniform ordered set with specified `value`.
+   */
+  def buildUniform(
+    value: Boolean,
+    domainOps: DomainOps[E, D]
+  )(
+    implicit rngManager: RngManager
+  ): SSeq =
+    unsafeBuildAsc(
+      List(), value, domainOps
+    )(
+      SeqValidationPredicate.alwaysTrue
+    )(
+      rngManager
+    )
+
+  /**
+   * Returns ordered set with single bound with value equals to `complementary` below it and !`complementary` above.
+   * {{{
+   *
+   *   complementary  !complementary
+   *   X------------](-------------X
+   *              bound
+   * }}}
+   */
+  def unsafeBuildSingleBounded(
+    bound: Bound.Upper[E],
+    complementary: Boolean,
+    domainOps: DomainOps[E, D]
+  )(
+    implicit rngManager: RngManager
+  ): SSeq =
+    unsafeBuildAsc(
+      List(bound), complementary, domainOps
+    )(
+      SeqValidationPredicate.alwaysTrue
+    )(
+      rngManager
+    )
+
+  /**
+   * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
+   */
+  def tryBuildSingleBounded(
+    bound: Bound.Upper[E],
+    complementary: Boolean,
+    domainOps: DomainOps[E, D]
+  )(
+    implicit rngManager: RngManager
+  ): Try[SSeq] =
+    Try.apply(unsafeBuildSingleBounded(bound, complementary, domainOps)(rngManager))
+
+  /**
+   * Converts specified `set` into ordered set of type `SSeq`.
+   */
+  // Note
+  // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
+  // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
+  // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertSetInternal`.
+  def convertSet(set: OrderedSet[E, D]): SSeq
 
   /**
    * Get factory with provided parameters (see [[unsafeBuildAsc]] for parameters description).

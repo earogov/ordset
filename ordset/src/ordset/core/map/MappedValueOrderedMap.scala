@@ -3,18 +3,18 @@ package ordset.core.map
 import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractMappedSegmentSeq, SegmentSeq, SegmentT, Segment}
+import ordset.core.{AbstractMappedValueSegmentSeq, SegmentSeq}
 import ordset.random.RngManager
 
-class MappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
+class MappedValueOrderedMap[E, D <: Domain[E], U, V, S] protected (
   override final val originalSeq: OrderedMapT[E, D, U, S],
-  override final val segmentMapFunc: Segment[E, D, U] => V
+  override final val valueMapFunc: U => V
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
   final override val valueOps: ValueOps[V],
   final override val rngManager: RngManager
-) extends AbstractMappedSegmentSeq[E, D, U, V, S]
+) extends AbstractMappedValueSegmentSeq[E, D, U, V, S]
   with OrderedMapCommons[E, D, V, MappedSegmentBase[E, D, U, V, S]] {
 
   // Protected section -------------------------------------------------------- //
@@ -23,20 +23,23 @@ class MappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
 
   @inline
   protected final override def cons(original: SegmentSeq[E, D, U]): SegmentSeq[E, D, V] =
-    new MappedOrderedMap(original, segmentMapFunc)
+    new MappedValueOrderedMap(original, valueMapFunc)
 }
 
-object MappedOrderedMap {
+object MappedValueOrderedMap {
 
   def apply[E, D <: Domain[E], U, V, S](
     originalSeq: OrderedMapT[E, D, U, S],
-    segmentMapFunc: Segment[E, D, U] => V
+    valueMapFunc: U => V
   )(
     implicit
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): MappedOrderedMap[E, D, U, V, S] =
-    new MappedOrderedMap(originalSeq, segmentMapFunc)
+  ): MappedValueOrderedMap[E, D, U, V, S] =
+    new MappedValueOrderedMap(originalSeq, valueMapFunc)
 }
+
+
+
 

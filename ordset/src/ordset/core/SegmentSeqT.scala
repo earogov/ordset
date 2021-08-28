@@ -692,8 +692,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *     A       E         F        G        C    - values
    * }}}
    */
-  def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
-    LazyTreapOrderedMap.apply(this, lazySeq)(domainOps, valueOps, rngManager)
+  def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V]
 
   /**
    * Returns lazy segment sequence which is equivalent to one received by applying [[SegmentLikeT.flatMap]] to
@@ -769,4 +768,10 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
       rngManager
     )
   }
+  
+  def map[U](
+    mapFunc: Segment[E, D, V] => Segment[E, D, U]
+  )(
+    implicit valueOps: ValueOps[U]
+  ): SegmentSeq[E, D, U] = ???
 }

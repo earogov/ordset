@@ -3,7 +3,7 @@ package ordset.core
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.NonuniformTreapOrderedSet
-import AbstractUniformSegmentSeq._
+import AbstractUniformSegmentSeq.*
 
 // TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
@@ -92,6 +92,9 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.appendAboveExtended(bound, other)
 
+  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    patchLazyBaseSeqInternal(lazySeq)
+  
   // Protected section -------------------------------------------------------- //
   /** Single segment instance. */
   protected val segment: UniformSingleSegment[E, D, V] = UniformSingleSegment(this)

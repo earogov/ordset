@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.core.AbstractIndexedSegmentSeq._
+import ordset.core.AbstractIndexedSegmentSeq.*
 import ordset.core.SegmentT.{Initial, Inner, Terminal}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
@@ -126,8 +126,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
   final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = 
     super.sliceAtExtended(bound)
-
-  // Transformation ----------------------------------------------------------- //
+  
   final override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = secondSegment
     prependInternal(segment.lowerBound, segment, other)
@@ -149,6 +148,9 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.appendAboveExtended(bound, other)
+
+  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    patchLazyFlatmapInternal(lazySeq)
   
   // Protected section -------------------------------------------------------- //
   /**

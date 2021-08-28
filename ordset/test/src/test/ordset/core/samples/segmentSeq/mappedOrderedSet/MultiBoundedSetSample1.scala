@@ -24,14 +24,23 @@ class MultiBoundedSetSample1[D <: Domain[Int]](
   override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
   override val originalSeq: OrderedSet[Int, D] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(
-      bounds, !complementary, domainOps
-    )(
-      domainOps.boundOrd.strictValidation
-    )(
-      rngManager
+    ArrayOrderedSet.unchecked(
+      ArraySeq(-10`)[`, 0`)[`, 10`)[`, 12`)[`, 15`](`, 20`)[`, 22`)[`, 30`)[`, 40`)[`),
+      false
     )
-
-  override val sequence: MappedSegmentSeq[Int, D, Boolean, Boolean, Any] =
-    MappedOrderedSet.inversion(originalSeq)
+  
+  // sequence:
+  // 
+  //       false        true            false               true       false   true 
+  // X--------------)[-------)[----------------------)[-------------)[------)[------X
+  //                0        10                      20             30      40
+  // originalSeq:
+  //
+  //   false   true    false    true    false   true   false   true   false    true
+  // X------)[------)[-------)[------)[------](------)[-----)[------)[------)[------X
+  //       -10      0        10      12      15      20     22      30      40
+  override val sequence: MappedSegmentSeq[Int, D, Boolean, Boolean, Any] = {
+    val originalArraySeq = ArrayOrderedSet.unchecked[Int, D](ArraySeq.from(bounds), complementary)
+    MappedOrderedSet.apply(originalSeq, s => originalArraySeq.getValueForExtended(s.upperExtended))
+  }
 }

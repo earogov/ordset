@@ -3,8 +3,7 @@ package ordset.core
 import ordset.core.domain.Domain
 import ordset.core.internal.SegmentSeqExceptionUtil.*
 import ordset.core.internal.{MappedSegmentLikeT, MappedSegmentT}
-
-import AbstractMappedSegmentSeq.*
+import AbstractMappedSegmentSeq._
 
 /**
  * {{{
@@ -24,8 +23,8 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
   /** Original sequence to which mapping is applied. */
   val originalSeq: SegmentSeqT[E, D, U, S]
 
-  /** Mapping function for segment value. */
-  val mapFunc: U => V
+  /** Mapping function for segment. */
+  val segmentMapFunc: Segment[E, D, U] => V
 
   final override def isEmpty: Boolean = isUniform && !isValueIncluded(firstSegmentInstance.value)
 
@@ -59,11 +58,14 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
   final override def getSegmentForElement(element: E): MappedSegment[E, D, U, V, S] =
     super.getSegmentForElement(element)
 
-  final override def getValueForBound(bound: Bound[E]): V = mapFunc(originalSeq.getValueForBound(bound))
+  override def getValueForBound(bound: Bound[E]): V =
+    segmentMapFunc(originalSeq.getSegmentForBound(bound))
 
-  final override def getValueForExtended(bound: ExtendedBound[E]): V = mapFunc(originalSeq.getValueForExtended(bound))
+  override def getValueForExtended(bound: ExtendedBound[E]): V =
+    segmentMapFunc(originalSeq.getSegmentForExtended(bound))
 
-  final override def getValueForElement(element: E): V = mapFunc(originalSeq.getValueForElement(element))
+  override def getValueForElement(element: E): V =
+    segmentMapFunc(originalSeq.getSegmentForElement(element))
 
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] = ???
@@ -90,6 +92,9 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
+  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    patchLazyFlatmapInternal(lazySeq)
+
   // Protected section -------------------------------------------------------- //
   /**
    * Returns `true` if segment with given value is considered to be included in set.
@@ -104,18 +109,12 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
   protected def cons(original: SegmentSeq[E, D, U]): SegmentSeq[E, D, V]
 
   protected override def consUniform(value: V): SegmentSeq[E, D, V]
-  
+
   /**
    * First segment of sequence. It's either initial ot single.
    */
   protected final lazy val firstSegmentInstance: MappedFirstSegment[E, D, U, V, S] =
     searchFrontMapper(frontMapperFirst, originalSeq.firstSegment)
-
-  /**
-   * @return value of mapped segment for specified `original` segment.
-   */
-  @inline
-  protected final def getSegmentValue(original: SegmentT[E, D, U, S]): V = mapFunc(original.value)
 
   /**
    * Preconditions:
@@ -259,12 +258,12 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     else {
       var run = true
       var currOriginal = original
-      var currValue: V = getSegmentValue(original)
+      var currValue: V = segmentMapFunc(original)
       while (run) {
         currOriginal match {
           case s: SegmentT.WithNext[E, D, U, S] =>
             val nextOriginal = s.moveNext
-            val nextValue = getSegmentValue(nextOriginal)
+            val nextValue = segmentMapFunc(nextOriginal)
             run = valueOps.eqv(currValue, nextValue)
             if (run) {
               currOriginal = nextOriginal
@@ -305,12 +304,12 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     else {
       var run = true
       var currOriginal = original
-      var currValue: V = getSegmentValue(original)
+      var currValue: V = segmentMapFunc(original)
       while (run) {
         currOriginal match {
           case s: SegmentT.WithPrev[E, D, U, S] =>
             val prevOriginal = s.movePrev
-            val prevValue = getSegmentValue(prevOriginal)
+            val prevValue = segmentMapFunc(prevOriginal)
             run = valueOps.eqv(currValue, prevValue)
             if (run) {
               currOriginal = prevOriginal
@@ -420,13 +419,11 @@ object AbstractMappedSegmentSeq {
     extends MappedSegmentLikeT[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]] {
 
     // Inspection --------------------------------------------------------------- //
-    override lazy val value: V = sequence.getSegmentValue(original)
-
     override def sequence: MappedSegmentSeq[E, D, U, V, S]
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
 
-    override def mapFunc: U => V = sequence.mapFunc
+    override def segmentMapFunc: Segment[E, D, U] => V = sequence.segmentMapFunc
 
     /**
      * @return `true` if this segment maps input `segment`.

@@ -2,7 +2,7 @@ package test.ordset.core.samples.segmentSeq.mappedOrderedSet
 
 import ordset.core.MappedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.{MappedOrderedSet, OrderedSet, UniformOrderedSet}
+import ordset.core.set.{MappedValueOrderedSet, OrderedSet, UniformOrderedSet}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
@@ -27,6 +27,13 @@ class UniversalSetSample1[D <: Domain[Int]](
   override val originalSeq: OrderedSet[Int, D] =
     UniformOrderedSet.defaultEmpty
 
+  // sequence:
+  //                     true
+  // X---------------------------------------------X
+  //
+  // originalSeq:
+  //                     false
+  // X---------------------------------------------X
   override val sequence: MappedSegmentSeq[Int, D, Boolean, Boolean, Any] =
-    MappedOrderedSet.inversion(originalSeq)
+    MappedValueOrderedSet.inversion(originalSeq)
 }

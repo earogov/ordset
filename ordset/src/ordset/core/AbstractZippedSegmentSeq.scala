@@ -2,8 +2,8 @@ package ordset.core
 
 import ordset.core.value.ValueOps
 import ordset.core.domain.{AscOrder, Domain, DomainOps}
-import ordset.core.internal.SegmentSeqExceptionUtil._
-import AbstractZippedSegmentSeq._
+import ordset.core.internal.SegmentSeqExceptionUtil.*
+import AbstractZippedSegmentSeq.*
 
 // TODO: class description.
 abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
@@ -104,6 +104,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     super.sliceAtExtended(bound)
 
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    // firstSegmentInstance.flatMap(() => other)
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
@@ -116,6 +117,9 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.appendAboveExtended(bound, other)
+
+  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    patchLazyFlatmapInternal(lazySeq)
 
   // Protected section -------------------------------------------------------- //
   protected override def isValueIncluded(value: V): Boolean

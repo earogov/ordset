@@ -187,6 +187,9 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.appendAboveExtended(bound, other)
 
+  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    patchLazyBaseSeqInternal(lazySeq)
+
   // Protected section -------------------------------------------------------- //
   /**
    * Zipped sequence which joins `baseSeq` and `controlSeq`.
@@ -2481,7 +2484,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     // Protected section -------------------------------------------------------- //
     override protected def original: Stable.ZSegment[E, D, V]
 
-    final override protected val mapFunc: ZValue[E, D, V] => V = t => t._1
+    final override protected val segmentMapFunc: Segment[E, D, ZValue[E, D, V]] => V = s => s.value._1
   }
 
   object LazySegmentBase {

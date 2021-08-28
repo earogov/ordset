@@ -10,7 +10,7 @@ import ordset.tree.treap.immutable.transform.TreeSplit.{splitLeftFunc, splitRigh
 import ordset.tree.treap.immutable.transform.{BuildAsc, BuildDesc, SplitOutput, TreeMerge, TreeSplit}
 import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDownward, NodeUpward}
 import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitContext}
-import AbstractTreapSegmentSeq._
+import AbstractTreapSegmentSeq.*
 import ordset.core.util.TreapSegmentSeqUtil
 
 // TODO: class description.
@@ -193,6 +193,9 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.appendAboveExtended(bound, other)
+
+  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
+    patchLazyBaseSeqInternal(lazySeq)
   
   // Protected section -------------------------------------------------------- //
   protected override def isValueIncluded(value: V): Boolean

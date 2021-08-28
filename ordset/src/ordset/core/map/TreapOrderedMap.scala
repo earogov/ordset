@@ -38,7 +38,7 @@ object TreapOrderedMap {
       case root: ImmutableTreap.Node[Bound.Upper[E], V] => NonuniformTreapOrderedMap.unchecked(root, lastValue)
       case _ => UniformOrderedMap.apply(lastValue, getFactory)
     }
-
+  
   /**
    * Returns ordered set factory.
    */

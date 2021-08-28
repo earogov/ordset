@@ -30,6 +30,15 @@ class EmptySetSample1[D <: Domain[Int]](
       complementary = true
     )
 
+  // sequence:
+  //                     false
+  // X---------------------------------------------X
+  //
+  // originalSeq:
+  //
+  //   true    false   true    false   true  false
+  // X------](------)[------)[------)[-----)[------X
+  //        0       10      20      30     40    
   override val sequence: MappedSegmentSeq[Int, D, Boolean, Boolean, Any] =
     MappedOrderedSet.apply(originalSeq, BooleanUtil.falsePredicate1)
 }

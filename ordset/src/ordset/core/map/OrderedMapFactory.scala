@@ -4,7 +4,7 @@ import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.util.SegmentSeqUtil
 import ordset.core.value.ValueOps
-import ordset.core.{ExtendedBound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.{ExtendedBound, Bound, SegmentSeqException, SeqValidationPredicate}
 import ordset.random.RngManager
 
 import scala.util.Try
@@ -76,18 +76,9 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
   )(
     implicit rngManager: RngManager
   ): SSeq
-
-  /**
-   * Converts specified `map` into ordered map of type `SSeq`.
-   */
-  // Note
-  // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
-  // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
-  // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertMapInternal`.
-  def convertMap(map: OrderedMap[E, D, V]): SSeq
   
   /**
-   * Same as [[unsafeBuildAsc]] but wraps result with [[Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuildAsc]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildAsc]] preconditions.
    */
@@ -102,8 +93,84 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
     implicit rngManager: RngManager
   ): Try[SSeq] =
     Try.apply(unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidation, valuesValidation)(rngManager))
-  
-  
+
+  /**
+   * Returns uniform ordered map with specified `value`.
+   */
+  def buildUniform(
+    value: V,
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V]
+  )(
+    implicit rngManager: RngManager
+  ): SSeq =
+    unsafeBuildAsc(
+      List((ExtendedBound.AboveAll, value)), domainOps, valueOps
+    )(
+      SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
+    )(
+      rngManager
+    )
+
+  /**
+   * Returns ordered map with single bound with `value1` below it and `value2` above.
+   * {{{
+   * 
+   *       value1         value2
+   *   X------------](-------------X
+   *              bound
+   * }}}
+   * 
+   * Precondition 4 of [[unsafeBuildAsc]] must be provided. It is controlled by `valuesValidation` function
+   * which throws [[SegmentSeqException]] in case of failure
+   */
+  @throws[SegmentSeqException]("if preconditions are violated")
+  def unsafeBuildSingleBounded(
+    bound: Bound.Upper[E],
+    value1: V,
+    value2: V,
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V]
+  )(
+    valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
+  )(
+    implicit rngManager: RngManager
+  ): SSeq =
+    unsafeBuildAsc(
+      List((bound, value1), (ExtendedBound.AboveAll, value2)), domainOps, valueOps
+    )(
+      SeqValidationPredicate.alwaysTrue, valuesValidation
+    )(
+      rngManager
+    )
+
+  /**
+   * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
+   *
+   * Note [[unsafeBuildSingleBounded]] preconditions.
+   */
+  def tryBuildSingleBounded(
+    bound: Bound.Upper[E],
+    value1: V,
+    value2: V,
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V]
+  )(
+    valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
+  )(
+    implicit rngManager: RngManager
+  ): Try[SSeq] =
+    Try.apply(unsafeBuildSingleBounded(bound, value1, value2, domainOps, valueOps)(valuesValidation)(rngManager))
+    
+  /**
+   * Converts specified `map` into ordered map of type `SSeq`.
+   */
+  // Note
+  // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
+  // isn't required, because we can't pattern match to type `SSeq`. So method is left abstract to be implemented
+  // in concrete classes with known type `SSeq`. Generic implementation is provided in method `convertMapInternal`.
+  def convertMap(map: OrderedMap[E, D, V]): SSeq
+
   /**
    * Get factory with provided parameters (see [[unsafeBuildAsc]] for parameters description).
    */
