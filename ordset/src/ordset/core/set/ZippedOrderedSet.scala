@@ -4,6 +4,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.AbstractZippedSegmentSeq
 import ordset.core.AbstractZippedSegmentSeq.ZippedSegmentBase
 import ordset.random.RngManager
+import ordset.util.BooleanUtil
 
 class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
   override final val firstSeq: OrderedSetT[E, D, S1],
@@ -58,7 +59,7 @@ object ZippedOrderedSet {
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): ZippedOrderedSet[E, D, S1, S2] =
-    new ZippedOrderedSet(first, second, _ || _, x => x)
+    new ZippedOrderedSet(first, second, BooleanUtil.orOperator2, BooleanUtil.identityOperator1)
 
   def intersection[E, D <: Domain[E], S1, S2](
     first: OrderedSetT[E, D, S1],
@@ -68,5 +69,5 @@ object ZippedOrderedSet {
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): ZippedOrderedSet[E, D, S1, S2] =
-    new ZippedOrderedSet(first, second, _ && _, !_)
+    new ZippedOrderedSet(first, second, BooleanUtil.andOperator2, BooleanUtil.inversionOperator1)
 }

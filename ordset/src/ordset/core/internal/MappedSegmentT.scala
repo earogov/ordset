@@ -8,22 +8,14 @@ protected[ordset] object MappedSegmentT {
   /**
    * Segment which has next segment. May be [[Initial]] or [[Inner]].
    *
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait WithNext[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.WithNext[E, D, V, S2]
       with MappedSegmentLikeT[E, D, U, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
-    override def upperBound: Bound.Upper[E] = original.upperBound
-
     override def self: MappedSegmentT.WithNext[E, D, U, V, S1, S2] with S2
-
-    // Navigation --------------------------------------------------------------- //
-    override def moveNext: SegmentT.WithPrev[E, D, V, S2] with S2 = {
-      val nextOriginal = original.moveNext
-      consWithPrev(nextOriginal.truncation(nextOriginal.lowerBound))
-    }
 
     // Protected section -------------------------------------------------------- //
     protected override def original: SegmentT.WithNext[E, D, U, S1]
@@ -32,22 +24,14 @@ protected[ordset] object MappedSegmentT {
   /**
    * Segment which has previous segment. May be [[Terminal]] or [[Inner]].
    *
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait WithPrev[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.WithPrev[E, D, V, S2]
       with MappedSegmentLikeT[E, D, U, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
-    override def lowerBound: Bound.Lower[E] = original.lowerBound
-
     override def self: MappedSegmentT.WithPrev[E, D, U, V, S1, S2] with S2
-
-    // Navigation --------------------------------------------------------------- //
-    override def movePrev: SegmentT.WithNext[E, D, V, S2] with S2 = {
-      val prevOriginal = original.movePrev
-      consWithNext(prevOriginal.truncation(prevOriginal.upperBound))
-    }
 
     // Protected section -------------------------------------------------------- //
     protected override def original: SegmentT.WithPrev[E, D, U, S1]
@@ -57,7 +41,7 @@ protected[ordset] object MappedSegmentT {
   /**
    * First segment of sequence. Doesn't have previous segment. May be [[Single]] or [[Initial]].
    *
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait First[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.First[E, D, V, S2]
@@ -65,9 +49,6 @@ protected[ordset] object MappedSegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentT.First[E, D, U, V, S1, S2] with S2
-
-    // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.First[E, D, U, S1]
   }
 
   /**
@@ -81,9 +62,6 @@ protected[ordset] object MappedSegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentT.Last[E, D, U, V, S1, S2] with S2
-
-    // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.Last[E, D, U, S1]
   }
 
   /**
@@ -91,7 +69,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>- doesn't have next segment;     </tr>
    * <tr>- doesn't have previous segment. </tr>
    * <tr>                                 </tr>
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait Single[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.Single[E, D, V, S2]
@@ -100,9 +78,6 @@ protected[ordset] object MappedSegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentT.Single[E, D, U, V, S1, S2] with S2
-
-    // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.Single[E, D, U, S1]
   }
 
   /**
@@ -110,7 +85,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>- doesn't have previous segment; </tr>
    * <tr>- always has next segment.       </tr>
    * <tr>                                 </tr>
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait Initial[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.Initial[E, D, V, S2]
@@ -119,9 +94,6 @@ protected[ordset] object MappedSegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentT.Initial[E, D, U, V, S1, S2] with S2
-
-    // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.Initial[E, D, U, S1]
   }
 
   /**
@@ -129,7 +101,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>- doesn't have next segment;   </tr>
    * <tr>- always has previous segment. </tr>
    * <tr>                               </tr>
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait Terminal[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.Terminal[E, D, V, S2]
@@ -138,9 +110,6 @@ protected[ordset] object MappedSegmentT {
 
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentT.Terminal[E, D, U, V, S1, S2] with S2
-
-    // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.Terminal[E, D, U, S1]
   }
 
   /**
@@ -148,7 +117,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>- always has next segment;     </tr>
    * <tr>- always has previous segment. </tr>
    * <tr>                               </tr>
-   * @see [[Segment]]
+   * @see [[MappedSegmentLikeT]]
    */
   trait Inner[E, D <: Domain[E], U, V, S1, +S2]
     extends SegmentT.Inner[E, D, V, S2]
@@ -159,6 +128,6 @@ protected[ordset] object MappedSegmentT {
     override def self: MappedSegmentT.Inner[E, D, U, V, S1, S2] with S2
 
     // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.Inner[E, D, U, S1]
+    protected override def original: SegmentT.WithNext[E, D, U, S1] & SegmentT.WithPrev[E, D, U, S1]
   }
 }

@@ -74,7 +74,7 @@ import scala.annotation.tailrec
  *
  * <h3>Output lazy sequence</h3>
  *
- * External api of class is represented by lazy segments that wrap zipped segments. The basic rule is that:
+ * External api of the class is represented by lazy segments that wrap zipped segments. The basic rule is following:
  * <tr><u>only stable segments are exposed outside.</u></tr>
  * <tr></tr>
  * Lazy and eager unstable segments are transformed into stable one on demand. In that case:
@@ -97,7 +97,7 @@ import scala.annotation.tailrec
  * {{{
  *               ?         u         u
  *          X--------](--------](---------
- *              -      /   A        A   \
+ *                     /   A        A   \
  *     unstable adjacent               segment is unstable
  *       segment with
  *      the same value
@@ -2482,15 +2482,6 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override protected def original: Stable.ZSegment[E, D, V]
 
     final override protected val mapFunc: ZValue[E, D, V] => V = t => t._1
-
-    final override protected def cons(truncation: ZTruncation[E, D, V]): LazySegment[E, D, V] =
-      sequence.makeSegment(truncation)
-
-    final override protected def consWithNext(truncation: ZTruncationWithNext[E, D, V]): LazySegmentWithNext[E, D, V] =
-      sequence.makeSegmentWithNext(truncation)
-
-    final override protected def consWithPrev(truncation: ZTruncationWithPrev[E, D, V]): LazySegmentWithPrev[E, D, V] =
-      sequence.makeSegmentWithPrev(truncation)
   }
 
   object LazySegmentBase {
@@ -2526,10 +2517,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     // Inspection --------------------------------------------------------------- //
     override def self: LazySegmentWithNext[E, D, V]
 
+    override def upperBound: Bound.Upper[E] = original.upperBound
+
     // Navigation --------------------------------------------------------------- //
     override def moveNext: LazySegmentWithPrev[E, D, V] = {
       val nextSegment = original.moveNext
-      sequence.makeSegmentWithPrev(nextSegment.truncation(nextSegment.lowerBound))
+      sequence.makeSegmentWithPrev(nextSegment.lowerTruncation)
     }
 
     // Transformation ----------------------------------------------------------- //
@@ -2550,10 +2543,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     // Inspection --------------------------------------------------------------- //
     override def self: LazySegmentWithPrev[E, D, V]
 
+    override def lowerBound: Bound.Lower[E] = original.lowerBound
+
     // Navigation --------------------------------------------------------------- //
     override def movePrev: LazySegmentWithNext[E, D, V] = {
       val prevSegment = original.movePrev
-      sequence.makeSegmentWithNext(prevSegment.truncation(prevSegment.upperBound))
+      sequence.makeSegmentWithNext(prevSegment.upperTruncation)
     }
 
     // Transformation ----------------------------------------------------------- //

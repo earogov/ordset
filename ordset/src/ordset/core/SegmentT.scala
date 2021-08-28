@@ -150,7 +150,7 @@ object SegmentT {
   /**
    * Segment which has next segment. May be [[Initial]] or [[Inner]].
    *
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait WithNext[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
 
@@ -182,7 +182,7 @@ object SegmentT {
   /**
    * Segment which has previous segment. May be [[Terminal]] or [[Inner]].
    *
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait WithPrev[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
 
@@ -214,7 +214,7 @@ object SegmentT {
   /**
    * First segment of sequence. Doesn't have previous segment. May be [[Single]] or [[Initial]].
    *
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait First[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
 
@@ -239,7 +239,7 @@ object SegmentT {
   /**
    * Last segment of sequence. Doesn't have next segment. May be [[Single]] or [[Terminal]].
    *
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait Last[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
 
@@ -266,7 +266,7 @@ object SegmentT {
    * <tr>- doesn't have next segment;     </tr>
    * <tr>- doesn't have previous segment. </tr>
    * <tr>                                 </tr>
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait Single[E, D <: Domain[E], V, +S] extends SegmentT.First[E, D, V, S] with SegmentT.Last[E, D, V, S] {
 
@@ -333,7 +333,7 @@ object SegmentT {
    * <tr>- doesn't have previous segment; </tr>
    * <tr>- always has next segment.       </tr>
    * <tr>                                 </tr>
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait Initial[E, D <: Domain[E], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.First[E, D, V, S] {
 
@@ -403,7 +403,7 @@ object SegmentT {
    * <tr>- doesn't have next segment;   </tr>
    * <tr>- always has previous segment. </tr>
    * <tr>                               </tr>
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait Terminal[E, D <: Domain[E], V, +S] extends SegmentT.WithPrev[E, D, V, S] with SegmentT.Last[E, D, V, S] {
 
@@ -473,7 +473,7 @@ object SegmentT {
    * <tr>- always has next segment;     </tr>
    * <tr>- always has previous segment. </tr>
    * <tr>                               </tr>
-   * @see [[Segment]]
+   * @see [[SegmentT]]
    */
   trait Inner[E, D <: Domain[E], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.WithPrev[E, D, V, S] {
 

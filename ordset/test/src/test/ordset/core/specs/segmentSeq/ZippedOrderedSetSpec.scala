@@ -32,11 +32,11 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   )
 
   private val transformSuite = List(
-    new EmptySetSample1[Dom],
-    new UniversalSetSample1[Dom],
-    new SingleBoundedSetSample1[Dom],
-    //new MultiBoundedSetSample2[Dom],
-    new DegenerateSetSample1[Dom]
+//    new EmptySetSample1[Dom],
+//    new UniversalSetSample1[Dom],
+//    new SingleBoundedSetSample1[Dom],
+//    new MultiBoundedSetSample2[Dom],
+//    new DegenerateSetSample1[Dom]
   )
 
   private val zippedSuit = List(

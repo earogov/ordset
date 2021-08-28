@@ -6,6 +6,14 @@ object BooleanUtil {
 
   val falsePredicate1: Any => Boolean = _ => false
 
+  val identityOperator1: Boolean => Boolean = x => x
+
+  val inversionOperator1: Boolean => Boolean = !_
+
+  val orOperator2: (Boolean, Boolean) => Boolean = _ || _
+
+  val andOperator2: (Boolean, Boolean) => Boolean = _ && _
+
   /**
    * Takes `initial` value and applies inversion operation to it `n` times.
    *
