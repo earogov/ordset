@@ -138,6 +138,34 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     searchFrontZipper(frontZipperFirst, firstSeq.firstSegment, secondSeq.firstSegment)
 
   /**
+   * Returns zipped truncation for truncation of first sequence.
+   */
+  protected def zipFirstSeqTruncation(
+    firstTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1]]
+  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] = {
+    val zippedSegment = searchFrontZipper(
+      frontZipperGeneral,
+      firstTruncation.segment,
+      secondSeq.getSegmentForExtended(firstTruncation.bound)
+    )
+    zippedSegment.truncation(firstTruncation.bound)
+  }
+
+  /**
+   * Returns zipped truncation for truncation of second sequence.
+   */
+  protected def zipSecondSeqTruncation(
+    secondTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2]]
+  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] = {
+    val zippedSegment = searchFrontZipper(
+      frontZipperGeneral,
+      firstSeq.getSegmentForExtended(secondTruncation.bound),
+      secondTruncation.segment,
+    )
+    zippedSegment.truncation(secondTruncation.bound)
+  }
+
+  /**
    * Preconditions:
    *
    * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
@@ -671,6 +699,9 @@ object AbstractZippedSegmentSeq {
   type ZippedLastSegment[E, D <: Domain[E], U1, U2, V, S1, S2] =
     SegmentT.Last[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] with ZippedSegmentBase[E, D, U1, U2, V, S1, S2]
 
+  type ZippedTruncation[E, D <: Domain[E], U1, U2, V, S1, S2] =
+    SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], ZippedSegment[E, D, U1, U2, V, S1, S2]]
+  
   /**
    * Pair of segments of original sequences.
    *

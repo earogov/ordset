@@ -1,6 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.Domain
+import ordset.core.value.ValueOps
 
 /**
  * Captures segment and bound to perform further operations.
@@ -10,6 +11,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
   inputBound: ExtendedBound[E],
 ) {
 
+  // Inspection --------------------------------------------------------------- //
   /**
    * Truncation bound.
    *
@@ -21,6 +23,9 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    */
   final val bound: ExtendedBound[E] = segment.restrictExtended(inputBound)
 
+  override def toString: String = s"$segment.truncation($bound)"
+
+  // Transformation ----------------------------------------------------------- //
   /**
    * Same as [[SegmentSeqT.prependBelowExtended]] applied to truncation bound and `other` sequence:
    * {{{
@@ -28,8 +33,9 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    * }}}
    * If segment is already known current method allows to avoid its repeated search in contrast to
    * [[SegmentSeqT.prependBelowExtended]].
-   * {{{
    *
+   * <h3>Example</h3>
+   * {{{
    * original:
    *                              bound   segment
    *                                )       v
@@ -77,8 +83,9 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    * }}}
    * If segment is already known current method allows to avoid its repeated search in contrast to
    * [[SegmentSeqT.appendAboveExtended]].
-   * {{{
    *
+   * <h3>Example</h3>
+   * {{{
    * original:
    *
    *   segment  bound
@@ -120,7 +127,14 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    */
   def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
-  override def toString: String = s"$segment.truncation($bound)"
+//  def zipOptimized[U, W](
+//    other: SegmentSeq[E, D, U],
+//    zipFunc: (V, U) => W,
+//    invariantFuncV: V => Boolean,
+//    invariantFuncU: U => Boolean
+//  )(
+//    implicit valueOps: ValueOps[W]
+//  ): SegmentTruncationT[E, D, W, ] = ???
 
   // Protected section -------------------------------------------------------- //
   /**

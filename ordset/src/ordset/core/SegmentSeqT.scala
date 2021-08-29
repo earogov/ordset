@@ -216,9 +216,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>
    *   S,,0,, - segment of original sequence for which l,,0,, `≤` `bound` and u,,0,, `≥` `bound`;
    * </tr>
+   *
+   * <h3>Example 1</h3>
    * {{{
-   * Example 1
-   * 
    * original:
    *                 bound
    *                   )
@@ -230,9 +230,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X-------------------)[--------)[---------X
    *            B               C         D        - values
    * }}}
+   * <h3>Example 2</h3>
    * {{{
-   * Example 2
-   *
    * original:
    *                     bound
    *                       )
@@ -285,9 +284,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>
    *   S,,N,, - segment of original sequence for which l,,N,, `≤` `bound` and u,,N,, `≥` `bound`;
    * </tr>
-   * {{{
-   * Example 1
    *
+   * <h3>Example 1</h3>
+   * {{{
    * original:
    *                 bound
    *                   )
@@ -299,9 +298,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](------------------------------X
    *        A               B                      - values
    * }}}
+   * <h3>Example 2</h3>
    * {{{
-   * Example 2
-   *
    * original:
    *            bound
    *             (
@@ -345,6 +343,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns tuple of sequences: ([[takeBelowBound]], [[takeAboveBound]]).
    *
+   * <h3>Example</h3>
    * {{{
    * original:
    *                 bound
@@ -399,6 +398,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
    * <tr>v,,i,, - value of segment i in sequence;      </tr>
    *
+   * <h3>Example</h3>
    * {{{
    * original:
    *
@@ -449,10 +449,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
    *   (see [[Bound.provideLower]]).
    * </tr>
-   * 
-   * {{{
-   * Example 1
    *
+   * <h3>Example 1</h3>
+   * {{{
    * original:
    *                        bound
    *                         [
@@ -471,9 +470,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------------)[----)[-----)[-----------X
    *            C         D     B          C       - values
    * }}}
+   * <h3>Example 2</h3>
    * {{{
-   * Example 2
-   *
    * original:
    *                             bound
    *                               )
@@ -534,6 +532,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
    * <tr>v,,i,, - value of segment i in sequence;      </tr>
    *
+   * <h3>Example</h3>
    * {{{
    * original:
    *
@@ -585,9 +584,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   (see [[Bound.provideLower]]).
    * </tr>
    *
+   * <h3>Example 1</h3>
    * {{{
-   * Example 1
-   * 
    * original:
    *                        bound
    *                         [
@@ -606,9 +604,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   X--------](----------)[-------)[---------X
    *        A          B         D         E      - values
    * }}}
+   * <h3>Example 2</h3>
    * {{{
-   * Example 2
-   *
    * original:
    *                             bound
    *                               )
@@ -703,7 +700,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    * where S,,i,, - segment of original sequence.
    *
-   * Example
+   * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
    * <tr>- seq1 for segment S1</tr>
@@ -780,7 +777,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Note, the number of segments in original and output sequences can be different due to adjacent segments
    * with same values after mapping are merged.
    *
-   * Example
+   * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
    * <tr>- value `A` for segment S1</tr>
@@ -819,7 +816,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Note, the number of segments in original and output sequences can be different due to adjacent segments
    * with same values after mapping are merged.
    *
-   * Example
+   * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
    * <tr>- value `A` for input value `A`</tr>
@@ -861,7 +858,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    * Adjacent segments of output sequence with the same values are merged.
    *
-   * ==Invariant functions==
+   * <h3>Invariant functions</h3>
    *
    * Some value `v` is invariant iff result of `zipFunc(v, u)` doesn't depend on another argument or more formally iff:
    * {{{
@@ -873,7 +870,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * Note that invariant functions MUST NOT return `true` for non-invariant values. This may produce inconsistent
    * output sequences depending of traverse direction.
    *
-   * ==Example==
+   * <h3>Example</h3>
    *
    * Assume `zipFunc` is defined by table:
    * {{{
@@ -910,15 +907,19 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    * @see [[zip]]
    */
-  def zipOptimized[U, W](
-    other: SegmentSeq[E, D, U],
+  def zipOptimized[U, W, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2],
     zipFunc: (V, U) => W,
     invariantFuncV: V => Boolean,
     invariantFuncU: U => Boolean
   )(
     implicit valueOps: ValueOps[W]
-  ): SegmentSeq[E, D, W] =
-    ZippedOrderedMap.apply(this, other, zipFunc, invariantFuncV, invariantFuncU)(domainOps, valueOps, rngManager)
+  ): ZippedSegmentSeq[E, D, V, U, W, S1, S2] =
+    ZippedOrderedMap.apply(
+      this, other, zipFunc, invariantFuncV, invariantFuncU
+    )(
+      domainOps, valueOps, rngManager
+    )
 
   /**
    * Returns new segment sequence that combines with `zipFunc` function values of original sequence and `other`
@@ -931,25 +932,29 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>v,,j,, - value of segment of original sequence; </tr>
    * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
    * <tr></tr>
-   * 
+   *
    * Adjacent segments of output sequence with the same values are merged.
-   * 
-   * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions 
+   *
+   * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions
    * using `false` predicate instead of them.
-   * 
+   *
    * @see [[zipOptimized]]
    */
-  def zip[U, W](
-    other: SegmentSeq[E, D, U],
+  def zip[U, W, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2],
     zipFunc: (V, U) => W
   )(
     implicit valueOps: ValueOps[W]
-  ): SegmentSeq[E, D, W] =
-    zipOptimized(other, zipFunc, BooleanUtil.falsePredicate1, BooleanUtil.falsePredicate1)(valueOps)
+  ): ZippedSegmentSeq[E, D, V, U, W, S1, S2] =
+    zipOptimized(
+      other, zipFunc, BooleanUtil.falsePredicate1, BooleanUtil.falsePredicate1
+    )(
+      valueOps
+    )
 
   /**
    * Returns new segment sequence that combines values of original and `other` sequences into tuples:
-   * 
+   *
    * w,,i,, = (v,,j,,, u,,k,,)
    *
    * where
@@ -957,11 +962,15 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr>v,,j,, - value of segment of original sequence; </tr>
    * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
    * <tr></tr>
-   * 
+   *
    * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
-   * 
+   *
    * @see [[zip]]
    */
-  def zipToTuple[U](other: SegmentSeq[E, D, U]): SegmentSeq[E, D, (V, U)] =
-    zip(other, (_, _))(new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, valueOps, other.valueOps))
+  def zipToTuple[U, S1 >: S, S2](other: SegmentSeqT[E, D, U, S2]): ZippedSegmentSeq[E, D, V, U, (V, U), S1, S2] =
+    zip(
+      other, (_, _)
+    )(
+      new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, valueOps, other.valueOps)
+    )
 }
