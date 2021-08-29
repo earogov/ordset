@@ -10,31 +10,29 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeVisitContext}
 import ordset.tree.treap.immutable.transform.TreeSplit
 import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDepthFirst}
 import org.junit.runner.RunWith
-import org.scalatest.funspec.AnyFunSpec
-import org.scalatestplus.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
-class ImmutableTreapExample extends AnyFunSpec {
+object ImmutableTreapExample {
 
   import ordset.core.instances.int.*
 
   type Dom = Domain[Int]
 
-  implicit val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
+  private val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
 
-  //   9  -                               A
-  //   8  -                      ↙          ↘
-  //   7  -             B                     ↘
-  //   6  -       ↙           ↘                 C
-  //   5  -    ↙                    E             ↘
-  //   4  - D                      ↙                ↘
-  //   3  -    ↘                 ↙                    G
-  //   2  -       F            ↙
-  //   1  -                   H
-  //        |-----|-----|-----|-----|-----|-----|-----|
-  //        1     2     3     4     5     6     7     8
+  @main
+  def immutableTreapExampleMain() = {
 
-  it("treep examples") {
+    //   9  -                               A
+    //   8  -                      ↙          ↘
+    //   7  -             B                     ↘
+    //   6  -       ↙           ↘                 C
+    //   5  -    ↙                    E             ↘
+    //   4  - D                      ↙                ↘
+    //   3  -    ↘                 ↙                    G
+    //   2  -       F            ↙
+    //   1  -                   H
+    //        |-----|-----|-----|-----|-----|-----|-----|
+    //        1     2     3     4     5     6     7     8
 
     val leafF = ImmutableTreap.Leaf[Int, String](2, 2, "F")
     val leafH = ImmutableTreap.Leaf[Int, String](4, 1, "H")
@@ -44,5 +42,7 @@ class ImmutableTreapExample extends AnyFunSpec {
     val leafG = ImmutableTreap.Leaf[Int, String](8, 3, "G")
     val nodeC = ImmutableTreap.NodeWithRightOnly[Int, String](leafG, 7, 6, "C")
     val nodeA = ImmutableTreap.NodeWithLeftRight[Int, String](nodeB, nodeC, 6, 9, "A")
+
+    // TODO add some operations
   }
 }

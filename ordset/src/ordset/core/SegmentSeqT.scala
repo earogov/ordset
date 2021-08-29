@@ -1,10 +1,11 @@
 package ordset.core
 
-import ordset.core.value.ValueOps
+import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{LazyTreapOrderedMap, TreapOrderedMap, UniformOrderedMap}
+import ordset.core.map.{LazyTreapOrderedMap, MappedOrderedMap, MappedValueOrderedMap, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.util.SegmentSeqUtil
 import ordset.random.RngManager
+import ordset.util.BooleanUtil
 
 import scala.Specializable.AllNumeric as spNum
 import scala.specialized as sp
@@ -700,7 +701,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    * () `=>` mapFunc(S,,i,,)
    *
-   * where S,,i,, - i-th segment of original sequence
+   * where S,,i,, - segment of original sequence.
    *
    * Example
    *
@@ -768,10 +769,199 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
       rngManager
     )
   }
-  
-  def map[U](
-    mapFunc: Segment[E, D, V] => Segment[E, D, U]
+
+  /**
+   * Returns new segment sequence with values of segments:
+   *
+   * u,,i,, = mapFunc(S,,j,,)
+   *
+   * where S,,j,, - segment of original sequence.
+   *
+   * Note, the number of segments in original and output sequences can be different due to adjacent segments
+   * with same values after mapping are merged.
+   *
+   * Example
+   *
+   * Assume `mapFunc` returns:
+   * <tr>- value `A` for segment S1</tr>
+   * <tr>- value `A` for segment S2</tr>
+   * <tr>- value `C` for segment S3</tr>
+   * {{{
+   *
+   * original:
+   *
+   *          S1            S2             S3      - segments
+   *   X------------)[-------------)[------------X
+   *          A             B              C       - values
+   *
+   * output mapped sequence:
+   *
+   *   X---------------------------)[------------X
+   *                  A                    C       -values
+   * }}}
+   *
+   * @see [[map]]
+   */
+  def mapSegments[U](
+    mapFunc: Segment[E, D, V] => U
   )(
     implicit valueOps: ValueOps[U]
-  ): SegmentSeq[E, D, U] = ???
+  ): SegmentSeq[E, D, U] =
+    MappedOrderedMap.apply(this, mapFunc)(domainOps, valueOps, rngManager)
+
+  /**
+   * Returns new segment sequence with values of segments:
+   *
+   * u,,i,, = mapFunc(v,,j,,)
+   *
+   * where v,,j,, - value of segment of original sequence.
+   *
+   * Note, the number of segments in original and output sequences can be different due to adjacent segments
+   * with same values after mapping are merged.
+   *
+   * Example
+   *
+   * Assume `mapFunc` returns:
+   * <tr>- value `A` for input value `A`</tr>
+   * <tr>- value `A` for input value `B`</tr>
+   * <tr>- value `C` for input value `C`</tr>
+   * {{{
+   *
+   * original:
+   *
+   *   X------------)[-------------)[------------X
+   *          A             B              C       - values
+   *
+   * output mapped sequence:
+   *
+   *   X---------------------------)[------------X
+   *                  A                    C       -values
+   * }}}
+   *
+   * @see [[mapSegments]]
+   */
+  def map[U](
+    mapFunc: V => U
+  )(
+    implicit valueOps: ValueOps[U]
+  ): SegmentSeq[E, D, U] =
+    MappedValueOrderedMap.apply(this, mapFunc)(domainOps, valueOps, rngManager)
+
+  /**
+   * Returns new segment sequence that combines with `zipFunc` function values of original sequence and `other`
+   * sequence:
+   *
+   * w,,i,, = zipFunc(v,,j,,, u,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>v,,j,, - value of segment of original sequence; </tr>
+   * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr></tr>
+   *
+   * Adjacent segments of output sequence with the same values are merged.
+   *
+   * ==Invariant functions==
+   *
+   * Some value `v` is invariant iff result of `zipFunc(v, u)` doesn't depend on another argument or more formally iff:
+   * {{{
+   *   Ǝ C ∀ u: zipFunc(v, u) = C.
+   * }}}
+   *
+   * Invariant functions MAY return `true` for invariant values. This allows to apply some performance optimizations.
+   *
+   * Note that invariant functions MUST NOT return `true` for non-invariant values. This may produce inconsistent
+   * output sequences depending of traverse direction.
+   *
+   * ==Example==
+   *
+   * Assume `zipFunc` is defined by table:
+   * {{{
+   *
+   *       |  A  |  B  |  C  |  <- v
+   * -------------------------
+   *    A  |  A  |  A  |  C  |
+   * -------------------------
+   *    B  |  A  |  A  |  A  |
+   * -------------------------
+   *    C  |  C  |  A  |  B  |
+   * -------------------------
+   *    ^
+   *    u
+   * }}}
+   * Note that `B` is invariant here and both `invariantFuncV` and `invariantFuncU` may return `true` for it.
+   * {{{
+   *
+   * original:
+   *
+   *   X------------)[-------------)[------------X
+   *          A             B              C       - values
+   *
+   * `other`:
+   *
+   *   X-------------------)[--------------------X
+   *             A                     C           - values
+   *
+   *  output zipped sequence:
+   *
+   *   X---------------------------)[------------X
+   *                 A                     B       - values
+   * }}}
+   *
+   * @see [[zip]]
+   */
+  def zipOptimized[U, W](
+    other: SegmentSeq[E, D, U],
+    zipFunc: (V, U) => W,
+    invariantFuncV: V => Boolean,
+    invariantFuncU: U => Boolean
+  )(
+    implicit valueOps: ValueOps[W]
+  ): SegmentSeq[E, D, W] =
+    ZippedOrderedMap.apply(this, other, zipFunc, invariantFuncV, invariantFuncU)(domainOps, valueOps, rngManager)
+
+  /**
+   * Returns new segment sequence that combines with `zipFunc` function values of original sequence and `other`
+   * sequence:
+   *
+   * w,,i,, = zipFunc(v,,j,,, u,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>v,,j,, - value of segment of original sequence; </tr>
+   * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr></tr>
+   * 
+   * Adjacent segments of output sequence with the same values are merged.
+   * 
+   * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions 
+   * using `false` predicate instead of them.
+   * 
+   * @see [[zipOptimized]]
+   */
+  def zip[U, W](
+    other: SegmentSeq[E, D, U],
+    zipFunc: (V, U) => W
+  )(
+    implicit valueOps: ValueOps[W]
+  ): SegmentSeq[E, D, W] =
+    zipOptimized(other, zipFunc, BooleanUtil.falsePredicate1, BooleanUtil.falsePredicate1)(valueOps)
+
+  /**
+   * Returns new segment sequence that combines values of original and `other` sequences into tuples:
+   * 
+   * w,,i,, = (v,,j,,, u,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>v,,j,, - value of segment of original sequence; </tr>
+   * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr></tr>
+   * 
+   * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
+   * 
+   * @see [[zip]]
+   */
+  def zipToTuple[U](other: SegmentSeq[E, D, U]): SegmentSeq[E, D, (V, U)] =
+    zip(other, (_, _))(new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, valueOps, other.valueOps))
 }

@@ -128,5 +128,15 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * state. So conversion of current sequence into treap based will take place on demand (but with some overhead
    * compared to [[patchLazyBaseSeqInternal]]).
    */
-  def patchLazyFlatmapInternal(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] = ???
+  def patchLazyFlatmapInternal(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] = {
+    val baseSeq = consUniform(valueOps.unit)
+    val currentSeqFunc = () => this
+    val newLazySeq = lazySeq.map {
+      case x @ Some(_) => x
+      case _ => Some(currentSeqFunc)
+    }(
+      lazySeq.valueOps
+    )
+    LazyTreapOrderedMap.apply(baseSeq, newLazySeq)(domainOps, valueOps, rngManager)
+  }
 }

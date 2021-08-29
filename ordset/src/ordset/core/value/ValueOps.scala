@@ -80,6 +80,27 @@ object ValueOps {
       InclusionPredicate.booleanInclusion
     )
 
+  implicit lazy val intValueOps: ValueOps[Int] =
+    new DefaultImpl[Int](
+      0,
+      ordset.instances.int.intHash,
+      InclusionPredicate.alwaysIncluded
+    )
+
+  implicit lazy val longValueOps: ValueOps[Long] =
+    new DefaultImpl[Long](
+      0L,
+      ordset.instances.long.longHash,
+      InclusionPredicate.alwaysIncluded
+    )
+
+  implicit lazy val stringValueOps: ValueOps[String] =
+    new DefaultImpl[String](
+      "",
+      ordset.instances.string.stringHash,
+      InclusionPredicate.alwaysIncluded
+    )
+
   final class DefaultImpl[V](
     override val unit: V,
     override val valueHash: Hash[V],
