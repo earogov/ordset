@@ -386,14 +386,6 @@ object AbstractIndexedSegmentSeq {
       // Trait is sealed so this is unreachable case.
       throw new AssertionError("Implementation is provided in subclasses of sealed trait.")
     }
-
-    override def truncation(
-      bound: ExtendedBound[E]
-    ): SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type]
-
-    override def lowerTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type]
-
-    override def upperTruncation: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], this.type]
   }
 
   object IndexedSegmentBase {

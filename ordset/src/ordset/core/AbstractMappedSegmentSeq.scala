@@ -455,14 +455,6 @@ object AbstractMappedSegmentSeq {
     override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
     override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
-
-    override def truncation(
-      bound: ExtendedBound[E]
-    ): SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type ]
-
-    override def lowerTruncation: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type]
-
-    override def upperTruncation: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type]
   }
 
   object MappedSegmentBase {

@@ -3,7 +3,7 @@ package ordset.core.map
 import ordset.core.AbstractZippedSegmentSeq.ZippedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractZippedSegmentSeq, SegmentSeq, SegmentTruncationT, SegmentT, ZippedTruncationT}
+import ordset.core.{AbstractZippedSegmentSeq, SegmentT, SegmentSeq, SegmentTruncationT, ZippedTruncationT}
 import ordset.random.RngManager
 
 class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (

@@ -30,7 +30,7 @@ object FlatmapExample {
   }
 
   def example1(): Unit = {
-    println(s"$sep SegmentLikeT.flatMap example $sep")
+    println(s"$sep Segment.flatMap example $sep")
 
     val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       List(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
@@ -64,7 +64,7 @@ object FlatmapExample {
   }
 
   def example2(): Unit = {
-    println(s"$sep SegmentSeqT.flatMap example $sep")
+    println(s"$sep SegmentSeq.flatMap example $sep")
 
     /**
      * Splits (if possible) input `segment` into two with random different values:

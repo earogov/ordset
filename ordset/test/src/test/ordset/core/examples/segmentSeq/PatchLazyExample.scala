@@ -29,7 +29,7 @@ object PatchLazyExample {
   }
 
   def example1(): Unit = {
-    println(s"$sep SegmentSeqT.patchLazy example $sep")
+    println(s"$sep SegmentSeq.patchLazy example $sep")
 
     def buildPatchSeq(): OrderedMap[Int, Domain[Int], String] = {
       val patchSeq = TreapOrderedMap.getFactory.unsafeBuildAsc(

@@ -2473,14 +2473,6 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence
     }
 
-    override def truncation(
-      bound: ExtendedBound[E]
-    ): SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type]
-
-    override def lowerTruncation: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type]
-
-    override def upperTruncation: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type]
-
     // Protected section -------------------------------------------------------- //
     override protected def original: Stable.ZSegment[E, D, V]
 

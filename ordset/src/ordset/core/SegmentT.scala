@@ -129,7 +129,14 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * @tparam V type of value assigned to interval of elements
  * @tparam S type of additional segment state
  */
-sealed trait SegmentT[E, D <: Domain[E], V, +S] extends SegmentLikeT[E, D, V, S]
+sealed trait SegmentT[E, D <: Domain[E], V, +S] extends SegmentLikeT[E, D, V, S] {
+
+  override def truncation(bound: ExtendedBound[E]): SegmentTruncationT[E, D, V, S, this.type]
+
+  override def lowerTruncation: SegmentTruncationT[E, D, V, S, this.type]
+
+  override def upperTruncation: SegmentTruncationT[E, D, V, S, this.type]
+}
 
 object SegmentT {
 

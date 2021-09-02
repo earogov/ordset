@@ -23,11 +23,11 @@ package object core {
 
   type Segment[E, D <: Domain[E], V] = SegmentT[E, D, V, Any]
 
-  type SegmentTruncation[E, D <: Domain[E], V] = SegmentTruncationT[E, D, V, Any, SegmentLike[E, D, V]]
+  type SegmentTruncation[E, D <: Domain[E], V] = SegmentTruncationT[E, D, V, Any, Segment[E, D, V]]
 
   type SegmentSeq[E, D <: Domain[E], V] = SegmentSeqT[E, D, V, Any]
-  
-  type ZippedTruncationT[E, D <: Domain[E], U1, U2, V, S1, S2] = 
+
+  type ZippedTruncationT[E, D <: Domain[E], U1, U2, V, S1, S2] =
     AbstractZippedSegmentSeq.ZippedTruncation[E, D, U1, U2, V, S1, S2]
 
 

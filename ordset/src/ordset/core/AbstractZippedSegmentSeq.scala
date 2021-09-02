@@ -701,7 +701,7 @@ object AbstractZippedSegmentSeq {
 
   type ZippedTruncation[E, D <: Domain[E], U1, U2, V, S1, S2] =
     SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], ZippedSegment[E, D, U1, U2, V, S1, S2]]
-  
+
   /**
    * Pair of segments of original sequences.
    *
@@ -1039,14 +1039,6 @@ object AbstractZippedSegmentSeq {
     override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
     override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
-
-    override def truncation(
-      bound: ExtendedBound[E]
-    ): SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type]
-
-    override def lowerTruncation: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type]
-
-    override def upperTruncation: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], this.type]
 
     /**
      * Returns truncation of first <u>original</u> sequence at lower bound of <u>zipped</u> segment.

@@ -1,12 +1,14 @@
 package ordset.core
 
 import ordset.core.domain.Domain
-import ordset.core.value.ValueOps
+import ordset.core.map.ZippedOrderedMap
+import ordset.core.value.{InclusionPredicate, ValueOps}
+import ordset.util.BooleanUtil
 
 /**
  * Captures segment and bound to perform further operations.
  */
-abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT[E, D, V, S]](
+abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, D, V, S]](
   val segment: Seg,
   inputBound: ExtendedBound[E],
 ) {
@@ -22,6 +24,11 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    * }}}
    */
   final val bound: ExtendedBound[E] = segment.restrictExtended(inputBound)
+
+  /**
+   * Segment sequence to which truncation belongs.
+   */
+  def sequence: SegmentSeqT[E, D, V, S] = segment.sequence
 
   override def toString: String = s"$segment.truncation($bound)"
 
@@ -127,14 +134,64 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentLikeT
    */
   def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
-//  def zipOptimized[U, W](
-//    other: SegmentSeq[E, D, U],
-//    zipFunc: (V, U) => W,
-//    invariantFuncV: V => Boolean,
-//    invariantFuncU: U => Boolean
-//  )(
-//    implicit valueOps: ValueOps[W]
-//  ): SegmentTruncationT[E, D, W, ] = ???
+  /**
+   * Zips original sequence with `other` (see [[SegmentSeqT.zipOptimized]]) and returns truncation of zipped sequence
+   * at bound [[bound]].
+   *
+   * @see [[zip]]
+   */
+  def zipOptimized[U, W, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2],
+    zipFunc: (V, U) => W,
+    invariantFuncV: V => Boolean,
+    invariantFuncU: U => Boolean
+  )(
+    implicit valueOps: ValueOps[W]
+  ): ZippedTruncationT[E, D, V, U, W, S1, S2] = {
+    val firstSeq = segment.sequence
+    ZippedOrderedMap.zipFirstMapTruncation[E, D, V, U, W, S1, S2](
+      this, other, zipFunc, invariantFuncV, invariantFuncU
+    )(
+      firstSeq.domainOps, valueOps, firstSeq.rngManager
+    )
+  }
+
+  /**
+   * Zips original sequence with `other` (see [[SegmentSeqT.zip]]) and returns truncation of zipped sequence
+   * at bound [[bound]].
+   *
+   * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions
+   * using `false` predicate instead of them.
+   *
+   * @see [[zipOptimized]]
+   */
+  def zip[U, W, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2],
+    zipFunc: (V, U) => W,
+  )(
+    implicit valueOps: ValueOps[W]
+  ): ZippedTruncationT[E, D, V, U, W, S1, S2] =
+    zipOptimized(
+      other, zipFunc, BooleanUtil.falsePredicate1, BooleanUtil.falsePredicate1
+    )(
+      valueOps
+    )
+
+  /**
+   * Zips original sequence with `other` (see [[SegmentSeqT.zipIntoTuple]]) and returns truncation of zipped sequence
+   * at bound [[bound]].
+   *
+   * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
+   * <tr></tr>
+   *
+   * @see [[zip]]
+   */
+  def zipIntoTuple[U, W, S1 >: S, S2](other: SegmentSeqT[E, D, U, S2]): ZippedTruncationT[E, D, V, U, (V, U), S1, S2] =
+    zip(
+      other, (_, _)
+    )(
+      new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, sequence.valueOps, other.valueOps)
+    )
 
   // Protected section -------------------------------------------------------- //
   /**
@@ -184,7 +241,7 @@ object SegmentTruncationT {
    */
   @inline
   protected [ordset] final def lowerTruncation[E, D <: Domain[E], V, S](
-    segment: SegmentLikeT[E, D, V, S]
+    segment: SegmentT[E, D, V, S]
   ): SegmentTruncationT[E, D, V, S, segment.type] =
     segment.truncation(segment.lowerExtended)
 
@@ -193,7 +250,7 @@ object SegmentTruncationT {
    */
   @inline
   protected [ordset] final def upperTruncation[E, D <: Domain[E], V, S](
-    segment: SegmentLikeT[E, D, V, S]
+    segment: SegmentT[E, D, V, S]
   ): SegmentTruncationT[E, D, V, S, segment.type] =
     segment.truncation(segment.upperExtended)
 }

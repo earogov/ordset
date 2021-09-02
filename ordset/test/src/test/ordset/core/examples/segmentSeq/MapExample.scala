@@ -31,7 +31,7 @@ object MapExample {
   }
 
   def example1(): Unit = {
-    println(s"$sep SegmentSeqT.mapSegments example $sep")
+    println(s"$sep SegmentSeq.mapSegments example $sep")
 
     val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
       List(
@@ -58,7 +58,7 @@ object MapExample {
   }
 
   def example2(): Unit = {
-    println(s"$sep SegmentSeqT.map example $sep")
+    println(s"$sep SegmentSeq.map example $sep")
 
     val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
       List(

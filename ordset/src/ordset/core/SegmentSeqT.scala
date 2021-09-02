@@ -934,10 +934,12 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr></tr>
    *
    * Adjacent segments of output sequence with the same values are merged.
-   *
+   * <tr></tr>
+   * 
    * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions
    * using `false` predicate instead of them.
-   *
+   * <tr></tr>
+   * 
    * @see [[zipOptimized]]
    */
   def zip[U, W, S1 >: S, S2](
@@ -964,10 +966,11 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <tr></tr>
    *
    * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
-   *
+   * <tr></tr>
+   * 
    * @see [[zip]]
    */
-  def zipToTuple[U, S1 >: S, S2](other: SegmentSeqT[E, D, U, S2]): ZippedSegmentSeq[E, D, V, U, (V, U), S1, S2] =
+  def zipIntoTuple[U, S1 >: S, S2](other: SegmentSeqT[E, D, U, S2]): ZippedSegmentSeq[E, D, V, U, (V, U), S1, S2] =
     zip(
       other, (_, _)
     )(
