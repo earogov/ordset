@@ -799,11 +799,11 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    * @see [[map]]
    */
-  def mapSegments[U](
+  def mapSegments[U, S1 >: S](
     mapFunc: Segment[E, D, V] => U
   )(
     implicit valueOps: ValueOps[U]
-  ): SegmentSeq[E, D, U] =
+  ): MappedSegmentSeq[E, D, V, U, S1] =
     MappedOrderedMap.apply(this, mapFunc)(domainOps, valueOps, rngManager)
 
   /**
@@ -837,11 +837,11 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *
    * @see [[mapSegments]]
    */
-  def map[U](
+  def map[U, S1 >: S](
     mapFunc: V => U
   )(
     implicit valueOps: ValueOps[U]
-  ): SegmentSeq[E, D, U] =
+  ): MappedSegmentSeq[E, D, V, U, S1] =
     MappedValueOrderedMap.apply(this, mapFunc)(domainOps, valueOps, rngManager)
 
   /**

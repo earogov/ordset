@@ -13,7 +13,7 @@ import AbstractZippedSegmentSeq.*
 import AbstractTreapSegmentSeq.*
 import AbstractUniformSegmentSeq.*
 import AbstractLazyTreapSegmentSeq.*
-import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqUtil}
+import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqUtil, TreapSegmentSeqBuilder}
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.util.BooleanUtil
 import ordset.util.HashUtil.product1Hash
@@ -1913,14 +1913,37 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
 object AbstractLazyTreapSegmentSeq { outer =>
 
-  type ZValue[E, D <: Domain[E], V] = (V, ControlValue[E, D, V])
-
-  type InitialZValue[E, D <: Domain[E], V] = Either[V, () => SegmentSeq[E, D, V]]
-
   type BaseSegmentBase[E, D <: Domain[E], V] = TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+
+  type BaseSegment[E, D <: Domain[E], V] = SegmentT[E, D, V, BaseSegmentBase[E, D, V]]
+
+  type BaseSegmentSeq[E, D <: Domain[E], V] = TreapSegmentSeq[E, D, V]
+
 
   type ControlSegmentBase[E, D <: Domain[E], V] =
     TreapSegmentBase[E, D, ControlValue[E, D, V]] | UniformSingleSegment[E, D, ControlValue[E, D, V]]
+
+  type ControlSegment[E, D <: Domain[E], V] =
+    SegmentT[
+      E,
+      D,
+      ControlValue[E, D, V],
+      ControlSegmentBase[E, D, V]
+    ]
+
+  type ControlTruncation[E, D <: Domain[E], V] =
+    SegmentTruncationT[
+      E,
+      D,
+      ControlValue[E, D, V],
+      ControlSegmentBase[E, D, V],
+      ControlSegment[E, D, V]
+    ]
+
+  type ControlSegmentSeq[E, D <: Domain[E], V] = TreapSegmentSeq[E, D, ControlValue[E, D, V]]
+
+
+  type ZValue[E, D <: Domain[E], V] = (V, ControlValue[E, D, V])
 
   type ZSegmentBase[E, D <: Domain[E], V] =
     ZippedSegmentBase[
@@ -1985,28 +2008,6 @@ object AbstractLazyTreapSegmentSeq { outer =>
       ControlSegmentBase[E, D, V]
     ]
 
-  type BaseSegment[E, D <: Domain[E], V] = SegmentT[E, D, V, BaseSegmentBase[E, D, V]]
-
-  type BaseSegmentSeq[E, D <: Domain[E], V] = TreapSegmentSeq[E, D, V]
-
-  type ControlSegment[E, D <: Domain[E], V] =
-    SegmentT[
-      E,
-      D,
-      ControlValue[E, D, V],
-      ControlSegmentBase[E, D, V]
-    ]
-
-  type ControlTruncation[E, D <: Domain[E], V] =
-    SegmentTruncationT[
-      E,
-      D,
-      ControlValue[E, D, V],
-      ControlSegmentBase[E, D, V],
-      ControlSegment[E, D, V]
-    ]
-
-  type ControlSegmentSeq[E, D <: Domain[E], V] = TreapSegmentSeq[E, D, ControlValue[E, D, V]]
 
   type LazySegment[E, D <: Domain[E], V] =
     SegmentT[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
@@ -2017,7 +2018,19 @@ object AbstractLazyTreapSegmentSeq { outer =>
   type LazyLastSegment[E, D <: Domain[E], V] =
     SegmentT.Last[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
 
-  type InitialLazySeq[E, D <: Domain[E], V] = SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]
+  type LazyTruncation[E, D <: Domain[E], V] =
+    SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], LazySegment[E, D, V]]
+
+
+  type InitialZValue[E, D <: Domain[E], V] = Either[V, () => SegmentSeq[E, D, V]]
+
+  type InitialLazySegment[E, D <: Domain[E], V] = Segment[E, D, OptionalSeqSupplier.Type[E, D, V]]
+
+  type InitialLazySegmentWithPrev[E, D <: Domain[E], V] = Segment.WithPrev[E, D, OptionalSeqSupplier.Type[E, D, V]]
+
+  type InitialLazySegmentWithNext[E, D <: Domain[E], V] = Segment.WithNext[E, D, OptionalSeqSupplier.Type[E, D, V]]
+
+  type InitialLazySegmentSeq[E, D <: Domain[E], V] = SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]
 
   /**
    * Types indicating that segment is stable, i.e. that its value, bounds and type (initial, inner, etc.)
@@ -2315,7 +2328,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   }
 
   object Builder {
-    
+
     /**
      * Creates lazy segment sequence using two input sequences:
      * <tr>1. `baseSeq` - segment sequence with base values;</tr>
@@ -2348,7 +2361,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
      */
     final def makeZippedSeqForInitialization[E, D <: Domain[E], V](
       baseSeq: SegmentSeq[E, D, V],
-      lazySeq: InitialLazySeq[E, D, V]
+      lazySeq: InitialLazySegmentSeq[E, D, V]
     )(
       implicit
       domainOps: DomainOps[E, D],
@@ -2356,66 +2369,143 @@ object AbstractLazyTreapSegmentSeq { outer =>
       rngManager: RngManager
     ): ZSegmentSeq[E, D, V] = {
 
-      // TODO provide separate implementation for case when `baseSeq` is lazy.
-      // TODO rewrite current implementation to exclude full traversing of `baseSeq`.
+      // Algorithm
+      //
+      // To create lazy treap sequence we need base and control sequences. `baseSeq` already has proper type,
+      // so we only need to convert `lazySeq` into control sequence.
+      //
+      // 1. Build lazy mask sequence from `lazySeq` which merges adjacent lazy segments.
+      //
+      //      None       Some(f)    Some(f)    None
+      // X-------------)[--------)[--------)[--------X - lazy sequence
+      //
+      //      false            true           false
+      // X-------------)[------------------)[--------X - lazy mask sequence
+      //
+      // 2. Iterate over lazy mask sequence. If current segment `S` has `true` value then:
+      //
+      // 2.1. Zip lazy mask sequence with `baseSeq`. Get previous zipped segment `ZP` for segment `S`.
+      //      Add to control sequence unstable segment with the same bounds as `ZP` (if there is no
+      //      segment with such bounds).
+      //
+      // 2.2. Add to control sequence lazy segments for each segment of `lazySeq` that is inside
+      //      segment `S`.
+      //
+      // 2.3. Zip lazy mask sequence with `baseSeq`. Get next zipped segment `ZN` for segment `S`.
+      //      Add to control sequence unstable segment with the same bound as `ZN`.
+      //
+      //     A         B         C         D      E
+      // X--------)[--------)[--------)[--------)[---X - base sequence
+      //
+      //      None       Some(f)    Some(f)    None
+      // X-------------)[--------)[--------)[--------X - lazy sequence
+      //
+      //      false              true         false
+      // X-------------)[------------------)[--------X - lazy mask sequence
+      //                         S
+      //
+      //                        VVV
+      //
+      //      s      u            ?           u    s
+      // X--------)[---)[------------------)[---)[---X - control sequence
+
+      def addLeftUnstableSegment(
+        maskSegment: LazyMaskSegmentWithPrev[E, D, V],
+        builder: ControlSeqBuilder[E, D, V],
+      ): ControlSeqBuilder[E, D, V] = {
+        val maskTruncation = maskSegment.movePrev.upperTruncation
+        val zippedTruncation = maskTruncation.zipIntoTuple(baseSeq)
+        val zippedSegment = zippedTruncation.segment
+        zippedSegment match {
+          case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
+            if (builder.hasLastBound(zippedSegment.upperBound))
+              // Bound had been already added => nothing to do.
+              builder
+            else {
+              zippedSegment match {
+                case zippedSegment: InitialZSegmentWithPrev[E, D, V] =>
+                  builder.addBound(zippedSegment.lowerBound.flipLower, EagerValue.stable)
+                case _ => // nothing to do
+              }
+              builder.addBound(zippedSegment.upperBound, EagerValue.unstable)
+            }
+          case _ =>
+            // `zippedSegment` contains previous segment of `maskSegment` => `zippedSegment` has next segment.
+            throwNoNextSegment(zippedSegment)
+        }
+      }
 
       @tailrec
-      def buildBuffer(
-        stableLowerBound: Boolean,
-        segment: Segment[E, D, InitialZValue[E, D, V]],
-        buffer: List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]],
-        rng: UnsafeUniformRng
-      ): List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]] =
-        segment match {
-          case segment: Segment.WithNext[E, D, InitialZValue[E, D, V]] =>
-            val nextSegment = segment.moveNext
-            val stableBounds = stableLowerBound && nextSegment.value.isLeft
-            val controlValue = InitialZValue.mapToControlValue(stableBounds, segment.value)
-
-            // TODO provide different adjacent values
-            val newBuffer = BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
-              buffer, segment.upperBound, rng.nextInt(), controlValue
-            )(
-              domainOps.boundOrd
-            )
-            buildBuffer(controlValue.isEager, nextSegment, newBuffer, rng)
-
-          case _ => buffer
+      def addLazySegments(
+        lazySegment: InitialLazySegment[E, D, V],
+        builder: ControlSeqBuilder[E, D, V],
+      ): ControlSeqBuilder[E, D, V] =
+        lazySegment.value match {
+          case Some(f) =>
+            lazySegment match {
+              case lazySegment: InitialLazySegmentWithNext[E, D, V] =>
+                builder.addBound(lazySegment.upperBound, LazyValue(f))
+                addLazySegments(lazySegment.moveNext, builder)
+              case _ =>
+                builder.setLastValue(LazyValue(f))
+            }
+          case _ => builder
         }
 
-      val initialZippedSeq = ZippedOrderedMap.apply(
-        baseSeq,
-        lazySeq,
-        InitialZValue.getOperator[E, D, V],
-        BooleanUtil.falsePredicate1,
-        BooleanUtil.falsePredicate1
-      )(
-        domainOps,
-        InitialZValueOps.get(valueOps),
-        rngManager
-      )
+      def addRightUnstableSegment(
+        maskSegment: LazyMaskSegmentWithNext[E, D, V],
+        builder: ControlSeqBuilder[E, D, V]
+      ): ControlSeqBuilder[E, D, V] = {
+        val maskTruncation = maskSegment.moveNext.lowerTruncation
+        val zippedTruncation = maskTruncation.zipIntoTuple(baseSeq)
+        zippedTruncation.segment match {
+          case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
+            builder.addBound(zippedSegment.upperBound, EagerValue.unstable)
+          case _ =>
+            builder
+        }
+      }
 
-      val rng = rngManager.newUnsafeUniformRng()
+      @tailrec
+      def traverseMaskSeq(
+        maskSegment: LazyMaskSegment[E, D, V],
+        builder: ControlSeqBuilder[E, D, V]
+      ): ControlSeqBuilder[E, D, V] =
+        // `lazySeq` contains lazy value.
+        if (maskSegment.value) {
+          // p.2.1.
+          maskSegment match {
+            case maskSegment: LazyMaskSegmentWithPrev[E, D, V] => addLeftUnstableSegment(maskSegment, builder)
+            case _ => // nothing to do
+          }
+          // p.2.2.
+          addLazySegments(maskSegment.back, builder)
 
-      val buffer = buildBuffer(
-        stableLowerBound = true,
-        initialZippedSeq.firstSegment,
-        List.empty[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]],
-        rng
-      )
-      val lastSegment = initialZippedSeq.lastSegment
-      val stableBounds = !lastSegment.hasPrevSuchThat(_.value.isRight)
-      val lastValue = InitialZValue.mapToControlValue(stableBounds, lastSegment.value)
-      val root = BuildAsc.finalizeBuffer(buffer)
+          if (builder.hasLastValue) builder
+          else maskSegment match {
+            case maskSegment: LazyMaskSegmentWithNext[E, D, V] =>
+              // p.2.3.
+              addRightUnstableSegment(maskSegment, builder)
 
-      val controlSeq = TreapOrderedMap.unchecked(
-        root,
-        lastValue
-      )(
-        domainOps,
-        ControlValueOps.get,
-        rngManager
+              if (builder.hasLastValue) builder
+              else traverseMaskSeq(maskSegment.moveNext, builder)
+            case _ =>
+              // Builder doesn't have last value => `addLazySegments` haven't found last segment =>
+              // there must be next segment after `maskSegment`.
+              throwNoNextSegment(maskSegment)
+          }
+        // `lazySeq` contains `None`.
+        } else maskSegment match {
+          case s: LazyMaskSegmentWithNext[E, D, V] => traverseMaskSeq(s.moveNext, builder)
+          case _ => builder.setLastValue(EagerValue.stable)
+        }
+
+      val lazyMaskSeq = lazySeq.map(_.isDefined)(ValueOps.booleanValueOps)
+
+      val controlSeqBuilder = new TreapSegmentSeqBuilder.Mutable[E, D, ControlValue[E, D, V]](
+        domainOps, ControlValueOps.get, rngManager
       )
+      val controlSeq = traverseMaskSeq(lazyMaskSeq.firstSegment, controlSeqBuilder).buildSeq
 
       ZippedOrderedMap.apply(
         TreapOrderedMap.getFactory.convertMap(baseSeq),
@@ -2429,6 +2519,40 @@ object AbstractLazyTreapSegmentSeq { outer =>
         rngManager
       )
     }
+
+    // Protected section -------------------------------------------------------- //
+    protected type ControlBuffer[E, D <: Domain[E], V] = List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]]
+
+    protected type ControlSeqBuilder[E, D <: Domain[E], V] = TreapSegmentSeqBuilder.Mutable[E, D, ControlValue[E, D, V]]
+
+    protected type LazyMaskSegment[E, D <: Domain[E], V] =
+      MappedSegment[E, D, OptionalSeqSupplier.Type[E, D, V], Boolean, Any]
+
+    protected type LazyMaskSegmentWithPrev[E, D <: Domain[E], V] =
+      MappedSegmentWithPrev[E, D, OptionalSeqSupplier.Type[E, D, V], Boolean, Any]
+
+    protected type LazyMaskSegmentWithNext[E, D <: Domain[E], V] =
+      MappedSegmentWithNext[E, D, OptionalSeqSupplier.Type[E, D, V], Boolean, Any]
+
+    protected type InitialZSegmentWithPrev[E, D <: Domain[E], V] =
+      ZippedTupleSegmentWithPrev[
+        E,
+        D,
+        Boolean,
+        V,
+        MappedSegmentBase[E, D, OptionalSeqSupplier.Type[E, D, V], Boolean, Any],
+        Any
+      ]
+
+    protected type InitialZSegmentWithNext[E, D <: Domain[E], V] =
+      ZippedTupleSegmentWithNext[
+        E,
+        D,
+        Boolean,
+        V,
+        MappedSegmentBase[E, D, OptionalSeqSupplier.Type[E, D, V], Boolean, Any],
+        Any
+      ]
   }
 
   /**

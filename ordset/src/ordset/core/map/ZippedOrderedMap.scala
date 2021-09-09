@@ -3,7 +3,7 @@ package ordset.core.map
 import ordset.core.AbstractZippedSegmentSeq.ZippedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractZippedSegmentSeq, SegmentT, SegmentSeq, SegmentTruncationT, ZippedTruncationT}
+import ordset.core.{AbstractZippedSegmentSeq, SegmentT, SegmentSeq, SegmentTruncationT, ZippedTruncation}
 import ordset.random.RngManager
 
 class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
@@ -40,12 +40,12 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
 
   protected final override def zipFirstSeqTruncation(
     firstTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1]]
-  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] =
+  ): ZippedTruncation[E, D, U1, U2, V, S1, S2] =
     super.zipFirstSeqTruncation(firstTruncation)
 
   protected final override def zipSecondSeqTruncation(
     secondTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2]]
-  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] =
+  ): ZippedTruncation[E, D, U1, U2, V, S1, S2] =
     super.zipSecondSeqTruncation(secondTruncation)
 }
 
@@ -76,9 +76,9 @@ object ZippedOrderedMap {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] = {
+  ): ZippedTruncation[E, D, U1, U2, V, S1, S2] = {
     val zippedSeq = apply(
-      firstTruncation.segment.sequence,
+      firstTruncation.sequence,
       secondMap,
       operatorFunc,
       firstInvariantFunc,
@@ -98,10 +98,10 @@ object ZippedOrderedMap {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] = {
+  ): ZippedTruncation[E, D, U1, U2, V, S1, S2] = {
     val zippedSeq = apply(
       firstMap,
-      secondTruncation.segment.sequence,
+      secondTruncation.sequence,
       operatorFunc,
       firstInvariantFunc,
       secondInvariantFunc

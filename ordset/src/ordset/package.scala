@@ -111,5 +111,17 @@ package object ordset {
       implicit def tuple2Show[T1, T2](implicit ev1: Show[T1], ev2: Show[T2]): Show[(T1, T2)] =
         cats.instances.tuple.catsStdShowForTuple2
     }
+
+    object either {
+
+      implicit def eitherOrder[T1, T2](implicit ev1: Order[T1], ev2: Order[T2]): Order[Either[T1, T2]] =
+        kernel.instances.either.catsStdOrderForEither
+
+      implicit def eitherHash[T1, T2](implicit ev1: Hash[T1], ev2: Hash[T2]): Hash[Either[T1, T2]] =
+        kernel.instances.either.catsStdHashForEither
+
+      implicit def eitherShow[T1, T2](implicit ev1: Show[T1], ev2: Show[T2]): Show[Either[T1, T2]] =
+        cats.instances.either.catsStdShowForEither
+    }
   }
 }

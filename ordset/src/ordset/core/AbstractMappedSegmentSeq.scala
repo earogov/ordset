@@ -117,6 +117,19 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     searchFrontMapper(frontMapperFirst, originalSeq.firstSegment)
 
   /**
+   * Returns mapped truncation for truncation of original sequence.
+   */
+  protected def mapOriginalSeqTruncation(
+    originalTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]]
+  ): MappedTruncation[E, D, U, V, S] = {
+    val mappedSegment = searchFrontMapper(
+      frontMapperGeneral,
+      originalTruncation.segment
+    )
+    mappedSegment.truncation(originalTruncation.bound)
+  }
+
+  /**
    * Preconditions:
    *
    * 1. `original` segment belongs to `sequence.originalSeq`.
@@ -284,6 +297,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
    * Starting from `original` segment function moves backward (getting previous segments of original sequence) until
    * meets change of the mapped value. In that case it stops and builds mapped segment with `mapper` function
    * for last original segment before value change.
+   * {{{
    *
    *          output original       <-     original
    *                 V                        V
@@ -295,6 +309,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
    *       -------------------------------------------------------
    *          A         |                    B                      - mapped value
    *               lower bound
+   * }}}
    */
   protected final def searchBackMapper[Seg >: SegmentT.WithNext[E, D, U, S] <: SegmentT[E, D, U, S], R](
     mapper: Seg => R,
@@ -392,14 +407,17 @@ object AbstractMappedSegmentSeq {
   type MappedLastSegment[E, D <: Domain[E], U, V, S] =
     SegmentT.Last[E, D, V, MappedSegmentBase[E, D, U, V, S]] with MappedSegmentBase[E, D, U, V, S]
 
+  type MappedTruncation[E, D <: Domain[E], U, V, S] =
+    SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], MappedSegment[E, D, U, V, S]]
+  
   /**
    * Base trait for mapped segments.
    *
    * Upper and lower bounds of mapped segments are defined by change of new (mapped) value.
-   * Mapped segment is specified by 'original' segment that corresponds to the upper bound.
+   * Mapped segment is specified by 'front' segment that corresponds to the upper bound.
    * {{{
    *
-   *                                     original
+   *                                      front
    *                                        V
    *       -------------|-------------|-------------|-------------
    *              A     |     B              C      |     D         - original value
@@ -413,7 +431,7 @@ object AbstractMappedSegmentSeq {
    *
    * Preconditions:
    *
-   * 1. `original` segment belongs to `sequence.originalSeq`.
+   * 1. `front` segment belongs to `sequence.originalSeq`.
    */
   sealed trait MappedSegmentBase[E, D <: Domain[E], U, V, S]
     extends MappedSegmentLikeT[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]] {
@@ -426,24 +444,117 @@ object AbstractMappedSegmentSeq {
     override def segmentMapFunc: Segment[E, D, U] => V = sequence.segmentMapFunc
 
     /**
-     * @return `true` if this segment maps input `segment`.
+     * @return `true` if given `segment` is the `front` segment of current mapped segment.
      */
     def isSpecifiedBy(segment: SegmentT[E, D, U, S]): Boolean =
-      sequence.originalSeq.eq(segment.sequence) && sequence.domainOps.segmentUpperOrd.eqv(original, segment)
+      sequence.originalSeq.eq(segment.sequence) && sequence.domainOps.segmentUpperOrd.eqv(front, segment)
 
     // Navigation --------------------------------------------------------------- //
+    /**
+     * Returns front original segment.
+     * {{{
+     *
+     *   front == S2
+     *
+     *        S1          S2
+     *   ----------](-----------)[-------- original seq
+     *                          |
+     *   -----------------------)[-------- mapped seq
+     *       current segment
+     * }}}
+     */
+    def front: SegmentT[E, D, U, S]
+
+    /**
+     * Returns back original segment.
+     * {{{
+     *
+     *   back == S1
+     *
+     *                    S1         S2
+     *   ----------](-----------)[-------- original seq
+     *              |
+     *   ----------](--------------------- mapped seq
+     *                   current segment
+     * }}}
+     */
+    def back: SegmentT[E, D, U, S]
+
     override def moveToFirst: MappedFirstSegment[E, D, U, V, S] = sequence.firstSegment
 
     override def moveToLast: MappedLastSegment[E, D, U, V, S] = sequence.lastSegment
 
     override def moveToBound(bound: Bound[E]): MappedSegment[E, D, U, V, S] =
-      sequence.searchFrontMapper(sequence.frontMapperGeneral, original.moveToBound(bound))
+      sequence.searchFrontMapper(sequence.frontMapperGeneral, front.moveToBound(bound))
 
     override def moveToExtended(bound: ExtendedBound[E]): MappedSegment[E, D, U, V, S] =
       sequence.getSegmentForExtended(bound)
 
     override def moveToElement(element: E): MappedSegment[E, D, U, V, S] =
       sequence.getSegmentForElement(element)
+
+    /**
+     * Returns [[Iterable]] of all segments of original sequence starting from [[front]] to [[back]].
+     * I.e. iterates over segments of original sequence which are inside current mapped segment.
+     * {{{
+     *
+     *   iterable == {S1, S2, S3}
+     *
+     *              S1        S2        S3
+     *   -----)[--------)[---------)[--------](------- original seq
+     *
+     *   -----)[-----------------------------](------- mapped seq
+     *                 current segment
+     * }}}
+     */
+    def originalForwardIterable: Iterable[SegmentT[E, D, U, S]] = {
+      val b = back
+      val ord = domainOps.segmentUpperOrd
+      front.forwardIterable.takeWhile(ord.lteqv(_, b))
+    }
+
+    /**
+     * Returns [[LazyList]] of all segments of original sequence starting from [[front]] to [[back]].
+     *
+     * @see [[originalForwardIterable]]
+     */
+    def originalForwardLazyList: LazyList[SegmentT[E, D, U, S]] = {
+      val b = back
+      val ord = domainOps.segmentUpperOrd
+      front.forwardLazyList.takeWhile(ord.lteqv(_, b))
+    }
+
+    /**
+     * Returns [[Iterable]] of all segments of original sequence starting from [[back]] to [[front]].
+     * I.e. iterates in inverse order over segments of original sequence which are inside current
+     * mapped segment.
+     * {{{
+     *
+     *   iterable == {S3, S2, S1}
+     *
+     *              S1        S2        S3
+     *   -----)[--------)[---------)[--------](------- original seq
+     *
+     *   -----)[-----------------------------](------- mapped seq
+     *                 current segment
+     * }}}
+     */
+    def originalBackwardIterable: Iterable[SegmentT[E, D, U, S]] = {
+      val f = front
+      val ord = domainOps.segmentUpperOrd
+      back.backwardIterable.takeWhile(ord.gteqv(_, f))
+    }
+
+    /**
+     * Returns [[Iterable]] of all segments of original sequence starting from [[back]] to [[front]].
+     *
+     * @see [[originalBackwardLazyList]]
+     */
+    def originalBackwardLazyList: LazyList[SegmentT[E, D, U, S]] = {
+      val f = front
+      val ord = domainOps.segmentUpperOrd
+      back.backwardLazyList.takeWhile(ord.gteqv(_, f))
+    }
 
     // Transformation ----------------------------------------------------------- //
     override def takeAbove: SegmentSeq[E, D, V] = ???
@@ -455,6 +566,95 @@ object AbstractMappedSegmentSeq {
     override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
     override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+
+    /**
+     * Returns truncation of original sequence at lower bound of mapped segment.
+     * {{{
+     *
+     *   originalLowerTruncation - truncation with segment S1 and bound B1;
+     *   originalUpperTruncation - truncation with segment S3 and bound B2.
+     *
+     *         B1                            B2
+     *         [    S1        S2        S3   ]
+     *   -----)[--------)[---------)[--------](------- original seq
+     *
+     *   -----)[-----------------------------](------- mapped seq
+     *                 current segment
+     * }}}
+     */
+    def originalLowerTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S] with S] =
+      back.self.lowerTruncation
+
+    /**
+     * Returns truncation of original sequence at upper bound of mapped segment.
+     * {{{
+     *
+     *   originalLowerTruncation - truncation with segment S1 and bound B1;
+     *   originalUpperTruncation - truncation with segment S3 and bound B2.
+     *
+     *         B1                            B2
+     *         [    S1        S2        S3   ]
+     *   -----)[--------)[---------)[--------](------- original seq
+     *
+     *   -----)[-----------------------------](------- mapped seq
+     *                 current segment
+     * }}}
+     */
+    def originalUpperTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S] with S] =
+      front.self.upperTruncation
+
+    /**
+     * Applies patch operation to original sequence within current mapped segment.
+     *
+     * Returns sequence containing
+     * <tr>
+     *   - segments {i ∈ [0, L-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lowerBound
+     * </tr>
+     * <tr>
+     *   - segments {i ∈ [L, M-1]: (max(lowerBound, l,,i,,), min(upperBound, u,,i,,)) -> v,,i,,}
+     *   of `other` sequence for which l,,i,, `≤` upperBound and u,,i,, `≥` lowerBound
+     * </tr>
+     * <tr>
+     *   - segments {i ∈ [M, N-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upperBound
+     * </tr>
+     * <tr>where</tr>
+     * <tr>lowerBound - lower bound of current mapped segment;</tr>
+     * <tr>upperBound - upper bound of current mapped segment;</tr>
+     * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
+     * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
+     * <tr>v,,i,, - value of segment S,,i,,.</tr>
+     *
+     * {{{
+     *   original sequence:
+     *
+     *   X-----)[-------------)[--------------](-------X
+     *      A          B               C           D
+     *
+     *   mapped sequence:
+     *
+     *   X-----)[-----------------------------](-------X
+     *      A   ^               B             ^    D
+     *         lower bound           upper bound
+     *
+     *   mapping function:
+     *   A -> A    C -> B
+     *   B -> B    D -> D
+     *
+     *   other sequence:
+     *
+     *   X---)[------------)[-------------------](-----X
+     *     E         F                G             H
+     *
+     *   segment.patchOriginal(other):
+     *
+     *   X-----)[----------)[-----------------](-------X
+     *      A         F              G             D
+     * }}}
+     */
+    def patchOriginal(other: SegmentSeq[E, D, U]): SegmentSeq[E, D, U]
+
+    // Protected section -------------------------------------------------------- //
+    protected override def original: SegmentT[E, D, U, S] = front
   }
 
   object MappedSegmentBase {
@@ -471,7 +671,7 @@ object AbstractMappedSegmentSeq {
   /**
    * Mapped segment with next segment.
    *
-   * Segment is specified by 'original' segment that corresponds to the upper bound
+   * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    */
   sealed trait MappedSegmentWithNext[E, D <: Domain[E], U, V, S]
@@ -481,29 +681,34 @@ object AbstractMappedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentWithNext[E, D, U, V, S]
 
-    override def upperBound: Bound.Upper[E] = original.upperBound
+    override def upperBound: Bound.Upper[E] = front.upperBound
 
     // Navigation --------------------------------------------------------------- //
+    override def front: SegmentT.WithNext[E, D, U, S]
+
     override def moveNext: MappedSegmentWithPrev[E, D, U, V, S] =
       sequence.stepForwardWithNextMapper(
         sequence.supplyMapper(
           sequence.frontMapperWithPrev,
           sequence.searchFrontMapper
         ),
-        original
+        front
       )
+
+    // Protected section -------------------------------------------------------- //
+    protected override def original: SegmentT.WithNext[E, D, U, S] = front
   }
 
   /**
    * Mapped segment with previous segment.
    *
-   * Segment is specified by 'original' segment that corresponds to the upper bound
+   * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    *
    * Lower bound is defined by `back` segment and is searched lazily.
    * {{{
    *
-   *                          back        original
+   *                          back         front
    *                           V             V
    *       -------------|-------------|-------------|-------------
    *              A     |     B              C      |     D         - original value
@@ -524,32 +729,37 @@ object AbstractMappedSegmentSeq {
       with MappedSegmentBase[E, D, U, V, S] {
 
     // Inspection --------------------------------------------------------------- //
-    lazy val back: SegmentT.WithPrev[E, D, U, S] = {
-      val back = sequence.searchBackMapper[SegmentT[E, D, U, S], SegmentT[E, D, U, S]](
-        identity, original
-      )
-      // Cast is safe if precondition 1 is provided.
-      back.asInstanceOf[SegmentT.WithPrev[E, D, U, S]]
-    }
-
     override def self: MappedSegmentWithPrev[E, D, U, V, S]
 
     override def lowerBound: Bound.Lower[E] = back.lowerBound
 
     // Navigation --------------------------------------------------------------- //
+    override def front: SegmentT.WithPrev[E, D, U, S]
+
+    override lazy val back: SegmentT.WithPrev[E, D, U, S] = {
+      val back = sequence.searchBackMapper[SegmentT[E, D, U, S], SegmentT[E, D, U, S]](
+        identity, front
+      )
+      // Cast is safe if precondition 1 is provided.
+      back.asInstanceOf[SegmentT.WithPrev[E, D, U, S]]
+    }
+
     override def movePrev: MappedSegmentWithNext[E, D, U, V, S] =
       sequence.stepBackwardWithPrevMapper(sequence.frontMapperWithNext, back)
+
+    // Protected section -------------------------------------------------------- //
+    protected override def original: SegmentT.WithPrev[E, D, U, S] = front
   }
 
   /**
    * Initial segment of mapped sequence.
    *
-   * Segment is specified by 'original' segment that corresponds to the upper bound
+   * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    */
   final case class MappedInitialSegment[E, D <: Domain[E], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
-    override val original: SegmentT.WithNext[E, D, U, S]
+    override val front: SegmentT.WithNext[E, D, U, S]
   ) extends MappedSegmentT.Initial[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
     with MappedSegmentWithNext[E, D, U, V, S] {
 
@@ -557,6 +767,14 @@ object AbstractMappedSegmentSeq {
     override def self: MappedInitialSegment[E, D, U, V, S] = this
 
     // Navigation --------------------------------------------------------------- //
+    override lazy val back: SegmentT.Initial[E, D, U, S] =
+      // `back` is the first segment of original sequence. Let's prove that it's also initial segment
+      // (has next segment). Two cases are possible:
+      // 1. `front` is the same as `back`, i.e. `front` is the first segment of original sequence.
+      //    By type definition `front` has next segment => cast is safe.
+      // 2. `front` is ahead of `back` => `back` has next segment => cast is safe.
+      front.moveToFirst.asInstanceOf[SegmentT.Initial[E, D, U, S]]
+
     override def moveToFirst: MappedInitialSegment[E, D, U, V, S] = this
 
     // Transformation ----------------------------------------------------------- //
@@ -570,6 +788,9 @@ object AbstractMappedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    override def patchOriginal(other: SegmentSeq[E, D, U]): SegmentSeq[E, D, U] =
+      originalUpperTruncation.prepend(other)
   }
 
   object MappedInitialSegment {
@@ -586,12 +807,12 @@ object AbstractMappedSegmentSeq {
   /**
    * Terminal segment of mapped sequence.
    *
-   * Segment is specified by 'original' segment that must be the terminal segment of original sequence
+   * Segment is specified by 'front' segment that must be the terminal segment of original sequence
    * (see preconditions of [[MappedSegmentBase]]).
    */
   final case class MappedTerminalSegment[E, D <: Domain[E], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
-    override val original: SegmentT.Terminal[E, D, U, S]
+    override val front: SegmentT.Terminal[E, D, U, S]
   ) extends MappedSegmentT.Terminal[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
     with MappedSegmentWithPrev[E, D, U, V, S] {
 
@@ -615,6 +836,9 @@ object AbstractMappedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    override def patchOriginal(other: SegmentSeq[E, D, U]): SegmentSeq[E, D, U] =
+      originalLowerTruncation.append(other)
   }
 
   object MappedTerminalSegment {
@@ -631,12 +855,12 @@ object AbstractMappedSegmentSeq {
   /**
    * Inner segment of mapped sequence.
    *
-   * Segment is specified by 'original' segment that corresponds to the upper bound
+   * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    */
   final case class MappedInnerSegment[E, D <: Domain[E], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
-    override val original: SegmentT.WithNext[E, D, U, S] & SegmentT.WithPrev[E, D, U, S]
+    override val front: SegmentT.Inner[E, D, U, S]
   ) extends MappedSegmentT.Inner[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
     with MappedSegmentWithPrev[E, D, U, V, S]
     with MappedSegmentWithNext[E, D, U, V, S] {
@@ -655,6 +879,12 @@ object AbstractMappedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    override def patchOriginal(other: SegmentSeq[E, D, U]): SegmentSeq[E, D, U] =
+      originalUpperTruncation.prepend(originalLowerTruncation.append(other))
+
+    // Protected section -------------------------------------------------------- //
+    protected override def original: SegmentT.Inner[E, D, U, S] = front
   }
 
   object MappedInnerSegment {
@@ -671,12 +901,12 @@ object AbstractMappedSegmentSeq {
   /**
    * Single segment of mapped sequence.
    *
-   * Segment is specified by 'original' segment that must be the last segment of original sequence
+   * Segment is specified by 'front' segment that must be the last segment of original sequence
    * (see preconditions of [[MappedSegmentBase]]).
    */
   final case class MappedSingleSegment[E, D <: Domain[E], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
-    override val original: SegmentT.Last[E, D, U, S]
+    override val front: SegmentT.Last[E, D, U, S]
   ) extends MappedSegmentT.Single[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
     with MappedSegmentBase[E, D, U, V, S] {
 
@@ -687,6 +917,8 @@ object AbstractMappedSegmentSeq {
     override def self: MappedSingleSegment[E, D, U, V, S] = this
 
     // Navigation --------------------------------------------------------------- //
+    override lazy val back: SegmentT.First[E, D, U, S] = front.moveToFirst
+
     override def moveToFirst: MappedSingleSegment[E, D, U, V, S] = this
 
     override def moveToLast: MappedSingleSegment[E, D, U, V, S] = this
@@ -708,6 +940,8 @@ object AbstractMappedSegmentSeq {
 
     override def upperTruncation: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    override def patchOriginal(other: SegmentSeq[E, D, U]): SegmentSeq[E, D, U] = other
   }
 
   object MappedSingleSegment {

@@ -113,10 +113,25 @@ object ValueOps {
     valueOps2: ValueOps[V2],
   ) extends ValueOps[(V1, V2)] {
 
-    override def unit: (V1, V2) = (valueOps1.unit, valueOps2.unit)
+    override val unit: (V1, V2) = (valueOps1.unit, valueOps2.unit)
 
     override val valueHash: Hash[(V1, V2)] =
       ordset.instances.tuple2.tuple2Hash(valueOps1.valueHash, valueOps2.valueHash)
+  }
+  
+  final class EitherImpl[V1, V2](
+    override val valueIncl: InclusionPredicate[Either[V1, V2]],
+    valueOps1: ValueOps[V1],
+    valueOps2: ValueOps[V2],
+    leftUnit: Boolean
+  ) extends ValueOps[Either[V1, V2]] {
+    
+    override val unit: Either[V1, V2] = 
+      if (leftUnit) Left(valueOps1.unit) 
+      else Right(valueOps2.unit)
+      
+    override val valueHash: Hash[Either[V1, V2]] =
+      ordset.instances.either.eitherHash(valueOps1.valueHash, valueOps2.valueHash)
   }
 
   final class MapImpl[V1, V2](
@@ -125,11 +140,11 @@ object ValueOps {
     mapFunc2: V2 => V1
   ) extends ValueOps[V2] {
 
-    override def unit: V2 = mapFunc1.apply(valueOps.unit)
+    override val unit: V2 = mapFunc1.apply(valueOps.unit)
 
-    override def valueHash: Hash[V2] = Hash.by(mapFunc2)(valueOps.valueHash)
+    override val valueHash: Hash[V2] = Hash.by(mapFunc2)(valueOps.valueHash)
 
-    override def valueIncl: InclusionPredicate[V2] = 
+    override val valueIncl: InclusionPredicate[V2] = 
       new InclusionPredicate.MapImpl(valueOps.valueIncl, mapFunc2)
   }
 }

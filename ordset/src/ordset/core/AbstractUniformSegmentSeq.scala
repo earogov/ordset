@@ -149,6 +149,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
 object AbstractUniformSegmentSeq {
 
+  type UniformTruncation[E, D <: Domain[E], V] = UniformSingleSegment.Truncation[E, D, V, UniformSingleSegment[E, D, V]]
+  
   /**
    * Single segment of sequence. It has no previous and next segments.
    */

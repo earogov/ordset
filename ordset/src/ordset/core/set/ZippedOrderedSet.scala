@@ -1,7 +1,7 @@
 package ordset.core.set
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.{AbstractZippedSegmentSeq, SegmentT, SegmentTruncationT, ZippedTruncationT}
+import ordset.core.{AbstractZippedSegmentSeq, SegmentT, SegmentTruncationT, ZippedTruncation}
 import ordset.core.AbstractZippedSegmentSeq.{ZippedSegmentBase, ZippedTruncation}
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
@@ -90,9 +90,9 @@ object ZippedOrderedSet {
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): ZippedTruncationT[E, D, Boolean, Boolean, Boolean, S1, S2] = {
+  ): ZippedTruncation[E, D, Boolean, Boolean, Boolean, S1, S2] = {
     val zippedSeq = apply(
-      firstTruncation.segment.sequence,
+      firstTruncation.sequence,
       secondSet,
       operatorFunc,
       invariantFunc
@@ -109,10 +109,10 @@ object ZippedOrderedSet {
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): ZippedTruncationT[E, D, Boolean, Boolean, Boolean, S1, S2] = {
+  ): ZippedTruncation[E, D, Boolean, Boolean, Boolean, S1, S2] = {
     val zippedSeq = apply(
       firstSet,
-      secondTruncation.segment.sequence,
+      secondTruncation.sequence,
       operatorFunc,
       invariantFunc
     )

@@ -515,8 +515,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
 object AbstractTreapSegmentSeq {
 
-  type TreapSegment[E, D <: Domain[E], V] = SegmentT[E, D, V, TreapSegmentBase[E, D, V]] with TreapSegmentBase[E, D, V]
+  type TreapSegment[E, D <: Domain[E], V] = 
+    SegmentT[E, D, V, TreapSegmentBase[E, D, V]] with TreapSegmentBase[E, D, V]
 
+  type TreapTruncation[E, D <: Domain[E], V] = 
+    SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], TreapSegment[E, D, V]]
+  
   /**
    * Base trait for non single segments. It has either previous segment or next.
    */

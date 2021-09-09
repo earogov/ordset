@@ -142,7 +142,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
    */
   protected def zipFirstSeqTruncation(
     firstTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1]]
-  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] = {
+  ): ZippedTruncation[E, D, U1, U2, V, S1, S2] = {
     val zippedSegment = searchFrontZipper(
       frontZipperGeneral,
       firstTruncation.segment,
@@ -156,7 +156,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
    */
   protected def zipSecondSeqTruncation(
     secondTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2]]
-  ): ZippedTruncationT[E, D, U1, U2, V, S1, S2] = {
+  ): ZippedTruncation[E, D, U1, U2, V, S1, S2] = {
     val zippedSegment = searchFrontZipper(
       frontZipperGeneral,
       firstSeq.getSegmentForExtended(secondTruncation.bound),
@@ -986,18 +986,13 @@ object AbstractZippedSegmentSeq {
     override def sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
-
+    
     // Navigation --------------------------------------------------------------- //
-    override def moveToFirst: ZippedFirstSegment[E, D, U1, U2, V, S1, S2] = sequence.firstSegment
-
-    override def moveToLast: ZippedLastSegment[E, D, U1, U2, V, S1, S2] = sequence.lastSegment
-
-    override def moveToBound(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
-      sequence.searchFrontZipper(sequence.frontZipperGeneral, left.moveToBound(bound), right.moveToBound(bound))
-
     /**
      * Returns front tuple of original segments.
      * {{{
+     *
+     *   front == (S2, S4)
      *
      *      S1               S2
      *   --------------](----------)[-----  first original seq
@@ -1006,8 +1001,6 @@ object AbstractZippedSegmentSeq {
      *            |                |
      *   --------](----------------)[-----  zipped seq
      *              current segment
-     *
-     *   front == (S2, S4)
      * }}}
      */
     def front: OrderedZippedTuple.ByUpperBound[E, D, U1, U2, V, S1, S2] = this
@@ -1016,6 +1009,8 @@ object AbstractZippedSegmentSeq {
      * Returns back tuple of original segments.
      * {{{
      *
+     *   back == (S1, S3)
+     *
      *      S1               S2
      *   --------------](----------)[-----  first original seq
      *            |      S3        |   S4
@@ -1023,11 +1018,16 @@ object AbstractZippedSegmentSeq {
      *            |                |
      *   --------](----------------)[-----  zipped seq
      *              current segment
-     *
-     *   back == (S1, S3)
      * }}}
      */
     def back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2]
+
+    override def moveToFirst: ZippedFirstSegment[E, D, U1, U2, V, S1, S2] = sequence.firstSegment
+
+    override def moveToLast: ZippedLastSegment[E, D, U1, U2, V, S1, S2] = sequence.lastSegment
+
+    override def moveToBound(bound: Bound[E]): ZippedSegment[E, D, U1, U2, V, S1, S2] =
+      sequence.searchFrontZipper(sequence.frontZipperGeneral, left.moveToBound(bound), right.moveToBound(bound))
 
     // Transformation ----------------------------------------------------------- //
     override def takeAbove: SegmentSeq[E, D, V] = ???
@@ -1044,15 +1044,17 @@ object AbstractZippedSegmentSeq {
      * Returns truncation of first <u>original</u> sequence at lower bound of <u>zipped</u> segment.
      * {{{
      *
+     *   firstSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   firstSeqUpperTruncation - truncation with segment S2 and bound B2.
+     * 
      *            B1               B2
      *      S1    (          S2    )
      *   --------------](----------)[-----  first original seq
+     *   
      *   --------](-----------)[----------  second original seq
+     *   
      *   --------](----------------)[-----  zipped seq
      *              current segment
-     *
-     *   firstSeqLowerTruncation - truncation with segment S1 and bound B1;
-     *   firstSeqUpperTruncation - truncation with segment S2 and bound B2.
      * }}}
      *
      * Note, in general case:
@@ -1071,15 +1073,17 @@ object AbstractZippedSegmentSeq {
      * Returns truncation of first <u>original</u> sequence at upper bound of <u>zipped</u> segment.
      * {{{
      *
+     *   firstSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   firstSeqUpperTruncation - truncation with segment S2 and bound B2.
+     *
      *            B1               B2
      *      S1    (          S2    )
      *   --------------](----------)[-----  first original seq
+     *   
      *   --------](-----------)[----------  second original seq
+     *   
      *   --------](----------------)[-----  zipped seq
      *              current segment
-     *
-     *   firstSeqLowerTruncation - truncation with segment S1 and bound B1;
-     *   firstSeqUpperTruncation - truncation with segment S2 and bound B2.
      * }}}
      *
      * Note, in general case:
@@ -1097,15 +1101,17 @@ object AbstractZippedSegmentSeq {
      * Returns truncation of second <u>original</u> sequence at lower bound of <u>zipped</u> segment.
      * {{{
      *
+     *   secondSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   secondSeqUpperTruncation - truncation with segment S2 and bound B2.
+     *
      *            B1               B2
      *            (   S1           )   S2
      *   --------](-----------)[----------  second original seq
+     *   
      *   --------------](----------)[-----  first original seq
+     *   
      *   --------](----------------)[-----  zipped seq
      *              current segment
-     *
-     *   secondSeqLowerTruncation - truncation with segment S1 and bound B1;
-     *   secondSeqUpperTruncation - truncation with segment S2 and bound B2.
      * }}}
      *
      * Note, in general case:
@@ -1124,15 +1130,17 @@ object AbstractZippedSegmentSeq {
      * Returns truncation of second <u>original</u> sequence at upper bound of <u>zipped</u> segment.
      * {{{
      *
+     *   secondSeqLowerTruncation - truncation with segment S1 and bound B1;
+     *   secondSeqUpperTruncation - truncation with segment S2 and bound B2.
+     * 
      *            B1               B2
      *            (   S1           )   S2
      *   --------](-----------)[----------  second original seq
+     *   
      *   --------------](----------)[-----  first original seq
+     *   
      *   --------](----------------)[-----  zipped seq
      *              current segment
-     *
-     *   secondSeqLowerTruncation - truncation with segment S1 and bound B1;
-     *   secondSeqUpperTruncation - truncation with segment S2 and bound B2.
      * }}}
      *
      * Note, in general case:
@@ -1242,6 +1250,11 @@ object AbstractZippedSegmentSeq {
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
+    override def upperBound: Bound.Upper[E] = frontBackward.upperBound
+
+    override def self: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2]
+
+    // Navigation --------------------------------------------------------------- //
     def frontBackward: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]
 
     def frontForward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1250,11 +1263,6 @@ object AbstractZippedSegmentSeq {
 
     override def forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontForward
 
-    override def upperBound: Bound.Upper[E] = frontBackward.upperBound
-
-    override def self: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2]
-
-    // Navigation --------------------------------------------------------------- //
     override def moveNext: ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2] =
       sequence.stepForwardNextGenZipper(
         sequence.supplyZipper[ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2]](
@@ -1309,6 +1317,11 @@ object AbstractZippedSegmentSeq {
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
+    override def lowerBound: Bound.Lower[E] = backForward.lowerBound
+
+    override def self: ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2]
+
+    // Navigation --------------------------------------------------------------- //
     override lazy val back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
       sequence.searchBackZipper(OrderedZippedTuple.ByLowerBound.zipper(sequence), left, right)
 
@@ -1318,14 +1331,9 @@ object AbstractZippedSegmentSeq {
       // Cast is safe if precondition 1 is provided.
       back.forward.asInstanceOf[SegmentT.WithPrev[E, D, ? <: U1 | U2, ? <: S1 | S2]]
 
-    override def lowerBound: Bound.Lower[E] = backForward.lowerBound
-
-    override def self: ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2]
-
-    // Navigation --------------------------------------------------------------- //
     override def movePrev: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2] =
       sequence.stepBackwardPrevGenZipper(sequence.frontZipperWithNext, backForward, backBackward)
-
+    
     // Transformation ----------------------------------------------------------- //
     override def firstSeqLowerTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] =
       back.firstSeqSegment.self.truncation(lowerBound)
@@ -1349,16 +1357,16 @@ object AbstractZippedSegmentSeq {
     with ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
+    override def self: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
+
+    // Navigation --------------------------------------------------------------- //
     override def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontBackward
 
     override def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontForward
 
-    override def back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
+    override lazy val back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
       OrderedZippedTuple.ByLowerBound.unsafe(sequence, left.moveToFirst, right.moveToFirst)
 
-    override def self: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
-
-    // Navigation --------------------------------------------------------------- //
     override def moveToFirst: ZippedInitialSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
@@ -1405,10 +1413,6 @@ object AbstractZippedSegmentSeq {
     with ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
-    override def backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = left
-
-    override def forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = right
-
     override def isSpecifiedBy(
       left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
       right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1418,6 +1422,10 @@ object AbstractZippedSegmentSeq {
     override def self: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Navigation --------------------------------------------------------------- //
+    override def backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = left
+
+    override def forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = right
+    
     override def moveToLast: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
@@ -1466,11 +1474,12 @@ object AbstractZippedSegmentSeq {
     with ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
+    override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
+
+    // Navigation --------------------------------------------------------------- //
     override def left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontBackward
 
     override def right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = frontForward
-
-    override def self: ZippedInnerSegment[E, D, U1, U2, V, S1, S2] = this
 
     // Transformation ----------------------------------------------------------- //
     override def truncation(
@@ -1520,7 +1529,7 @@ object AbstractZippedSegmentSeq {
 
     override def forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2] = right
 
-    override def back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
+    override lazy val back: OrderedZippedTuple.ByLowerBound[E, D, U1, U2, V, S1, S2] =
       OrderedZippedTuple.ByLowerBound.unsafe(sequence, left.moveToFirst, right.moveToFirst)
 
     override def isSpecifiedBy(

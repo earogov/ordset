@@ -334,6 +334,9 @@ object AbstractIndexedSegmentSeq {
 
   type IndexedSegment[E, D <: Domain[E], V] =
     SegmentT[E, D, V, IndexedSegmentBase[E, D, V]] with IndexedSegmentBase[E, D, V]
+  
+  type IndexedTruncation[E, D <: Domain[E], V] =
+    SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], IndexedSegment[E, D, V]]
 
   /**
    * Base trait for indexed sequence segments. It has either previous or next segment.

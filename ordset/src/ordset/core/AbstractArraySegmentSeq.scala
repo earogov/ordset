@@ -61,3 +61,7 @@ abstract class AbstractArraySegmentSeq[E, D <: Domain[E], V] extends AbstractInd
     else res
   }
 }
+
+// TODO implement segments to override type of indexed sequence.
+object AbstractArraySegmentSeq {
+}

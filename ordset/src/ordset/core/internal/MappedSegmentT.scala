@@ -128,6 +128,6 @@ protected[ordset] object MappedSegmentT {
     override def self: MappedSegmentT.Inner[E, D, U, V, S1, S2] with S2
 
     // Protected section -------------------------------------------------------- //
-    protected override def original: SegmentT.WithNext[E, D, U, S1] & SegmentT.WithPrev[E, D, U, S1]
+    protected override def original: SegmentT.Inner[E, D, U, S1]
   }
 }
