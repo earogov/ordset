@@ -13,7 +13,7 @@ import AbstractZippedSegmentSeq.*
 import AbstractTreapSegmentSeq.*
 import AbstractUniformSegmentSeq.*
 import AbstractLazyTreapSegmentSeq.*
-import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqUtil, TreapSegmentSeqBuilder}
+import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.util.BooleanUtil
 import ordset.util.HashUtil.product1Hash
@@ -978,9 +978,9 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     ZippedOrderedMap.apply(
       baseSeq,
       controlSeq,
-      Tuple2.apply,
-      BooleanUtil.falsePredicate1,
-      BooleanUtil.falsePredicate1
+      ZValue.operator(valueOps),
+      ZValue.baseInvariant,
+      ZValue.controlInvariant
     )(
       domainOps,
       zippedSeq.valueOps,
@@ -2256,6 +2256,58 @@ object AbstractLazyTreapSegmentSeq { outer =>
     private lazy val instance: ControlValueOps[Any, Domain[Any], Any] = new ControlValueOps()
   }
 
+  object ZValue {
+
+    /**
+     * Returns operator that combines base value and control value into tuple (value of zipped sequence).
+     *
+     * If control value is lazy operator replaces real base value in output tuple with `valueOps.unit`.
+     *
+     * Consider the case:
+     * {{{
+     *
+     *        A        B        C         D
+     *   X-------)[-------)[--------)[--------X - base sequence
+     *
+     *       u              ?             u
+     *   X-------)[-----------------)[--------X - control sequence
+     *                function `f`
+     *
+     *     (A, u)   (B, ?)    (C, ?)   (D, u)
+     *   X-------)[-------)[--------)[--------X - zipped sequence v1
+     *
+     *     (A, u)       (unit, ?)      (D, u)
+     *   X-------)[-----------------)[--------X - zipped sequence v2
+     * }}}
+     *
+     * Zipped sequence v1 was received without additional replacement - operator just combines two values into tuple.
+     * In that case we get undesirable behaviour of lazy sequence: function `f` will be called twice to compute all
+     * lazy segments (one time per each zipped segment).
+     *
+     * Zipped sequence v2 was received with current `operator` and has no such disadvantage
+     */
+    def operator[E, D <: Domain[E], V](
+      valueOps: ValueOps[V]
+    ): (V, ControlValue[E, D, V]) => ZValue[E, D, V] =
+      (v, c) => if (c.isLazy) (valueOps.unit, c) else (v, c)
+
+    /**
+     * Returns function that check whether base value is invariant for [[operator]]
+     * (see [[SegmentSeqT.zipOptimized]]).
+     */
+    def baseInvariant: Any => Boolean = BooleanUtil.falsePredicate1
+
+    /**
+     * Returns function that check whether control value is invariant for [[operator]]
+     * (see [[SegmentSeqT.zipOptimized]]).
+     */
+    def controlInvariant[E, D <: Domain[E], V]: ControlValue[E, D, V] => Boolean =
+      controlInvariantInstance.asInstanceOf
+
+    // Private section ---------------------------------------------------------- //
+    private lazy val controlInvariantInstance: ControlValue[Any, Domain[Any], Any] => Boolean = _.isLazy
+  }
+
   object ZValueOps {
 
     def get[E, D <: Domain[E], V](valueOps: ValueOps[V]): ValueOps[ZValue[E, D, V]] =
@@ -2327,7 +2379,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       )
   }
 
-  object Builder {
+  object ZippedSeqBuilder {
 
     /**
      * Creates lazy segment sequence using two input sequences:
@@ -2359,7 +2411,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
      *                                               lazy value computation
      * }}}
      */
-    final def makeZippedSeqForInitialization[E, D <: Domain[E], V](
+    final def build[E, D <: Domain[E], V](
       baseSeq: SegmentSeq[E, D, V],
       lazySeq: InitialLazySegmentSeq[E, D, V]
     )(
@@ -2372,14 +2424,14 @@ object AbstractLazyTreapSegmentSeq { outer =>
       // Algorithm
       //
       // To create lazy treap sequence we need base and control sequences. `baseSeq` already has proper type,
-      // so we only need to convert `lazySeq` into control sequence.
+      // so we need only to convert `lazySeq` into control sequence.
       //
       // 1. Build lazy mask sequence from `lazySeq` which merges adjacent lazy segments.
       //
-      //      None       Some(f)    Some(f)    None
+      //      None       Some(f1)   Some(f2)   None
       // X-------------)[--------)[--------)[--------X - lazy sequence
       //
-      //      false            true           false
+      //      false             true           false
       // X-------------)[------------------)[--------X - lazy mask sequence
       //
       // 2. Iterate over lazy mask sequence. If current segment `S` has `true` value then:
@@ -2394,10 +2446,10 @@ object AbstractLazyTreapSegmentSeq { outer =>
       // 2.3. Zip lazy mask sequence with `baseSeq`. Get next zipped segment `ZN` for segment `S`.
       //      Add to control sequence unstable segment with the same bound as `ZN`.
       //
-      //     A         B         C         D      E
+      //     A         B          C         D      E
       // X--------)[--------)[--------)[--------)[---X - base sequence
       //
-      //      None       Some(f)    Some(f)    None
+      //      None       Some(f1)   Some(f2)    None
       // X-------------)[--------)[--------)[--------X - lazy sequence
       //
       //      false              true         false
@@ -2406,8 +2458,8 @@ object AbstractLazyTreapSegmentSeq { outer =>
       //
       //                        VVV
       //
-      //      s      u            ?           u    s
-      // X--------)[---)[------------------)[---)[---X - control sequence
+      //      s      u       ?         ?      u    s
+      // X--------)[---)[--------)[--------)[---)[---X - control sequence
 
       def addLeftUnstableSegment(
         maskSegment: LazyMaskSegmentWithPrev[E, D, V],
@@ -2510,9 +2562,9 @@ object AbstractLazyTreapSegmentSeq { outer =>
       ZippedOrderedMap.apply(
         TreapOrderedMap.getFactory.convertMap(baseSeq),
         controlSeq,
-        Tuple2.apply,
-        BooleanUtil.falsePredicate1,
-        BooleanUtil.falsePredicate1
+        ZValue.operator(valueOps),
+        ZValue.baseInvariant,
+        ZValue.controlInvariant
       )(
         domainOps,
         ZValueOps.get(valueOps),

@@ -29,6 +29,7 @@ object PatchLazyExample {
   }
 
   def example1(): Unit = {
+    println()
     println(s"$sep SegmentSeq.patchLazy example $sep")
 
     def buildPatchSeq(): OrderedMap[Int, Domain[Int], String] = {
@@ -48,6 +49,7 @@ object PatchLazyExample {
       patchSeq
     }
 
+    println("Initial sequence:")
     val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
       List(
         (0`)[`, "A"),
@@ -60,10 +62,9 @@ object PatchLazyExample {
       domainOps,
       stringValueOps
     )()
-
-    println("Initial sequence:")
     println(seq1)
 
+    println()
     println("Let's patch it with sequence:")
     val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
       List(
@@ -76,12 +77,13 @@ object PatchLazyExample {
     )()
     println(lazySeq)
 
+    println()
     println("Each segment of sequence above optionally contains function that evolves into new sequence.")
     println("Functions are computed lazily only if corresponding segment is requested.")
     println("So patch sequence hadn't been built yet.")
 
-    println("")
-    println("So patched sequence will be the following:")
+    println()
+    println("After lazy patch is applied we will get the following sequence:")
     val seq2 = seq1.patchLazy(lazySeq)
     println(seq2)
 
@@ -93,14 +95,15 @@ object PatchLazyExample {
     //  ...
 
     val bound1 = Bound.Upper.inclusive(20)
-    println("")
+    println()
     println(s"No let's request segment at bound $bound1")
     seq2.getSegmentForBound(bound1)
 
-    println("")
+    println()
     println("Patch sequence was built and cached:")
     println(seq2)
 
+    println()
     println("Compute all lazy values:")
     println(TreapOrderedMap.getFactory.convertMap(seq2))
   }

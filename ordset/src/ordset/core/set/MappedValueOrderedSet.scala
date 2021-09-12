@@ -1,6 +1,6 @@
 package ordset.core.set
 
-import ordset.core.{AbstractMappedValueSegmentSeq, MappedTruncation, SegmentTruncationT}
+import ordset.core.{AbstractMappedValueSegmentSeq, MappedSegment, MappedTruncation, SegmentT, SegmentTruncationT}
 import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
@@ -14,7 +14,7 @@ class MappedValueOrderedSet[E, D <: Domain[E], S] protected (
   final override val domainOps: DomainOps[E, D],
   final override val rngManager: RngManager
 ) extends AbstractMappedValueSegmentSeq[E, D, Boolean, Boolean, S]
-  with OrderedSetCommons[E, D, MappedSegmentBase[E, D, Boolean, Boolean, S]] {
+  with OrderedSetCommons[E, D, MappedSetSegmentBase[E, D, S]] {
 
   // Protected section -------------------------------------------------------- //
   @inline
@@ -24,10 +24,11 @@ class MappedValueOrderedSet[E, D <: Domain[E], S] protected (
   protected final override def cons(original: OrderedSet[E, D]): OrderedSet[E, D] =
     new MappedValueOrderedSet(original, valueMapFunc)
 
-  protected final override def mapOriginalSeqTruncation(
-    originalTruncation: SegmentTruncationT[E, D, Boolean, S, SetSegmentT[E, D, S]]
-  ): MappedTruncation[E, D, Boolean, Boolean, S] =
-    super.mapOriginalSeqTruncation(originalTruncation)
+  protected final override def mapSegment(segment: SetSegmentT[E, D, S]): MappedSetSegment[E, D, S] =
+    super.mapSegment(segment)
+
+  protected final override def mapTruncation(truncation: SetSegmentTruncationT[E, D, S]): MappedSetTruncation[E, D, S] =
+    super.mapTruncation(truncation)
 }
 
 object MappedValueOrderedSet {
@@ -42,20 +43,25 @@ object MappedValueOrderedSet {
   ): MappedValueOrderedSet[E, D, S] =
     new MappedValueOrderedSet(original, valueMapFunc)
 
-  def mapOriginalTruncation[E, D <: Domain[E], S](
-    originalTruncation: SegmentTruncationT[E, D, Boolean, S, SetSegmentT[E, D, S]],
+  def mapSegment[E, D <: Domain[E], S](
+    originalSegment: SetSegmentT[E, D, S],
     valueMapFunc: Boolean => Boolean
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): MappedTruncation[E, D, Boolean, Boolean, S] = {
-    val mappedSeq = apply(
-      originalTruncation.sequence,
-      valueMapFunc
-    )
-    mappedSeq.mapOriginalSeqTruncation(originalTruncation)
-  }
+  ): MappedSetSegment[E, D, S] =
+    apply(originalSegment.sequence, valueMapFunc).mapSegment(originalSegment)
+
+  def mapTruncation[E, D <: Domain[E], S](
+    originalTruncation: SetSegmentTruncationT[E, D, S],
+    valueMapFunc: Boolean => Boolean
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): MappedSetTruncation[E, D, S] =
+    apply(originalTruncation.sequence, valueMapFunc).mapTruncation(originalTruncation)
 
   def identity[E, D <: Domain[E], S](
     original: OrderedSetT[E, D, S]

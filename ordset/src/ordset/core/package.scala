@@ -133,5 +133,4 @@ package object core {
 
   type ZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2] =
     AbstractZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
-
 }

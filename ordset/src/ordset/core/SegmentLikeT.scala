@@ -3,6 +3,7 @@ package ordset.core
 import ordset.core
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.internal.SegmentSeqExceptionUtil
+import ordset.core.map.{MappedOrderedMap, MappedValueOrderedMap}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
 
@@ -546,4 +547,42 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    */
   def upperTruncation: SegmentTruncationT[E, D, V, S, SegmentT[E, D, V, S]]
+
+  /**
+   * Maps values of original sequence (see [[SegmentSeqT.mapSegments]]) and returns mapped segment that spans
+   * current segment.
+   *
+   * @see [[map]]
+   */
+  def mapSegments[U, S1 >: S](
+    mapFunc: Segment[E, D, V] => U
+  )(
+    implicit valueOps: ValueOps[U]
+  ): MappedSegment[E, D, V, U, S1] = {
+    val originalSeq = sequence
+    MappedOrderedMap.mapSegment(
+      self, mapFunc
+    )(
+      originalSeq.domainOps, valueOps, originalSeq.rngManager
+    )
+  }
+
+  /**
+   * Maps values of original sequence (see [[SegmentSeqT.mapSegments]]) and returns mapped segment that spans
+   * current segment.
+   *
+   * @see [[mapSegments]]
+   */
+  def map[U, S1 >: S](
+    mapFunc: V => U
+  )(
+    implicit valueOps: ValueOps[U]
+  ): MappedSegment[E, D, V, U, S1] = {
+    val originalSeq = sequence
+    MappedValueOrderedMap.mapSegment(
+      self, mapFunc
+    )(
+      originalSeq.domainOps, valueOps, originalSeq.rngManager
+    )
+  }
 }

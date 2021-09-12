@@ -22,7 +22,7 @@ class LazyTreapOrderedMap[E, D <: Domain[E], V] protected (
 
   // Protected section -------------------------------------------------------- //
   @inline
-  protected final override def consUniform(value: V): LazySegmentSeq[E, D, V] =
+  protected final override def consUniform(value: V): LazyOrderedMap[E, D, V] =
     new LazyTreapOrderedMap(
       makeZippedSeq(
         makeUniformBaseSeq(value),
@@ -30,7 +30,7 @@ class LazyTreapOrderedMap[E, D <: Domain[E], V] protected (
       )
     )
 
-  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] = ???
+  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazyOrderedMap[E, D, V] = ???
 }
 
 object LazyTreapOrderedMap {
@@ -81,7 +81,7 @@ object LazyTreapOrderedMap {
     valueOps: ValueOps[V],
     rngManager: RngManager
   ): LazySegmentSeq[E, D, V] = {
-    val zippedSeq = AbstractLazyTreapSegmentSeq.Builder.makeZippedSeqForInitialization(baseMap, lazyMap)
+    val zippedSeq = AbstractLazyTreapSegmentSeq.ZippedSeqBuilder.build(baseMap, lazyMap)
     new LazyTreapOrderedMap(zippedSeq)
   }
 }

@@ -30,19 +30,20 @@ object FlatmapExample {
   }
 
   def example1(): Unit = {
+    println()
     println(s"$sep Segment.flatMap example $sep")
 
+    println("Initial sequence:")
     val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       List(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
       complementary = false,
       domainOps
     )()
-
-    println("Initial sequence:")
     println(seq1)
 
     val segment1 = seq1.getSegmentForBound(15`[`)
 
+    println()
     println(s"Apply flatmap to segment $segment1")
 
     val seq2 = segment1.flatMap { () =>
@@ -59,11 +60,13 @@ object FlatmapExample {
     println("Received lazy sequence:")
     println(seq2)
 
+    println()
     println("Compute all lazy values:")
     println(TreapOrderedSet.getFactory.convertSet(seq2))
   }
 
   def example2(): Unit = {
+    println()
     println(s"$sep SegmentSeq.flatMap example $sep")
 
     /**
@@ -113,6 +116,7 @@ object FlatmapExample {
         (value, !value)
       }
 
+    println("Initial sequence:")
     val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
       List(
         (0`)[`, false),
@@ -125,10 +129,9 @@ object FlatmapExample {
       domainOps,
       valueOps
     )()
-
-    println("Initial sequence:")
     println(seq1)
 
+    println()
     println("Split each segment into two with random values. Adjacent segments with same values are merged.")
     val seq2 = seq1.flatMap(randomSplit(BoundSelector.intBoundSelector, booleanGenerator(seq1.rngManager)))
 
@@ -136,16 +139,17 @@ object FlatmapExample {
     println(seq2)
 
     val bound1 = Bound.Upper.inclusive(35)
-    println("")
+    println()
     println(s"Get value at bound $bound1")
     val value1 = seq2.getValueForBound(bound1)
     println(s"Received value: $value1")
 
-    println("")
+    println()
     println("Internal state of lazy sequence was changed - corresponding lazy segment was computed and cached.")
     println("Now we have lazy sequence:")
     println(seq2)
 
+    println()
     println("Compute all lazy values:")
     println(TreapOrderedMap.getFactory.convertMap(seq2))
   }

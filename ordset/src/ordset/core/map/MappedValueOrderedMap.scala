@@ -3,7 +3,7 @@ package ordset.core.map
 import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractMappedValueSegmentSeq, MappedTruncation, SegmentSeq, SegmentT, SegmentTruncationT}
+import ordset.core.{AbstractMappedValueSegmentSeq, MappedSegment, MappedTruncation, SegmentSeq, SegmentT, SegmentTruncationT}
 import ordset.random.RngManager
 
 class MappedValueOrderedMap[E, D <: Domain[E], U, V, S] protected (
@@ -25,10 +25,13 @@ class MappedValueOrderedMap[E, D <: Domain[E], U, V, S] protected (
   protected final override def cons(original: SegmentSeq[E, D, U]): SegmentSeq[E, D, V] =
     new MappedValueOrderedMap(original, valueMapFunc)
 
-  protected final override def mapOriginalSeqTruncation(
-    originalTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]]
+  protected final override def mapSegment(segment: SegmentT[E, D, U, S]): MappedSegment[E, D, U, V, S] =
+    super.mapSegment(segment)
+  
+  protected final override def mapTruncation(
+    truncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]]
   ): MappedTruncation[E, D, U, V, S] =
-    super.mapOriginalSeqTruncation(originalTruncation)
+    super.mapTruncation(truncation)
 }
 
 object MappedValueOrderedMap {
@@ -44,7 +47,18 @@ object MappedValueOrderedMap {
   ): MappedValueOrderedMap[E, D, U, V, S] =
     new MappedValueOrderedMap(originalSeq, valueMapFunc)
 
-  def mapOriginalTruncation[E, D <: Domain[E], U, V, S](
+  def mapSegment[E, D <: Domain[E], U, V, S](
+    originalSegment: SegmentT[E, D, U, S],
+    valueMapFunc: U => V
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V],
+    rngManager: RngManager
+  ): MappedSegment[E, D, U, V, S] =
+    apply(originalSegment.sequence, valueMapFunc).mapSegment(originalSegment)
+  
+  def mapTruncation[E, D <: Domain[E], U, V, S](
     originalTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]],
     valueMapFunc: U => V
   )(
@@ -52,13 +66,8 @@ object MappedValueOrderedMap {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): MappedTruncation[E, D, U, V, S] = {
-    val mappedSeq = apply(
-      originalTruncation.sequence,
-      valueMapFunc
-    )
-    mappedSeq.mapOriginalSeqTruncation(originalTruncation)
-  }
+  ): MappedTruncation[E, D, U, V, S] =
+    apply(originalTruncation.sequence, valueMapFunc).mapTruncation(originalTruncation)
 }
 
 

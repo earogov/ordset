@@ -146,7 +146,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
     implicit valueOps: ValueOps[U]
   ): MappedTruncation[E, D, V, U, S1] = {
     val originalSeq = sequence
-    MappedOrderedMap.mapOriginalTruncation(
+    MappedOrderedMap.mapTruncation(
       this, mapFunc
     )(
       originalSeq.domainOps, valueOps, originalSeq.rngManager
@@ -165,7 +165,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
     implicit valueOps: ValueOps[U]
   ): MappedTruncation[E, D, V, U, S1] = {
     val originalSeq = sequence
-    MappedValueOrderedMap.mapOriginalTruncation(
+    MappedValueOrderedMap.mapTruncation(
       this, mapFunc
     )(
       originalSeq.domainOps, valueOps, originalSeq.rngManager

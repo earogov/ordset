@@ -117,17 +117,18 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     searchFrontMapper(frontMapperFirst, originalSeq.firstSegment)
 
   /**
+   * Returns mapped segment for segment of original sequence.
+   */
+  protected def mapSegment(segment: SegmentT[E, D, U, S]): MappedSegment[E, D, U, V, S] = 
+    searchFrontMapper(frontMapperGeneral, segment)
+  
+  /**
    * Returns mapped truncation for truncation of original sequence.
    */
-  protected def mapOriginalSeqTruncation(
-    originalTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]]
-  ): MappedTruncation[E, D, U, V, S] = {
-    val mappedSegment = searchFrontMapper(
-      frontMapperGeneral,
-      originalTruncation.segment
-    )
-    mappedSegment.truncation(originalTruncation.bound)
-  }
+  protected def mapTruncation(
+    truncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]]
+  ): MappedTruncation[E, D, U, V, S] =
+    mapSegment(truncation.segment).truncation(truncation.bound)
 
   /**
    * Preconditions:
