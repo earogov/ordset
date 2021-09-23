@@ -11,7 +11,6 @@ import ordset.random.RngManager
 import ordset.util.BooleanUtil
 import test.ordset.core.implementations.domain.BoundSelector
 
-
 /**
  * Implementation of [[AbstractLazyTreapSegmentSeq]] for tests. It provides:
  * <tr>- access to zipped sequence;</tr>
@@ -29,9 +28,6 @@ class LazyTreapSegmentSeq[E, D <: Domain[E], V] protected (
 
   // Initialization ----------------------------------------------------------- //
   zippedSeq = initZippedSeq
-
-  // Inspection --------------------------------------------------------------- //
-  def getZippedSeq: ZSegmentSeq[E, D, V] = zippedSeq
 
   // Protected section -------------------------------------------------------- //
   protected final override def consUniform(value: V): LazySegmentSeq[E, D, V] =
@@ -52,7 +48,7 @@ object LazyTreapSegmentSeq {
    * Creates sequence that consists of lazy segments only.
    */
   def totallyLazy[E, D <: Domain[E], V](
-    initControlSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
+    initSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -66,7 +62,7 @@ object LazyTreapSegmentSeq {
         valueOps
       )(),
       TreapOrderedMap.getFactory.unsafeBuildAsc(
-        initControlSeq.map(p => (p._1, LazyValue(p._2))),
+        initSeq.map(p => (p._1, LazyValue(p._2))),
         domainOps,
         ControlValueOps.get
       )(),

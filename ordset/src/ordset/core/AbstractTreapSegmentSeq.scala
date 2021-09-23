@@ -194,8 +194,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.appendAboveExtended(bound, other)
 
-  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
-    patchLazyBaseSeqInternal(lazySeq)
+  final override def patchLazy(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    patchLazyDefaultInternal(supplierSeq)
   
   // Protected section -------------------------------------------------------- //
   protected override def isValueIncluded(value: V): Boolean
@@ -223,7 +223,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
-   * Note, if provided segment differs from one defined by condition 1, the behaviour of method is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
    */
   protected def prependInternal(
     bound: Bound[E],
@@ -332,7 +332,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
-   * Note, if provided segment differs from one defined by condition 1, the behaviour of method is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
    */
   protected def appendInternal(
     bound: Bound[E],

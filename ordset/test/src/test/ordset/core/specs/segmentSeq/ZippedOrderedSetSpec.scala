@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 import test.ordset.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
-import test.ordset.core.behaviors.zippedSeq.ZippedSeqBehaviours
+import test.ordset.core.behaviors.zippedSeq.ZippedSeqBehaviors
 import test.ordset.core.samples.segmentSeq.zippedOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
@@ -14,7 +14,7 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   with InspectionBehaviors[Int, Domain[Int], Boolean]
   with NavigationBehaviors[Int, Domain[Int], Boolean]
   with TransformationBehaviors[Int, Domain[Int], Boolean]
-  with ZippedSeqBehaviours[Int, Domain[Int], Boolean, Boolean, Boolean] {
+  with ZippedSeqBehaviors[Int, Domain[Int], Boolean, Boolean, Boolean] {
 
   import ordset.core.instances.boolean._
   import ordset.core.instances.int._

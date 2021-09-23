@@ -68,6 +68,11 @@ object MappedValueOrderedMap {
     rngManager: RngManager
   ): MappedTruncation[E, D, U, V, S] =
     apply(originalTruncation.sequence, valueMapFunc).mapTruncation(originalTruncation)
+
+  def identity[E, D <: Domain[E], U, S](
+      originalSeq: OrderedMapT[E, D, U, S]
+  ): MappedValueOrderedMap[E, D, U, U, S] =
+    apply(originalSeq, scala.Predef.identity)(originalSeq.domainOps, originalSeq.valueOps, originalSeq.rngManager)
 }
 
 

@@ -173,9 +173,24 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
   }
 
   /**
-   * Zips original sequence with `other` (see [[SegmentSeqT.zipOptimized]]) and returns truncation of zipped sequence
-   * at bound [[bound]].
+   * Builds new segment sequence that combines with function `zipFunc` values of original sequence and `other`
+   * sequence:
+   * 
+   * w,,i,, = zipFunc(v,,j,,, u,,k,,)
    *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>v,,j,, - value of segment of original sequence; </tr>
+   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr></tr>
+   * 
+   * Adjacent segments of output sequence with the same values are merged.
+   * <tr></tr>
+   * 
+   * See [[SegmentSeqT.zipOptimized]] for description of invariant functions `invariantFuncV` and `invariantFuncU`.
+   * 
+   * @return truncation of zipped sequence at bound [[bound]].
+   * 
    * @see [[zip]]
    */
   def zipOptimized[U, W, S1 >: S, S2](
@@ -195,12 +210,26 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
   }
 
   /**
-   * Zips original sequence with `other` (see [[SegmentSeqT.zip]]) and returns truncation of zipped sequence
-   * at bound [[bound]].
+   * Builds new segment sequence that combines with function `zipFunc` values of original sequence and `other`
+   * sequence:
+   *
+   * w,,i,, = zipFunc(v,,j,,, u,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>v,,j,, - value of segment of original sequence; </tr>
+   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr></tr>
+   *
+   * Adjacent segments of output sequence with the same values are merged.
+   * <tr></tr>
    *
    * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions
    * using `false` predicate instead of them.
-   *
+   * <tr></tr>
+   * 
+   * @return truncation of zipped sequence at bound [[bound]].
+   * 
    * @see [[zipOptimized]]
    */
   def zip[U, W, S1 >: S, S2](
@@ -216,21 +245,67 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
     )
 
   /**
-   * Zips original sequence with `other` (see [[SegmentSeqT.zipIntoTuple]]) and returns truncation of zipped sequence
-   * at bound [[bound]].
+   * Builds new segment sequence that combines values of original and `other` sequences into tuples:
+   *
+   * w,,i,, = (v,,j,,, u,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>v,,j,, - value of segment of original sequence; </tr>
+   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr></tr>
    *
    * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
    * <tr></tr>
-   *
+   * 
+   * @return truncation of zipped sequence at bound [[bound]].
+   * 
    * @see [[zip]]
    */
-  def zipIntoTuple[U, W, S1 >: S, S2](other: SegmentSeqT[E, D, U, S2]): ZippedTruncation[E, D, V, U, (V, U), S1, S2] =
+  def zipIntoTuple[U, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2]
+  ): ZippedTruncation[E, D, V, U, (V, U), S1, S2] =
     zip(
       other, (_, _)
     )(
       new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, sequence.valueOps, other.valueOps)
     )
 
+  /**
+   * Builds new segment sequence that combines values of original and `other` sequences into tuples:
+   *
+   * w,,i,, = (u,,j,,, v,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>u,,j,, - value of segment of `other` sequence;  </tr>
+   * <tr>v,,k,, - value of segment of original sequence. </tr>
+   * <tr></tr>
+   *
+   * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
+   * <tr></tr>
+   * 
+   * @return truncation of zipped sequence at bound [[bound]].
+   *
+   * @see [[zip]]
+   */
+  def zipIntoSwappedTuple[U, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2]
+  ): ZippedTruncation[E, D, U, V, (U, V), S2, S1] = {
+    val firstSeq = sequence
+    ZippedOrderedMap.zipSecondMapTruncation[E, D, U, V, (U, V), S2, S1](
+      this, 
+      other, 
+      (_, _), 
+      BooleanUtil.falsePredicate1, 
+      BooleanUtil.falsePredicate1
+    )(
+      firstSeq.domainOps, 
+      new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, other.valueOps, firstSeq.valueOps), 
+      firstSeq.rngManager
+    )
+  }
+  
   // Protected section -------------------------------------------------------- //
   /**
    * Returns next segment in special case of [[prepend]] or segment itself otherwise.

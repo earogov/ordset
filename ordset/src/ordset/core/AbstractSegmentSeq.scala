@@ -69,7 +69,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    * 
-   * Note, if provided segment differs from one defined by condition 1, the behaviour of function is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behavior of function is undefined.
    */
   protected def prependBelowExtendedInternal[Seg](
     bound: ExtendedBound[E],
@@ -97,7 +97,7 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
-   * Note, if provided segment differs from one defined by condition 1, the behaviour of function is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behavior of function is undefined.
    */
   protected def appendAboveExtendedInternal[Seg](
     bound: ExtendedBound[E],
@@ -117,26 +117,26 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
    * Current sequence is used as a base sequence of [[LazyTreapOrderedMap]].
    * Note, this may cause immediate conversion of current sequence into treap based one.
    */
-  def patchLazyBaseSeqInternal(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
-    LazyTreapOrderedMap.apply(this, lazySeq)(domainOps, valueOps, rngManager)
+  def patchLazyDefaultInternal(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    LazyTreapOrderedMap.apply(this, supplierSeq)(domainOps, valueOps, rngManager)
 
   /**
    * Implementation of [[SegmentSeqT.patchLazy]].
    *
-   * Segments of `lazySeq` that has [[None]] value are replaced with function `() => this`. Then new version of
-   * `lazySeq` is used to create [[LazyTreapOrderedMap]]. The result sequence will have completely lazy initial
+   * Segments of `supplierSeq` that has [[None]] value are replaced with function `() => this`. Then new version of
+   * `supplierSeq` is used to create [[LazyTreapOrderedMap]]. The result sequence will have completely lazy initial
    * state. So conversion of current sequence into treap based will take place on demand (but with some overhead
    * compared to [[patchLazyBaseSeqInternal]]).
    */
-  def patchLazyFlatmapInternal(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] = {
+  def patchLazyDelayedInternal(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val baseSeq = consUniform(valueOps.unit)
     val currentSeqFunc = () => this
-    val newLazySeq = lazySeq.map {
+    val newSupplierSeq = supplierSeq.map {
       case x @ Some(_) => x
       case _ => Some(currentSeqFunc)
     }(
-      lazySeq.valueOps
+      supplierSeq.valueOps
     )
-    LazyTreapOrderedMap.apply(baseSeq, newLazySeq)(domainOps, valueOps, rngManager)
+    LazyTreapOrderedMap.apply(baseSeq, newSupplierSeq)(domainOps, valueOps, rngManager)
   }
 }

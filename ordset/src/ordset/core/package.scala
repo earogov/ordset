@@ -93,6 +93,19 @@ package object core {
 
   type LazySegmentSeq[E, D <: Domain[E], V] = AbstractLazyTreapSegmentSeq[E, D, V]
 
+  // Sequence supplier -------------------------------------------------------- //
+  type SeqSupplier[E, D <: Domain[E], V] = Option[() => SegmentSeq[E, D, V]]
+
+  type SupplierSegment[E, D <: Domain[E], V] = Segment[E, D, SeqSupplier[E, D, V]]
+
+  type SupplierSegmentWithPrev[E, D <: Domain[E], V] = Segment.WithPrev[E, D, SeqSupplier[E, D, V]]
+
+  type SupplierSegmentWithNext[E, D <: Domain[E], V] = Segment.WithNext[E, D, SeqSupplier[E, D, V]]
+
+  type SupplierTruncation[E, D <: Domain[E], V] = SegmentTruncation[E, D, SeqSupplier[E, D, V]]
+
+  type SupplierSegmentSeq[E, D <: Domain[E], V] = SegmentSeq[E, D, SeqSupplier[E, D, V]]
+
   // Mapped sequence ---------------------------------------------------------- //
   type MappedSegmentBase[E, D <: Domain[E], U, V, S] = AbstractMappedSegmentSeq.MappedSegmentBase[E, D, U, V, S]
   

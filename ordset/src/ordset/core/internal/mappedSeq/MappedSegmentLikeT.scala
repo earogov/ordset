@@ -1,4 +1,4 @@
-package ordset.core.internal
+package ordset.core.internal.mappedSeq
 
 import ordset.core.{Bound, Interval, IntervalRelation, SegmentLikeT, SegmentT, Segment, SegmentTruncationT}
 import ordset.core.domain.{Domain, DomainOps}

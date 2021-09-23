@@ -651,17 +651,16 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
-   * Builds lazy segment sequence using original sequence (current) and `lazySeq`.
+   * Builds lazy segment sequence using original sequence (current) and `supplierSeq`.
    * <tr>
-   *   `lazySeq` is a segment sequence with optional lazy values (functions that returns another segment sequences).
+   *   `supplierSeq` is a segment sequence with optional lazy values (functions that returns another segment sequences).
    * </tr>
-   * <tr></tr>
    * <tr>
-   *   If segment of `lazySeq` has [[None]] value then corresponding segments of output sequence have the same
+   *   If segment of `supplierSeq` has [[None]] value then corresponding segments of output sequence have the same
    *   values as `baseSeq`.
    * </tr>
    * <tr>
-   *   If segment of `lazySeq` has [[Some]] value with a function F: `() => segmentSeqF`, then corresponding
+   *   If segment of `supplierSeq` has [[Some]] value with a function F: `() => segmentSeqF`, then corresponding
    *   segments of output sequence are lazy. Function F will be computed only if lazy segment is requested.
    *   Values of lazy segments are completely defined by `segmentSeqF` and corresponding values of original
    *   sequence are ignored.
@@ -673,10 +672,10 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * X------------](-------------)[-------------X
    *         A             B              C       - values
    *
-   * `lazySeq`:
+   * `supplierSeq`:
    *
    * X------](-------------------------)[-------X
-   *   None     Some(() => orderedMapF)    None   - values
+   *   None     Some(() => orderedSeqF)    None   - values
    *
    * `segmentSeqF`:
    * 
@@ -690,7 +689,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *     A       E         F        G        C    - values
    * }}}
    */
-  def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V]
+  def patchLazy(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns lazy segment sequence which is equivalent to one received by applying [[SegmentLikeT.flatMap]] to
@@ -750,7 +749,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
       firstSegment.forwardIterable.map(s => (s.upperExtended, Some(() => mapFunc(s)))),
       domainOps,
-      OptionalSeqSupplier.ValueOpsImpl.get
+      SeqSupplier.ValueOpsImpl.get
     )(
       SeqValidationPredicate.alwaysTrue,
       SeqValidationPredicate.alwaysTrue
@@ -845,7 +844,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     MappedValueOrderedMap.apply(this, mapFunc)(domainOps, valueOps, rngManager)
 
   /**
-   * Returns new segment sequence that combines with `zipFunc` function values of original sequence and `other`
+   * Returns new segment sequence that combines with function `zipFunc` values of original sequence and `other`
    * sequence:
    *
    * w,,i,, = zipFunc(v,,j,,, u,,k,,)
@@ -853,7 +852,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * where
    * <tr>w,,i,, - value of segment of output sequence;   </tr>
    * <tr>v,,j,, - value of segment of original sequence; </tr>
-   * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
    * <tr></tr>
    *
    * Adjacent segments of output sequence with the same values are merged.
@@ -922,7 +921,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     )
 
   /**
-   * Returns new segment sequence that combines with `zipFunc` function values of original sequence and `other`
+   * Returns new segment sequence that combines with function `zipFunc` values of original sequence and `other`
    * sequence:
    *
    * w,,i,, = zipFunc(v,,j,,, u,,k,,)
@@ -930,7 +929,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * where
    * <tr>w,,i,, - value of segment of output sequence;   </tr>
    * <tr>v,,j,, - value of segment of original sequence; </tr>
-   * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
    * <tr></tr>
    *
    * Adjacent segments of output sequence with the same values are merged.
@@ -962,7 +961,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * where
    * <tr>w,,i,, - value of segment of output sequence;   </tr>
    * <tr>v,,j,, - value of segment of original sequence; </tr>
-   * <tr>v,,k,, - value of segment of `other` sequence.  </tr>
+   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
    * <tr></tr>
    *
    * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
@@ -970,10 +969,43 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * 
    * @see [[zip]]
    */
-  def zipIntoTuple[U, S1 >: S, S2](other: SegmentSeqT[E, D, U, S2]): ZippedSegmentSeq[E, D, V, U, (V, U), S1, S2] =
+  def zipIntoTuple[U, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2]
+  ): ZippedSegmentSeq[E, D, V, U, (V, U), S1, S2] =
     zip(
       other, (_, _)
     )(
       new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, valueOps, other.valueOps)
+    )
+
+  /**
+   * Returns new segment sequence that combines values of original and `other` sequences into tuples:
+   *
+   * w,,i,, = (u,,j,,, v,,k,,)
+   *
+   * where
+   * <tr>w,,i,, - value of segment of output sequence;   </tr>
+   * <tr>u,,j,, - value of segment of `other` sequence;  </tr>
+   * <tr>v,,k,, - value of segment of original sequence. </tr>
+   * <tr></tr>
+   *
+   * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
+   * <tr></tr>
+   * 
+   * @see [[zip]]
+   */
+  def zipIntoSwappedTuple[U, S1 >: S, S2](
+    other: SegmentSeqT[E, D, U, S2]
+  ): ZippedSegmentSeq[E, D, U, V, (U, V), S2, S1] =
+    ZippedOrderedMap.apply(
+      other, 
+      this, 
+      (_, _), 
+      BooleanUtil.falsePredicate1, 
+      BooleanUtil.falsePredicate1
+    )(
+      domainOps, 
+      new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, other.valueOps, valueOps), 
+      rngManager
     )
 }

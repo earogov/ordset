@@ -92,8 +92,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.appendAboveExtended(bound, other)
 
-  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
-    patchLazyBaseSeqInternal(lazySeq)
+  final override def patchLazy(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    patchLazyDefaultInternal(supplierSeq)
   
   // Protected section -------------------------------------------------------- //
   /** Single segment instance. */

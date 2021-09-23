@@ -77,6 +77,19 @@ package object set {
 
   type LazyOrderedSet[E, D <: Domain[E]] = LazyTreapOrderedSet[E, D]
 
+  // Set supplier ------------------------------------------------------------- //
+  type SetSupplier[E, D <: Domain[E]] = SeqSupplier[E, D, Boolean]
+
+  type SetSupplierSegment[E, D <: Domain[E]] = Segment[E, D, SetSupplier[E, D]]
+
+  type SetSupplierSegmentWithPrev[E, D <: Domain[E]] = Segment.WithPrev[E, D, SetSupplier[E, D]]
+
+  type SetSupplierSegmentWithNext[E, D <: Domain[E]] = Segment.WithNext[E, D, SetSupplier[E, D]]
+
+  type SetSupplierTruncation[E, D <: Domain[E]] = SegmentTruncation[E, D, SetSupplier[E, D]]
+
+  type SetSupplierOrderedMap[E, D <: Domain[E]] = SegmentSeq[E, D, SetSupplier[E, D]]
+
   // Mapped set --------------------------------------------------------------- //
   type MappedSetSegmentBase[E, D <: Domain[E], S] = MappedSegmentBase[E, D, Boolean, Boolean, S]
 

@@ -118,8 +118,8 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.appendAboveExtended(bound, other)
 
-  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
-    patchLazyFlatmapInternal(lazySeq)
+  final override def patchLazy(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    patchLazyDelayedInternal(supplierSeq)
 
   // Protected section -------------------------------------------------------- //
   protected override def isValueIncluded(value: V): Boolean

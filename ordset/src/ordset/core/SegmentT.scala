@@ -311,7 +311,7 @@ object SegmentT {
         Some(mapFunc)
       )(
         domainOps,
-        OptionalSeqSupplier.ValueOpsImpl.get,
+        SeqSupplier.ValueOpsImpl.get,
         rngManager
       )
       LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
@@ -376,7 +376,7 @@ object SegmentT {
       val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
         List((upperBound, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
         domainOps,
-        OptionalSeqSupplier.ValueOpsImpl.get
+        SeqSupplier.ValueOpsImpl.get
       )(
         SeqValidationPredicate.alwaysTrue,
         SeqValidationPredicate.alwaysTrue
@@ -446,7 +446,7 @@ object SegmentT {
       val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
         List((lowerBound.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc))),
         domainOps,
-        OptionalSeqSupplier.ValueOpsImpl.get
+        SeqSupplier.ValueOpsImpl.get
       )(
         SeqValidationPredicate.alwaysTrue,
         SeqValidationPredicate.alwaysTrue
@@ -518,7 +518,7 @@ object SegmentT {
       val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
         List((lowerBound.flipLower, None), (upperBound, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
         domainOps,
-        OptionalSeqSupplier.ValueOpsImpl.get
+        SeqSupplier.ValueOpsImpl.get
       )(
         SeqValidationPredicate.alwaysTrue,
         SeqValidationPredicate.alwaysTrue

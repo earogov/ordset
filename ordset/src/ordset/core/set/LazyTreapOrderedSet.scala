@@ -6,7 +6,7 @@ import ordset.core.value.ValueOps
 import ordset.core.*
 import ordset.core.map.OrderedMap
 import ordset.random.RngManager
-import ordset.tree.treap.immutable.ImmutableTreap
+import ordset.core.internal.lazySeq.ZSegmentSeqBuilder
 
 class LazyTreapOrderedSet[E, D <: Domain[E]] protected (
   initZippedSeq: ZSegmentSeq[E, D, Boolean]
@@ -38,14 +38,14 @@ object LazyTreapOrderedSet {
   /**
    * Builds lazy ordered set using two input maps:
    * <tr>1. `baseSet` - base ordered set;</tr>
-   * <tr>2. `lazyMap` - ordered map with optional lazy values (functions that returns another ordered sets).</tr>
+   * <tr>2. `supplierMap` - ordered map with optional lazy values (functions that returns another ordered sets).</tr>
    * <tr></tr>
    * <tr>
-   *   If segment of `lazyMap` has [[None]] value then corresponding segments of output set have the same
+   *   If segment of `supplierMap` has [[None]] value then corresponding segments of output set have the same
    *   values as `baseSet`.
    * </tr>
    * <tr>
-   *   If segment of `lazyMap` has [[Some]] value with a function F: `() => orderedSеtF`, then corresponding
+   *   If segment of `supplierMap` has [[Some]] value with a function F: `() => orderedSеtF`, then corresponding
    *   segments of output set are lazy. Function F will be computed only if lazy segment is requested.
    *   Values of lazy segments are completely defined by `orderedSetF` and corresponding values of `baseSet`
    *   are ignored.
@@ -56,7 +56,7 @@ object LazyTreapOrderedSet {
    * X------------](-------------)[-------------X  `baseSet`
    *
    *   None     Some(() => orderedSetF)    None
-   * X------](-------------------------)[-------X  `lazyMap`
+   * X------](-------------------------)[-------X  `supplierMap`
    *
    *  true    false      true       false    true
    * X---](---------](---------)[----------](---X  `orderedSetF`
@@ -66,20 +66,20 @@ object LazyTreapOrderedSet {
    *                                               value computation
    * }}}
    *
-   * @param baseSet    base ordered set.
-   * @param lazyMap    ordered map with lazy values.
-   * @param domainOps  domain specific typeclasses: elements ordering, etc.
-   * @param rngManager generator of random sequences.
+   * @param baseSet     base ordered set.
+   * @param supplierMap ordered map with lazy values.
+   * @param domainOps   domain specific typeclasses: elements ordering, etc.
+   * @param rngManager  generator of random sequences.
    */
   def apply[E, D <: Domain[E], V](
     baseSet: OrderedSet[E, D],
-    lazyMap: OrderedMap[E, D, OptionalSeqSupplier.Type[E, D, Boolean]]
+    supplierMap: SetSupplierOrderedMap[E, D]
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): LazyOrderedSet[E, D] = {
-    val zippedSeq = AbstractLazyTreapSegmentSeq.ZippedSeqBuilder.build(baseSet, lazyMap)
+    val zippedSeq = ZSegmentSeqBuilder.build(baseSet, supplierMap)
     new LazyTreapOrderedSet(zippedSeq)
   }
 }

@@ -2,7 +2,7 @@ package ordset.core
 
 import ordset.core.domain.Domain
 import ordset.core.internal.SegmentSeqExceptionUtil.*
-import ordset.core.internal.{MappedSegmentLikeT, MappedSegmentT}
+import ordset.core.internal.mappedSeq.{MappedSegmentLikeT, MappedSegmentT}
 import AbstractMappedSegmentSeq._
 
 /**
@@ -92,8 +92,8 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
 
-  final override def patchLazy(lazySeq: SegmentSeq[E, D, OptionalSeqSupplier.Type[E, D, V]]): SegmentSeq[E, D, V] =
-    patchLazyFlatmapInternal(lazySeq)
+  final override def patchLazy(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    patchLazyDelayedInternal(supplierSeq)
 
   // Protected section -------------------------------------------------------- //
   /**

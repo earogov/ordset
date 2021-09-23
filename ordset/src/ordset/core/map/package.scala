@@ -14,4 +14,7 @@ package object map {
 
   // Lazy map ----------------------------------------------------------------- //
   type LazyOrderedMap[E, D <: Domain[E], V] = LazyTreapOrderedMap[E, D, V]
+
+  // Map supplier ------------------------------------------------------------- //
+  type SupplierOrderedMap[E, D <: Domain[E], V] = SupplierSegmentSeq[E, D, V]
 }

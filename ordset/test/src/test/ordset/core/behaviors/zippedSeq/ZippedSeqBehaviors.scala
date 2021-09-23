@@ -7,7 +7,7 @@ import test.ordset.core.SegmentSeqAssertions.assertSameRelationAndSegmentSeq
 import test.ordset.core.samples.segmentSeq.ZippedSeqSample
 import org.scalatest.funspec.AnyFunSpec
 
-trait ZippedSeqBehaviours[E, D <: Domain[E], U1, U2, V] {
+trait ZippedSeqBehaviors[E, D <: Domain[E], U1, U2, V] {
   this: AnyFunSpec =>
 
   def segmentCanPatchOriginalSeq(
