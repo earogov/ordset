@@ -6,6 +6,12 @@ import ordset.core.value.ValueOps
 import ordset.core.{AbstractMappedValueSegmentSeq, MappedSegment, MappedTruncation, SegmentSeq, SegmentT, SegmentTruncationT}
 import ordset.random.RngManager
 
+/**
+ * Ordered map which maps each segment of sequence `originalSeq` with function `valueMapFunc`.
+ * <tr></tr>
+ * 
+ * Adjacent segments with the same values after mapping are merged.
+ */ 
 class MappedValueOrderedMap[E, D <: Domain[E], U, V, S] protected (
   override final val originalSeq: OrderedMapT[E, D, U, S],
   override final val valueMapFunc: U => V

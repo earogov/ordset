@@ -264,7 +264,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
    *                                           upper bound
    * }}}
    */
-  protected final def searchFrontMapper[Seg >: SegmentT.WithPrev[E, D, U, S] <: SegmentT[E, D, U, S], R](
+  protected def searchFrontMapper[Seg >: SegmentT.WithPrev[E, D, U, S] <: SegmentT[E, D, U, S], R](
     mapper: Seg => R,
     original: Seg
   ): R =

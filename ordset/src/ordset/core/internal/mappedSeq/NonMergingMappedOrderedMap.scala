@@ -1,18 +1,26 @@
-package ordset.core.map
+package ordset.core.internal.mappedSeq
 
+import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.{AbstractMappedSegmentSeq, MappedSegment, MappedTruncation, Segment, SegmentSeq, SegmentT, SegmentTruncationT}
+import ordset.core.map.{OrderedMapT, OrderedMapCommons, UniformOrderedMap}
 import ordset.random.RngManager
 
 /**
  * Ordered map which maps each segment of sequence `originalSeq` with function `segmentMapFunc`.
  * <tr></tr>
  * 
- * Adjacent segments with the same values after mapping are merged.
+ * Unlike [[MappedOrderedMap]] sequence doesn't try to merge adjacent segments after mapping.
+ * So it can be used only if precondition is provided.
+ * <tr></tr>
+ * 
+ * Precondition:
+ * <tr>
+ *   1. Adjacent segments after mapping MUST have different values (with respect to `valueOps.valueHash`).
+ * </tr>
  */ 
-class MappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
+protected[ordset] class NonMergingMappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
   override final val originalSeq: OrderedMapT[E, D, U, S],
   override final val segmentMapFunc: Segment[E, D, U] => V
 )(
@@ -29,7 +37,7 @@ class MappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
 
   @inline
   protected final override def cons(original: SegmentSeq[E, D, U]): SegmentSeq[E, D, V] =
-    new MappedOrderedMap(original, segmentMapFunc)
+    new NonMergingMappedOrderedMap(original, segmentMapFunc)
 
   protected final override def mapSegment(segment: SegmentT[E, D, U, S]): MappedSegment[E, D, U, V, S] =
     super.mapSegment(segment)
@@ -38,9 +46,16 @@ class MappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
     truncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]]
   ): MappedTruncation[E, D, U, V, S] =
     super.mapTruncation(truncation)
+
+  @inline
+  protected final override def searchFrontMapper[Seg >: SegmentT.WithPrev[E, D, U, S] <: SegmentT[E, D, U, S], R](
+    mapper: Seg => R,
+    original: Seg
+  ): R =
+    mapper(original)
 }
 
-object MappedOrderedMap {
+object NonMergingMappedOrderedMap {
 
   def apply[E, D <: Domain[E], U, V, S](
     originalSeq: OrderedMapT[E, D, U, S],
@@ -50,8 +65,8 @@ object MappedOrderedMap {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): MappedOrderedMap[E, D, U, V, S] =
-    new MappedOrderedMap(originalSeq, segmentMapFunc)
+  ): NonMergingMappedOrderedMap[E, D, U, V, S] =
+    new NonMergingMappedOrderedMap(originalSeq, segmentMapFunc)
 
   def mapSegment[E, D <: Domain[E], U, V, S](
     originalSegment: SegmentT[E, D, U, S],

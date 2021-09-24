@@ -7,6 +7,7 @@ import ordset.core.AbstractLazyTreapSegmentSeq.{ZSegmentSeq, ZSegment, ControlVa
 import ordset.core.AbstractLazyTreapSegmentSeq.{LazyValue, EagerValue, ControlValueOps, BaseSegmentSeq, ZValue, ZValueOps}
 import ordset.core.AbstractLazyTreapSegmentSeq.{ZTruncation, ControlSegmentBase, BaseSegmentBase}
 import ordset.core.internal.SegmentSeqExceptionUtil.*
+import ordset.core.internal.mappedSeq.NonMergingMappedValueOrderedMap
 import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.util.{TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
 import ordset.random.RngManager
@@ -767,12 +768,16 @@ protected[ordset] object ZSegmentSeqBuilder {
         }
       }
 
-    // TODO replace with non-merging map.
-    val patchControlSeq = supplierSeq.map {
-      case Some(f) => new LazyValue(f)
-      case _ => EagerValue.unstable[E, D, V]
-    }(
-      ControlValueOps.get
+    val patchControlSeq = NonMergingMappedValueOrderedMap.apply(
+      supplierSeq,
+      v => v match {
+        case Some(f) => new LazyValue(f)
+        case _ => EagerValue.unstable[E, D, V]
+      }
+    )(
+      domainOps,
+      ControlValueOps.get,
+      rngManager
     )
 
     traversePatchSeq(patchControlSeq.firstSegment, baseSeq.getZippedSeq)
