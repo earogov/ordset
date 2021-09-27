@@ -118,6 +118,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
    * 
    *       value1         value2
    *   X------------](-------------X
+   *                |
    *              bound
    * }}}
    * 
@@ -198,16 +199,34 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
   ) {
 
     /**
-     * Same as [[OrderedSetFactory.unsafeBuildAsc]].
+     * Same as [[OrderedMapFactory.unsafeBuildAsc]].
      */
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): SSeq =
+    final def unsafeBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): SSeq =
       factory.unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidation, valuesValidation)(rngManager)
 
     /**
-     * Same as [[OrderedSetFactory.tryBuildAsc]].
+     * Same as [[OrderedMapFactory.tryBuildAsc]].
      */
     final def tryBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
+
+    /**
+     * Same as [[OrderedMapFactory.buildUniform]].
+     */ 
+    final def buildUniform(value: V): SSeq = factory.buildUniform(value, domainOps, valueOps)(rngManager)
+
+    /**
+     * Same as [[OrderedMapFactory.unsafeBuildSingleBounded]].
+     */ 
+    @throws[SegmentSeqException]("if preconditions are violated")
+    final def unsafeBuildSingleBounded(bound: Bound.Upper[E], value1: V, value2: V): SSeq = 
+      factory.unsafeBuildSingleBounded(bound, value1, value2, domainOps, valueOps)(valuesValidation)(rngManager)
+
+    /**
+     * Same as [[OrderedMapFactory.tryBuildSingleBounded]].
+     */ 
+    def tryBuildSingleBounded(bound: Bound.Upper[E], value1: V, value2: V): Try[SSeq] =
+      Try.apply(unsafeBuildSingleBounded(bound, value1, value2))
   }
 
   // Protected section -------------------------------------------------------- //

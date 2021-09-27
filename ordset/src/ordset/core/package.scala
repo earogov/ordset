@@ -106,6 +106,8 @@ package object core {
 
   type SupplierSegmentSeq[E, D <: Domain[E], V] = SegmentSeq[E, D, SeqSupplier[E, D, V]]
 
+  type UniformSupplierSegmentSeq[E, D <: Domain[E], V] = UniformSegmentSeq[E, D, SeqSupplier[E, D, V]]
+
   // Mapped sequence ---------------------------------------------------------- //
   type MappedSegmentBase[E, D <: Domain[E], U, V, S] = AbstractMappedSegmentSeq.MappedSegmentBase[E, D, U, V, S]
   

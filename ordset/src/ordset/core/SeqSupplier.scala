@@ -4,9 +4,53 @@ import ordset.Hash
 import ordset.core.domain.Domain
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.util.HashUtil.product1Hash
+import ordset.core.map.UniformOrderedMap
+import ordset.core.domain.DomainOps
+import ordset.random.RngManager
+import ordset.core.map.TreapOrderedMap
+import ordset.core.map.OrderedMapFactory
 
+/**
+ * Contains classes and operations related to [[SeqSupplier]] type.
+ * 
+ * [[SeqSupplier]] is a optional function without arguments that returns segment sequence.
+ */ 
 object SeqSupplier {
 
+  /**
+   * Utility methods for segment sequence of [[SeqSupplier]].
+   */ 
+  object SegmentSeq {
+
+    /**
+     * Returns factory for segment sequence of [[SeqSupplier]].
+     */ 
+    def getFactory[E, D <: Domain[E], V]: OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]] =
+      TreapOrderedMap.getFactory
+
+    /**
+     * Returns factory for segment sequence of [[SeqSupplier]] with partially provided parameters.
+     * 
+     * Output factory has disabled validation of bounds and values, so the client must guarantee that preconditions
+     * of [[OrderedMapFactory]] are satisfied.
+     */ 
+    def provideUncheckedFactory[E, D <: Domain[E], V](
+      implicit
+      domainOps: DomainOps[E, D],
+      rngManager: RngManager
+    ): OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]]#Partial =
+      getFactory.provided(
+        domainOps, ValueOpsImpl.get
+      )(
+        SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
+      )(
+        rngManager
+      )
+  }
+
+  /**
+   * [[Hash]] typeclass implementation for [[SeqSupplier]].
+   */ 
   final class HashImpl[E, D <: Domain[E], V] extends Hash[SeqSupplier[E, D, V]] {
 
     override def hash(x: SeqSupplier[E, D, V]): Int = x match {
@@ -29,6 +73,9 @@ object SeqSupplier {
     private lazy val instance: HashImpl[Any, Domain[Any], Any] = new HashImpl()
   }
 
+  /**
+   * [[ValueOps]] typeclass implementation for [[SeqSupplier]].
+   */ 
   object ValueOpsImpl {
 
     def get[E, D <: Domain[E], V]: ValueOps[SeqSupplier[E, D, V]] = 

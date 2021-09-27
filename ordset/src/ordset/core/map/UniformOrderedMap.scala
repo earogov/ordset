@@ -76,4 +76,12 @@ object UniformOrderedMap {
     rngManager: RngManager
   ): UniformOrderedMap[E, D, V] =
     apply(value, TreapOrderedMap.getFactory)
+
+  def defaultUnit[E, D <: Domain[E], V](
+    implicit
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V],
+    rngManager: RngManager
+  ): UniformOrderedMap[E, D, V] =
+    apply(valueOps.unit, TreapOrderedMap.getFactory)
 }

@@ -3,7 +3,8 @@ package ordset.core.internal.mappedSeq
 import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractMappedValueSegmentSeq, MappedSegment, MappedTruncation, SegmentSeq, SegmentT, SegmentTruncationT}
+import ordset.core.{AbstractMappedValueSegmentSeq, SegmentSeq, SegmentT, SegmentTruncationT}
+import ordset.core.{MappedSegment, MappedTruncation}
 import ordset.core.map.{OrderedMapT, OrderedMapCommons, UniformOrderedMap}
 import ordset.random.RngManager
 
@@ -36,7 +37,7 @@ protected[ordset] class NonMergingMappedValueOrderedMap[E, D <: Domain[E], U, V,
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
 
   @inline
-  protected final override def cons(original: SegmentSeq[E, D, U]): SegmentSeq[E, D, V] =
+  protected final override def cons(original: SegmentSeq[E, D, U]): NonMergingMappedValueOrderedMap[E, D, U, V, Any] =
     new NonMergingMappedValueOrderedMap(original, valueMapFunc)
 
   protected final override def mapSegment(segment: SegmentT[E, D, U, S]): MappedSegment[E, D, U, V, S] =

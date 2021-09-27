@@ -3,6 +3,7 @@ package ordset.core
 import ordset.core.domain.Domain
 import ordset.core.internal.SegmentSeqExceptionUtil.*
 import ordset.core.internal.mappedSeq.{MappedSegmentLikeT, MappedSegmentT}
+import ordset.core.internal.lazySeq.LazySegmentSeqBuilder
 import AbstractMappedSegmentSeq._
 
 /**
@@ -68,29 +69,41 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     segmentMapFunc(originalSeq.getSegmentForElement(element))
 
   // Transformation ----------------------------------------------------------- //
-  final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] = ???
+  final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] = 
+    getSegmentForBound(bound).takeAbove
 
-  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = ???
+  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = 
+    getSegmentForExtended(bound).takeAbove
 
-  final override def takeBelowBound(bound: Bound[E]): SegmentSeq[E, D, V] = ???
+  final override def takeBelowBound(bound: Bound[E]): SegmentSeq[E, D, V] = 
+    getSegmentForBound(bound).takeBelow
 
-  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = ???
+  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = 
+    getSegmentForExtended(bound).takeBelow
 
-  final override def sliceAtBound(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+  final override def sliceAtBound(bound: Bound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
+    getSegmentForBound(bound).slice
 
-  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+  override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
+    getSegmentForExtended(bound).slice
 
-  final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    prependBelowExtended(firstSegment.upperExtended, other)
 
-  final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
+    LazySegmentSeqBuilder.appendSeq(bound, other, this)(domainOps, valueOps, rngManager)
 
-  final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    super.prependBelowExtended(bound, other)
 
-  final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
+    appendAboveExtended(lastSegment.lowerExtended, other)
 
-  final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] = ???
+  final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+    LazySegmentSeqBuilder.appendSeq(bound, this, other)(domainOps, valueOps, rngManager)
 
-  final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
+    super.appendAboveExtended(bound, other)
 
   final override def patchLazy(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     patchLazyDelayedInternal(supplierSeq)
@@ -106,15 +119,138 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
   /**
    * Creates mapped segment sequence.
    */
-  protected def cons(original: SegmentSeq[E, D, U]): SegmentSeq[E, D, V]
+  protected def cons(original: SegmentSeq[E, D, U]): MappedSegmentSeq[E, D, U, V, Any]
 
-  protected override def consUniform(value: V): SegmentSeq[E, D, V]
+  protected override def consUniform(value: V): UniformSegmentSeq[E, D, V]
 
   /**
    * First segment of sequence. It's either initial ot single.
    */
   protected final lazy val firstSegmentInstance: MappedFirstSegment[E, D, U, V, S] =
     searchFrontMapper(frontMapperFirst, originalSeq.firstSegment)
+
+  /**
+   * Implementation of [[SegmentT.takeAbove]].
+   */ 
+  protected def takeAboveInternal(segment: MappedInnerSegment[E, D, U, V, S]): SegmentSeq[E, D, V] = {
+    // A naive approach like:
+    //
+    // cons(segment.front.takeAbove)    (1)
+    //
+    // isn't correct in general case. 
+    //
+    // Consider example:
+    //
+    // Mapping function f receives original segment as input argument, so let's take the following f:
+    //
+    // s => if (s.isLast) "Z" else "Y"
+    //
+    //      A           B           C
+    // X---------)[----------](----------X  original sequence
+    //            0          10
+    //
+    //             Y                Z 
+    // X---------------------](----------X  mapped sequence
+    //         segment       10
+    //
+    // The correct result for `segment.takeAbove(5`]`)` should be:
+    //
+    //                   Y
+    // X---------------------------------X  output mapped sequence (write answer)
+    //                  
+    //
+    // But with implementation (1) we will get:
+    //  
+    //      A                 B
+    // X---------)[----------------------X  `segment.front.takeAbove`
+    //            0         
+    //
+    //       Y                Z
+    // X---------)[----------------------X  output mapped sequence (wrong answer)
+    //            0 
+    //
+    // We'v got wrong answer because generally 'map' and 'takeAbove' operations don't commute.
+    // However subset of mapping function that depends only on value of input segment is commute with 'takeAbove'.
+    // For such functions implementation (1) is valid and is used as optimization in [[AbstractMappedValueSegmentSeq]].
+    //
+    // Here we just lazily replace everything below upper bound of `segment` with value of `segment`.
+    // Warning! Each mapped value can depend on any part of `originalSeq`. So it's forbidden to drop some parts of 
+    // `originalSeq`(even far below `segment`), apply mapping it and use it instead of `this` to free some memory.
+    LazySegmentSeqBuilder.appendSeq(segment.upperBound, consUniform(segment.value), this)
+  }
+
+  /**
+   * Implementation of [[SegmentT.takeBelow]].
+   */ 
+  protected def takeBelowInternal(segment: MappedInnerSegment[E, D, U, V, S]): SegmentSeq[E, D, V] = {
+    // See description in [[takeAboveInternal]] method.
+    LazySegmentSeqBuilder.appendSeq(segment.lowerBound, this, consUniform(segment.value))
+  }
+
+  /**
+   * Implementation of [[SegmentT.slice]].
+   */ 
+  protected def sliceInternal(
+    segment: MappedInnerSegment[E, D, U, V, S]
+  ): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = {
+    // See description in [[takeAboveInternal]] method.
+    val uniformSeq = consUniform(segment.value)
+    val leftSeq = LazySegmentSeqBuilder.appendSeq(segment.lowerBound, this, uniformSeq)
+    val rightSeq = LazySegmentSeqBuilder.appendSeq(segment.upperBound, uniformSeq, this)
+    (leftSeq, rightSeq)
+  }
+
+  /**
+   * Same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment` such that:
+   * {{{
+   *   originalBoundSegment.containsBound(bound.provideLower) == true     (1)
+   * }}}
+   * It allows to avoid repeated search of segment if it's already known before method call.
+   *
+   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
+   */
+  protected def prependInternal(
+    bound: Bound[E],
+    originalBoundSegment: MappedSegment[E, D, U, V, S],
+    other: SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V] = {
+    val otherBoundSegment = other.getSegmentForBound(bound.provideUpper)
+    LazySegmentSeqBuilder.appendSegment(bound, otherBoundSegment, originalBoundSegment)(domainOps, valueOps, rngManager)
+  }
+
+  protected final override def prependBelowExtendedInternal[Seg](
+    bound: ExtendedBound[E],
+    originalBoundSegment: Seg,
+    other: SegmentSeq[E, D, V],
+    prependFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V] =
+    super.prependBelowExtendedInternal(bound, originalBoundSegment, other, prependFunc)
+
+  /**
+   * Same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` such that:
+   * {{{
+   *   originalBoundSegment.containsBound(bound.provideUpper) == true     (1)
+   * }}}
+   * It allows to avoid repeated search of segment if it's already known before method call.
+   *
+   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
+   */
+  protected def appendInternal(
+    bound: Bound[E],
+    originalBoundSegment: MappedSegment[E, D, U, V, S],
+    other: SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V] = {
+    val otherBoundSegment = other.getSegmentForBound(bound.provideLower)
+    LazySegmentSeqBuilder.appendSegment(bound, originalBoundSegment, otherBoundSegment)(domainOps, valueOps, rngManager)
+  }
+
+  protected final override def appendAboveExtendedInternal[Seg](
+    bound: ExtendedBound[E],
+    originalBoundSegment: Seg,
+    other: SegmentSeq[E, D, V],
+    appendFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V] =
+    super.appendAboveExtendedInternal(bound, originalBoundSegment, other, appendFunc)
 
   /**
    * Returns mapped segment for segment of original sequence.
@@ -558,15 +694,23 @@ object AbstractMappedSegmentSeq {
     }
 
     // Transformation ----------------------------------------------------------- //
-    override def takeAbove: SegmentSeq[E, D, V] = ???
+    override def takeAbove: SegmentSeq[E, D, V]
 
-    override def takeBelow: SegmentSeq[E, D, V] = ???
+    override def takeBelow: SegmentSeq[E, D, V]
 
-    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = ???
+    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V])
 
-    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      // Default implementation for first segment. Must be overridden if segment has previous segment.
+      sequence
+    }
 
-    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
+      // Default implementation for last segment. Must be overridden if segment has next segment.
+      sequence
+    }
+
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
     /**
      * Returns truncation of original sequence at lower bound of mapped segment.
@@ -663,9 +807,21 @@ object AbstractMappedSegmentSeq {
     trait TruncationBase[E, D <: Domain[E], U, V, S] {
       self: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], MappedSegment[E, D, U, V, S]] =>
 
-      override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+      override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+        segment.sequence.prependBelowExtendedInternal(
+          bound,
+          getSegmentForPrepending,
+          other,
+          segment.sequence.prependInternal
+        )
 
-      override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+      override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+        segment.sequence.appendAboveExtendedInternal(
+          bound,
+          getSegmentForAppending,
+          other,
+          segment.sequence.appendInternal
+        )
     }
   }
 
@@ -695,6 +851,10 @@ object AbstractMappedSegmentSeq {
         ),
         front
       )
+
+    // Transformation ----------------------------------------------------------- //
+    override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
+      sequence.appendInternal(upperBound, this, other)
 
     // Protected section -------------------------------------------------------- //
     protected override def original: SegmentT.WithNext[E, D, U, S] = front
@@ -748,6 +908,10 @@ object AbstractMappedSegmentSeq {
     override def movePrev: MappedSegmentWithNext[E, D, U, V, S] =
       sequence.stepBackwardWithPrevMapper(sequence.frontMapperWithNext, back)
 
+    // Transformation ----------------------------------------------------------- //
+    override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
+      sequence.prependInternal(lowerBound, this, other)
+
     // Protected section -------------------------------------------------------- //
     protected override def original: SegmentT.WithPrev[E, D, U, S] = front
   }
@@ -779,6 +943,14 @@ object AbstractMappedSegmentSeq {
     override def moveToFirst: MappedInitialSegment[E, D, U, V, S] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: MappedSegmentSeq[E, D, U, V, S] = sequence
+
+    override def takeBelow: UniformSegmentSeq[E, D, V] = sequence.consUniform(value)
+
+    override def slice: (UniformSegmentSeq[E, D, V], MappedSegmentSeq[E, D, U, V, S]) = (takeBelow, takeAbove)
+
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(other)
+    
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type ] =
@@ -827,6 +999,14 @@ object AbstractMappedSegmentSeq {
     override def moveToLast: MappedTerminalSegment[E, D, U, V, S] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: UniformSegmentSeq[E, D, V] = sequence.consUniform(value)
+
+    override def takeBelow: MappedSegmentSeq[E, D, U, V, S] = sequence
+
+    override def slice: (MappedSegmentSeq[E, D, U, V, S], UniformSegmentSeq[E, D, V]) = (takeBelow, takeAbove)
+
+    override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.append(other)
+    
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type ] =
@@ -870,6 +1050,12 @@ object AbstractMappedSegmentSeq {
     override def self: MappedInnerSegment[E, D, U, V, S] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: SegmentSeq[E, D, V] = sequence.takeAboveInternal(this)
+
+    override def takeBelow: SegmentSeq[E, D, V] = sequence.takeBelowInternal(this)
+
+    override def slice: (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = sequence.sliceInternal(this)
+    
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type ] =
@@ -931,6 +1117,12 @@ object AbstractMappedSegmentSeq {
     override def moveToElement(element: E): MappedSingleSegment[E, D, U, V, S] = this
 
     // Transformation ----------------------------------------------------------- //
+    override def takeAbove: UniformSegmentSeq[E, D, V] = sequence.consUniform(value)
+
+    override def takeBelow: UniformSegmentSeq[E, D, V] = sequence.consUniform(value)
+
+    override def slice: (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) = (takeBelow, takeAbove)
+
     override def truncation(
       bound: ExtendedBound[E]
     ): SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], this.type ] =

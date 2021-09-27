@@ -3,6 +3,7 @@ package ordset.core.set
 import ordset.core.AbstractUniformSegmentSeq.UniformSingleSegment
 import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationPredicate, TreapSegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.random.RngManager
 
 class UniformOrderedSet[E, D <: Domain[E]] protected (
@@ -85,17 +86,24 @@ object UniformOrderedSet {
   ): UniformOrderedSet[E, D] =
     new UniformOrderedSet(value, TreapOrderedSet.getFactory)
 
+  def defaultUnit[E, D <: Domain[E]](
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): UniformOrderedSet[E, D] =
+    default(ValueOps.booleanValueOps.unit)
+
   def defaultEmpty[E, D <: Domain[E]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
-    new UniformOrderedSet(false, TreapOrderedSet.getFactory)
+    default(false)
 
   def defaultUniversal[E, D <: Domain[E]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
-    new UniformOrderedSet(true, TreapOrderedSet.getFactory)
+    default(true)
 }

@@ -106,7 +106,12 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     else consAbove(ind)
   }
 
-  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeAboveExtended(bound)
+  final override def takeAboveExtended(bound: ExtendedBound[E]): IndexedSegmentSeq[E, D, V] = 
+    bound match {
+      case bound: Bound[E] => takeAboveBound(bound)
+      case ExtendedBound.BelowAll => this
+      case ExtendedBound.AboveAll => consUniform(lastSegment.value)
+    }
 
   final override def takeBelowBound(bound: Bound[E]): IndexedSegmentSeq[E, D, V] = {
     val ind = searchSegmentFromBegin(bound)
@@ -115,7 +120,12 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     else consBelow(ind - 1)
   }
 
-  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeBelowExtended(bound)
+  final override def takeBelowExtended(bound: ExtendedBound[E]): IndexedSegmentSeq[E, D, V] = 
+    bound match {
+      case bound: Bound[E] => takeBelowBound(bound)
+      case ExtendedBound.BelowAll => consUniform(firstSegment.value)
+      case ExtendedBound.AboveAll => this
+    }
   
   final override def sliceAtBound(bound: Bound[E]): (IndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V]) = {
     val ind = searchSegmentFromBegin(bound)
@@ -124,8 +134,14 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     else (consBelow(ind - 1), consAbove(ind))
   }
 
-  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = 
-    super.sliceAtExtended(bound)
+  final override def sliceAtExtended(
+    bound: ExtendedBound[E]
+  ): (IndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V]) = 
+    bound match {
+      case bound: Bound[E] => sliceAtBound(bound)
+      case ExtendedBound.BelowAll => (consUniform(firstSegment.value), this)
+      case ExtendedBound.AboveAll => (this, consUniform(lastSegment.value))
+    }
   
   final override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = secondSegment
@@ -385,7 +401,7 @@ object AbstractIndexedSegmentSeq {
     override def patch(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
       // We need to override method here to provide more concrete type.
       // But we can't make method abstract due to conflict with implementation in parent trait.
-      // So we just throw exception here and real implemented is provided subclasses.
+      // So we just throw exception here and real implemented is provided in subclasses.
       // Trait is sealed so this is unreachable case.
       throw new AssertionError("Implementation is provided in subclasses of sealed trait.")
     }

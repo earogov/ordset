@@ -125,31 +125,32 @@ protected[ordset] object ZSegmentSeqBuilder {
    * Having segments as input parameters allows to avoid their repeated search if they are already known before
    * method call.
    *
-     Note, if preconditions 1 and 2 are violated, the behavior of method is undefined.
-    * {{{
-    *
-    *  left sequence:
-    *
-    *               bound   leftZsegment
-    *                 ]     /
-    *  X-------](--------------)[---------X
-    *   (A, s)       (B, s)       (C, s)
-    *
-    *  right sequence:     rightZsegment
-    *                     /
-    *  X---------)[----------](-----------X
-    *    (D, u)      (-, ?)      (E, u)
-    *
-    *  output sequence:
-    *
-    *  X-------](-----](-----](-----------X
-    *   (A, s)  (B, u)  (-, ?)   (E, u)
-    *
-    *  where
-    *  (A, ...) - value of base sequence;
-    *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
-    * }}}
-    */
+   * Note, if preconditions 1 and 2 are violated, the behavior of method is undefined.
+   * {{{
+   *
+   *  left sequence:
+   *
+   *               bound   leftZsegment
+   *                 ]     /
+   *  X-------](--------------)[---------X
+   *   (A, s)       (B, s)       (C, s)
+   *
+   *  right sequence:    
+   *                      rightZsegment
+   *                     /
+   *  X---------)[----------](-----------X
+   *    (D, u)      (-, ?)      (E, u)
+   *
+   *  output sequence:
+   *
+   *  X-------](-----](-----](-----------X
+   *   (A, s)  (B, u)  (-, ?)   (E, u)
+   *
+   *  where
+   *  (A, ...) - value of base sequence;
+   *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
+   * }}}
+   */
   final def appendZippedSegment[E, D <: Domain[E], V](
     bound: Bound[E],
     leftZsegment: ZSegment[E, D, V],

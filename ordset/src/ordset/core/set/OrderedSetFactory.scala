@@ -105,6 +105,7 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
    *
    *   complementary  !complementary
    *   X------------](-------------X
+   *                |
    *              bound
    * }}}
    */
@@ -169,7 +170,7 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
      * Same as [[OrderedSetFactory.unsafeBuildAsc]].
      */
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuildAsc(bounds: IterableOnce[Bound.Upper[E]], complementary: Boolean): SSeq =
+    final def unsafeBuildAsc(bounds: IterableOnce[Bound.Upper[E]], complementary: Boolean): SSeq =
       factory.unsafeBuildAsc(bounds, complementary, domainOps)(boundsValidation)(rngManager)
 
     /**
@@ -177,6 +178,25 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
      */
     final def tryBuildAsc(bounds: IterableOnce[Bound.Upper[E]], complementary: Boolean): Try[SSeq] =
       Try.apply(unsafeBuildAsc(bounds, complementary))
+
+
+    /**
+     * Same as [[OrderedSetFactory.buildUniform]].
+     */ 
+    final def buildUniform(value: Boolean): SSeq = factory.buildUniform(value, domainOps)(rngManager)
+
+    /**
+     * Same as [[OrderedSetFactory.unsafeBuildSingleBounded]].
+     */ 
+    @throws[SegmentSeqException]("if preconditions are violated")
+    final def unsafeBuildSingleBounded(bound: Bound.Upper[E], complementary: Boolean): SSeq = 
+      factory.unsafeBuildSingleBounded(bound, complementary, domainOps)(rngManager)
+
+    /**
+     * Same as [[OrderedSetFactory.tryBuildSingleBounded]].
+     */ 
+    def tryBuildSingleBounded(bound: Bound.Upper[E], complementary: Boolean): Try[SSeq] =
+      Try.apply(unsafeBuildSingleBounded(bound, complementary))
   }
 
   // Protected section -------------------------------------------------------- //

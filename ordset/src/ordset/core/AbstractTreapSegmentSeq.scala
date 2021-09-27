@@ -139,11 +139,21 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliceAtBound(bound)._2
 
-  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeAboveExtended(bound)
+  final override def takeAboveExtended(bound: ExtendedBound[E]): TreapSegmentSeq[E, D, V] = 
+    bound match {
+      case bound: Bound[E] => takeAboveBound(bound)
+      case ExtendedBound.BelowAll => this
+      case ExtendedBound.AboveAll => consUniform(lastSegment.value)
+    }
   
   final override def takeBelowBound(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliceAtBound(bound)._1
 
-  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = super.takeBelowExtended(bound)
+  final override def takeBelowExtended(bound: ExtendedBound[E]): TreapSegmentSeq[E, D, V] =
+    bound match {
+      case bound: Bound[E] => takeBelowBound(bound)
+      case ExtendedBound.BelowAll => consUniform(firstSegment.value)
+      case ExtendedBound.AboveAll => this
+    }
 
   final override def sliceAtBound(bound: Bound[E]): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) = {
     val ord = domainOps.boundOrd
@@ -169,8 +179,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = 
-    super.sliceAtExtended(bound)
+  final override def sliceAtExtended(bound: ExtendedBound[E]): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) = 
+        bound match {
+      case bound: Bound[E] => sliceAtBound(bound)
+      case ExtendedBound.BelowAll => (consUniform(firstSegment.value), this)
+      case ExtendedBound.AboveAll => (this, consUniform(lastSegment.value))
+    }
   
   final override def prepend(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
     val segment = secondSegment
@@ -565,7 +579,7 @@ object AbstractTreapSegmentSeq {
     override def patch(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
       // We need to override method here to provide more concrete type.
       // But we can't make method abstract due to conflict with implementation in parent trait.
-      // So we just throw exception here and real implemented is provided subclasses.
+      // So we just throw exception here and real implemented is provided in subclasses.
       // Trait is sealed so this is unreachable case.
       throw new AssertionError("Implementation is provided in subclasses of sealed trait.")
     }

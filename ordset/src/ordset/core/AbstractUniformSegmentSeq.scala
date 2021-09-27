@@ -46,16 +46,18 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
-  final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = this
+  final override def takeAboveExtended(bound: ExtendedBound[E]): UniformSegmentSeq[E, D, V] = this
 
   final override def takeBelowBound(bound: Bound[E]): UniformSegmentSeq[E, D, V] = this
 
-  final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] = this
+  final override def takeBelowExtended(bound: ExtendedBound[E]): UniformSegmentSeq[E, D, V] = this
 
   final override def sliceAtBound(bound: Bound[E]): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
     (this, this)
 
-  final override def sliceAtExtended(bound: ExtendedBound[E]): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
+  final override def sliceAtExtended(
+    bound: ExtendedBound[E]
+  ): (UniformSegmentSeq[E, D, V], UniformSegmentSeq[E, D, V]) =
     (this, this)
 
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = other

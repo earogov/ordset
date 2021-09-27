@@ -1,6 +1,7 @@
 package ordset.core.set
 
-import ordset.core.{AbstractMappedValueSegmentSeq, MappedSegment, MappedTruncation, SegmentT, SegmentTruncationT}
+import ordset.core.{AbstractMappedValueSegmentSeq, SegmentT, SegmentTruncationT}
+import ordset.core.{MappedSegment, MappedTruncation}
 import ordset.core.AbstractMappedSegmentSeq.MappedSegmentBase
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
@@ -21,7 +22,7 @@ class MappedValueOrderedSet[E, D <: Domain[E], S] protected (
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)
 
   @inline
-  protected final override def cons(original: OrderedSet[E, D]): OrderedSet[E, D] =
+  protected final override def cons(original: OrderedSet[E, D]): MappedValueOrderedSet[E, D, Any] =
     new MappedValueOrderedSet(original, valueMapFunc)
 
   protected final override def mapSegment(segment: SetSegmentT[E, D, S]): MappedSetSegment[E, D, S] =

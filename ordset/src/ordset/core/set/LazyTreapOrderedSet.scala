@@ -30,7 +30,8 @@ class LazyTreapOrderedSet[E, D <: Domain[E]] protected (
       )
     )
 
-  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, Boolean]): LazyOrderedSet[E, D] = ???
+  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, Boolean]): LazyOrderedSet[E, D] =
+    new LazyTreapOrderedSet(zippedSeq)
 }
 
 object LazyTreapOrderedSet {
@@ -82,5 +83,20 @@ object LazyTreapOrderedSet {
     val zippedSeq = ZSegmentSeqBuilder.build(baseSet, supplierMap)
     new LazyTreapOrderedSet(zippedSeq)
   }
+
+  /**
+   * Builds lazy ordered set (see [[apply]]) using uniform set with value `ValueOps.unit` (for `Boolean` type) as a 
+   * base sequence.
+   * 
+   * Method is intended to build completely lazy sequences when each segment of `supplierMap` has [[Some]] value.
+   */ 
+  def completelyLazy[E, D <: Domain[E]](
+    supplierMap: SetSupplierOrderedMap[E, D]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): LazyOrderedSet[E, D] =
+    apply(UniformOrderedSet.defaultUnit, supplierMap)
 }
 

@@ -522,7 +522,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   /**
    * Returns lazy segment sequence which is equivalent to the result of [[patch]] operation.
-   * Unlike [[patch]] it doesn't requires inserted sequence to be known immediatelly. 
+   * Unlike [[patch]] it doesn't requires inserted sequence to be known immediately. 
    * Execution of `mapFunc` function is delayed until corresponding segment is requested.
    */
   def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V]

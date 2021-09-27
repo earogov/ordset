@@ -1,7 +1,7 @@
 package ordset.core.map
 
 import ordset.core.AbstractLazyTreapSegmentSeq.{BaseSegmentSeq, ControlValue, EagerValue, LazySegmentBase, ZSegmentSeq}
-import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, LazySegmentSeq, SegmentSeq}
+import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
@@ -30,7 +30,8 @@ class LazyTreapOrderedMap[E, D <: Domain[E], V] protected (
       )
     )
 
-  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazyOrderedMap[E, D, V] = ???
+  protected final override def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazyOrderedMap[E, D, V] =
+    new LazyTreapOrderedMap(zippedSeq)
 }
 
 object LazyTreapOrderedMap {
@@ -80,8 +81,23 @@ object LazyTreapOrderedMap {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): LazySegmentSeq[E, D, V] = {
+  ): LazyOrderedMap[E, D, V] = {
     val zippedSeq = ZSegmentSeqBuilder.build(baseMap, supplierMap)
     new LazyTreapOrderedMap(zippedSeq)
   }
+
+  /**
+   * Builds lazy ordered map (see [[apply]]) using uniform map with value `ValueOps.unit` as a base sequence.
+   * 
+   * Method is intended to build completely lazy sequences when each segment of `supplierMap` has [[Some]] value.
+   */ 
+  def completelyLazy[E, D <: Domain[E], V](
+    supplierMap: SupplierOrderedMap[E, D, V]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V],
+    rngManager: RngManager
+  ): LazyOrderedMap[E, D, V] =
+    apply(UniformOrderedMap.defaultUnit, supplierMap)
 }
