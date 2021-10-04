@@ -188,22 +188,22 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   
   final override def prepend(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
     val segment = secondSegment
-    prependInternal(segment.lowerBound, segment, other)
+    prependBelowBoundInternal(segment.lowerBound, segment, other)
   }
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-    prependInternal(bound, getSegmentForBound(bound.provideLower), other)
+    prependBelowBoundInternal(bound, getSegmentForBound(bound.provideLower), other)
 
   final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.prependBelowExtended(bound, other)
   
   final override def append(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
-    appendInternal(segment.upperBound, segment, other)
+    appendAboveBoundInternal(segment.upperBound, segment, other)
   }
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-    appendInternal(bound, getSegmentForBound(bound.provideUpper), other)
+    appendAboveBoundInternal(bound, getSegmentForBound(bound.provideUpper), other)
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.appendAboveExtended(bound, other)
@@ -212,6 +212,8 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     patchLazyDefaultInternal(supplierSeq)
   
   // Protected section -------------------------------------------------------- //
+  protected final override type SegmentInternal = TreapSegment[E, D, V]
+
   protected override def isValueIncluded(value: V): Boolean
   
   protected override def consUniform(value: V): UniformSegmentSeq[E, D, V]
@@ -230,16 +232,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
       case _ => consUniform(value)
     }
 
-  /**
-   * Same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment` such that:
-   * {{{
-   *   originalBoundSegment.containsBound(bound.provideLower) == true     (1)
-   * }}}
-   * It allows to avoid repeated search of segment if it's already known before method call.
-   *
-   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
-   */
-  protected def prependInternal(
+  protected final override def prependBelowBoundInternal(
     bound: Bound[E],
     originalBoundSegment: TreapSegment[E, D, V],
     other: SegmentSeq[E, D, V]
@@ -331,13 +324,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  protected final override def prependBelowExtendedInternal[Seg](
+  protected final override def prependBelowExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    prependFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: TreapSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
-    super.prependBelowExtendedInternal(bound, originalBoundSegment, other, prependFunc)
+    super.prependBelowExtendedInternal(bound, originalBoundSegment, other)
 
   /**
    * Same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` such that:
@@ -348,7 +340,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
    *
    * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
    */
-  protected def appendInternal(
+  protected final override def appendAboveBoundInternal(
     bound: Bound[E],
     originalBoundSegment: TreapSegment[E, D, V],
     other: SegmentSeq[E, D, V]
@@ -449,13 +441,12 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
     }
   }
 
-  protected final override def appendAboveExtendedInternal[Seg](
+  protected final override def appendAboveExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    appendFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: TreapSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
-    super.appendAboveExtendedInternal(bound, originalBoundSegment, other, appendFunc)
+    super.appendAboveExtendedInternal(bound, originalBoundSegment, other)
   
   /**
    * @return initial segment of sequence.
@@ -591,20 +582,10 @@ object AbstractTreapSegmentSeq {
       self: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], TreapSegment[E, D, V]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.prependBelowExtendedInternal(
-          bound,
-          getSegmentForPrepending,
-          other,
-          segment.sequence.prependInternal
-        )
+        segment.sequence.prependBelowExtendedInternal(bound, getSegmentForPrepending, other)
 
       override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.appendAboveExtendedInternal(
-          bound,
-          getSegmentForAppending,
-          other,
-          segment.sequence.appendInternal
-        )
+        segment.sequence.appendAboveExtendedInternal(bound, getSegmentForAppending, other)
     }
   }
 
@@ -629,7 +610,7 @@ object AbstractTreapSegmentSeq {
     override def slice: (TreapSegmentSeq[E, D, V], NonuniformTreapSegmentSeq[E, D, V])
 
     override def append(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-      sequence.appendInternal(upperBound, this, other)
+      sequence.appendAboveBoundInternal(upperBound, this, other)
   }
 
   /**
@@ -666,7 +647,7 @@ object AbstractTreapSegmentSeq {
     override def slice: (NonuniformTreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V])
 
     override def prepend(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-      sequence.prependInternal(lowerBound, this, other)
+      sequence.prependBelowBoundInternal(lowerBound, this, other)
   }
 
   /**

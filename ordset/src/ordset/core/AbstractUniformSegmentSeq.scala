@@ -98,6 +98,8 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
     patchLazyDefaultInternal(supplierSeq)
   
   // Protected section -------------------------------------------------------- //
+  protected final override type SegmentInternal = UniformSingleSegment[E, D, V]
+
   /** Single segment instance. */
   protected val segment: UniformSingleSegment[E, D, V] = UniformSingleSegment(this)
 
@@ -147,6 +149,20 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
    * If `this.value` and `lastValue` are equals returns current uniform sequence (bound in result sequence is dropped).
    */
   protected def consAppended(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V]
+
+  protected final override def prependBelowBoundInternal(
+    bound: Bound[E],
+    originalBoundSegment: UniformSingleSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V] = 
+    prependBelowBound(bound, other)
+
+  protected final override def appendAboveBoundInternal(
+    bound: Bound[E],
+    originalBoundSegment: UniformSingleSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V] = 
+    appendAboveBound(bound, other)
 }
 
 object AbstractUniformSegmentSeq {

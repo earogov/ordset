@@ -1,10 +1,9 @@
 package ordset.core.util
 
-import ordset.core.AbstractTreapSegmentSeq.TreapSegmentBase
-import ordset.core.AbstractUniformSegmentSeq.UniformSingleSegment
+import ordset.core._
+import ordset.core.AbstractTreapSegmentSeq.{TreapSegmentBase => NonuniformTreapSegmentBase}
 import ordset.core.domain.Domain
 import ordset.core.map.TreapOrderedMap
-import ordset.core._
 import ordset.tree.treap.immutable.ImmutableTreap
 
 object TreapSegmentSeqUtil {
@@ -24,12 +23,12 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def takeBelowSegment[E, D <: Domain[E], V](
-    segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    segment: TreapSegmentBase[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
     segment match {
-      case s: TreapSegmentBase[_, _, _] => s.takeBelow
-      case s: UniformSingleSegment[_, _, _] => s.takeBelow
+      case s: NonuniformTreapSegmentBase[_, _, _] => s.takeBelow
+      case s: UniformSegment[_, _, _] => s.takeBelow
     }
 
   /**
@@ -38,7 +37,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def takeBelowBound[E, D <: Domain[E], V](
-    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: Bound[E]
   ): TreapSegmentSeq[E, D, V] =
     takeBelowSegment(sequence.getSegmentForBound(bound))
@@ -49,7 +48,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def takeBelowExtended[E, D <: Domain[E], V](
-    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: ExtendedBound[E]
   ): TreapSegmentSeq[E, D, V] =
     takeBelowSegment(sequence.getSegmentForExtended(bound))
@@ -60,12 +59,12 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def takeAboveSegment[E, D <: Domain[E], V](
-    segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    segment: TreapSegmentBase[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
     segment match {
-      case s: TreapSegmentBase[_, _, _] => s.takeAbove
-      case s: UniformSingleSegment[_, _, _] => s.takeAbove
+      case s: NonuniformTreapSegmentBase[_, _, _] => s.takeAbove
+      case s: UniformSegment[_, _, _] => s.takeAbove
     }
 
   /**
@@ -74,7 +73,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def takeAboveBound[E, D <: Domain[E], V](
-    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: Bound[E]
   ): TreapSegmentSeq[E, D, V] =
     takeAboveSegment(sequence.getSegmentForBound(bound))
@@ -85,7 +84,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def takeAboveExtended[E, D <: Domain[E], V](
-    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: ExtendedBound[E]
   ): TreapSegmentSeq[E, D, V] =
     takeAboveSegment(sequence.getSegmentForExtended(bound))
@@ -96,12 +95,12 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def sliceSegment[E, D <: Domain[E], V](
-    segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
+    segment: TreapSegmentBase[E, D, V]
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
     // We have to pattern match here due to type inference issue.
     segment match {
-      case s: TreapSegmentBase[_, _, _] => s.slice
-      case s: UniformSingleSegment[_, _, _] => s.slice
+      case s: NonuniformTreapSegmentBase[_, _, _] => s.slice
+      case s: UniformSegment[_, _, _] => s.slice
     }
 
   /**
@@ -110,7 +109,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def sliceAtBound[E, D <: Domain[E], V](
-    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: Bound[E]
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
     sliceSegment(sequence.getSegmentForBound(bound))
@@ -121,7 +120,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    */
   def sliceAtExtended[E, D <: Domain[E], V](
-    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]],
+    sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: ExtendedBound[E]
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
     sliceSegment(sequence.getSegmentForExtended(bound))
@@ -133,12 +132,7 @@ object TreapSegmentSeqUtil {
    * Note some performance penalty in case when conversion is required.
    */
   def prependBelowSegment[E, D <: Domain[E], V](
-    segment: SegmentT[
-      E,
-      D,
-      V,
-      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
-    ],
+    segment: SegmentT[E, D, V, TreapSegmentBase[E, D, V]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     segment.prepend(otherSeq) match {
@@ -153,13 +147,7 @@ object TreapSegmentSeqUtil {
    * Note some performance penalty in case when conversion is required.
    */
   def prependBelowTruncation[E, D <: Domain[E], V](
-    truncation: SegmentTruncationT[
-      E,
-      D,
-      V,
-      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
-      SegmentT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]]
-    ],
+    truncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], SegmentT[E, D, V, TreapSegmentBase[E, D, V]]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     truncation.prepend(otherSeq) match {
@@ -174,12 +162,7 @@ object TreapSegmentSeqUtil {
    * Note some performance penalty in case when conversion is required.
    */
   def appendAboveSegment[E, D <: Domain[E], V](
-    segment: SegmentT[
-      E,
-      D,
-      V,
-      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
-    ],
+    segment: SegmentT[E, D, V, TreapSegmentBase[E, D, V]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     segment.append(otherSeq) match {
@@ -194,13 +177,7 @@ object TreapSegmentSeqUtil {
    * Note some performance penalty in case when conversion is required.
    */
   def appendAboveTruncation[E, D <: Domain[E], V](
-    truncation: SegmentTruncationT[
-      E,
-      D,
-      V,
-      TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
-      SegmentT[E, D, V, TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]]
-    ],
+    truncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], SegmentT[E, D, V, TreapSegmentBase[E, D, V]]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     truncation.append(otherSeq) match {
@@ -215,11 +192,11 @@ object TreapSegmentSeqUtil {
    * Note some performance penalty in case when conversion is required.
    */
   def patchSegment[E, D <: Domain[E], V](
-    segment: TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V],
+    segment: TreapSegmentBase[E, D, V],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     segment match {
-      case s: TreapSegmentBase[_, _, _] => s.patch(otherSeq)
-      case _: UniformSingleSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(otherSeq)
+      case s: NonuniformTreapSegmentBase[_, _, _] => s.patch(otherSeq)
+      case _: UniformSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(otherSeq)
     }
 }

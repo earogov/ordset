@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.core.domain.Domain
 import ordset.core.AbstractMappedSegmentSeq
+import ordset.core.internal.TransformationUtil
 import AbstractMappedSegmentSeq._
 
 abstract class AbstractMappedValueSegmentSeq[E, D <: Domain[E], U, V, S]
@@ -32,15 +33,9 @@ abstract class AbstractMappedValueSegmentSeq[E, D <: Domain[E], U, V, S]
 
   final override protected def sliceInternal(
     segment: MappedInnerSegment[E, D, U, V, S]
-  ): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =
-    if (domainOps.segmentUpperOrd.eqv(segment.front, segment.back)) {
-       // If `front` and `back` are the same segment we can do an optimization:
-       // treap based original sequence, for example, can build both left and right slice parts simultaneously,
-       // so we should use `original.slice` whenever possible.
-       val originalSlice = segment.front.slice
-       (cons(originalSlice._1), cons(originalSlice._2))
-     } else {
-       (takeBelowInternal(segment), takeAboveInternal(segment))
-     }
+  ): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = {
+    val originalSlice = TransformationUtil.sliceComposedSegment(segment.back, segment.front)
+    (cons(originalSlice._1), cons(originalSlice._2))
+  }
 }
 

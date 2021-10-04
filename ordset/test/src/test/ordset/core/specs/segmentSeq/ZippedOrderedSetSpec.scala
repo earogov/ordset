@@ -66,7 +66,17 @@ class ZippedOrderedSetSpec extends AnyFunSpec
 
   describe("Zipped ordered set transformation operations:") {
     
-    //it should behave like segmentSeqCanBeSliced(transformSuite)
+    it should behave like segmentSeqCanBePrepended(transformSuite)
+
+    it should behave like segmentSeqCanBePrependedBelowBound(transformSuite)
+
+    it should behave like segmentSeqCanBeAppended(transformSuite)
+
+    it should behave like segmentSeqCanBeAppendedAboveBound(transformSuite)
+
+    it should behave like segmentSeqCanBeSliced(transformSuite)
+
+    it should behave like segmentCanBePatched(transformSuite)
   }
 
   describe("Zipped ordered set specific operations:") {

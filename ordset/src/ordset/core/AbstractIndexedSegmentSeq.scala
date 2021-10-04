@@ -145,22 +145,22 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   
   final override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = secondSegment
-    prependInternal(segment.lowerBound, segment, other)
+    prependBelowBoundInternal(segment.lowerBound, segment, other)
   }
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-    prependInternal(bound, getSegmentForBound(bound.provideLower), other)
+    prependBelowBoundInternal(bound, getSegmentForBound(bound.provideLower), other)
 
   final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.prependBelowExtended(bound, other)
   
   final override def append(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
-    appendInternal(segment.upperBound, segment, other)
+    appendAboveBoundInternal(segment.upperBound, segment, other)
   }
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-    appendInternal(bound, getSegmentForBound(bound.provideUpper), other)
+    appendAboveBoundInternal(bound, getSegmentForBound(bound.provideUpper), other)
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     super.appendAboveExtended(bound, other)
@@ -169,6 +169,8 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
     patchLazyDelayedInternal(supplierSeq)
   
   // Protected section -------------------------------------------------------- //
+  protected final override type SegmentInternal = IndexedSegment[E, D, V]
+
   /**
    * Validate state after initialization.
    */
@@ -218,51 +220,31 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
    */
   protected def consBelow(ind: Int): NonuniformIndexedSegmentSeq[E, D, V]
 
-  /**
-   * Same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment` such that:
-   * {{{
-   *   originalBoundSegment.containsBound(bound.provideLower) == true     (1)
-   * }}}
-   * It allows to avoid repeated search of segment if it's already known before method call.
-   *
-   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
-   */
-  protected def prependInternal(
+  protected def prependBelowBoundInternal(
     bound: Bound[E],
     originalBoundSegment: IndexedSegment[E, D, V],
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
-  protected final override def prependBelowExtendedInternal[Seg](
+  protected final override def prependBelowExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    prependFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: IndexedSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
-    super.prependBelowExtendedInternal(bound, originalBoundSegment, other, prependFunc)
+    super.prependBelowExtendedInternal(bound, originalBoundSegment, other)
 
-  /**
-   * Same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` such that:
-   * {{{
-   *   originalBoundSegment.containsBound(bound.provideUpper) == true     (1)
-   * }}}
-   * It allows to avoid repeated search of segment if it's already known before method call.
-   *
-   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
-   */
-  protected def appendInternal(
+  protected def appendAboveBoundInternal(
     bound: Bound[E],
     originalBoundSegment: IndexedSegment[E, D, V],
     other: SegmentSeq[E, D, V]
   ): IndexedSegmentSeq[E, D, V]
 
-  protected final override def appendAboveExtendedInternal[Seg](
+  protected final override def appendAboveExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    appendFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: IndexedSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
-    super.appendAboveExtendedInternal(bound, originalBoundSegment, other, appendFunc)
+    super.appendAboveExtendedInternal(bound, originalBoundSegment, other)
 
   /**
    * Preconditions:
@@ -413,20 +395,10 @@ object AbstractIndexedSegmentSeq {
       self: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], IndexedSegment[E, D, V]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.prependBelowExtendedInternal(
-          bound,
-          getSegmentForPrepending,
-          other,
-          segment.sequence.prependInternal
-        )
+        segment.sequence.prependBelowExtendedInternal(bound, getSegmentForPrepending, other)
 
       override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.appendAboveExtendedInternal(
-          bound,
-          getSegmentForAppending,
-          other,
-          segment.sequence.appendInternal
-        )
+        segment.sequence.appendAboveExtendedInternal(bound, getSegmentForAppending, other)
     }
   }
 
@@ -455,7 +427,7 @@ object AbstractIndexedSegmentSeq {
     override def slice: (IndexedSegmentSeq[E, D, V], NonuniformIndexedSegmentSeq[E, D, V])
 
     override def append(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-      sequence.appendInternal(upperBound, this, other)
+      sequence.appendAboveBoundInternal(upperBound, this, other)
   }
 
   /**
@@ -483,7 +455,7 @@ object AbstractIndexedSegmentSeq {
     override def slice: (NonuniformIndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
 
     override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-      sequence.prependInternal(lowerBound, this, other)
+      sequence.prependBelowBoundInternal(lowerBound, this, other)
   }
 
   /** Initial segment of sequence. */

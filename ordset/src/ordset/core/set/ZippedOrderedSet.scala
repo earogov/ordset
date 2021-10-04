@@ -33,7 +33,10 @@ class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)
 
   @inline
-  protected final override def cons(first: OrderedSet[E, D], second: OrderedSet[E, D]): OrderedSet[E, D] =
+  protected final override def cons(
+    first: OrderedSet[E, D], 
+    second: OrderedSet[E, D]
+  ): ZippedOrderedSet[E, D, Any, Any] =
     new ZippedOrderedSet(first, second, operatorFunc, invariantFunc)
 
   protected final override def zipFirstSeqTruncation(

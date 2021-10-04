@@ -49,7 +49,7 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
     new NonuniformArrayOrderedSet(ArraySeq.unsafeWrapArray(newBoundsArray), complementary)
   }
 
-  protected final override def prependInternal(
+  protected final override def prependBelowBoundInternal(
     bound: Bound[E],
     originalBoundSegment: IndexedSegment[E, D, Boolean],
     other: OrderedSet[E, D]
@@ -119,7 +119,7 @@ class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
     }
   }
 
-  protected final override def appendInternal(
+  protected final override def appendAboveBoundInternal(
     bound: Bound[E],
     originalBoundSegment: IndexedSegment[E, D, Boolean],
     other: OrderedSet[E, D]

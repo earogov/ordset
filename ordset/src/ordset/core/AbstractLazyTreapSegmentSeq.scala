@@ -11,7 +11,6 @@ import ordset.core.internal.mappedSeq.{MappedSegmentLikeT, MappedSegmentT}
 import ordset.core.internal.lazySeq.ZSegmentSeqBuilder
 import ordset.core.internal.SegmentSeqExceptionUtil.*
 import AbstractZippedSegmentSeq.*
-import AbstractTreapSegmentSeq.*
 import AbstractUniformSegmentSeq.*
 import AbstractLazyTreapSegmentSeq.*
 import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
@@ -21,6 +20,7 @@ import ordset.util.HashUtil.product1Hash
 import ordset.util.tag.Tag
 
 import scala.annotation.tailrec
+import cats.instances.seq
 
 /**
  * Segment sequence that may contain lazy segments - value of such segment is a function that returns some new segment
@@ -200,6 +200,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     patchLazyDefaultInternal(supplierSeq)
 
   // Protected section -------------------------------------------------------- //
+  protected final override type SegmentInternal = ZSegment[E, D, V]
+
   /**
    * Zipped sequence which joins `baseSeq` and `controlSeq`.
    * <h3>Note</h3>
@@ -667,16 +669,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     }
   }
 
-  /**
-   * Same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundZsegment` such that:
-   * {{{
-   *   originalBoundZsegment.containsBound(bound.provideLower) == true     (1)
-   * }}}
-   * It allows to avoid repeated search of segment if it's already known before method call.
-   *
-   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
-   */
-  protected final def prependBelowBoundInternal(
+  protected final override def prependBelowBoundInternal(
     bound: Bound[E],
     originalBoundZsegment: ZSegment[E, D, V],
     other: SegmentSeq[E, D, V]
@@ -686,24 +679,14 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     consLazy(ZSegmentSeqBuilder.appendZippedSegment(bound, otherBoundZsegment, originalBoundZsegment))
   }
 
-  protected final override def prependBelowExtendedInternal[Seg](
+  protected final override def prependBelowExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    prependFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: ZSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
-    super.prependBelowExtendedInternal(bound, originalBoundSegment, other, prependFunc)
+    super.prependBelowExtendedInternal(bound, originalBoundSegment, other)
 
-  /**
-   * Same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundZsegment` such that:
-   * {{{
-   *   originalBoundZsegment.containsBound(bound.provideUpper) == true     (1)
-   * }}}
-   * It allows to avoid repeated search of segment if it's already known before method call.
-   *
-   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
-   */
-  protected final def appendAboveBoundInternal(
+  protected final override def appendAboveBoundInternal(
     bound: Bound[E],
     originalBoundZsegment: ZSegment[E, D, V],
     other: SegmentSeq[E, D, V]
@@ -713,13 +696,12 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     consLazy(ZSegmentSeqBuilder.appendZippedSegment(bound, originalBoundZsegment, otherBoundZsegment))
   }
 
-  protected final override def appendAboveExtendedInternal[Seg](
+  protected final override def appendAboveExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    appendFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: ZSegment[E, D, V],
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
-    super.appendAboveExtendedInternal(bound, originalBoundSegment, other, appendFunc)
+    super.appendAboveExtendedInternal(bound, originalBoundSegment, other)
 
   /**
    * Creates zipped sequence with specified base and control sequences.
@@ -885,12 +867,12 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     zsegment: ZSegment[E, D, V],
     baseSeq: SegmentSeq[E, D, V]
   ): BaseSegmentSeq[E, D, V] =
-  // Performance note
-  // Both original sequences of `zsegment` are treap based. The result of patch operation in most cases will
-  // be also a treap based sequence. `convertMap` doesn't perform real conversion for them. Instead it just
-  // returns unmodified input sequence.
-  // The only exception - when uniform sequence is patched by some non-treap `baseSeq`. In such a case
-  // patch operation may produce sequence of any type and `convertMap` will create new treap based instance.
+    // Performance note
+    // Both original sequences of `zsegment` are treap based. The result of patch operation in most cases will
+    // be also a treap based sequence. `convertMap` doesn't perform real conversion for them. Instead it just
+    // returns unmodified input sequence.
+    // The only exception - when uniform sequence is patched by some non-treap `baseSeq`. In such a case
+    // patch operation may produce sequence of any type and `convertMap` will create new treap based instance.
     TreapOrderedMap.getFactory.convertMap(
       zsegment.self.patchFirstSeq(baseSeq)
     )
@@ -2110,20 +2092,10 @@ object AbstractLazyTreapSegmentSeq { outer =>
       self: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], LazySegment[E, D, V]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.prependBelowExtendedInternal[ZSegment[E, D, V]](
-          bound,
-          getSegmentForPrepending.original,
-          other,
-          segment.sequence.prependBelowBoundInternal
-        )
+        segment.sequence.prependBelowExtendedInternal(bound, getSegmentForPrepending.original, other)
 
       override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-        segment.sequence.appendAboveExtendedInternal[ZSegment[E, D, V]](
-          bound,
-          getSegmentForAppending.original,
-          other,
-          segment.sequence.appendAboveBoundInternal
-        )
+        segment.sequence.appendAboveExtendedInternal(bound, getSegmentForAppending.original, other)
     }
   }
 
@@ -2294,7 +2266,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       SliceOps.takeBelowZSegmentWithoutCorrection(original, sequence)
 
     override def slice: (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) =
-      (takeBelow, takeAbove)
+      SliceOps.sliceZSegmentWithoutCorrection(original, sequence)
 
     override def truncation(
       bound: ExtendedBound[E]
@@ -2393,8 +2365,8 @@ object AbstractLazyTreapSegmentSeq { outer =>
       zsegment: ZSegment[E, D, V],
       sequence: LazySegmentSeq[E, D, V]
     ): LazySegmentSeq[E, D, V] = {
-      val newBaseSeq = TreapSegmentSeqUtil.takeAboveSegment(zsegment.self.firstSeqSegment.self)
-      val newControlSeq = TreapSegmentSeqUtil.takeAboveSegment(zsegment.self.secondSeqSegment.self)
+      val newBaseSeq = TreapSegmentSeqUtil.takeAboveSegment(zsegment.self.front.firstSeqSegment.self)
+      val newControlSeq = TreapSegmentSeqUtil.takeAboveSegment(zsegment.self.front.secondSeqSegment.self)
       sequence.consLazy(sequence.makeZippedSeq(newBaseSeq, newControlSeq))
     }
 
@@ -2420,5 +2392,29 @@ object AbstractLazyTreapSegmentSeq { outer =>
       val newControlSeq = TreapSegmentSeqUtil.takeBelowSegment(zsegment.self.back.secondSeqSegment.self)
       sequence.consLazy(sequence.makeZippedSeq(newBaseSeq, newControlSeq))
     }
+
+    def sliceZSegmentWithoutCorrection[E, D <: Domain[E], V](
+      zsegment: ZSegment[E, D, V],
+      sequence: LazySegmentSeq[E, D, V]
+    ): (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = {
+      val back = zsegment.self.back
+      val front = zsegment.self.front
+      val baseSlice = sliceOriginalSeq(back.firstSeqSegment.self, front.firstSeqSegment.self)
+      val controlSlice = sliceOriginalSeq(back.secondSeqSegment.self, front.secondSeqSegment.self)
+      val leftSeq = sequence.consLazy(sequence.makeZippedSeq(baseSlice._1, controlSlice._1))
+      val rightSeq = sequence.consLazy(sequence.makeZippedSeq(baseSlice._2, controlSlice._2))
+      (leftSeq, rightSeq)
+    }
+
+    // Private section ---------------------------------------------------------- //
+    private def sliceOriginalSeq[E, D <: Domain[E], U](
+      back: SegmentT[E, D, U, TreapSegmentBase[E, D, U]] with TreapSegmentBase[E, D, U],
+      front: SegmentT[E, D, U, TreapSegmentBase[E, D, U]] with TreapSegmentBase[E, D, U]
+    ): (TreapSegmentSeq[E, D, U], TreapSegmentSeq[E, D, U]) =
+      // If `front` and `back` is the same segment we can do an optimization:
+      // treap based original sequence can build both left and right slice parts simultaneously,
+      // so we should use `segment.slice` whenever possible.
+      if (front.domainOps.segmentUpperOrd.eqv(back, front)) TreapSegmentSeqUtil.sliceSegment(front)
+      else (TreapSegmentSeqUtil.takeBelowSegment(back), TreapSegmentSeqUtil.takeAboveSegment(front))
   }
 }

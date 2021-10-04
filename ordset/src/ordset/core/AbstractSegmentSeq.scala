@@ -44,6 +44,14 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
 
   // Protected section -------------------------------------------------------- //
   /**
+   * Segment type for internal operations. 
+   * 
+   * Generally it's just a `SegmentT[E, D, V, S] with S`. But also it may be any type representing segment of current
+   * sequence.
+   */ 
+  protected type SegmentInternal
+
+  /**
    * Returns `true` if segment with given value is considered to be included in set.
    *
    * For example, if `V` = `Option[AnyType]`, then we assume `None` is not included and `Some(anyValue)` - is included.
@@ -56,57 +64,65 @@ abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[
   protected def consUniform(value: V): SegmentSeq[E, D, V]
   
   /**
-   * Utility method to implement [[SegmentSeqT.prependBelowExtended]]:
-   * <tr>if input `bound` is instance of [[Bound]] then calls `prependFunc`;</tr>
-   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</tr>
-   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence.</tr>
-   * <tr></tr>
-   * 
-   * `prependFunc` is same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment`
-   * such that:
+   * Same as [[SegmentSeqT.prependBelowBound]] but with additional argument `originalBoundSegment` such that:
    * {{{
-   *   originalBoundSegment.containsBound(bound.provideLower) == true    (1)
+   *   originalBoundSegment.containsBound(bound.provideLower) == true     (1)
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
-   * 
-   * Note, if provided segment differs from one defined by condition 1, the behavior of function is undefined.
+   *
+   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
    */
-  protected def prependBelowExtendedInternal[Seg](
+  protected def prependBelowBoundInternal(
+    bound: Bound[E],
+    originalBoundSegment: SegmentInternal,
+    other: SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V]
+
+  /**
+   * Adds support of unlimited bounds to [[prependBelowBoundInternal]]:
+   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</tr>
+   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence;</tr>
+   * <tr>otherwise result is the same as for method [[prependBelowBoundInternal]].</tr>
+   */
+  protected def prependBelowExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    prependFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: SegmentInternal,
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
     bound match {
-      case bound: Bound[E] => prependFunc(bound, originalBoundSegment, other)
+      case bound: Bound[E] => prependBelowBoundInternal(bound, originalBoundSegment, other)
       case ExtendedBound.BelowAll => this
       case ExtendedBound.AboveAll => other
     }
 
   /**
-   * Utility method to implement [[SegmentSeqT.appendAboveExtended]]:
-   * <tr>if input `bound` is instance of [[Bound]] then calls `appendFunc`;</tr>
-   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</tr>
-   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence.</tr>
-   * <tr></tr>
-   *
-   * `appendFunc` is same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` 
-   * such that:
+   * Same as [[SegmentSeqT.appendAboveBound]] but with additional argument `originalBoundSegment` such that:
    * {{{
-   *   originalBoundSegment.containsBound(bound.provideUpper) == true    (1)
+   *   originalBoundSegment.containsBound(bound.provideUpper) == true     (1)
    * }}}
    * It allows to avoid repeated search of segment if it's already known before method call.
    *
-   * Note, if provided segment differs from one defined by condition 1, the behavior of function is undefined.
+   * Note, if provided segment differs from one defined by condition 1, the behavior of method is undefined.
    */
-  protected def appendAboveExtendedInternal[Seg](
+  protected def appendAboveBoundInternal(
+    bound: Bound[E],
+    originalBoundSegment: SegmentInternal,
+    other: SegmentSeq[E, D, V]
+  ): SegmentSeq[E, D, V]
+
+  /**
+   * Adds support of unlimited bounds to [[appendAboveExtendedInternal]]:
+   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</tr>
+   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;</tr>
+   * <tr>otherwise result is the same as for method [[appendAboveExtendedInternal]].</tr>
+   */
+  protected def appendAboveExtendedInternal(
     bound: ExtendedBound[E],
-    originalBoundSegment: Seg,
-    other: SegmentSeq[E, D, V],
-    appendFunc: (Bound[E], Seg, SegmentSeq[E, D, V]) => SegmentSeq[E, D, V]
+    originalBoundSegment: SegmentInternal,
+    other: SegmentSeq[E, D, V]
   ): SegmentSeq[E, D, V] =
     bound match {
-      case bound: Bound[E] => appendFunc(bound, originalBoundSegment, other)
+      case bound: Bound[E] => appendAboveBoundInternal(bound, originalBoundSegment, other)
       case ExtendedBound.BelowAll => other
       case ExtendedBound.AboveAll => this
     }
