@@ -1,7 +1,7 @@
 package ordset.core.syntax
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.{Interval, IntervalRelation}
+import ordset.core.interval.{Interval, IntervalRelation}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}

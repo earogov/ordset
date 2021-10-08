@@ -1,6 +1,7 @@
 package ordset.core.internal.mappedSeq
 
-import ordset.core.{Bound, Interval, IntervalRelation, SegmentLikeT, SegmentT, Segment, SegmentTruncationT}
+import ordset.core.{Bound, SegmentLikeT, SegmentT, Segment, SegmentTruncationT}
+import ordset.core.interval.{Interval, IntervalRelation}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 

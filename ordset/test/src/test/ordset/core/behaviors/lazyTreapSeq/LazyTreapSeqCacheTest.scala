@@ -1,7 +1,8 @@
 package test.ordset.core.behaviors.lazyTreapSeq
 
 import ordset.core.AbstractLazyTreapSegmentSeq.ZValue
-import ordset.core.{ExtendedBound, IntervalRelation}
+import ordset.core.ExtendedBound
+import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain
 import ordset.util.label.Label
 import test.ordset.core.behaviors.{TestPackageBase, TestShowUtil}

@@ -1,5 +1,6 @@
-package ordset.core
+package ordset.core.interval
 
+import ordset.core.{Bound, SetBuilderFormat}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.{Hash, Show, util}
 

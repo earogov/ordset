@@ -1,7 +1,8 @@
 package ordset.core.domain
 
 import ordset.Hash
-import ordset.core.{Interval, IntervalBuilder, IntervalOps, IntervalRelation, SegmentT}
+import ordset.core.interval.{Interval, IntervalBuilder, IntervalOps, IntervalRelation}
+import ordset.core.SegmentT
 
 trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
 

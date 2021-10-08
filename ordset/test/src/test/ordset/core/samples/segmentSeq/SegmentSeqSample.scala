@@ -5,7 +5,8 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.SetBuilderNotation.BoundBuilder
 import ordset.core.util.SegmentSeqUtil
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, ExtendedBound, Interval, IntervalRelation, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound, SegmentSeq}
+import ordset.core.interval.{Interval, IntervalRelation}
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels

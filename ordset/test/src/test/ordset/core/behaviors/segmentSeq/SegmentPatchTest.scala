@@ -1,7 +1,8 @@
 package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
-import ordset.core.{Bound, IntervalRelation, SegmentSeq}
+import ordset.core.{Bound, SegmentSeq}
+import ordset.core.interval.IntervalRelation
 import ordset.util.label.Label
 import test.ordset.core.Labels
 import test.ordset.core.behaviors.TestCaseBase

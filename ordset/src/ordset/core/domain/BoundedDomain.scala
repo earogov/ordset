@@ -2,7 +2,7 @@ package ordset.core.domain
 
 import ordset.util.label.Label
 import ordset.Hash
-import ordset.core.Interval
+import ordset.core.interval.Interval
 
 trait BoundedDomain[E, D <: Domain[E]] extends Domain.Wrapper[E, D] {
 

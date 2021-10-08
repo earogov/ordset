@@ -11,6 +11,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
 
   import ordset._
   import ordset.core._
+  import ordset.core.interval._
 
   import scala.annotation.tailrec
 

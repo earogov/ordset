@@ -1,6 +1,7 @@
 package ordset.core
 
 import ordset.core.domain.*
+import ordset.core.interval.*
 import ordset.core.map.{LazyTreapOrderedMap, UniformOrderedMap, TreapOrderedMap}
 import ordset.util
 import ordset.util.label.Label

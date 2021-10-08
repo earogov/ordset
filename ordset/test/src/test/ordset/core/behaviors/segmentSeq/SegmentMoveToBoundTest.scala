@@ -1,7 +1,8 @@
 package test.ordset.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
-import ordset.core.{ExtendedBound, IntervalRelation}
+import ordset.core.ExtendedBound
+import ordset.core.interval.IntervalRelation
 
 trait SegmentMoveToBoundTest[E, D <: Domain[E], V] {
 

@@ -5,6 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.internal.SegmentSeqExceptionUtil
 import ordset.core.map.{MappedOrderedMap, MappedValueOrderedMap}
 import ordset.core.value.ValueOps
+import ordset.core.interval.{Interval, IntervalRelation}
 import ordset.random.RngManager
 
 import scala.Specializable.AllNumeric as spNum

@@ -5,7 +5,8 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
-import ordset.core.{ExtendedBound, IntervalRelation}
+import ordset.core.ExtendedBound
+import ordset.core.interval.IntervalRelation
 import ordset.random.RngManager
 import ordset.util.label.Label
 import test.ordset.core.Labels

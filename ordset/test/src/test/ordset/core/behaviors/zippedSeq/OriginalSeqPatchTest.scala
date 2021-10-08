@@ -1,6 +1,7 @@
 package test.ordset.core.behaviors.zippedSeq
 
-import ordset.core.{Bound, IntervalRelation, SegmentSeq}
+import ordset.core.{Bound, SegmentSeq}
+import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain
 import ordset.util.label.Label
 import test.ordset.core.behaviors.TestCaseBase

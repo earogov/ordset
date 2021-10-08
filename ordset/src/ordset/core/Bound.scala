@@ -1,7 +1,8 @@
 package ordset.core
 
 import ordset.core.Bound.DefaultOrder
-import ordset.core.domain._
+import ordset.core.domain.*
+import ordset.core.interval.*
 import ordset.{Order, Show, util}
 import ordset.util.label.Label
 import ordset.util.types.SingleValue

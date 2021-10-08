@@ -1,5 +1,6 @@
-package ordset.core
+package ordset.core.interval
 
+import ordset.core.Bound
 import ordset.core.domain.{Domain, DomainOps}
 
 trait IntervalOps[E, D <: Domain[E]] {
@@ -29,7 +30,7 @@ trait IntervalOps[E, D <: Domain[E]] {
    *              bound
    * }}}
    */
-  def cutBelow(bound: Bound.Lower[E], x: Interval[E, D]): Interval[E, D] = cross(x, domainOps.interval(bound))
+  def takeAbove(bound: Bound.Lower[E], x: Interval[E, D]): Interval[E, D] = cross(x, domainOps.interval(bound))
 
   /**
    * Returns subset of elements that belongs to interval and not greater then specified bound.
@@ -46,7 +47,7 @@ trait IntervalOps[E, D <: Domain[E]] {
    *              bound
    * }}}
    */
-  def cutAbove(bound: Bound.Upper[E], x: Interval[E, D]): Interval[E, D] = cross(x, domainOps.interval(bound))
+  def takeBelow(bound: Bound.Upper[E], x: Interval[E, D]): Interval[E, D] = cross(x, domainOps.interval(bound))
 }
 
 object IntervalOps {
@@ -160,8 +161,8 @@ object IntervalOps {
       }
     }
 
-    override def cutBelow(bound: Bound.Lower[E], x: Interval[E, D]): Interval[E, D] = x match {
-      // cutBelow(x, bound) = cross(x, y) where
+    override def takeAbove(bound: Bound.Lower[E], x: Interval[E, D]): Interval[E, D] = x match {
+      // takeAbove(x, bound) = cross(x, y) where
       // y = domainOps.interval(bound)
       case x: Interval.Empty[e, d] => x
       case _: Interval.Universal[e, d] => domainOps.interval(bound)
@@ -196,8 +197,8 @@ object IntervalOps {
         }
     }
 
-    override def cutAbove(bound: Bound.Upper[E], x: Interval[E, D]): Interval[E, D] = x match {
-      // cutAbove(x, bound) = cross(x, y) where
+    override def takeBelow(bound: Bound.Upper[E], x: Interval[E, D]): Interval[E, D] = x match {
+      // takeBelow(x, bound) = cross(x, y) where
       // y = domainOps.interval(bound)
       case x: Interval.Empty[e, d] => x
       case _: Interval.Universal[e, d] => domainOps.interval(bound)

@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.Show
 import ordset.core.domain.Domain
+import ordset.core.interval.{Interval, IntervalRelation}
 
 object SetBuilderFormat { format =>
 

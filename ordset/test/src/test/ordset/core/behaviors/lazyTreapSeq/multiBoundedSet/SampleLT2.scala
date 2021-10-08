@@ -1,7 +1,8 @@
 package test.ordset.core.behaviors.lazyTreapSeq.multiBoundedSet
 
 import ordset.core.AbstractLazyTreapSegmentSeq.EagerValue
-import ordset.core.{ExtendedBound, IntervalRelation}
+import ordset.core.ExtendedBound
+import ordset.core.interval.IntervalRelation
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._

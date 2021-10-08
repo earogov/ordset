@@ -3,6 +3,7 @@ package test.ordset.core
 import ordset.{Hash, core}
 import ordset.core._
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.interval.IntervalRelation
 import ordset.util.IterableUtil
 import org.scalatest.Assertions._
 

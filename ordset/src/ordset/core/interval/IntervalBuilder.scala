@@ -1,5 +1,6 @@
-package ordset.core
+package ordset.core.interval
 
+import ordset.core.Bound
 import ordset.core.domain.{Domain, DomainOps}
 
 trait IntervalBuilder[E, D <: Domain[E]] {
@@ -50,15 +51,4 @@ object IntervalBuilder {
     override def between(leftElement: E, leftIncl: Boolean, rightElement: E, rightIncl: Boolean): Interval[E, D] =
       apply(Bound.Lower(leftElement, leftIncl), Bound.Upper(rightElement, rightIncl))
   }
-
-//  abstract class BoundedBuilder[E, D <: Domain[E]](
-//    override val domain: D with BoundedDomain[E, D]
-//  )(
-//    implicit val operator: IntervalOperator[E, D]
-//  ) extends IntervalBuilder[E, D] {
-//
-//    override lazy val empty: Interval.Empty[E, D] = Interval.Empty(domain)
-//
-//    override lazy val universal: Interval[E, D] = domain.bounds
-//  }
 }
