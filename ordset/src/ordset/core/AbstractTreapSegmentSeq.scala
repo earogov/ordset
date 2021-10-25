@@ -214,6 +214,11 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   // Protected section -------------------------------------------------------- //
   protected final override type SegmentInternal = TreapSegment[E, D, V]
 
+  /**
+   * Returns value of segment, that corresponds to given `node`.
+   */
+  protected def getValueForNode(node: ImmutableTreap.Node[Bound.Upper[E], V]): V
+
   protected override def isValueIncluded(value: V): Boolean
   
   protected override def consUniform(value: V): UniformSegmentSeq[E, D, V]
@@ -539,7 +544,7 @@ object AbstractTreapSegmentSeq {
 
     override val sequence: NonuniformTreapSegmentSeq[E, D, V]
 
-    override def value: V = node.value
+    override def value: V = sequence.getValueForNode(node)
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
 

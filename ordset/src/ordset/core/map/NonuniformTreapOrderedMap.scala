@@ -26,6 +26,9 @@ class NonuniformTreapOrderedMap[E, D <: Domain[E], V] protected (
 
   // Protected section -------------------------------------------------------- //
   @inline
+  protected final override def getValueForNode(node: ImmutableTreap.Node[Bound.Upper[E], V]): V = node.value
+
+  @inline
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
 
   @inline

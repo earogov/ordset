@@ -18,20 +18,24 @@ object TreapOrderedSet {
    *
    * @param root treap containing upper bounds and values.
    * @param lastValue value of last segment.
+   * @param complementary if `true`, values of all segments are inverted.
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
   def unchecked[E, D <: Domain[E]](
     root: ImmutableTreap[Bound.Upper[E], Boolean],
-    lastValue: Boolean
+    lastValue: Boolean,
+    complementary: Boolean
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): TreapOrderedSet[E, D] = 
     root match {
-      case root: ImmutableTreap.Node[Bound.Upper[E], Boolean] => NonuniformTreapOrderedSet.unchecked(root, lastValue)
-      case _ => UniformOrderedSet.apply(lastValue, TreapOrderedSet.getFactory)
+      case root: ImmutableTreap.Node[Bound.Upper[E], Boolean] => 
+        NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue, complementary)
+      case _ => 
+        UniformOrderedSet.apply(complementary ^ lastValue, TreapOrderedSet.getFactory)
     }
 
   /**
@@ -78,7 +82,7 @@ object TreapOrderedSet {
         val root = BuildAsc.finalizeBuffer(buffer)
         root match {
           case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
-            NonuniformTreapOrderedSet.unchecked(r, value)(domainOps, rngManager)
+            NonuniformTreapOrderedSet.uncheckedOptimized(r, value, false)(domainOps, rngManager)
           case _ =>
             UniformOrderedSet.apply(value, this)(domainOps, rngManager)
         }

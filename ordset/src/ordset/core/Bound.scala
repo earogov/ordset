@@ -43,12 +43,12 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
   def element: E
 
   /**
-   * Returns `true` if bound includes `value`.
+   * Returns `true` if bound includes `element`.
    */
   def isInclusive: Boolean
 
   /**
-   * Returns `true` if bound doesn't include `value`.
+   * Returns `true` if bound doesn't include `element`.
    */
   def isExclusive: Boolean = !isInclusive
 
