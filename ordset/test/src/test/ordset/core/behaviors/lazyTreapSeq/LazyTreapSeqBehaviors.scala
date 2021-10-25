@@ -16,7 +16,7 @@ import scala.collection.immutable.{ArraySeq, HashMap}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-trait LazyTreapSeqBehaviours[E, D <: Domain[E], V] {
+trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
   this: AnyFunSpec =>
 
   def sequenceProperlyCacheLazyValues(
