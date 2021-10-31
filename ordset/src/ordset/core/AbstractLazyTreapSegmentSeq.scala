@@ -8,11 +8,12 @@ import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
 import ordset.core.internal.mappedSeq.{MappedSegmentLikeT, MappedSegmentT}
-import ordset.core.internal.lazySeq.ZSegmentSeqBuilder
+import ordset.core.internal.lazySeq.*
+import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.internal.SegmentSeqExceptionUtil.*
-import AbstractZippedSegmentSeq.*
-import AbstractUniformSegmentSeq.*
-import AbstractLazyTreapSegmentSeq.*
+import ordset.core.AbstractZippedSegmentSeq.*
+import ordset.core.AbstractUniformSegmentSeq.*
+import ordset.core.AbstractLazyTreapSegmentSeq.*
 import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.util.BooleanUtil
@@ -1648,97 +1649,6 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
 object AbstractLazyTreapSegmentSeq { outer =>
 
-  type BaseSegmentBase[E, D <: Domain[E], V] = TreapSegmentBase[E, D, V] | UniformSingleSegment[E, D, V]
-
-  type BaseSegment[E, D <: Domain[E], V] = SegmentT[E, D, V, BaseSegmentBase[E, D, V]]
-
-  type BaseSegmentSeq[E, D <: Domain[E], V] = TreapSegmentSeq[E, D, V]
-
-
-  type ControlSegmentBase[E, D <: Domain[E], V] =
-    TreapSegmentBase[E, D, ControlValue[E, D, V]] | UniformSingleSegment[E, D, ControlValue[E, D, V]]
-
-  type ControlSegment[E, D <: Domain[E], V] = 
-    SegmentT[E, D, ControlValue[E, D, V], ControlSegmentBase[E, D, V]]
-
-  type ControlSegmentWithNext[E, D <: Domain[E], V] = 
-    SegmentT.WithNext[E, D, ControlValue[E, D, V], ControlSegmentBase[E, D, V]]
-
-  type ControlSegmentWithPrev[E, D <: Domain[E], V] = 
-    SegmentT.WithPrev[E, D, ControlValue[E, D, V], ControlSegmentBase[E, D, V]]
-
-  type ControlTruncation[E, D <: Domain[E], V] =
-    SegmentTruncationT[E, D, ControlValue[E, D, V], ControlSegmentBase[E, D, V], ControlSegment[E, D, V]]
-
-  type ControlSegmentSeq[E, D <: Domain[E], V] = TreapSegmentSeq[E, D, ControlValue[E, D, V]]
-
-
-  type ZValue[E, D <: Domain[E], V] = (V, ControlValue[E, D, V])
-
-  type ZSegmentBase[E, D <: Domain[E], V] =
-    ZippedSegmentBase[
-      E,
-      D,
-      V,
-      ControlValue[E, D, V],
-      ZValue[E, D, V],
-      BaseSegmentBase[E, D, V],
-      ControlSegmentBase[E, D, V]
-    ]
-
-  type ZSegment[E, D <: Domain[E], V] = SegmentT[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZSegmentWithNext[E, D <: Domain[E], V] = SegmentT.WithNext[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZSegmentWithPrev[E, D <: Domain[E], V] = SegmentT.WithPrev[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZSegmentInitial[E, D <: Domain[E], V] = SegmentT.Initial[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZSegmentTerminal[E, D <: Domain[E], V] = SegmentT.Terminal[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZSegmentInner[E, D <: Domain[E], V] = SegmentT.Inner[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZSegmentSingle[E, D <: Domain[E], V] = SegmentT.Single[E, D, ZValue[E, D, V], ZSegmentBase[E, D, V]]
-
-  type ZTruncation[E, D <: Domain[E], V] =
-    SegmentTruncationT[
-      E,
-      D,
-      ZValue[E, D, V],
-      ZSegmentBase[E, D, V],
-      ZSegment[E, D, V]
-    ]
-
-  type ZTruncationWithPrev[E, D <: Domain[E], V] =
-    SegmentTruncationT[
-      E,
-      D,
-      ZValue[E, D, V],
-      ZSegmentBase[E, D, V],
-      ZSegmentWithPrev[E, D, V]
-    ]
-
-  type ZTruncationWithNext[E, D <: Domain[E], V] =
-    SegmentTruncationT[
-      E,
-      D,
-      ZValue[E, D, V],
-      ZSegmentBase[E, D, V],
-      ZSegmentWithNext[E, D, V]
-    ]
-
-  type ZSegmentSeq[E, D <: Domain[E], V] =
-    ZippedSegmentSeq[
-      E,
-      D,
-      V,
-      ControlValue[E, D, V],
-      ZValue[E, D, V],
-      BaseSegmentBase[E, D, V],
-      ControlSegmentBase[E, D, V]
-    ]
-
-
   type LazySegment[E, D <: Domain[E], V] =
     SegmentT[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
 
@@ -1750,7 +1660,6 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   type LazyTruncation[E, D <: Domain[E], V] =
     SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], LazySegment[E, D, V]]
-
 
   /**
    * Types indicating that segment is stable, i.e. that its value, bounds and type (initial, inner, etc.)
@@ -1780,34 +1689,36 @@ object AbstractLazyTreapSegmentSeq { outer =>
    */
   object Stable { stable =>
 
-    type ZSegment[E, D <: Domain[E], V] = outer.ZSegment[E, D, V] with Tag[Stable.type]
+    import ordset.core.internal.lazySeq
 
-    type ZSegmentWithNext[E, D <: Domain[E], V] = outer.ZSegmentWithNext[E, D, V] with Tag[Stable.type]
+    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] with Tag[Stable.type]
 
-    type ZSegmentWithPrev[E, D <: Domain[E], V] = outer.ZSegmentWithPrev[E, D, V] with Tag[Stable.type]
+    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] with Tag[Stable.type]
 
-    type ZSegmentInitial[E, D <: Domain[E], V] = outer.ZSegmentInitial[E, D, V] with Tag[Stable.type]
+    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] with Tag[Stable.type]
 
-    type ZSegmentTerminal[E, D <: Domain[E], V] = outer.ZSegmentTerminal[E, D, V] with Tag[Stable.type]
+    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] with Tag[Stable.type]
 
-    type ZSegmentInner[E, D <: Domain[E], V] = outer.ZSegmentInner[E, D, V] with Tag[Stable.type]
+    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] with Tag[Stable.type]
 
-    type ZSegmentSingle[E, D <: Domain[E], V] = outer.ZSegmentSingle[E, D, V] with Tag[Stable.type]
+    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] with Tag[Stable.type]
+
+    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] with Tag[Stable.type]
 
     /**
      * If input `segment` is stable marks it with [[Stable]] tag, otherwise throws exception.
      */
     @throws[AssertionError]("if input segment is not stable")
-    def assert[E, D <: Domain[E], V](segment: outer.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
+    def assert[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
       if (segment.value._2.isStable) tagged(segment) else throwSegmentIsNotStable(segment)
 
     /**
      * Marks input segment with [[Stable]] tag. Stability check must be provided by caller.
      */
-    def unsafe[E, D <: Domain[E], V](segment: outer.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
+    def unsafe[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
       tagged(segment)
 
-    def throwSegmentIsNotStable[E, D <: Domain[E], V](zsegment: outer.ZSegment[E, D, V]): Nothing =
+    def throwSegmentIsNotStable[E, D <: Domain[E], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
       throw AssertionError(s"Expected that segment $zsegment is stable.")
 
     // Private section ---------------------------------------------------------- //
@@ -1842,200 +1753,34 @@ object AbstractLazyTreapSegmentSeq { outer =>
    */
   object Eager { eager =>
 
-    type ZSegment[E, D <: Domain[E], V] = outer.ZSegment[E, D, V] with Tag[Eager.type]
+    import ordset.core.internal.lazySeq
 
-    type ZSegmentWithNext[E, D <: Domain[E], V] = outer.ZSegmentWithNext[E, D, V] with Tag[Eager.type]
+    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] with Tag[Eager.type]
 
-    type ZSegmentWithPrev[E, D <: Domain[E], V] = outer.ZSegmentWithPrev[E, D, V] with Tag[Eager.type]
+    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] with Tag[Eager.type]
 
-    type ZSegmentInitial[E, D <: Domain[E], V] = outer.ZSegmentInitial[E, D, V] with Tag[Eager.type]
+    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] with Tag[Eager.type]
 
-    type ZSegmentTerminal[E, D <: Domain[E], V] = outer.ZSegmentTerminal[E, D, V] with Tag[Eager.type]
+    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] with Tag[Eager.type]
 
-    type ZSegmentInner[E, D <: Domain[E], V] = outer.ZSegmentInner[E, D, V] with Tag[Eager.type]
+    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] with Tag[Eager.type]
 
-    type ZSegmentSingle[E, D <: Domain[E], V] = outer.ZSegmentSingle[E, D, V] with Tag[Eager.type]
+    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] with Tag[Eager.type]
+
+    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] with Tag[Eager.type]
 
     /**
      * If input `segment` is eager marks it with [[Eager]] tag, otherwise throws exception.
      */
     @throws[AssertionError]("if input segment is not eager")
-    def assert[E, D <: Domain[E], V](segment: outer.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
+    def assert[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
       if (segment.value._2.isEager) tagged(segment) else throwSegmentIsNotEager(segment)
 
-    def throwSegmentIsNotEager[E, D <: Domain[E], V](zsegment: outer.ZSegment[E, D, V]): Nothing =
+    def throwSegmentIsNotEager[E, D <: Domain[E], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
       throw AssertionError(s"Expected that segment $zsegment is eager.")
 
     // Private section ---------------------------------------------------------- //
     private def tagged[R](r: R): R with Tag[Eager.type] = r.asInstanceOf[R with Tag[Eager.type]]
-  }
-
-  sealed trait ControlValue[E, D <: Domain[E], V] {
-
-    def isStable: Boolean
-
-    def isUnstable: Boolean
-
-    def isLazy: Boolean
-
-    def isEager: Boolean
-
-    def isEagerUnstable: Boolean = isEager && isUnstable
-
-    def isLazyOrStable: Boolean = isStable || isLazy
-  }
-
-  final case class LazyValue[E, D <: Domain[E], V](
-    private val seqFunc: () => SegmentSeq[E, D, V]
-  ) extends ControlValue[E, D, V] {
-
-    override def isStable: Boolean = false
-
-    override def isUnstable: Boolean = true
-
-    override def isLazy: Boolean = true
-
-    override def isEager: Boolean = false
-
-    override def isEagerUnstable: Boolean = false
-
-    override def isLazyOrStable: Boolean = true
-
-    def compute: SegmentSeq[E, D, V] = seqFunc()
-
-    def map[E1, D1 <: Domain[E1], V1](mapFunc: SegmentSeq[E, D, V] => SegmentSeq[E1, D1, V1]): LazyValue[E1, D1, V1] =
-      LazyValue(() => mapFunc(seqFunc()))
-  }
-
-  final case class EagerValue[E, D <: Domain[E], V] private (
-    private val stable: Boolean
-  ) extends ControlValue[E, D, V] {
-
-    override def isStable: Boolean = stable
-
-    override def isUnstable: Boolean = !stable
-
-    override def isLazy: Boolean = false
-
-    override def isEager: Boolean = true
-
-    override def isEagerUnstable: Boolean = !stable
-
-    override def isLazyOrStable: Boolean = stable
-
-    override def toString: String = s"EagerValue(${if (stable) "stable" else "unstable"})"
-  }
-
-  object EagerValue {
-
-    def cons[E, D <: Domain[E], V](isStable: Boolean): EagerValue[E, D, V] = if (isStable) stable else unstable
-
-    def stable[E, D <: Domain[E], V]: EagerValue[E, D, V] = stableInstance.asInstanceOf
-
-    def unstable[E, D <: Domain[E], V]: EagerValue[E, D, V] = unstableInstance.asInstanceOf
-
-    // Private section ---------------------------------------------------------- //
-    private lazy val stableInstance: EagerValue[Any, Domain[Any], Any] = new EagerValue(true)
-
-    private lazy val unstableInstance: EagerValue[Any, Domain[Any], Any] = new EagerValue(false)
-  }
-
-  final class ControlValueHash[E, D <: Domain[E], V]
-    extends Hash[ControlValue[E, D, V]] {
-
-    import util.HashUtil._
-
-    override def hash(x: ControlValue[E, D, V]): Int = x.##
-
-    override def eqv(x: ControlValue[E, D, V], y: ControlValue[E, D, V]): Boolean = (x, y) match {
-      case (x: LazyValue[_, _, _], y: LazyValue[_, _, _]) => x.eq(y)
-      case (x: EagerValue[_, _, _], y: EagerValue[_, _, _]) => x.isStable == y.isStable
-      case _ => false
-    }
-  }
-
-  object ControlValueHash {
-
-    def get[E, D <: Domain[E], V]: Hash[ControlValue[E, D, V]] = instance.asInstanceOf
-
-    // Private section ---------------------------------------------------------- //
-    private lazy val instance: ControlValueHash[Any, Domain[Any], Any] = new ControlValueHash
-  }
-
-  final class ControlValueOps[E, D <: Domain[E], V](
-    override val unit: ControlValue[E, D, V] = EagerValue.stable[E, D, V],
-    override val valueHash: Hash[ControlValue[E, D, V]] = ControlValueHash.get[E, D, V],
-    override val valueIncl: InclusionPredicate[ControlValue[E, D, V]] = InclusionPredicate.alwaysIncluded
-  ) extends ValueOps[ControlValue[E, D, V]]
-
-  object ControlValueOps {
-
-    def get[E, D <: Domain[E], V]: ValueOps[ControlValue[E, D, V]] = instance.asInstanceOf
-
-    // Private section ---------------------------------------------------------- //
-    private lazy val instance: ControlValueOps[Any, Domain[Any], Any] = new ControlValueOps()
-  }
-
-  object ZValue {
-
-    /**
-     * Returns operator that combines base value and control value into tuple (value of zipped sequence).
-     *
-     * If control value is lazy operator replaces real base value in output tuple with `valueOps.unit`.
-     *
-     * Consider the case:
-     * {{{
-     *
-     *        A        B        C         D
-     *   X-------)[-------)[--------)[--------X - base sequence
-     *
-     *       u              ?             u
-     *   X-------)[-----------------)[--------X - control sequence
-     *                function `f`
-     *
-     *     (A, u)   (B, ?)    (C, ?)   (D, u)
-     *   X-------)[-------)[--------)[--------X - zipped sequence v1
-     *
-     *     (A, u)       (unit, ?)      (D, u)
-     *   X-------)[-----------------)[--------X - zipped sequence v2
-     * }}}
-     *
-     * Zipped sequence v1 was received without additional replacement - operator just combines two values into tuple.
-     * In that case we get undesirable behavior of lazy sequence: function `f` will be called twice to compute all
-     * lazy segments (one time per each zipped segment).
-     *
-     * Zipped sequence v2 was received with current `operator` and has no such disadvantage
-     */
-    def operator[E, D <: Domain[E], V](
-      valueOps: ValueOps[V]
-    ): (V, ControlValue[E, D, V]) => ZValue[E, D, V] =
-      (v, c) => if (c.isLazy) (valueOps.unit, c) else (v, c)
-
-    /**
-     * Returns function that check whether base value is invariant for [[operator]]
-     * (see [[SegmentSeqT.zipOptimized]]).
-     */
-    def baseInvariant: Any => Boolean = BooleanUtil.falsePredicate1
-
-    /**
-     * Returns function that check whether control value is invariant for [[operator]]
-     * (see [[SegmentSeqT.zipOptimized]]).
-     */
-    def controlInvariant[E, D <: Domain[E], V]: ControlValue[E, D, V] => Boolean =
-      controlInvariantInstance.asInstanceOf
-
-    // Private section ---------------------------------------------------------- //
-    private lazy val controlInvariantInstance: ControlValue[Any, Domain[Any], Any] => Boolean = _.isLazy
-  }
-
-  object ZValueOps {
-
-    def get[E, D <: Domain[E], V](valueOps: ValueOps[V]): ValueOps[ZValue[E, D, V]] =
-      new ValueOps.Tuple2Impl[V, ControlValue[E, D, V]](
-        InclusionPredicate.alwaysIncluded,
-        valueOps,
-        ControlValueOps.get
-      )
   }
 
   /**

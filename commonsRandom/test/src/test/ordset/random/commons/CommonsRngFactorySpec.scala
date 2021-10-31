@@ -1,9 +1,9 @@
-package test.ordset.random.commons
+package ordset.test.random.commons
 
 import ordset.random.commons.{CommonsRngFactory, KISSRngFactory}
 import org.apache.commons.rng.simple.RandomSource
 import org.scalatest.funspec.AnyFunSpec
-import test.ordset.random.commons.internal.TestRngUtil.{assertDifferentRng, assertSameRng, assertSaneRng}
+import ordset.test.random.commons.internal.TestRngUtil.{assertDifferentRng, assertSameRng, assertSaneRng}
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 

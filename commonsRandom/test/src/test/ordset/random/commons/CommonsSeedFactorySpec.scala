@@ -1,4 +1,4 @@
-package test.ordset.random.commons
+package ordset.test.random.commons
 
 import ordset.random.commons.CommonsSeedFactory
 import org.scalatest.funspec.AnyFunSpec

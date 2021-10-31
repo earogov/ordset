@@ -3,11 +3,9 @@ package ordset.core.internal.lazySeq
 import ordset.core.*
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.AbstractLazyTreapSegmentSeq.{ZSegmentSeq, ZSegment, ControlValue, ControlTruncation, ControlSegmentSeq}
-import ordset.core.AbstractLazyTreapSegmentSeq.{LazyValue, EagerValue, ControlValueOps, BaseSegmentSeq, ZValue, ZValueOps}
-import ordset.core.AbstractLazyTreapSegmentSeq.{ZTruncation, ControlSegmentBase, BaseSegmentBase}
 import ordset.core.internal.SegmentSeqExceptionUtil.*
 import ordset.core.internal.mappedSeq.NonMergingMappedValueOrderedMap
+import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.util.{TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
 import ordset.random.RngManager

@@ -1,4 +1,4 @@
-package test.ordset.random.commons.internal
+package ordset.test.random.commons.internal
 
 import ordset.random.{RngManager, UnsafeUniformRng}
 

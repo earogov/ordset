@@ -1,7 +1,8 @@
 package ordset.core.map
 
-import ordset.core.AbstractLazyTreapSegmentSeq.{BaseSegmentSeq, ControlValue, EagerValue, LazySegmentBase, ZSegmentSeq}
-import ordset.core.{AbstractLazyTreapSegmentSeq, Bound, SegmentSeq}
+import ordset.core.{AbstractLazyTreapSegmentSeq, LazySegmentBase, Bound, SegmentSeq}
+import ordset.core.internal.lazySeq.*
+import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager

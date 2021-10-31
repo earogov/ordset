@@ -1,6 +1,8 @@
 package ordset.core.set
 
-import ordset.core.AbstractLazyTreapSegmentSeq.*
+import ordset.core.AbstractLazyTreapSegmentSeq
+import ordset.core.internal.lazySeq.*
+import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.*
