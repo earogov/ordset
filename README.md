@@ -1,6 +1,7 @@
 ### Overview
 
-Ordered sets and maps implementation (in progress ...)
+Implementation of ordered sets and maps (in progress ...)
+See some [examples](https://github.com/earogov/ordset/tree/master/ordset/test/src/test/ordset/core/examples/segmentSeq).
 
 ### Installation
 
@@ -20,7 +21,9 @@ $ cd /Users/{user}/{projects}/ordset
 $ mill ordset.test
 ```
 
-4. [Optional] Configure IntelliJ IDEA project with BSP ([Build Server Protocol](https://build-server-protocol.github.io/)).
+4.a [Optional] Use Visual Studio Code with [Metals](https://scalameta.org/metals/docs/editors/vscode/) plugin.
+
+4.b. [Optional] Configure IntelliJ IDEA project with BSP ([Build Server Protocol](https://build-server-protocol.github.io/)).
 
 - Open IntelliJ IDEA and choose File -> New -> Project from Existing Sources
 
