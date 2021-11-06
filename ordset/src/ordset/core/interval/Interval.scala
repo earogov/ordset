@@ -37,7 +37,7 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
   def hasLowerExtended(bound: ExtendedBound.Lower[E]): Boolean =
     bound match {
       case b: Bound.Lower[E] => hasLowerBound(b)
-      case ExtendedBound.BelowAll => !hasLowerBound
+      case ExtendedBound.BelowAll => !hasLowerBound && !isEmpty
     }
 
   /** @return `true` if interval has limited upper bound. */
@@ -50,7 +50,7 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
   def hasUpperExtended(bound: ExtendedBound.Upper[E]): Boolean =
     bound match {
       case b: Bound.Upper[E] => hasUpperBound(b)
-      case ExtendedBound.AboveAll => !hasUpperBound
+      case ExtendedBound.AboveAll => !hasUpperBound && !isEmpty
     }
 
   /** @return [[IntervalRelation]] for current interval and specified `value`. */
