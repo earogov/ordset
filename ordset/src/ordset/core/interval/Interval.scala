@@ -9,20 +9,51 @@ import scala.{specialized => sp}
 
 sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
 
+  /** Domain of interval. */
   def domain: D
 
+  /** @return `true` if interval is empty, i.e. contains no elements. */
   def isEmpty: Boolean = false
 
+  /** @return `true` if interval is universal, i.e. contains all elements of domain. */
   def isUniversal: Boolean = false
 
+  /** @return `true` if `bound` is between interval bounds. */
+  def containsBound(bound: Bound[E]): Boolean
+
+  /** @return `true` if `bound` is between interval bounds. */
+  def containsExtended(bound: ExtendedBound[E]): Boolean
+
+  /** @return `true` if `element` is between interval bounds. */
+  def containsElement(element: E): Boolean = containsBound(Bound.Upper.inclusive(element))
+
+  /** @return `true` if interval has limited lower bound. */
   def hasLowerBound: Boolean = false
 
-  def hasUpperBound: Boolean = false
-
+  /** @return `true` if interval has specified limited lower bound. */
   def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
 
+  /** @return `true` if interval has specified extended lower bound. */
+  def hasLowerExtended(bound: ExtendedBound.Lower[E]): Boolean =
+    bound match {
+      case b: Bound.Lower[E] => hasLowerBound(b)
+      case ExtendedBound.BelowAll => !hasLowerBound
+    }
+
+  /** @return `true` if interval has limited upper bound. */
+  def hasUpperBound: Boolean = false
+
+  /** @return `true` if interval has specified limited upper bound. */
   def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
+  /** @return `true` if interval has specified extended upper bound. */
+  def hasUpperExtended(bound: ExtendedBound.Upper[E]): Boolean =
+    bound match {
+      case b: Bound.Upper[E] => hasUpperBound(b)
+      case ExtendedBound.AboveAll => !hasUpperBound
+    }
+
+  /** @return [[IntervalRelation]] for current interval and specified `value`. */
   def ->[@sp(Boolean) V](value: V): IntervalRelation[E, D, V] = IntervalRelation(this, value)
 }
 
@@ -42,9 +73,58 @@ object Interval {
 
   sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D] {
 
+    /**
+     * Get extended lower bound of interval:
+     * <tr>- if interval doesn't have limited lower bound, returns [[ExtendedBound.BelowAll]];</tr>
+     * <tr>- otherwise returns limited lower bound.</tr>
+     */
     def lowerExtended: ExtendedBound.Lower[E] = ExtendedBound.BelowAll
 
+    /**
+     * Get extended upper bound of interval:
+     * <tr>- if interval doesn't have limited upper bound, returns [[ExtendedBound.AboveAll]];</tr>
+     * <tr>- otherwise returns limited upper bound.</tr>
+     */
     def upperExtended: ExtendedBound.Upper[E] = ExtendedBound.AboveAll
+
+    /**
+     * If `bound` is outside of interval, returns closest bound of interval (either lower or upper).
+     * Otherwise returns `bound`.
+     *
+     * <h3>Note</h3>
+     *
+     * The formula below seems to be equivalent to method definition:
+     *
+     * output bound = min(max(`bound`, lower bound of interval), upper bound of interval)     (1)
+     *
+     * But there is a subtle difference: according to bound ordering defined by domain two bounds,
+     * for example, 5`]` and `[`5 are equal. So min() and max() operators can return any of them.
+     *
+     * Consider the case.
+     * {{{
+     *       bound
+     *         ]
+     *         [-----------)
+     *         5     ^     10
+     *            interval
+     * }}}
+     * [[restrictBound]] must return `bound` = 5`]`.
+     * But implementation based on formula (1) can return either 5`]` or 5`[`.
+     */
+    def restrictBound(bound: Bound[E]): Bound[E]
+
+    /**
+     * If `bound` is outside of interval, returns closest bound of interval (either lower or upper).
+     * Otherwise returns `bound`.
+     *
+     * @see [[restrictBound]]
+     */
+    def restrictExtended(bound: ExtendedBound[E]): ExtendedBound[E] =
+      bound match {
+        case b: Bound[E] => restrictBound(b)
+        case ExtendedBound.BelowAll => lowerExtended
+        case ExtendedBound.AboveAll => upperExtended
+      }
   }
 
   sealed trait WithLowerBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
@@ -76,6 +156,10 @@ object Interval {
 
     override def isEmpty: Boolean = true
 
+    override def containsBound(bound: Bound[E]): Boolean = false
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean = false
+
     override def toString: String = SetBuilderFormat.emptyInterval
   }
 
@@ -86,6 +170,14 @@ object Interval {
 
     override def isUniversal: Boolean = true
 
+    override def containsBound(bound: Bound[E]): Boolean = true
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean = true
+
+    override def restrictBound(bound: Bound[E]): Bound[E] = bound
+
+    override def restrictExtended(bound: ExtendedBound[E]): ExtendedBound[E] = bound
+
     override def toString: String = SetBuilderFormat.universalInterval
   }
 
@@ -94,6 +186,19 @@ object Interval {
   )(
     implicit override val domain: D
   ) extends WithLowerBound[E, D] {
+
+    override def containsBound(bound: Bound[E]): Boolean = domain.boundOrd.lteqv(lowerBound, bound)
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean =
+      bound match {
+        case b: Bound[E] => containsBound(b)
+        case ExtendedBound.BelowAll => false
+        case ExtendedBound.AboveAll => true
+      }
+
+    override def restrictBound(bound: Bound[E]): Bound[E] =
+      if (domain.boundOrd.lt(bound, lowerBound)) lowerBound
+      else bound
 
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
@@ -104,6 +209,19 @@ object Interval {
     implicit override val domain: D
   ) extends WithUpperBound[E, D] {
 
+    override def containsBound(bound: Bound[E]): Boolean = domain.boundOrd.gteqv(upperBound, bound)
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean =
+      bound match {
+        case b: Bound[E] => containsBound(b)
+        case ExtendedBound.BelowAll => true
+        case ExtendedBound.AboveAll => false
+      }
+
+    override def restrictBound(bound: Bound[E]): Bound[E] =
+      if (domain.boundOrd.gt(bound, upperBound)) upperBound
+      else bound
+
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
@@ -113,6 +231,24 @@ object Interval {
   )(
     implicit override val domain: D
   ) extends WithLowerBound[E, D] with WithUpperBound[E, D] {
+
+    override def containsBound(bound: Bound[E]): Boolean = {
+      val boundOrd = domain.boundOrd
+      boundOrd.lteqv(lowerBound, bound) && boundOrd.gteqv(upperBound, bound)
+    }
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean =
+      bound match {
+        case b: Bound[E] => containsBound(b)
+        case _ => false
+      }
+
+    override def restrictBound(bound: Bound[E]): Bound[E] = {
+      val boundOrd = domain.boundOrd
+      if (boundOrd.lt(bound, lowerBound)) lowerBound
+      else if (boundOrd.gt(bound, upperBound)) upperBound
+      else bound
+    }
 
     override def toString: String = SetBuilderFormat.boundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
