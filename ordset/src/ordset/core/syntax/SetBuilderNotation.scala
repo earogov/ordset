@@ -34,16 +34,17 @@ object SetBuilderNotation {
 
   implicit class BoundsToInterval[@sp(spNum) E, D <: Domain[E]](val lower: DomainBound.Lower[E, D]) {
 
-    def &(upper: DomainBound.Upper[E, D]): Interval[E, D] = lower.domainOps.interval(lower.bound, upper.bound)
+    def &(upper: DomainBound.Upper[E, D]): Interval[E, D] = 
+      lower.domainOps.interval.betweenBounds(lower.bound, upper.bound)
   }
 
   implicit def upperBoundToInterval[@sp(spNum) E, D <: Domain[E]](upper: DomainBound.Upper[E, D])(
     implicit domainOps: DomainOps[E, D]): Interval[E, D] =
-    upper.domainOps.interval(upper.bound)
+    upper.domainOps.interval.belowBound(upper.bound)
 
   implicit def lowerBoundToInterval[@sp(spNum) E, D <: Domain[E]](lower: DomainBound.Lower[E, D])(
     implicit domainOps: DomainOps[E, D]): Interval[E, D] =
-    lower.domainOps.interval(lower.bound)
+    lower.domainOps.interval.aboveBound(lower.bound)
 
   implicit class ValueToIntervalRelation[@sp(Boolean) +V](val value: V) {
 

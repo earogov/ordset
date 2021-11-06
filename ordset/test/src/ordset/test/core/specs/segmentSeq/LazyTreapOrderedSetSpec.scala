@@ -14,16 +14,16 @@ import ordset.test.core.{RandomUtil, SegmentSeqAssertions, TestRngUtil}
 
 @RunWith(classOf[JUnitRunner])
 class LazyTreapOrderedSetSpec extends AnyFunSpec
-  with LazyTreapSeqBehaviors[Int, Domain[Int], Boolean]
-  with InspectionBehaviors[Int, Domain[Int], Boolean]
-  with NavigationBehaviors[Int, Domain[Int], Boolean]
-  with TransformationBehaviors[Int, Domain[Int], Boolean]{
+  with LazyTreapSeqBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
+  with InspectionBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
+  with NavigationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
+  with TransformationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]{
 
   import ordset.core.instances.boolean._
   import ordset.core.instances.int._
   import ordset.test.core.TestRngUtil.Implicits._
 
-  type Dom = Domain[Int]
+  type Dom = Domain.UnboundedContinuous[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
   private val cacheSuite = List(

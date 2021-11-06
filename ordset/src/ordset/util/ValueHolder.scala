@@ -34,7 +34,7 @@ package ordset.util
  *
  * @tparam V type of value.
  */
-class ValueHolder[V]{
+protected[ordset] class ValueHolder[V]{
 
   private var value: V = _
 

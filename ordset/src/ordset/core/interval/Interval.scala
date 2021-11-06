@@ -1,7 +1,7 @@
 package ordset.core.interval
 
-import ordset.core.{Bound, SetBuilderFormat}
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.{Bound, ExtendedBound, SetBuilderFormat}
+import ordset.core.domain.Domain
 import ordset.{Hash, Show, util}
 
 import scala.Specializable.{AllNumeric => spNum}
@@ -9,7 +9,7 @@ import scala.{specialized => sp}
 
 sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
 
-  def domainOps: DomainOps[E, D]
+  def domain: D
 
   def isEmpty: Boolean = false
 
@@ -29,7 +29,9 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
 object Interval {
 
   implicit def defaultHash[E, D <: Domain[E]](
-    implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]
+    implicit 
+    boundHash: Hash[Bound[E]], 
+    domainHash: Hash[D]
   ): Hash[Interval[E, D]] =
     new DefaultHash()(boundHash, domainHash)
 
@@ -38,7 +40,12 @@ object Interval {
   ): Show[Interval[E, D]] =
     SetBuilderFormat.intervalShow(elementShow)
 
-  sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D]
+  sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D] {
+
+    def lowerExtended: ExtendedBound.Lower[E] = ExtendedBound.BelowAll
+
+    def upperExtended: ExtendedBound.Upper[E] = ExtendedBound.AboveAll
+  }
 
   sealed trait WithLowerBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
 
@@ -46,7 +53,9 @@ object Interval {
 
     override def hasLowerBound: Boolean = true
 
-    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domain.boundOrd.eqv(lowerBound, bound)
+
+    override def lowerExtended: ExtendedBound.Lower[E] = lowerBound
   }
 
   sealed trait WithUpperBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
@@ -55,12 +64,14 @@ object Interval {
 
     override def hasUpperBound: Boolean = true
 
-    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domain.boundOrd.eqv(upperBound, bound)
+
+    override def upperExtended: ExtendedBound.Upper[E] = upperBound
   }
 
   final case class Empty[E, D <: Domain[E]](
   )(
-    implicit override val domainOps: DomainOps[E, D]
+    implicit override val domain: D
   ) extends Interval[E, D] {
 
     override def isEmpty: Boolean = true
@@ -70,7 +81,7 @@ object Interval {
 
   final case class Universal[E, D <: Domain[E]](
   )(
-    implicit override val domainOps: DomainOps[E, D]
+    implicit override val domain: D
   ) extends NonEmpty[E, D] {
 
     override def isUniversal: Boolean = true
@@ -81,7 +92,7 @@ object Interval {
   final case class Greater[@sp(spNum) E, D <: Domain[E]](
     override val lowerBound: Bound.Lower[E]
   )(
-    implicit override val domainOps: DomainOps[E, D]
+    implicit override val domain: D
   ) extends WithLowerBound[E, D] {
 
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
@@ -90,7 +101,7 @@ object Interval {
   final case class Less[@sp(spNum) E, D <: Domain[E]](
     override val upperBound: Bound.Upper[E]
   )(
-    implicit override val domainOps: DomainOps[E, D]
+    implicit override val domain: D
   ) extends WithUpperBound[E, D] {
 
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
@@ -100,33 +111,35 @@ object Interval {
     override val lowerBound: Bound.Lower[E],
     override val upperBound: Bound.Upper[E]
   )(
-    implicit override val domainOps: DomainOps[E, D]
+    implicit override val domain: D
   ) extends WithLowerBound[E, D] with WithUpperBound[E, D] {
 
     override def toString: String = SetBuilderFormat.boundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
   final class DefaultHash[E, D <: Domain[E]]()(
-    implicit boundHash: Hash[Bound[E]], domainHash: Hash[D]
+    implicit 
+    boundHash: Hash[Bound[E]], 
+    domainHash: Hash[D]
   ) extends Hash[Interval[E, D]] {
 
     import util.HashUtil._
 
     override def hash(x: Interval[E, D]): Int = x match {
       case x: Empty[e, d] => 
-        product1Hash(domainHash.hash(x.domainOps.domain))
+        product1Hash(domainHash.hash(x.domain))
       case x: Universal[e, d] => 
-        product1Hash(domainHash.hash(x.domainOps.domain))
+        product1Hash(domainHash.hash(x.domain))
       case x: Greater[e, d] => 
-        product2Hash(boundHash.hash(x.lowerBound), domainHash.hash(x.domainOps.domain))
+        product2Hash(boundHash.hash(x.lowerBound), domainHash.hash(x.domain))
       case x: Less[e, d] => 
-        product2Hash(boundHash.hash(x.upperBound), domainHash.hash(x.domainOps.domain))
+        product2Hash(boundHash.hash(x.upperBound), domainHash.hash(x.domain))
       case x: Between[e, d] => 
-        product3Hash(boundHash.hash(x.lowerBound), boundHash.hash(x.upperBound), domainHash.hash(x.domainOps.domain))
+        product3Hash(boundHash.hash(x.lowerBound), boundHash.hash(x.upperBound), domainHash.hash(x.domain))
     }
 
     override def eqv(x: Interval[E, D], y: Interval[E, D]): Boolean =
-      if (domainHash.eqv(x.domainOps.domain, y.domainOps.domain)) x match {
+      if (domainHash.eqv(x.domain, y.domain)) x match {
         case x: Empty[e, d] => y match {
           case _: Empty[e, d] => true
           case _ => false

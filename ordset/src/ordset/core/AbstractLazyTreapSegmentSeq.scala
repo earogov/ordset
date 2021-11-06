@@ -18,7 +18,7 @@ import ordset.core.util.{SegmentSeqUtil, TreapSegmentSeqBuilder, TreapSegmentSeq
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.util.BooleanUtil
 import ordset.util.HashUtil.product1Hash
-import ordset.util.tag.Tag
+import ordset.util.types.Tag
 
 import scala.annotation.tailrec
 import cats.instances.seq
@@ -1691,19 +1691,19 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     import ordset.core.internal.lazySeq
 
-    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] with Tag[Stable.type]
+    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] with Tag[Stable.type]
+    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] with Tag[Stable.type]
+    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] with Tag[Stable.type]
+    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] with Tag[Stable.type]
+    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] with Tag[Stable.type]
+    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] with Tag[Stable.type]
+    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] & Tag[Stable.type]
 
     /**
      * If input `segment` is stable marks it with [[Stable]] tag, otherwise throws exception.
@@ -1722,7 +1722,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       throw AssertionError(s"Expected that segment $zsegment is stable.")
 
     // Private section ---------------------------------------------------------- //
-    private def tagged[R](r: R): R with Tag[Stable.type] = r.asInstanceOf[R with Tag[Stable.type]]
+    private def tagged[R](r: R): R with Tag[Stable.type] = r.asInstanceOf[R & Tag[Stable.type]]
   }
 
   /**
@@ -1755,19 +1755,19 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     import ordset.core.internal.lazySeq
 
-    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] with Tag[Eager.type]
+    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] with Tag[Eager.type]
+    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] with Tag[Eager.type]
+    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] with Tag[Eager.type]
+    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] with Tag[Eager.type]
+    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] with Tag[Eager.type]
+    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] with Tag[Eager.type]
+    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] & Tag[Eager.type]
 
     /**
      * If input `segment` is eager marks it with [[Eager]] tag, otherwise throws exception.
@@ -1780,7 +1780,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       throw AssertionError(s"Expected that segment $zsegment is eager.")
 
     // Private section ---------------------------------------------------------- //
-    private def tagged[R](r: R): R with Tag[Eager.type] = r.asInstanceOf[R with Tag[Eager.type]]
+    private def tagged[R](r: R): R with Tag[Eager.type] = r.asInstanceOf[R & Tag[Eager.type]]
   }
 
   /**

@@ -2,7 +2,7 @@ package ordset.util
 
 import ordset.{Eq, Order}
 
-object IterableUtil {
+protected[ordset] object IterableUtil {
 
   def iterableCompare[A](xs: Iterable[A], ys: Iterable[A])(implicit ev: Order[A]): Int =
     iteratorCompare(xs.iterator, ys.iterator)

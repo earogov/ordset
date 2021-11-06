@@ -5,7 +5,6 @@ import ordset.core.domain.*
 import ordset.core.interval.*
 import ordset.{Order, Show, util}
 import ordset.util.label.Label
-import ordset.util.types.SingleValue
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -116,10 +115,10 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 object Bound {
 
   implicit def lowerToInterval[E, D <: Domain[E]](lower: Lower[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
-    ops.interval(lower)
+    ops.interval.aboveBound(lower)
 
   implicit def upperToInterval[E, D <: Domain[E]](upper: Upper[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
-    ops.interval(upper)
+    ops.interval.belowBound(upper)
 
   implicit def defaultAscOrder[E](implicit elementOrd: AscOrder[E], intOrder: AscOrder[Int]): AscOrder[Bound[E]] =
     new DefaultOrder(elementOrd, intOrder)
@@ -220,12 +219,12 @@ object Bound {
       val elementOrd: DirectedOrder[E, Dir],
       val intOrd: DirectedOrder[Int, Dir]
   )(
-      implicit val dirValue: SingleValue[Dir]
+      implicit val dirValue: ValueOf[Dir]
   ) extends DirectedOrder.Abstract[Bound[E], Dir] {
 
     import util.HashUtil._
 
-    override val label: Label = OrderLabels.BoundDefault
+    override val labels: Set[Label] = Set(OrderLabels.BoundDefault)
 
     override def compare(x: Bound[E], y: Bound[E]): Int = {
       val cmp = elementOrd.compare(x.element, y.element)
@@ -408,10 +407,10 @@ object ExtendedBound {
     val boundOrd: DirectedOrder[Bound[E], Dir],
     val intOrd: DirectedOrder[Int, Dir]
   )(
-    implicit val dirValue: SingleValue[Dir]
+    implicit val dirValue: ValueOf[Dir]
   ) extends DirectedOrder.Abstract[ExtendedBound[E], Dir] {
 
-    override val label: Label = OrderLabels.BoundDefault
+    override val labels: Set[Label] = Set(OrderLabels.BoundDefault)
 
     override def compare(x: ExtendedBound[E], y: ExtendedBound[E]): Int = {
       val cmp = intOrd.compare(x.extendedOffset, y.extendedOffset)

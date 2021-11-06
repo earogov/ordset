@@ -10,15 +10,15 @@ import ordset.test.core.samples.segmentSeq.arrayOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class ArrayOrderedSetSpec extends AnyFunSpec
-  with InspectionBehaviors[Int, Domain[Int], Boolean]
-  with NavigationBehaviors[Int, Domain[Int], Boolean]
-  with TransformationBehaviors[Int, Domain[Int], Boolean] {
+  with InspectionBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
+  with NavigationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
+  with TransformationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean] {
 
   import ordset.core.instances.boolean._
   import ordset.core.instances.int._
   import ordset.test.core.TestRngUtil.Implicits._
 
-  type Dom = Domain[Int]
+  type Dom = Domain.UnboundedContinuous[Int]
   type SegmentSeq = OrderedSet[Int, Dom]
 
   private val testSuite = List(

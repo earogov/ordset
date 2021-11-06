@@ -20,8 +20,8 @@ object FlatmapExample {
 
   private val sep = "-----------------"
 
-  private val valueOps: ValueOps[Boolean] = implicitly[ValueOps[Boolean]]
-  private val domainOps: DomainOps[Int, Domain[Int]] = implicitly[DomainOps[Int, Domain[Int]]]
+  private val valueOps: ValueOps[Boolean] = implicitly
+  private val domainOps: DomainOps[Int, Domain.UnboundedContinuous[Int]] = implicitly
 
   @main
   def flatmapExampleMain(): Unit = {

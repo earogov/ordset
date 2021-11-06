@@ -16,7 +16,7 @@ class IntervalOpsSpec extends AnyFunSpec {
 
   import scala.language.postfixOps
 
-  type Dom = Domain[Int]
+  type Dom = Domain.UnboundedContinuous[Int]
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
   val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
@@ -37,9 +37,9 @@ class IntervalOpsSpec extends AnyFunSpec {
     // Unbounded cases
     assert(interval.empty.isCrossOf(interval.universal, interval.empty))
     assert(interval.universal.isCrossOf(interval.universal, interval.universal))
-    assert(interval(x <= 5).isCrossOf(interval.universal, x <= 5))
+    assert(interval.belowBound(x <= 5).isCrossOf(interval.universal, x <= 5))
     assert((x >= 0 & x < 5).isCrossOf(interval.universal, x >= 0 & x < 5))
-    assert(interval(x >= 5).isCrossOf(interval.universal, x >= 5))
+    assert(interval.aboveBound(x >= 5).isCrossOf(interval.universal, x >= 5))
 
     // Left unbounded cases
     // ----|
@@ -54,10 +54,10 @@ class IntervalOpsSpec extends AnyFunSpec {
     assert((x >= 5 & x <= 5).isCrossOf(x <= 5, x >= 5))
     // --------|
     // --------|
-    assert(interval(x < 0).isCrossOf(x < 0, x < 0))
+    assert(interval.belowBound(x < 0).isCrossOf(x < 0, x < 0))
     // --------|
     // ------------|
-    assert(interval(x < 0).isCrossOf(x < 0, x <= 5))
+    assert(interval.belowBound(x < 0).isCrossOf(x < 0, x <= 5))
     // --------|
     //     |-------|
     assert((x >= 0 & x < 5).isCrossOf(x < 5, x >= 0 & x < 10))
@@ -87,10 +87,10 @@ class IntervalOpsSpec extends AnyFunSpec {
     assert((x >= 0 & x <= 0).isCrossOf(x >= 0, x <= 0))
     //     |--------
     // |------------
-    assert(interval(x >= 5).isCrossOf(x > 0, x >= 5))
+    assert(interval.aboveBound(x >= 5).isCrossOf(x > 0, x >= 5))
     //     |--------
     //     |--------
-    assert(interval(x >= 5).isCrossOf(x >= 5, x >= 5))
+    assert(interval.aboveBound(x >= 5).isCrossOf(x >= 5, x >= 5))
     //     |--------
     // |-------|
     assert((x >= 0 & x < 5).isCrossOf(x >= 0, x >= -5 & x < 5))
@@ -137,7 +137,7 @@ class IntervalOpsSpec extends AnyFunSpec {
     assert(interval.empty.isTakeAbove(0`[`, interval.empty))
 
     // Unbounded cases
-    assert(interval(x >= 0).isTakeAbove(0`[`, interval.universal))
+    assert(interval.aboveBound(x >= 0).isTakeAbove(0`[`, interval.universal))
 
     // Left unbounded cases
     // ------|
@@ -159,15 +159,15 @@ class IntervalOpsSpec extends AnyFunSpec {
     // Right unbounded cases
     //       |------
     // ///|          cut
-    assert(interval(x >= 0).isTakeAbove(-2`(`, x >= 0))
+    assert(interval.aboveBound(x >= 0).isTakeAbove(-2`(`, x >= 0))
 
     //       |------
     // //////|       cut
-    assert(interval(x > 0).isTakeAbove(0`(`, x >= 0))
+    assert(interval.aboveBound(x > 0).isTakeAbove(0`(`, x >= 0))
 
     //       |------
     // /////////|    cut
-    assert(interval(x > 2).isTakeAbove(2`(`, x >= 0))
+    assert(interval.aboveBound(x > 2).isTakeAbove(2`(`, x >= 0))
 
     // Bounded cases
     //    |----|
@@ -197,20 +197,20 @@ class IntervalOpsSpec extends AnyFunSpec {
     assert(interval.empty.isTakeBelow(0`]`, interval.empty))
 
     // Unbounded cases
-    assert(interval(x <= 0).isTakeBelow(0`]`, interval.universal))
+    assert(interval.belowBound(x <= 0).isTakeBelow(0`]`, interval.universal))
 
     // Left unbounded cases
     // ----|
     //        |///// cut
-    assert(interval(x < 0).isTakeBelow(0`]`, x < 0))
+    assert(interval.belowBound(x < 0).isTakeBelow(0`]`, x < 0))
 
     // ----|
     //     |//////// cut
-    assert(interval(x < 0).isTakeBelow(0`)`, x <= 0))
+    assert(interval.belowBound(x < 0).isTakeBelow(0`)`, x <= 0))
 
     // ----|
     //   |////////// cut
-    assert(interval(x <= -1).isTakeBelow(-1`]`, x < 0))
+    assert(interval.belowBound(x <= -1).isTakeBelow(-1`]`, x < 0))
 
     // Right unbounded cases
     //      |-------

@@ -1,7 +1,5 @@
 package ordset.test.treap.examples
 
-import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.instances
 import ordset.tree.core.eval.TreeVisitStack
 import ordset.tree.core.fold.{CallTrace, ContextExtract}
 import ordset.tree.core.{BinaryTreeVisit, Fold}
@@ -12,12 +10,6 @@ import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDepthFirst}
 import org.junit.runner.RunWith
 
 object ImmutableTreapExample {
-
-  import ordset.core.instances.int.*
-
-  type Dom = Domain[Int]
-
-  private val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
 
   @main
   def immutableTreapExampleMain() = {

@@ -1,11 +1,14 @@
 package ordset.core.domain
 
 import ordset.core.{Bound, ExtendedBound}
-import ordset.util.label.Label
+import ordset.core.interval.{Interval, IntervalBuilder}
+import ordset.util.label.{Label, LabeledEntity}
 
-trait DomainLike[E] {
+trait DomainLike[E] extends LabeledEntity {
 
-  def labels: Set[Label]
+  def lowerExtendedBound: ExtendedBound.Lower[E]
+
+  def upperExtendedBound: ExtendedBound.Upper[E]
 
   implicit def elementOrd: AscOrder[E]
 
@@ -24,16 +27,22 @@ object DomainLike {
 
     def domain: D
 
+    override def lowerExtendedBound: ExtendedBound.Lower[E] = domain.lowerExtendedBound
+
+    override def upperExtendedBound: ExtendedBound.Upper[E] = domain.upperExtendedBound
+
     override def labels: Set[Label] = domain.labels
 
     override implicit def elementOrd: AscOrder[E] = domain.elementOrd
 
-    implicit def intOrd: AscOrder[Int] = domain.intOrd
+    override implicit def intOrd: AscOrder[Int] = domain.intOrd
 
-    implicit def longOrd: AscOrder[Long] = domain.longOrd
+    override implicit def longOrd: AscOrder[Long] = domain.longOrd
 
     override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
 
     override implicit def extendedOrd: AscOrder[ExtendedBound[E]] = domain.extendedOrd
   }
+
+  final case class WrapperImpl[E, D <: Domain[E]](override val domain: D) extends Wrapper[E, D]
 }

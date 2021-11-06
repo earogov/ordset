@@ -1,6 +1,6 @@
 package ordset.util
 
-object BooleanUtil {
+protected[ordset] object BooleanUtil {
 
   val truePredicate1: Any => Boolean = _ => true
 

@@ -1,47 +1,72 @@
 package ordset.core.domain
 
 import ordset.{Hash, Show}
-import ordset.util.tag._
-import ordset.util.types.{>|<, Dual, SingleValue}
+import ordset.util.types.{>|<, Dual, Tag}
 
-object OrderDirection extends TaggedRaw[Boolean] { outer =>
+/** Direction of elements ordering. */
+object OrderDirection { 
 
-  // Copy of `Type` to avoid cyclic aliasing error in `Asc` and `Desc`.
-  type Alias = Boolean with Tag[this.type]
+  /** 
+   * Direction base type.
+   * 
+   * It isn't intended for direct use. The more precise type is [[Type]], which should be used instead.
+   */
+  opaque type BaseType = Boolean
 
-  def reverse(dir: Type): Type = fromRaw(!dir)
+  /** 
+   * Direction type.
+   */
+  type Type = Asc.Type | Desc.Type
 
-  def reverseTyped[Dir <: Type, Rev <: Type](dir: Dir)(implicit ev: Dir >|< Rev): Rev = fromRaw(!dir).asInstanceOf[Rev]
+  /** Returns type of opposite direction. */
+  type Reversed[Dir <: Type] <: Type = Dir match 
+    case Asc.Type => Desc.Type
+    case Desc.Type => Asc.Type
 
-  def isAscending(dir: Type): Boolean = dir
+  /** Returns opposite direction. */
+  def reverse[Dir <: Type](dir: Dir): Reversed[Dir] = (!dir).asInstanceOf
 
-  def isDescending(dir: Type): Boolean = !dir
+  extension (dir: Type) {
 
-  def toString(dir: Type): String = if (dir) "Ascending" else "Descending"
+    /** Returns `true` if direction corresponds to ascending order of elements. */
+    def isAscending: Boolean = dir
 
-  implicit val defaultHash: Hash[Type] = Hash.fromUniversalHashCode
+    /** Returns `true` if direction corresponds to descending order of elements. */
+    def isDescending: Boolean = !dir
 
-  implicit val defaultShow: Show[Type] = dir => outer.toString(dir)
+    /** Returns string representation of direction. */
+    def toString: String = if (dir) "Ascending" else "Descending"
+  }
 
-  object Asc extends TaggedBase[Boolean, outer.Alias] {
+  /** Direction that corresponds to ascending order of elements. */
+  object Asc extends Tag.Base[BaseType] {
 
+    /** Value that represents direction at runtime. */
     val value: Asc.Type = fromRaw(true)
 
-    implicit val singleValue: SingleValue[Asc.Type] = new SingleValue[Asc.Type] {
-      override def get: Asc.Type = value
-    }
+    /** Allows to get runtime representation of direction for given type of direction. */
+    implicit val singleValue: ValueOf[Asc.Type] = ValueOf(value)
 
+    /** Evidence that direction types are opposite. */
     implicit val dualType: Asc.Type >|< Desc.Type = new Dual[Asc.Type] { override type Out = Desc.Type }
   }
 
-  object Desc extends TaggedBase[Boolean, outer.Alias] {
+  /** Direction that corresponds to descending order of elements. */
+  object Desc extends Tag.Base[BaseType] {
 
+    /** Value that represents direction at runtime. */
     val value: Desc.Type = fromRaw(false)
 
-    implicit val singleValue: SingleValue[Desc.Type] = new SingleValue[Desc.Type] {
-      override def get: Desc.Type = value
-    }
+    /** Allows to get runtime representation of direction for given type of direction. */
+    implicit val singleValue: ValueOf[Desc.Type] = ValueOf(value)
 
+    /** Evidence that direction types are opposite. */
     implicit val dualType: Desc.Type >|< Asc.Type = new Dual[Desc.Type] { override type Out = Asc.Type }
   }
+
+  /** Default hash instance for direction. */
+  implicit val defaultHash: Hash[Type] = Hash.fromUniversalHashCode
+
+  /** Default show instance for direction. */
+  implicit val defaultShow: Show[Type] = (dir: Type) => dir.toString
 }

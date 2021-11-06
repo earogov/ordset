@@ -227,6 +227,7 @@ object SetBuilderFormat { format =>
   ): String = {
     val stringBuilder = new StringBuilder()
     var addSeparator = false
+    stringBuilder.append("\n")
     stringBuilder.append(setBegin)
     stringBuilder.append("\n")
     segmentIterable.foreach { s =>

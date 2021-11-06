@@ -20,4 +20,7 @@ package object domain {
 
   type AscOrder[E] = DirectedOrder[E, AscDir]
   type DescOrder[E] = DirectedOrder[E, DescDir]
+
+  type AscDiscrete[E] = DirectedDiscrete[E, AscDir]
+  type DescDiscrete[E] = DirectedDiscrete[E, DescDir]
 }

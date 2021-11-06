@@ -5,7 +5,6 @@ import ordset.core.interval.*
 import ordset.core.map.{LazyTreapOrderedMap, UniformOrderedMap, TreapOrderedMap}
 import ordset.util
 import ordset.util.label.Label
-import ordset.util.types.SingleValue
 
 import scala.collection.{AbstractIterable, AbstractIterator}
 
@@ -361,7 +360,7 @@ object SegmentT {
       if (domainOps.boundOrd.gt(bound, upperBound)) upperBound
       else bound
 
-    override def interval: Interval[E, D] = domainOps.interval(upperBound)
+    override def interval: Interval[E, D] = domainOps.interval.belowBound(upperBound)
 
     override def toString: String = SetBuilderFormat.initialSegment(this)
 
@@ -431,7 +430,7 @@ object SegmentT {
       if (domainOps.boundOrd.lt(bound, lowerBound)) lowerBound
       else bound
 
-    override def interval: Interval[E, D] = domainOps.interval(lowerBound)
+    override def interval: Interval[E, D] = domainOps.interval.aboveBound(lowerBound)
 
     override def toString: String = SetBuilderFormat.terminalSegment(this)
 
@@ -506,7 +505,7 @@ object SegmentT {
       else bound
     }
 
-    override def interval: Interval[E, D] = domainOps.interval(lowerBound, upperBound)
+    override def interval: Interval[E, D] = domainOps.interval.betweenBounds(lowerBound, upperBound)
 
     override def toString: String = SetBuilderFormat.innerSegment(this)
 
@@ -550,12 +549,12 @@ object SegmentT {
   }
 
   final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
-    implicit dirValue: SingleValue[Dir]
+    implicit dirValue: ValueOf[Dir]
   ) extends DirectedOrder.Abstract[Segment[E, D, ?], Dir] {
 
     import util.HashUtil._
 
-    override val label: Label = OrderLabels.SegmentByUpperBound
+    override val labels: Set[Label] = Set(OrderLabels.SegmentByUpperBound)
 
     override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = (x, y) match {
       case (x: Segment.WithNext[E, D, ?], y: Segment.WithNext[E, D, ?]) =>
@@ -586,12 +585,12 @@ object SegmentT {
   }
 
   final class LowerBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
-    implicit dirValue: SingleValue[Dir]
+    implicit dirValue: ValueOf[Dir]
   ) extends DirectedOrder.Abstract[Segment[E, D, ?], Dir] {
 
     import util.HashUtil._
 
-    override def label: Label = OrderLabels.SegmentByLowerBound
+    override def labels: Set[Label] = Set(OrderLabels.SegmentByLowerBound)
 
     override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = (x, y) match {
       case (x: Segment.WithPrev[E, D, ?], y: Segment.WithPrev[E, D, ?]) =>
