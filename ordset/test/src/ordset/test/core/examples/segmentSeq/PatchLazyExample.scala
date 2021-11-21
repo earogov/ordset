@@ -73,7 +73,7 @@ object PatchLazyExample {
     val seq2 = seq1.patchLazy(lazySeq)
     println(seq2)
 
-    val bound1 = Bound.Upper.inclusive(20)
+    val bound1 = Bound.Upper.including(20)
     println()
     println(s"Now let's request segment at bound $bound1")
     seq2.getSegmentForBound(bound1)
@@ -131,7 +131,7 @@ object PatchLazyExample {
     println("(which is used internally by lazy sequence). The conversion will take place only when corresponding segment is requested.")
     println("And even then the minimal possible part of sequence will be converted to create required segment.")
 
-    val bound1 = Bound.Upper.inclusive(-5)
+    val bound1 = Bound.Upper.including(-5)
     println()
     println(s"No let's request segment at bound $bound1")
     seq3.getSegmentForBound(bound1)

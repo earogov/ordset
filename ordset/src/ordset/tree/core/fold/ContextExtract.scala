@@ -14,7 +14,8 @@ object ContextExtract {
     initContext: C
   )(
     traverseFunc: Traverse.GenericFunc[K, V, Tree, C]
-  ): Output[K, V, Tree, C] =
+  ): Output[K, V, Tree, C] = {
+    import scala.language.unsafeNulls
     Fold.before[K, V, Tree, C, Output[K, V, Tree, C]](
       tree,
       initContext,
@@ -23,13 +24,15 @@ object ContextExtract {
       traverseFunc,
       function[K, V, Tree, C]
     )
+  }
 
   def foldAfter[K, V, Tree[KK, VV], C](
     tree: Tree[K, V],
     initContext: C,
   )(
     traverseFunc: Traverse.GenericFunc[K, V, Tree, C]
-  ): Output[K, V, Tree, C] =
+  ): Output[K, V, Tree, C] = {
+    import scala.language.unsafeNulls
     Fold.after[K, V, Tree, C, Output[K, V, Tree, C]](
       tree,
       initContext,
@@ -38,6 +41,7 @@ object ContextExtract {
       traverseFunc,
       function[K, V, Tree, C]
     )
+  }
 
   // Private section ---------------------------------------------------------- //
   private lazy val ExtractFunc: Fold.Func[Any, Any, [KK, VV] =>> Any, Any, Output[Any, Any, [KK, VV] =>> Any, Any]] =

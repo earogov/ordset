@@ -8,7 +8,7 @@ trait IntervalOps[E, D <: Domain[E]] {
   /**
    * Returns subset of elements that belongs to both input intervals.
    *
-   * Set of intervals with cross operation form a commutative monoid with universal interval as identity:
+   * Set of intervals with cross operation forms a commutative monoid with universal interval as identity:
    * {{{ cross(x, universal) == cross(universal, x) == x }}}
    */
   def cross(x: Interval[E, D], y: Interval[E, D]): Interval[E, D]

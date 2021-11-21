@@ -35,7 +35,7 @@ object OrderDirection {
     def isDescending: Boolean = !dir
 
     /** Returns string representation of direction. */
-    def toString: String = if (dir) "Ascending" else "Descending"
+    def asString: String = if (dir) "Ascending" else "Descending"
   }
 
   /** Direction that corresponds to ascending order of elements. */
@@ -68,5 +68,5 @@ object OrderDirection {
   implicit val defaultHash: Hash[Type] = Hash.fromUniversalHashCode
 
   /** Default show instance for direction. */
-  implicit val defaultShow: Show[Type] = (dir: Type) => dir.toString
+  implicit val defaultShow: Show[Type] = (dir: Type) => dir.asString
 }

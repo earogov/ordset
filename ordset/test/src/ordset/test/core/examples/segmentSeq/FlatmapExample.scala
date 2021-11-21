@@ -138,7 +138,7 @@ object FlatmapExample {
     println("Received lazy sequence:")
     println(seq2)
 
-    val bound1 = Bound.Upper.inclusive(35)
+    val bound1 = Bound.Upper.including(35)
     println()
     println(s"Get value at bound $bound1")
     val value1 = seq2.getValueForBound(bound1)

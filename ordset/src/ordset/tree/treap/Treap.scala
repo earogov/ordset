@@ -29,9 +29,9 @@ object Treap {
 
     def priority: Int = scala.util.hashing.byteswap32(key.hashCode())
 
-    def getLeftOrNull: Node[K, V] = null
+    def getLeftOrNull: Node[K, V] | Null = null
 
-    def getRightOrNull: Node[K, V] = null
+    def getRightOrNull: Node[K, V] | Null = null
   }
 
   def nodePriorityOrder[K, V](implicit keyOrder: Order[K]): NodePriorityOrder[K, V] =

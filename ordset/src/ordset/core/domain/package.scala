@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.{AscOrder, Hash, AscDiscrete, AscBounded}
 import ordset.util.label.Label
 
 package object domain {
@@ -23,4 +24,13 @@ package object domain {
 
   type AscDiscrete[E] = DirectedDiscrete[E, AscDir]
   type DescDiscrete[E] = DirectedDiscrete[E, DescDir]
+
+
+  type ContinuousOrder[E] = AscOrder[E] with Hash[E]
+
+  type ContinuousBoundedOrder[E] = AscOrder[E] with Hash[E] with AscBounded[E]
+
+  type DiscreteOrder[E] = AscOrder[E] with Hash[E] with AscDiscrete[E]
+
+  type DiscreteBoundedOrder[E] = AscOrder[E] with Hash[E] with AscDiscrete[E] with AscBounded[E]
 }

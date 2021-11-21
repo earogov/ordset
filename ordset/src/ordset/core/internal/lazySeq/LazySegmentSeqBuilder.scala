@@ -90,7 +90,7 @@ protected[ordset] object LazySegmentSeqBuilder {
 
   // Private section ---------------------------------------------------------- //
   /**
-   * Creates [[SupplierSegmentSeq]] with `value1` below `bound` (inclusive) and `value2` above it.
+   * Creates [[SupplierSegmentSeq]] with `value1` below `bound` (including) and `value2` above it.
    */ 
   private final def consSingleBoundedSupplierSeq[E, D <: Domain[E], V](
     bound: Bound.Upper[E],

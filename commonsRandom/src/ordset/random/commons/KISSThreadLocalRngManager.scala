@@ -13,6 +13,8 @@ import ordset.random.{RngManager, UnsafeUniformRng}
  */
 final class KISSThreadLocalRngManager(seed1: Long, seed2: Long) extends RngManager {
 
+  import scala.language.unsafeNulls
+
   override def newUnsafeUniformRng(): UnsafeUniformRng = threadLocal.get().newUnsafeUniformRng()
 
   // Private section ---------------------------------------------------------- //

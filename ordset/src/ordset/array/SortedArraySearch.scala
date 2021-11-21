@@ -26,8 +26,8 @@ object SortedArraySearch {
    * Binary search of of closest element not greater then specified.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -50,8 +50,8 @@ object SortedArraySearch {
    * Binary search of of closest element less then specified.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -74,8 +74,8 @@ object SortedArraySearch {
    * Binary search of of closest element not less then specified.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -98,8 +98,8 @@ object SortedArraySearch {
    * Binary search of of closest element greater then specified.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -123,8 +123,8 @@ object SortedArraySearch {
    * Note O(n) performance.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -148,8 +148,8 @@ object SortedArraySearch {
    * Note O(n) performance.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -174,8 +174,8 @@ object SortedArraySearch {
    * Algorithm makes few steps of linear search and goes to binary search if it fails.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]
@@ -211,8 +211,8 @@ object SortedArraySearch {
    * Algorithm makes few steps of linear search and goes to binary search if it fails.
    * @param element required element
    * @param array sorted array
-   * @param start start index (inclusive)
-   * @param end end index (inclusive)
+   * @param start start index (including)
+   * @param end end index (including)
    * @param order order typeclass
    */
   @throws[IllegalArgumentException]

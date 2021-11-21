@@ -45,7 +45,7 @@ abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
    * Should be used for equality checks only ([[testZvalueOps]] considers all lazy values equal).
    * When called throws [[UnsupportedOperationException]].
    */
-  lazy val someLazyZvalue: ZValue[E, D, V] = (valueOps.unit, LazyValue(someLazyValue))
+  lazy val someLazyZvalue: ZValue[E, D, V] = (valueOps.unit, new LazyValue.Unbounded(someLazyValue))
 
   /**
    * Reference list of interval relations that equivalent to [[lazySeq.getZippedSeq]] after all lazy value are computed.

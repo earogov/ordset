@@ -279,8 +279,8 @@ object NonuniformArrayOrderedSet {
     override val boundSegment: Segment[E, D, Boolean] = segmentSeq.getSegmentForBound(bound)
 
     private val copyBounds: (List[Bound.Upper[E]], Int) =
-      if (forward) SegmentSeqUtil.getUpperBoundsListFromSegment(boundSegment, inclusive = true)
-      else SegmentSeqUtil.getUpperBoundsListToSegment(boundSegment, inclusive = false)
+      if (forward) SegmentSeqUtil.getUpperBoundsListFromSegment(boundSegment, including = true)
+      else SegmentSeqUtil.getUpperBoundsListToSegment(boundSegment, including = false)
 
     override def copyLen: Int = copyBounds._2
 

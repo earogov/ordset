@@ -71,7 +71,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
                 case bound: Bound[E] =>
                   val actualSeg = seg.moveToBound(bound)
                   assertSameRelationAndSegment(expectedRel, actualSeg, s"bound: $bound")
-                  if (bound.isInclusive) {
+                  if (bound.isIncluding) {
                     val actualSeg = seg.moveToElement(bound.element)
                     assertSameRelationAndSegment(expectedRel, actualSeg, s"element: ${bound.element}")
                   }
@@ -96,7 +96,7 @@ trait NavigationBehaviors[E, D <: Domain[E], V] {
             case bound: Bound[E] =>
               val actualSeg = sample.sequence.getSegmentForBound(bound)
               assertSameRelationAndSegment(expectedRel, actualSeg, s"bound: $bound")
-              if (bound.isInclusive) {
+              if (bound.isIncluding) {
                 val actualSeg = sample.sequence.getSegmentForElement(bound.element)
                 assertSameRelationAndSegment(expectedRel, actualSeg, s"element: ${bound.element}")
               }

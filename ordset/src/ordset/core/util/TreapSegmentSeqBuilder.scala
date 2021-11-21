@@ -74,11 +74,12 @@ object TreapSegmentSeqBuilder {
      */
     @throws[AssertionError]("if last value of sequence is not defined")
     def buildSeq: TreapSegmentSeq[E, D, V] = {
-      if (lastValue == null)
+      val lv = lastValue
+      if (lv == null)
         throw new AssertionError("Last value of sequence is not defined")
       else {
         val root = BuildAsc.finalizeBuffer(buffer)
-        TreapOrderedMap.unchecked[E, D, V](root, lastValue.nn)(domainOps, valueOps, rngManager)
+        TreapOrderedMap.unchecked[E, D, V](root, lv)(domainOps, valueOps, rngManager)
       }
     }
 

@@ -23,7 +23,7 @@ trait DomainLike[E] extends LabeledEntity {
 
 object DomainLike {
 
-  trait Wrapper[E, D <: Domain[E]] extends DomainLike[E] {
+  trait Proxy[E, D <: Domain[E]] extends DomainLike[E] {
 
     def domain: D
 
@@ -44,5 +44,5 @@ object DomainLike {
     override implicit def extendedOrd: AscOrder[ExtendedBound[E]] = domain.extendedOrd
   }
 
-  final case class WrapperImpl[E, D <: Domain[E]](override val domain: D) extends Wrapper[E, D]
+  final case class ProxyImpl[E, D <: Domain[E]](override val domain: D) extends Proxy[E, D]
 }

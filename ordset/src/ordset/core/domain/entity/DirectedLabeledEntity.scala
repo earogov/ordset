@@ -37,12 +37,12 @@ object DirectedLabeledEntity {
     val dirShow: Show[OrderDir]
   ) extends Show[Ent] {
 
-    import ordset.util.ShowUtil.standardShow
+    import ordset.util.ShowUtil.{standardShow, fieldShow}
 
     private val stdShow: Show[Ent] = standardShow(name){ ent =>
       List(
-        ("labels", labelsShow.show(ent.labels)), 
-        ("direction", dirShow.show(ent.direction))
+        ("labels", fieldShow(labelsShow).show(ent.labels)), 
+        ("direction", fieldShow(dirShow).show(ent.direction))
       )
     }
 

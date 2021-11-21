@@ -9,6 +9,8 @@ import org.apache.commons.rng.simple.RandomSource
  */
 object CommonsSeedFactory {
 
+  import scala.language.unsafeNulls
+
   /**
    * Creates a number for use as a seed.
    *

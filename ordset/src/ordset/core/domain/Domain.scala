@@ -3,6 +3,7 @@ package ordset.core.domain
 import ordset.core.{Bound, ExtendedBound}
 import ordset.util.label.Label
 import ordset.{Hash, Show}
+import scala.annotation.meta.field
 
 sealed trait Domain[E] extends DomainLike[E] {
 
@@ -56,18 +57,21 @@ object Domain {
       val orderShow: Show[DirectedOrder[_, _ <: OrderDir]]
     ) extends Show[D] {
 
-      import ordset.util.ShowUtil.standardShow
+      import ordset.util.ShowUtil.{standardShow, fieldShow}
 
       private val stdShow: Show[D] = standardShow("Domain"){ d =>
+        val boundsFieldShow = fieldShow(boundsShow)
+        val labelsFieldShow = fieldShow(labelsShow)
+        val orderFieldShow = fieldShow(orderShow)
         List(
-          ("labels", labelsShow.show(d.labels)), 
-          ("extendedLowerBound", boundsShow.show(d.lowerExtendedBound)),
-          ("extendedUpperBound", boundsShow.show(d.upperExtendedBound)),
-          ("elementOrd", orderShow.show(d.elementOrd)),
-          ("intOrd", orderShow.show(d.intOrd)),
-          ("longOrd", orderShow.show(d.longOrd)),
-          ("boundOrd", orderShow.show(d.boundOrd)),
-          ("extendedOrd", orderShow.show(d.extendedOrd))
+          ("labels", labelsFieldShow.show(d.labels)), 
+          ("extendedLowerBound", boundsFieldShow.show(d.lowerExtendedBound)),
+          ("extendedUpperBound", boundsFieldShow.show(d.upperExtendedBound)),
+          ("elementOrd", orderFieldShow.show(d.elementOrd)),
+          ("intOrd", orderFieldShow.show(d.intOrd)),
+          ("longOrd", orderFieldShow.show(d.longOrd)),
+          ("boundOrd", orderFieldShow.show(d.boundOrd)),
+          ("extendedOrd", orderFieldShow.show(d.extendedOrd))
         )
       }
 
@@ -117,19 +121,23 @@ object Domain {
       val discreteShow: Show[DirectedDiscrete[_, _ <: OrderDir]],
     ) extends Show[D] {
 
-      import ordset.util.ShowUtil.standardShow
+      import ordset.util.ShowUtil.{standardShow, fieldShow}
 
       private val stdShow: Show[D] = standardShow("Domain"){ d =>
+        val boundsFieldShow = fieldShow(boundsShow)
+        val labelsFieldShow = fieldShow(labelsShow)
+        val orderFieldShow = fieldShow(orderShow)
+        val discreteFieldShow = fieldShow(discreteShow)
         List(
-          ("labels", labelsShow.show(d.labels)), 
-          ("extendedLowerBound", boundsShow.show(d.lowerExtendedBound)),
-          ("extendedUpperBound", boundsShow.show(d.upperExtendedBound)),
-          ("elementOrd", orderShow.show(d.elementOrd)),
-          ("intOrd", orderShow.show(d.intOrd)),
-          ("longOrd", orderShow.show(d.longOrd)),
-          ("boundOrd", orderShow.show(d.boundOrd)),
-          ("extendedOrd", orderShow.show(d.extendedOrd)),
-          ("discrete", discreteShow.show(d.discrete))
+          ("labels", labelsFieldShow.show(d.labels)), 
+          ("extendedLowerBound", boundsFieldShow.show(d.lowerExtendedBound)),
+          ("extendedUpperBound", boundsFieldShow.show(d.upperExtendedBound)),
+          ("elementOrd", orderFieldShow.show(d.elementOrd)),
+          ("intOrd", orderFieldShow.show(d.intOrd)),
+          ("longOrd", orderFieldShow.show(d.longOrd)),
+          ("boundOrd", orderFieldShow.show(d.boundOrd)),
+          ("extendedOrd", orderFieldShow.show(d.extendedOrd)),
+          ("discrete", discreteFieldShow.show(d.discrete))
         )
       }
 

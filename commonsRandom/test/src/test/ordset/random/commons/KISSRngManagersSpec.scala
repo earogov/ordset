@@ -55,12 +55,12 @@ class KISSRngManagersSpec extends AnyFunSpec {
   }
 
   it(
-    s"${classOf[KISSThreadLocalRngManager]} should provide thread local behaviour"
+    s"${classOf[KISSThreadLocalRngManager]} should provide thread local behavior"
   ) {
     // Here we compare sequences that receives thread `S` in `singleExecutionContext`.
     // In one case random generation is executed exclusively for `S`, in other it's mixed with generation
     // for other thread in `fixedExecutionContext`.
-    // Thread local behaviour means that other threads should affect on the random sequences that
+    // Thread local behavior means that other threads should affect on the random sequences that
     // receives thread `S`.
 
     import Ordering.Implicits.seqOrdering

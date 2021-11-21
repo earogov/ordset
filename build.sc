@@ -9,7 +9,8 @@ object ordset extends ScalaModule {
   override def scalacOptions = Seq(
     "-language:implicitConversions",
     "-language:higherKinds",
-    "-deprecation"
+    "-deprecation",
+    "-Yexplicit-nulls"
   )
 
   override def ivyDeps = Agg(
@@ -46,7 +47,8 @@ object commonsRandom extends ScalaModule {
   override def scalacOptions = Seq(
     "-language:implicitConversions",
     "-language:higherKinds",
-    "-deprecation"
+    "-deprecation",
+    "-Yexplicit-nulls"
   )
 
   override def ivyDeps = Agg(

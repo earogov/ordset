@@ -41,16 +41,16 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
   private val defaultSuite = getRandomSamples(true)
 
   private def getRandomSamples(shuffled: Boolean) = List(
-    (1 to 3).flatMap { seed =>
+    (1 to 1).flatMap { seed => // 3
       List(
-        new EmptySetSample1[Dom](seed, shuffled),
+        //new EmptySetSample1[Dom](seed, shuffled),
         new SingleBoundedSetSample1[Dom](seed, shuffled),
-        new DegenerateSetSample1[Dom](seed, shuffled)
+        //new DegenerateSetSample1[Dom](seed, shuffled)
       )
     },
     (1 to 10).flatMap { seed =>
       List(
-        new MultiBoundedSetSample3[Dom](seed, shuffled)
+        //new MultiBoundedSetSample3[Dom](seed, shuffled)
       )
     }
   ).flatten

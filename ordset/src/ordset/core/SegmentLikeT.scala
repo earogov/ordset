@@ -62,7 +62,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def containsExtended(bound: ExtendedBound[E]): Boolean
 
   /** @return `true` if `element` is between segment bounds. */
-  def containsElement(element: E): Boolean = containsBound(Bound.Upper.inclusive(element))
+  def containsElement(element: E): Boolean = containsBound(Bound.Upper.including(element))
 
   /**
    * Get extended lower bound of segment:
@@ -210,7 +210,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     }
 
   /** @return segment that contains specified element. */
-  def moveToElement(element: E): SegmentT[E, D, V, S] with S = moveToBound(Bound.Upper.inclusive(element))
+  def moveToElement(element: E): SegmentT[E, D, V, S] with S = moveToBound(Bound.Upper.including(element))
 
   /** @return [[Iterable]] of all next segments of sequence starting from current. */
   def forwardIterable: Iterable[SegmentT[E, D, V, S] with S] = new AbstractIterable {
@@ -221,17 +221,20 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return [[Iterator]] of all next segments of sequence starting from current. */
   def forwardIterator: Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
-    private var current: SegmentT[E, D, V, S] with S = _
+    import scala.language.unsafeNulls
+
+    private var current: SegmentT[E, D, V, S] with S | Null = _
 
     override def hasNext: Boolean = current == null || !current.isLast
 
-    override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S]) match {
+    override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S] | Null) match {
       case null =>
         current = self
-        current
+        self
       case s: SegmentT.WithNext[E, D, V, S] =>
-        current = s.moveNext
-        current
+        val n = s.moveNext
+        current = n
+        n
       case _ =>
         SegmentSeqExceptionUtil.throwNoNextSegment(current)
     }
@@ -246,17 +249,20 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /** @return [[Iterator]] of all previous segments of sequence starting from current. */
   def backwardIterator: Iterator[SegmentT[E, D, V, S] with S] = new AbstractIterator {
 
-    private var current: SegmentT[E, D, V, S] with S = _
+    import scala.language.unsafeNulls
+
+    private var current: SegmentT[E, D, V, S] with S | Null = _
 
     override def hasNext: Boolean = current == null || !current.isFirst
 
     override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S]) match {
       case null =>
         current = self
-        current
+        self
       case s: SegmentT.WithPrev[E, D, V, S] =>
-        current = s.movePrev
-        current
+        val p = s.movePrev
+        current = p
+        p
       case _ =>
         SegmentSeqExceptionUtil.throwNoPrevSegment(current)
     }

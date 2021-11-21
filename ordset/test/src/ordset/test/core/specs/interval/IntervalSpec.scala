@@ -168,7 +168,7 @@ class IntervalSpec extends AnyFunSpec {
     b match {
       case b: Bound[E] =>
         assert(x.containsBound(b) == exp, s"// expected $exp: contains bound $b")
-        if (b.isInclusive) {
+        if (b.isIncluding) {
           assert(x.containsElement(b.element) == exp, s"// expected $exp: $x contains element $b")
         }
       case _ => 

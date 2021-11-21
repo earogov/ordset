@@ -579,7 +579,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     boundZsegment.value._2 match {
       // p.3
       case lazyValue: LazyValue[E, D, V] =>
-        val newLazyValue = lazyValue.map[E, D, V](_.takeAboveBound(bound))
+        val newLazyValue = lazyValue.takeAboveBound(bound)
         val newBaseSeq = TreapSegmentSeqUtil.takeAboveSegment(boundZsegment.self.firstSeqSegment.self)
         val newControlSeq = TreapSegmentSeqUtil.prependBelowTruncation(
           boundZsegment.self.secondSeqUpperTruncation,
@@ -634,7 +634,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     boundZsegment.value._2 match {
       // p.3
       case lazyValue: LazyValue[E, D, V] =>
-        val newLazyValue = lazyValue.map[E, D, V](_.takeBelowBound(bound))
+        val newLazyValue = lazyValue.takeBelowBound(bound)
         val newBaseSeq = TreapSegmentSeqUtil.takeBelowSegment(boundZsegment.self.firstSeqSegment.self)
         val newControlSeq = TreapSegmentSeqUtil.appendAboveTruncation(
           boundZsegment.self.secondSeqLowerTruncation,
@@ -758,7 +758,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   ): ZSegmentSeq[E, D, V] =
     makeZippedSeq(
       makeUniformBaseSeq(valueOps.unit),
-      makeUniformControlSeq(LazyValue(seqFunc))
+      makeUniformControlSeq(new LazyValue.Unbounded(seqFunc))
     )
 
   /**
@@ -1178,7 +1178,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         def getZsegment: ZSegment[E, D, V]
 
         /**
-         * @return backward or forward iterable from `zsegment` (inclusive).
+         * @return backward or forward iterable from `zsegment` (including).
          *         Direction depends on factory type (left or right).
          */
         def getZsegmentIterable: Iterable[ZSegment[E, D, V]]

@@ -8,15 +8,16 @@ import scala.annotation.tailrec
 object SegmentSeqUtil {
 
   /**
-   * Returns upper bounds of all segments from current (inclusively or exclusively) to last (inclusively).
+   * Returns upper bounds of all segments from current (including or excluding) to last (including).
    * @return iterable of upper bounds.
    */
   def getUpperBoundsIterableFromSegment[E, D <: Domain[E], V](
     segment: Segment[E, D, V],
-    inclusive: Boolean
+    including: Boolean
   ): Iterable[Bound.Upper[E]] = {
+    import scala.language.unsafeNulls
     val startSegment =
-      if (inclusive) segment
+      if (including) segment
       else segment match {
         case s: Segment.WithNext[E, D, V] => s.moveNext
         case _ => null
@@ -29,14 +30,15 @@ object SegmentSeqUtil {
   }
 
   /**
-   * Returns upper bounds of all segments from first (inclusively) to current (inclusively or exclusively).
+   * Returns upper bounds of all segments from first (including) to current (including or excluding).
    * @return iterable of upper bounds.
    */
   def getUpperBoundsIterableToSegment[E, D <: Domain[E], V](
     segment: Segment[E, D, V],
-    inclusive: Boolean
+    including: Boolean
   ): Iterable[Bound.Upper[E]] = {
-    if (inclusive)
+    import scala.language.unsafeNulls
+    if (including)
       segment.moveToFirst.forwardIterable.map { s =>
         if (segment.domainOps.segmentUpperOrd.gt(s, segment)) null
         else s match {
@@ -55,19 +57,19 @@ object SegmentSeqUtil {
   }
 
   /**
-   * Returns upper bounds of all segments from current (inclusively or exclusively) to last (inclusively).
+   * Returns upper bounds of all segments from current (including or excluding) to last (including).
    * @return list of upper bounds with its size.
    */
   def getUpperBoundsListFromSegment[E, D <: Domain[E], V](
     segment: Segment[E, D, V],
-    inclusive: Boolean
+    including: Boolean
   ): (List[Bound.Upper[E]], Int) = {
     var size = 0
     var list: List[Bound.Upper[E]] = Nil
 
     val ord = segment.domainOps.segmentUpperOrd
     val loopCondition =
-      if (inclusive) (s: Segment[E, D, V]) => ord.gteqv(s, segment)
+      if (including) (s: Segment[E, D, V]) => ord.gteqv(s, segment)
       else (s: Segment[E, D, V]) => ord.gt(s, segment)
 
     @tailrec
@@ -89,12 +91,12 @@ object SegmentSeqUtil {
   }
 
   /**
-   * Returns upper bounds of all segments from first (inclusively) to current (inclusively or exclusively).
+   * Returns upper bounds of all segments from first (including) to current (including or excluding).
    * @return list of upper bounds with its size.
    */
   def getUpperBoundsListToSegment[E, D <: Domain[E], V](
     segment: Segment[E, D, V],
-    inclusive: Boolean
+    including: Boolean
   ): (List[Bound.Upper[E]], Int) = {
     var size = 0
     var list = List.empty[Bound.Upper[E]]
@@ -114,7 +116,7 @@ object SegmentSeqUtil {
     }
 
     val startSegment =
-      if (inclusive) segment
+      if (including) segment
       else segment match {
         case s: Segment.WithPrev[E, D, V] => s.movePrev
         case _ => null

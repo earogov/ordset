@@ -67,8 +67,8 @@ object TreapOrderedMap {
         val iter = seq.iterator
         val lastValue = new ValueHolder[V]()
         var buffer: List[MutableTreap.Node[Bound.Upper[E], V]] = Nil
-        var root: ImmutableTreap[Bound.Upper[E], V] = null
-        var prevItem: (ExtendedBound.Upper[E], V) = null
+        var root: ImmutableTreap[Bound.Upper[E], V] | Null = null
+        var prevItem: (ExtendedBound.Upper[E], V) | Null = null
         while (iter.hasNext) {
           if (root != null) {
             throw new IllegalArgumentException(

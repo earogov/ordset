@@ -29,22 +29,22 @@ object SetBuilderFormat { format =>
 
   val aboveAllBound: String = s"$variable ${lessSign(false)} $plusInfinity"
 
-  def lessSign(isInclusive: Boolean): String = if (isInclusive) "<=" else "<"
+  def lessSign(isIncluding: Boolean): String = if (isIncluding) "<=" else "<"
 
-  def greaterSign(isInclusive: Boolean): String = if (isInclusive) ">=" else ">"
+  def greaterSign(isIncluding: Boolean): String = if (isIncluding) ">=" else ">"
 
   // Bounds ------------------------------------------------------------------- //
   def upperBound[E](
     bound: Bound.Upper[? <: E],
     elementToStr: E => String = toStringFunc[E]
   ): String =
-    s"$variable ${lessSign(bound.isInclusive)} ${elementToStr(bound.element)}"
+    s"$variable ${lessSign(bound.isIncluding)} ${elementToStr(bound.element)}"
 
   def lowerBound[E](
     bound: Bound.Lower[? <: E],
     elementToStr: E => String = toStringFunc[E]
   ): String =
-    s"$variable ${greaterSign(bound.isInclusive)} ${elementToStr(bound.element)}"
+    s"$variable ${greaterSign(bound.isIncluding)} ${elementToStr(bound.element)}"
 
   def bound[E](
     bound: Bound[? <: E],
@@ -92,8 +92,8 @@ object SetBuilderFormat { format =>
   ): String = {
     val lowerBound = interval.lowerBound
     val upperBound = interval.upperBound
-    s"$setBegin${elementToStr(lowerBound.element)} ${lessSign(lowerBound.isInclusive)} " +
-      s"$variable ${lessSign(upperBound.isInclusive)} ${elementToStr(upperBound.element)}$setEnd"
+    s"$setBegin${elementToStr(lowerBound.element)} ${lessSign(lowerBound.isIncluding)} " +
+      s"$variable ${lessSign(upperBound.isIncluding)} ${elementToStr(upperBound.element)}$setEnd"
   }
 
   def interval[E, D <: Domain[E]](
@@ -225,23 +225,23 @@ object SetBuilderFormat { format =>
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
   ): String = {
-    val stringBuilder = new StringBuilder()
+    val b = new StringBuilder()
     var addSeparator = false
-    stringBuilder.append("\n")
-    stringBuilder.append(setBegin)
-    stringBuilder.append("\n")
+    b.append(System.lineSeparator)
+    b.append(setBegin)
+    b.append(System.lineSeparator)
     segmentIterable.foreach { s =>
       if (addSeparator) {
-        stringBuilder.append(segmentSeparator)
-        stringBuilder.append("\n")
+        b.append(segmentSeparator)
+        b.append(System.lineSeparator)
       }
       val rel = s.intervalRelation
-      stringBuilder.append(format.intervalRelation(rel.interval, rel.value, elementToStr, valueToStr))
+      b.append(format.intervalRelation(rel.interval, rel.value, elementToStr, valueToStr))
       addSeparator = true
     }
-    stringBuilder.append("\n")
-    stringBuilder.append(setEnd)
-    stringBuilder.result()
+    b.append(System.lineSeparator)
+    b.append(setEnd)
+    b.result()
   }
 
   def segmentSeqShow[E, D <: Domain[E], V](

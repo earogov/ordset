@@ -44,12 +44,12 @@ trait UnsafeUniformRng {
   def nextInt(): Int
 
   /**
-   * Generates an `int` value between 0 (inclusive) and the
-   * specified value (exclusive).
+   * Generates an `int` value between 0 (including) and the
+   * specified value (excluding).
    *
    * @param n Bound on the random number to be returned.  Must be positive.
-   * @return a random `int` value between 0 (inclusive) and `n`
-   *         (exclusive).
+   * @return a random `int` value between 0 (including) and `n`
+   *         (excluding).
    * @throws IllegalArgumentException if `n` is negative.
    */
   def nextInt(n: Int): Int
@@ -62,12 +62,12 @@ trait UnsafeUniformRng {
   def nextLong(): Long
 
   /**
-   * Generates a `long` value between 0 (inclusive) and the specified
-   * value (exclusive).
+   * Generates a `long` value between 0 (including) and the specified
+   * value (excluding).
    *
    * @param n Bound on the random number to be returned.  Must be positive.
-   * @return a random `long` value between 0 (inclusive) and `n`
-   *         (exclusive).
+   * @return a random `long` value between 0 (including) and `n`
+   *         (excluding).
    * @throws IllegalArgumentException if `n` is negative.
    */
   def nextLong(n: Long): Long

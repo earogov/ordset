@@ -444,7 +444,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     if (left.isLast && right.isLast) zipper(left, right)
     else {
       var stop = false
-      var nextZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = null
+      var nextZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] | Null = null
       var currZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = DefaultZippedTuple(this, left, right)
       while (!stop) {
         nextZipped = stepForwardZipper(DefaultZippedTuple.zipper(this), currZipped.left, currZipped.right)
@@ -497,7 +497,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     if (left.isFirst && right.isFirst) zipper(left, right)
     else {
       var stop = false
-      var prevZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = null
+      var prevZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] | Null = null
       var currZipped: ZippedTuple[E, D, U1, U2, V, S1, S2] = DefaultZippedTuple(this, left, right)
       while (!stop) {
         prevZipped = stepBackwardZipper(DefaultZippedTuple.zipper(this), currZipped.left, currZipped.right)

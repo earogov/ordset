@@ -49,7 +49,7 @@ object MapExample {
     )()
     println(seq1)
 
-    val bound1 = Bound.Upper.exclusive(20)
+    val bound1 = Bound.Upper.excluding(20)
     
     println()
     println(s"Map all segments below $bound1 to `true` and above - to `false`.")

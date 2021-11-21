@@ -11,8 +11,8 @@ import scala.{specialized => sp}
 
 /**
  * Bound defines subset of ordered set of elements `E`.
- * <tr>[[Upper]] bound defines maximal element in subset (inclusive or exclusive);</tr>
- * <tr>[[Lower]] bound defines minimal element in subset (inclusive or exclusive).</tr>
+ * <tr>[[Upper]] bound defines maximal element in subset (including or excluding);</tr>
+ * <tr>[[Lower]] bound defines minimal element in subset (including or excluding).</tr>
  * <tr></tr>
  *
  * Bound is described by:
@@ -21,12 +21,12 @@ import scala.{specialized => sp}
  * <tr>- bound type (upper or lower).</tr>
  *
  * {{{
- *  lower inclusive    upper inclusive
+ *  lower including    upper including
  *       bound             bound
  *        v                 v
  *        [0--------------10](-------------)15
  *                           ^             ^
- *                  lower exclusive   upper exclusive
+ *                  lower excluding   upper excluding
  *                      bound              bound
  * }}}
  *
@@ -44,12 +44,12 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
   /**
    * Returns `true` if bound includes `element`.
    */
-  def isInclusive: Boolean
+  def isIncluding: Boolean
 
   /**
    * Returns `true` if bound doesn't include `element`.
    */
-  def isExclusive: Boolean = !isInclusive
+  def isExcluding: Boolean = !isIncluding
 
   /**
    * Returns [[Bound.flip]] if bound is lower or bound itself otherwise.
@@ -64,7 +64,7 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
   /**
    * Let b1 is initial bound then b2 = b1.flip is such bound that:
    * <tr>b2.value = b1.value</tr>
-   * <tr>b2.isInclusive = !b1.isInclusive</tr>
+   * <tr>b2.isIncluding = !b1.isIncluding</tr>
    * <tr>b2.isUpper = !b1.isUpper</tr>
    * {{{
    *            bound                 bound
@@ -78,9 +78,9 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 
   /**
    * Returns
-   * <tr> 0 - if bound is inclusive;</tr>
-   * <tr> 1 - if bound is lower and exclusive;</tr>
-   * <tr>-1 - if bound is upper and exclusive.</tr>
+   * <tr> 0 - if bound is including;</tr>
+   * <tr> 1 - if bound is lower and excluding;</tr>
+   * <tr>-1 - if bound is upper and excluding.</tr>
    * <tr></tr>
    *
    * Offset defines bounds ordering when their values are equal.
@@ -130,13 +130,13 @@ object Bound {
     SetBuilderFormat.boundShow(elementShow)
 
   /**
-   * Bound that defines maximal element in subset (inclusive or exclusive) of ordered set.
+   * Bound that defines maximal element in subset (including or excluding) of ordered set.
    *
    * @tparam E type of element
    */
   final case class Upper[@sp(spNum) +E](
     override val element: E,
-    override val isInclusive: Boolean
+    override val isIncluding: Boolean
   ) extends Bound[E]
     with ExtendedBound.Upper[E] {
 
@@ -148,20 +148,20 @@ object Bound {
 
     override def flipLimited: ExtendedBound[E] = this.flipUpper
     
-    def flipUpper: Lower[E] = Lower(element, !isInclusive)
+    def flipUpper: Lower[E] = Lower(element, !isIncluding)
 
-    override def offset: Int = if (isInclusive) 0 else -1
+    override def offset: Int = if (isIncluding) 0 else -1
 
-    override def withElement[F](element: F): Bound[F] = Upper(element, isInclusive)
+    override def withElement[F](element: F): Bound[F] = Upper(element, isIncluding)
 
     override def toString: String = SetBuilderFormat.upperBound(this, SetBuilderFormat.toStringFunc[E])
   }
 
   object Upper {
 
-    def inclusive[@sp(spNum) E](element: E): Bound.Upper[E] = Upper(element, isInclusive = true)
+    def including[@sp(spNum) E](element: E): Bound.Upper[E] = Upper(element, isIncluding = true)
 
-    def exclusive[@sp(spNum) E](element: E): Bound.Upper[E] = Upper(element, isInclusive = false)
+    def excluding[@sp(spNum) E](element: E): Bound.Upper[E] = Upper(element, isIncluding = false)
 
     def max[E](x: Upper[E], y: Upper[E])(implicit order: Order[Bound[E]]): Upper[E] =
       order.max(x, y).asInstanceOf[Upper[E]]
@@ -171,13 +171,13 @@ object Bound {
   }
 
   /**
-   * Bound that defines minimal element in subset (inclusive or exclusive) of ordered set.
+   * Bound that defines minimal element in subset (including or excluding) of ordered set.
    *
    * @tparam E type of element
    */
   final case class Lower[@sp(spNum) +E](
     override val element: E,
-    override val isInclusive: Boolean
+    override val isIncluding: Boolean
   ) extends Bound[E]
     with ExtendedBound.Lower[E] {
 
@@ -193,20 +193,20 @@ object Bound {
 
     override def flipLimited: ExtendedBound[E] = this.flipLower
 
-    def flipLower: Upper[E] = Upper(element, !isInclusive)
+    def flipLower: Upper[E] = Upper(element, !isIncluding)
 
-    override def offset: Int = if (isInclusive) 0 else 1
+    override def offset: Int = if (isIncluding) 0 else 1
 
-    override def withElement[F](element: F): Bound[F] = Lower(element, isInclusive)
+    override def withElement[F](element: F): Bound[F] = Lower(element, isIncluding)
 
     override def toString: String = SetBuilderFormat.lowerBound(this, SetBuilderFormat.toStringFunc[E])
   }
 
   object Lower {
 
-    def inclusive[@sp(spNum) E](element: E): Bound.Lower[E] = Lower(element, isInclusive = true)
+    def including[@sp(spNum) E](element: E): Bound.Lower[E] = Lower(element, isIncluding = true)
 
-    def exclusive[@sp(spNum) E](element: E): Bound.Lower[E] = Lower(element, isInclusive = false)
+    def excluding[@sp(spNum) E](element: E): Bound.Lower[E] = Lower(element, isIncluding = false)
 
     def max[E](x: Lower[E], y: Lower[E])(implicit order: Order[Bound[E]]): Lower[E] =
       order.max(x, y).asInstanceOf[Lower[E]]
@@ -272,13 +272,13 @@ sealed trait ExtendedBound[@sp(spNum) +E] {
   def isUnlimited: Boolean
 
   /**
-   * @return `true` if bound defines maximal element in subset (inclusive or exclusive) in case of limited bound or
+   * @return `true` if bound defines maximal element in subset (including or excluding) in case of limited bound or
    *         the absence of restrictions on such element in case of unlimited bound.
    */
   def isUpper: Boolean
 
   /**
-   * @return `true` if bound defines minimal element in subset (inclusive or exclusive) in case of limited bound or
+   * @return `true` if bound defines minimal element in subset (including or excluding) in case of limited bound or
    *         the absence of restrictions on such element in case of unlimited bound.
    */
   def isLower: Boolean
@@ -330,7 +330,7 @@ object ExtendedBound {
     SetBuilderFormat.extendedBoundShow(elementShow)
 
   /**
-   * Bound that defines maximal element in subset (inclusive or exclusive) of ordered set.
+   * Bound that defines maximal element in subset (including or excluding) of ordered set.
    * If bound is unlimited then there is no restrictions on maximal element in subset.
    *
    * @tparam E type of element
@@ -343,7 +343,7 @@ object ExtendedBound {
   }
 
   /**
-   * Bound that defines minimal element in subset (inclusive or exclusive) of ordered set.
+   * Bound that defines minimal element in subset (including or excluding) of ordered set.
    * If bound is unlimited then there is no restrictions on minimal element in subset.
    *
    * @tparam E type of element

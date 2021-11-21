@@ -25,7 +25,7 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
   def containsExtended(bound: ExtendedBound[E]): Boolean
 
   /** @return `true` if `element` is between interval bounds. */
-  def containsElement(element: E): Boolean = containsBound(Bound.Upper.inclusive(element))
+  def containsElement(element: E): Boolean = containsBound(Bound.Upper.including(element))
 
   /** @return `true` if interval has limited lower bound. */
   def hasLowerBound: Boolean = false

@@ -221,7 +221,7 @@ object OrderedSetFactory {
   def fromMapFactory[E, D <: Domain[E], SSeq <: OrderedSet[E, D]](
     mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
   ): OrderedSetFactory[E, D, SSeq] =
-    new MapFactoryWrapper(mapFactory)
+    new MapFactoryProxy(mapFactory)
 
   /**
    * Wraps specified [[OrderedMapFactory]] to provide [[OrderedSetFactory]]. 
@@ -230,7 +230,7 @@ object OrderedSetFactory {
    *       because we can't pattern match to type `SSeq`. So method should be redefined in classes with
    *       concrete `SSeq` type.
    */
-  class MapFactoryWrapper[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]](
+  class MapFactoryProxy[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]](
     mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
   ) extends OrderedSetFactory[E, D, SSeq] {
 

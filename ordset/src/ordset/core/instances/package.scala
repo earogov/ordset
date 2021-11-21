@@ -5,6 +5,10 @@ import ordset.core.domain.{DirectedOrder, DirectedDiscrete}
 import ordset.core.domain.{DirectedOrder, AscOrder, DescOrder, AscDiscrete, DescDiscrete}
 import ordset.util.label.Label
 
+import ordset.core.domain.order.*
+import ordset.BoundedComponents.*
+import ordset.DiscreteComponents.*
+
 package object instances {
 
   object OrderLabels {
@@ -41,6 +45,12 @@ package object instances {
       new DirectedOrder.DefaultImpl(Set(OrderLabels.intDefault), intOrder, intHash)
 
     lazy val intDescOrder: DescOrder[Int] = DirectedOrder.reverse(intAscOrder)
+
+    // implicit lazy val intContinuousBoundedOrder: ContinuousBoundedOrder[Int] = 
+    //   new ContinuousBoundedOrder.ProxyImpl(intAscOrder) with BoundedInt
+
+    // implicit lazy val intDiscreteBoundedOrder: DiscreteBoundedOrder[Int] =
+    //   new DiscreteOrder.ProxyImpl(intAscOrder) with BoundedInt with DiscreteInfiniteNumeric
   }
 
   object long {

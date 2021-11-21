@@ -24,7 +24,7 @@ import scala.specialized as sp
  * <tr>5. {(-inf, +inf) -> Z} - universal or unbounded map                                  </tr>
  * <tr>                                                                                     </tr>
  * <tr>
- *   *1 - Default interval notation is used for inclusive/exclusive bounds.
+ *   *1 - Default interval notation is used for including/excluding bounds.
  * </tr>
  * <tr></tr>
  *
@@ -135,7 +135,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     }
 
   /** @return `true` if `element` is included in ordered set or map. */
-  def includesElement(element: E): Boolean = includesBound(Bound.Upper.inclusive(element))
+  def includesElement(element: E): Boolean = includesBound(Bound.Upper.including(element))
 
   override def toString: String =
     SetBuilderFormat.segmentSeq(this, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
@@ -145,7 +145,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * @return collection of all upper bounds.
    */
   def upperBounds: Iterable[Bound.Upper[E]] = 
-    SegmentSeqUtil.getUpperBoundsIterableFromSegment(firstSegment, inclusive = true)
+    SegmentSeqUtil.getUpperBoundsIterableFromSegment(firstSegment, including = true)
 
   /**
    * @return collection of extended upper bounds. It's always non-empty with last element equals to 
@@ -173,7 +173,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   /** @return segment that contains specified `element`. */
   def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = 
-    getSegmentForBound(Bound.Upper.inclusive(element))
+    getSegmentForBound(Bound.Upper.including(element))
 
   /**
    * Returns value of segment that contains specified `bound`:
@@ -201,7 +201,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * }}}
    */
   def getValueForElement(element: E): V =
-    getValueForBound(Bound.Upper.inclusive(element))
+    getValueForBound(Bound.Upper.including(element))
 
   // Transformation ----------------------------------------------------------- //
   /**

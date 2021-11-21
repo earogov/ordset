@@ -317,7 +317,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
        * @return `true` if `segment` should contain element of `bound`.
        */
       def shouldContainElement(bound: Bound[E], segment: Segment[E, D, V]) =
-        if (bound.isInclusive) true
+        if (bound.isIncluding) true
         else bound match {
           //    )5
           // (-----)
@@ -342,7 +342,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
        * @return `true` if `segment` should contain element of `bound`.
        */
       def shouldNotContainElement(bound: Bound[E], segment: Segment[E, D, V]) =
-        if (bound.isInclusive) true
+        if (bound.isIncluding) true
         else bound match {
           //  )5
           //      [-----]
@@ -407,7 +407,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             case bound: Bound[E] =>
               val seqValue = sample.sequence.getValueForBound(bound)
               assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for bound $bound")
-              if (bound.isInclusive) {
+              if (bound.isIncluding) {
                 val element = bound.element
                 val seqValue = sample.sequence.getValueForElement(element)
                 assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for element $element")

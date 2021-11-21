@@ -13,13 +13,13 @@ object BoundSyntax {
   
   implicit class ToBound[@sp(spNum) E](element: E) {
 
-    def `)[`: Bound.Upper[E] = Bound.Upper(element, isInclusive = false)
-    def `](`: Bound.Upper[E] = Bound.Upper(element, isInclusive = true)
+    def `)[`: Bound.Upper[E] = Bound.Upper(element, isIncluding = false)
+    def `](`: Bound.Upper[E] = Bound.Upper(element, isIncluding = true)
 
-    def `)`: Bound.Upper[E] = Bound.Upper(element, isInclusive = false)
-    def `]`: Bound.Upper[E] = Bound.Upper(element, isInclusive = true)
+    def `)`: Bound.Upper[E] = Bound.Upper(element, isIncluding = false)
+    def `]`: Bound.Upper[E] = Bound.Upper(element, isIncluding = true)
 
-    def `(`: Bound.Lower[E] = Bound.Lower(element, isInclusive = false)
-    def `[`: Bound.Lower[E] = Bound.Lower(element, isInclusive = true)
+    def `(`: Bound.Lower[E] = Bound.Lower(element, isIncluding = false)
+    def `[`: Bound.Lower[E] = Bound.Lower(element, isIncluding = true)
   }
 }

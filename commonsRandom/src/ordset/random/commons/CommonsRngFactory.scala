@@ -12,6 +12,8 @@ import org.apache.commons.rng.simple.RandomSource
  */
 object CommonsRngFactory {
 
+  import scala.language.unsafeNulls
+
   /**
    * Creates a random number generator with a random seed.
    *
@@ -19,7 +21,7 @@ object CommonsRngFactory {
    * @return the RNG.
    */
   def create(source: RandomSource): UnsafeUniformRng =
-    new UniformRandomProviderWrapper(RandomSource.create(source))
+    new UniformRandomProviderProxy(RandomSource.create(source))
 
   /**
    * Creates a random number generator with the given `seed`.
@@ -36,5 +38,5 @@ object CommonsRngFactory {
    *                               generator implemented by the given `source`.
    */
   def create(source: RandomSource, seed: Any, data: Any*): UnsafeUniformRng =
-    new UniformRandomProviderWrapper(RandomSource.create(source, seed, data: _*))
+    new UniformRandomProviderProxy(RandomSource.create(source, seed, data: _*))
 }

@@ -12,9 +12,9 @@ trait IntervalBuilder[E, D <: Domain[E]] {
 
   def universal: Interval[E, D]
 
-  def belowElement(element: E, isInclusive: Boolean): Interval[E, D]
+  def belowElement(element: E, isIncluding: Boolean): Interval[E, D]
 
-  def aboveElement(element: E, isInclusive: Boolean): Interval[E, D]
+  def aboveElement(element: E, isIncluding: Boolean): Interval[E, D]
 
   def betweenElements(leftElement: E, leftIncl: Boolean, rightElement: E, rightIncl: Boolean): Interval[E, D]
 
@@ -60,20 +60,28 @@ object IntervalBuilder {
 
     override lazy val universal: Interval.Universal[E, D] = Interval.Universal()(domain)
 
-    override def belowElement(element: E, isInclusive: Boolean): Interval.Less[E, D] =
-      belowBound(Bound.Upper(element, isInclusive))
+    override def belowElement(element: E, isIncluding: Boolean): Interval.Less[E, D] =
+      belowBound(Bound.Upper(element, isIncluding))
 
-    override def aboveElement(element: E, isInclusive: Boolean): Interval.Greater[E, D] =
-      aboveBound(Bound.Lower(element, isInclusive))
+    override def aboveElement(element: E, isIncluding: Boolean): Interval.Greater[E, D] =
+      aboveBound(Bound.Lower(element, isIncluding))
 
-    override def betweenElements(leftElement: E, leftIncl: Boolean, rightElement: E, rightIncl: Boolean): Interval[E, D] =
+    override def betweenElements(
+      leftElement: E, 
+      leftIncl: Boolean, 
+      rightElement: E, 
+      rightIncl: Boolean
+    ): Interval.Between[E, D] | Interval.Empty[E, D] =
       betweenBounds(Bound.Lower(leftElement, leftIncl), Bound.Upper(rightElement, rightIncl))
 
     override def belowBound(bound: Bound.Upper[E]): Interval.Less[E, D] = Interval.Less(bound)(domain)
 
     override def aboveBound(bound: Bound.Lower[E]): Interval.Greater[E, D] = Interval.Greater(bound)(domain)
 
-    override def betweenBounds(leftBound: Bound.Lower[E], rightBound: Bound.Upper[E]): Interval[E, D] =
+    override def betweenBounds(
+      leftBound: Bound.Lower[E], 
+      rightBound: Bound.Upper[E]
+    ): Interval.Between[E, D] | Interval.Empty[E, D] =
       if (domain.boundOrd.lt(rightBound, leftBound)) empty
       else Interval.Between(leftBound, rightBound)(domain)
   }

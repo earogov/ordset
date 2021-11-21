@@ -3,6 +3,14 @@ import scala.collection.immutable.Queue
 
 package object ordset {
 
+  type Direction = Direction.Type
+
+  type Asc = Direction.Asc.Type
+
+  type Desc = Direction.Desc.Type
+
+  type WithDir[C, Dir <: Direction] = C with Directed[Dir]
+
   type Eq[A] = cats.kernel.Eq[A]
 
   type Hash[A] = cats.kernel.Hash[A]

@@ -19,9 +19,9 @@ object MutableTreap {
     override val priority: Int
   ) extends MutableTreap[K, V] with Treap.Node[K, V] {
 
-    private var left: Treap.Node[K, V] = _
+    private var left: Treap.Node[K, V] | Null = _
 
-    private var right: Treap.Node[K, V] = _
+    private var right: Treap.Node[K, V] | Null = _
 
     def setLeftTree(tree: Treap[K, V]): Unit =
       tree match {
@@ -29,7 +29,7 @@ object MutableTreap {
         case _ => dropLeft()
       }
 
-    def setLeftNode(node: Treap.Node[K, V]): Unit = left = node
+    def setLeftNode(node: Treap.Node[K, V] | Null): Unit = left = node
 
     def dropLeft(): Unit = left = null
 
@@ -39,21 +39,27 @@ object MutableTreap {
         case _ => dropRight()
       }
 
-    def setRightNode(node: Treap.Node[K, V]): Unit = right = node
+    def setRightNode(node: Treap.Node[K, V] | Null): Unit = right = node
 
     def dropRight(): Unit = right = null
 
-    override def getLeftOrNull: Treap.Node[K, V] = left
+    override def getLeftOrNull: Treap.Node[K, V] | Null = left
 
-    override def getRightOrNull: Treap.Node[K, V] = right
+    override def getRightOrNull: Treap.Node[K, V] | Null = right
 
     override def hasLeft: Boolean = left != null
 
-    override def hasLeftInstance[KK >: K, VV >: V](tree: Treap[KK, VV]): Boolean = hasLeft && (left eq tree)
+    override def hasLeftInstance[KK >: K, VV >: V](tree: Treap[KK, VV]): Boolean = {
+      val n = left
+      if n != null then n eq tree else false
+    }
 
     override def hasRight: Boolean = right != null
 
-    override def hasRightInstance[KK >: K, VV >: V](tree: Treap[KK, VV]): Boolean = hasRight && (right eq tree)
+    override def hasRightInstance[KK >: K, VV >: V](tree: Treap[KK, VV]): Boolean = {
+      val n = right
+      if n != null then n eq tree else false
+    }
 
     override def isEmpty: Boolean = false
 

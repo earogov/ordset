@@ -5,7 +5,7 @@ import ordset.core.interval.{Interval, IntervalBuilder, IntervalOps, IntervalRel
 import ordset.core.SegmentT
 import scala.util.Try
 
-trait DomainOps[E, D <: Domain[E]] extends DomainLike.Wrapper[E, D] {
+trait DomainOps[E, D <: Domain[E]] extends DomainLike.Proxy[E, D] {
 
   def domainBounds: Interval.NonEmpty[E, D]
 

@@ -45,9 +45,9 @@ object BoundSelector {
               .map(shift => m + shift)
               .flatMap(element =>
                 LazyList(0, -1, 1).map {
-                  case -1 => Bound.Upper.exclusive(element)
-                  case 1 => Bound.Lower.exclusive(element)
-                  case 0 => Bound.Upper.inclusive(element)
+                  case -1 => Bound.Upper.excluding(element)
+                  case 1 => Bound.Lower.excluding(element)
+                  case 0 => Bound.Upper.including(element)
                 }
               )
               .filter(bound => ord.gt(bound, lowerBound) && ord.lt(bound, upperBound))
@@ -60,7 +60,7 @@ object BoundSelector {
           Option(lowerBound.mapElement(_ + 1))
             .filter(bound => ord.gt(bound, lowerBound))
         case (ExtendedBound.BelowAll, ExtendedBound.AboveAll) =>
-          Option(Bound.Upper.inclusive(0))
+          Option(Bound.Upper.including(0))
         case _ =>
           Option.empty
       }

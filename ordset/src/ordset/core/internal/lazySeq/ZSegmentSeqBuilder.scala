@@ -10,6 +10,7 @@ import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.util.{TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
 import ordset.random.RngManager
 import ordset.tree.treap.mutable.MutableTreap
+import ordset.util.OptionUtil
 
 import scala.annotation.tailrec
 
@@ -500,10 +501,10 @@ protected[ordset] object ZSegmentSeqBuilder {
         case Some(f) =>
           supplierSegment match {
             case s: SupplierSegmentWithNext[E, D, V] =>
-              builder.addBound(s.upperBound, LazyValue(f))
+              builder.addBound(s.upperBound, LazyValue.Unbounded(f))
               addLazySegments(s.moveNext, builder)
             case _ =>
-              builder.setLastValue(LazyValue(f))
+              builder.setLastValue(LazyValue.Unbounded(f))
           }
         case _ => builder
       }
@@ -701,7 +702,7 @@ protected[ordset] object ZSegmentSeqBuilder {
             run = false
         }
       }
-      (Option(nextSegment), builder.buildSeq)
+      (OptionUtil.optionOfNullable(nextSegment), builder.buildSeq)
     }
 
     /**
@@ -770,7 +771,7 @@ protected[ordset] object ZSegmentSeqBuilder {
     val patchControlSeq = NonMergingMappedValueOrderedMap.apply(
       supplierSeq,
       v => v match {
-        case Some(f) => new LazyValue(f)
+        case Some(f) => new LazyValue.Unbounded(f)
         case _ => EagerValue.unstable[E, D, V]
       }
     )(

@@ -20,6 +20,7 @@ object NodeUpward {
     implicit stackOps: NodeStackOps[K, V, C]
   ): NodeTraverseFunc[K, V, C] =
     (tree, context) => {
+      import scala.language.unsafeNulls
       val parent = stackOps.getHeadTreeOrDefault(context, null)
       if (parent == null) {
         val newContext = evalFunc(tree, context, BinaryTreeStep.None)
