@@ -8,9 +8,9 @@ trait IntervalBuilder[E, D <: Domain[E]] {
 
   def domain: D
 
-  def empty: Interval[E, D]
+  def empty: Interval.Empty[E, D]
 
-  def universal: Interval[E, D]
+  def universal: Interval.NonEmpty[E, D]
 
   def belowElement(element: E, isIncluding: Boolean): Interval[E, D]
 
@@ -47,10 +47,13 @@ object IntervalBuilder {
 
   implicit def defaultBuilder[E, D <: Domain[E]](implicit domain: D): IntervalBuilder[E, D] =
     domain match {
-      case d: Domain.Unbounded[E] => new UnboundedBuilder(d)
+      case d: Domain.Unbounded[E] => unboundedBuilder(d)
       // TODO: implement bounded builder
       case d: Domain.Bounded[E] => ???
     }
+
+  def unboundedBuilder[E, D <: Domain[E]](implicit domain: D & Domain.Unbounded[E]): UnboundedBuilder[E, D] =
+    new UnboundedBuilder[E, D](domain)
 
   final class UnboundedBuilder[E, D <: Domain[E]](
     override val domain: D & Domain.Unbounded[E]

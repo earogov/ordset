@@ -55,7 +55,7 @@ object TreapOrderedSet {
       complementary: Boolean,
       domainOps: DomainOps[E, D]
     )(
-      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
     )(
       implicit rngManager: RngManager
     ): TreapOrderedSet[E, D] = {

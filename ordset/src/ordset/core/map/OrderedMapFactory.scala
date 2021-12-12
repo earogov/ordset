@@ -71,7 +71,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
-    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.validation.extendedBoundsSeq,
     valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit rngManager: RngManager
@@ -87,7 +87,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
-    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.validation.extendedBoundsSeq,
     valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit rngManager: RngManager
@@ -179,7 +179,7 @@ trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
-    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
+    boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.validation.extendedBoundsSeq,
     valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
   )(
     implicit rngManager: RngManager

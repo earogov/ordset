@@ -3,8 +3,7 @@ package ordset.core
 import ordset.core.Bound.DefaultOrder
 import ordset.core.domain.*
 import ordset.core.interval.*
-import ordset.{Order, Show, util}
-import ordset.util.label.Label
+import ordset.{BoundedOrder, Order, Hash, Show, util}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -115,16 +114,30 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 object Bound {
 
   implicit def lowerToInterval[E, D <: Domain[E]](lower: Lower[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
-    ops.interval.aboveBound(lower)
+    ops.intervals.builder.aboveBound(lower)
 
   implicit def upperToInterval[E, D <: Domain[E]](upper: Upper[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
-    ops.interval.belowBound(upper)
+    ops.intervals.builder.belowBound(upper)
 
-  implicit def defaultAscOrder[E](implicit elementOrd: AscOrder[E], intOrder: AscOrder[Int]): AscOrder[Bound[E]] =
-    new DefaultOrder(elementOrd, intOrder)
+  implicit def defaultUnboundedOrder[E](
+    implicit elementOrd: Order[E] with Hash[E]
+  ): DefaultUnboundedOrder[E] =
+    new DefaultUnboundedOrderImpl(elementOrd)
 
-  def defaultDescOrder[E](implicit elementOrd: DescOrder[E], intOrder: DescOrder[Int]): DescOrder[Bound[E]] =
-    new DefaultOrder(elementOrd, intOrder)
+  def defaultBoundedBelowOrder[E, L <: Bound[E], U <: Bound[E]](
+    implicit elementOrd: BoundedOrder.Below[E, E] with Hash[E]
+  ): DefaultBoundedBelowOrder[E] =
+    new DefaultBoundedBelowOrderImpl(elementOrd)
+
+  def defaultBoundedAboveOrder[E, L <: Bound[E], U <: Bound[E]](
+    implicit elementOrd: BoundedOrder.Above[E, E] with Hash[E]
+  ): DefaultBoundedAboveOrder[E] =
+    new DefaultBoundedAboveOrderImpl(elementOrd)
+
+  def defaultBoundedOrder[E, L <: Bound[E], U <: Bound[E]](
+    implicit elementOrd: BoundedOrder[E, E, E] with Hash[E]
+  ): DefaultBoundedOrder[E] =
+    new DefaultBoundedOrderImpl(elementOrd)
 
   implicit def defaultShow[E](implicit elementShow: Show[E]): Show[Bound[E]] =
     SetBuilderFormat.boundShow(elementShow)
@@ -215,29 +228,72 @@ object Bound {
       order.min(x, y).asInstanceOf[Lower[E]]
   }
 
-  final class DefaultOrder[E, Dir <: OrderDir](
-      val elementOrd: DirectedOrder[E, Dir],
-      val intOrd: DirectedOrder[Int, Dir]
-  )(
-      implicit val dirValue: ValueOf[Dir]
-  ) extends DirectedOrder.Abstract[Bound[E], Dir] {
+  trait DefaultOrder[E] extends Order[Bound[E]] with Hash[Bound[E]] {
 
     import util.HashUtil._
+    import ordset.instances.int.{intOrderWithHash => intOrd}
 
-    override val labels: Set[Label] = Set(OrderLabels.BoundDefault)
+    def elementOrd: Order[E] with Hash[E]
 
-    override def compare(x: Bound[E], y: Bound[E]): Int = {
+    final override def compare(x: Bound[E], y: Bound[E]): Int = {
       val cmp = elementOrd.compare(x.element, y.element)
       if (cmp != 0) cmp
       else intOrd.compare(x.offset, y.offset)
     }
 
-    override def hash(x: Bound[E]): Int =
+    final override def hash(x: Bound[E]): Int =
       product2Hash(elementOrd.hash(x.element), intOrd.hash(x.offset))
 
-    override def eqv(x: Bound[E], y: Bound[E]): Boolean =
+    final override def eqv(x: Bound[E], y: Bound[E]): Boolean =
       elementOrd.eqv(x.element, y.element) && intOrd.eqv(x.offset, y.offset)
   }
+
+  trait DefaultUnboundedOrder[E] extends DefaultOrder[E]
+
+  trait DefaultBoundedBelowOrder[E] 
+    extends BoundedOrder.Below.Including[Bound[E], Bound.Lower[E]]
+    with DefaultOrder[E] {
+
+    override def elementOrd: BoundedOrder.Below[E, E] with Hash[E]
+
+    final override val lowerBound: Bound.Lower[E] = 
+      new Bound.Lower(elementOrd.lowerBound, elementOrd.lowerBoundIncluded)
+  }
+
+  trait DefaultBoundedAboveOrder[E] 
+    extends BoundedOrder.Above.Including[Bound[E], Bound.Upper[E]]
+    with DefaultOrder[E] {
+
+    override def elementOrd: BoundedOrder.Above[E, E] with Hash[E]
+
+    final override val upperBound: Bound.Upper[E] = 
+      new Bound.Upper(elementOrd.upperBound, elementOrd.upperBoundIncluded) 
+  }
+
+  trait DefaultBoundedOrder[E] 
+    extends BoundedOrder.Including[Bound[E], Bound.Lower[E], Bound.Upper[E]]
+    with DefaultBoundedBelowOrder[E]
+    with DefaultBoundedAboveOrder[E] {
+
+    override def elementOrd: BoundedOrder[E, E, E] with Hash[E]
+  }
+
+  // Private section ---------------------------------------------------------- //
+  private final class DefaultUnboundedOrderImpl[E](
+    override val elementOrd: Order[E] with Hash[E]
+  ) extends DefaultUnboundedOrder[E]
+
+  private final class DefaultBoundedBelowOrderImpl[E](
+    override val elementOrd: BoundedOrder.Below[E, E] with Hash[E]
+  ) extends DefaultBoundedBelowOrder[E]
+
+  private final class DefaultBoundedAboveOrderImpl[E](
+    override val elementOrd: BoundedOrder.Above[E, E] with Hash[E]
+  ) extends DefaultBoundedAboveOrder[E]
+
+  private final class DefaultBoundedOrderImpl[E](
+    override val elementOrd: BoundedOrder[E, E, E] with Hash[E]
+  ) extends DefaultBoundedOrder[E]
 }
 
 /**
@@ -314,17 +370,25 @@ sealed trait ExtendedBound[@sp(spNum) +E] {
 
 object ExtendedBound {
 
-  implicit def defaultAscOrder[E](
-    implicit boundOrd: AscOrder[Bound[E]],
-    intOrder: AscOrder[Int]
-  ): AscOrder[ExtendedBound[E]] =
-    new DefaultOrder(boundOrd, intOrder)
+  implicit def defaultUnboundedOrder[E](
+    implicit boundOrd: Bound.DefaultUnboundedOrder[E]
+  ): DefaultUnboundedOrder[E] =
+    new DefaultUnboundedOrderImpl(boundOrd)
 
-  def defaultDescOrder[E](
-    implicit boundOrd: DescOrder[Bound[E]],
-    intOrder: DescOrder[Int]
-  ): DescOrder[ExtendedBound[E]] =
-    new DefaultOrder(boundOrd, intOrder)
+  def defaultBoundedBelowOrder[E](
+    implicit boundOrd: Bound.DefaultBoundedBelowOrder[E]
+  ): DefaultBoundedBelowOrder[E] =
+    new DefaultBoundedBelowOrderImpl(boundOrd)
+
+  def defaultBoundedAboveOrder[E](
+    implicit boundOrd: Bound.DefaultBoundedAboveOrder[E]
+  ): DefaultBoundedAboveOrder[E] =
+    new DefaultBoundedAboveOrderImpl(boundOrd)
+
+  def defaultBoundedOrder[E](
+    implicit boundOrd: Bound.DefaultBoundedOrder[E]
+  ): DefaultBoundedOrder[E] =
+    new DefaultBoundedOrderImpl(boundOrd)
 
   implicit def defaultShow[E](implicit elementShow: Show[E]): Show[ExtendedBound[E]] =
     SetBuilderFormat.extendedBoundShow(elementShow)
@@ -403,16 +467,15 @@ object ExtendedBound {
     override def toString: String = SetBuilderFormat.belowAllBound
   }
 
-  final class DefaultOrder[E, Dir <: OrderDir](
-    val boundOrd: DirectedOrder[Bound[E], Dir],
-    val intOrd: DirectedOrder[Int, Dir]
-  )(
-    implicit val dirValue: ValueOf[Dir]
-  ) extends DirectedOrder.Abstract[ExtendedBound[E], Dir] {
+  trait DefaultOrder[E]
+    extends BoundedOrder.Including[ExtendedBound[E], ExtendedBound[E], ExtendedBound[E]] 
+    with Hash[ExtendedBound[E]] {
 
-    override val labels: Set[Label] = Set(OrderLabels.BoundDefault)
+    import ordset.instances.int.{intOrderWithHash => intOrd}
 
-    override def compare(x: ExtendedBound[E], y: ExtendedBound[E]): Int = {
+    def boundOrd: Order[Bound[E]] with Hash[Bound[E]]
+
+    final override def compare(x: ExtendedBound[E], y: ExtendedBound[E]): Int = {
       val cmp = intOrd.compare(x.extendedOffset, y.extendedOffset)
       if (cmp != 0) cmp
       else (x, y) match {
@@ -421,13 +484,13 @@ object ExtendedBound {
       }
     }
 
-    override def hash(x: ExtendedBound[E]): Int =
+    final override def hash(x: ExtendedBound[E]): Int =
       x match {
         case x: Bound[E] => boundOrd.hash(x)
         case _ => x.hashCode()
       }
 
-    override def eqv(x: ExtendedBound[E], y: ExtendedBound[E]): Boolean = {
+    final override def eqv(x: ExtendedBound[E], y: ExtendedBound[E]): Boolean = {
       val eqv = intOrd.eqv(x.extendedOffset, y.extendedOffset)
       if (!eqv) false
       else (x, y) match {
@@ -436,4 +499,65 @@ object ExtendedBound {
       }
     }
   }
+
+  trait DefaultUnboundedOrder[E] 
+    extends BoundedOrder.Including[ExtendedBound[E], ExtendedBound.BelowAll.type, ExtendedBound.AboveAll.type]
+    with DefaultOrder[E] {
+
+    override def boundOrd: Bound.DefaultUnboundedOrder[E]
+
+    final override val lowerBound: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
+
+    final override val upperBound: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
+  }
+
+  trait DefaultBoundedBelowOrder[E] 
+    extends BoundedOrder.Including[ExtendedBound[E], Bound.Lower[E], ExtendedBound.AboveAll.type]
+    with DefaultOrder[E] {
+
+    override def boundOrd: Bound.DefaultBoundedBelowOrder[E]
+
+    final override val lowerBound: Bound.Lower[E] = boundOrd.lowerBound
+
+    override val upperBound: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
+  }
+
+  trait DefaultBoundedAboveOrder[E] 
+    extends BoundedOrder.Including[ExtendedBound[E], ExtendedBound.BelowAll.type, Bound.Upper[E]]
+    with DefaultOrder[E] {
+
+    override def boundOrd: Bound.DefaultBoundedAboveOrder[E]
+
+    override val lowerBound: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
+
+    final override val upperBound: Bound.Upper[E] = boundOrd.upperBound
+  }
+
+  trait DefaultBoundedOrder[E] 
+    extends BoundedOrder.Including[ExtendedBound[E], Bound.Lower[E], Bound.Upper[E]]
+    with DefaultOrder[E] {
+
+    override def boundOrd: Bound.DefaultBoundedOrder[E]
+
+    final override val lowerBound: Bound.Lower[E] = boundOrd.lowerBound
+
+    final override val upperBound: Bound.Upper[E] = boundOrd.upperBound
+  }
+
+  // Private section ---------------------------------------------------------- //
+  private final class DefaultUnboundedOrderImpl[E](
+    val boundOrd: Bound.DefaultUnboundedOrder[E]
+  ) extends DefaultUnboundedOrder[E]
+
+  private final class DefaultBoundedBelowOrderImpl[E](
+    val boundOrd: Bound.DefaultBoundedBelowOrder[E]
+  ) extends DefaultBoundedBelowOrder[E]
+
+  private final class DefaultBoundedAboveOrderImpl[E](
+    val boundOrd: Bound.DefaultBoundedAboveOrder[E]
+  ) extends DefaultBoundedAboveOrder[E]
+
+  private final class DefaultBoundedOrderImpl[E](
+    val boundOrd: Bound.DefaultBoundedOrder[E]
+  ) extends DefaultBoundedOrder[E]
 }

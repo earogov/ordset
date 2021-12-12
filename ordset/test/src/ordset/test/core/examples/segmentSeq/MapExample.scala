@@ -14,8 +14,8 @@ import scala.language.postfixOps
 
 object MapExample {
 
-  import ordset.core.instances.boolean.*
-  import ordset.core.instances.int.*
+  import ordset.instances.boolean.*
+  import ordset.instances.int.*
   import ordset.test.core.TestRngUtil.Implicits.*
 
   private val sep = "-----------------"

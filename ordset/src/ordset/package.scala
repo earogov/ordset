@@ -1,5 +1,6 @@
 import cats.kernel
 import scala.collection.immutable.Queue
+import ordset.OrderComponents.*
 
 package object ordset {
 
@@ -8,8 +9,6 @@ package object ordset {
   type Asc = Direction.Asc.Type
 
   type Desc = Direction.Desc.Type
-
-  type WithDir[C, Dir <: Direction] = C with Directed[Dir]
 
   type Eq[A] = cats.kernel.Eq[A]
 
@@ -27,61 +26,81 @@ package object ordset {
 
   object instances {
 
+    object unit {
+
+      implicit val unitOrderWithHash: UnitDiscreteFiniteOrder = new UnitDiscreteFiniteOrder
+
+      implicit def unitShow: Show[Unit] = cats.instances.unit.catsStdShowForUnit
+    }
+
     object boolean {
 
-      implicit def booleanOrder: Order[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
-
-      implicit def booleanHash: Hash[Boolean] = kernel.instances.boolean.catsKernelStdOrderForBoolean
+      implicit val booleanOrderWithHash: BooleanDiscreteFiniteOrder = new BooleanDiscreteFiniteOrder
 
       implicit def booleanShow: Show[Boolean] = cats.instances.boolean.catsStdShowForBoolean
     }
 
+    object byte {
+
+      implicit val byteOrderWithHash: ByteDiscreteFiniteOrder = new ByteDiscreteFiniteOrder
+
+      implicit def byteShow: Show[Byte] = cats.instances.byte.catsStdShowForByte
+    }
+
+    object short {
+
+      implicit val shortOrderWithHash: ShortDiscreteFiniteOrder = new ShortDiscreteFiniteOrder
+
+      implicit def shortShow: Show[Short] = cats.instances.short.catsStdShowForShort
+    }
+
     object int {
 
-      implicit def intOrder: Order[Int] = kernel.instances.int.catsKernelStdOrderForInt
-
-      implicit def intHash: Hash[Int] = kernel.instances.int.catsKernelStdOrderForInt
+      implicit val intOrderWithHash: IntDiscreteFiniteOrder = new IntDiscreteFiniteOrder
 
       implicit def intShow: Show[Int] = cats.instances.int.catsStdShowForInt
     }
 
     object long {
 
-      implicit def longOrder: Order[Long] = kernel.instances.long.catsKernelStdOrderForLong
-
-      implicit def longHash: Hash[Long] = kernel.instances.long.catsKernelStdOrderForLong
+      implicit val longOrderWithHash: LongDiscreteFiniteOrder = new LongDiscreteFiniteOrder
 
       implicit def longShow: Show[Long] = cats.instances.long.catsStdShowForLong
     }
 
+    object float {
+
+      implicit val floatOrderWithHash: FloatBoundedOrder = new FloatBoundedOrder
+
+      implicit def stringShow: Show[Float] = cats.instances.float.catsStdShowForFloat
+    }
+
+    object double {
+
+      implicit val doubleOrderWithHash: DoubleBoundedOrder = new DoubleBoundedOrder
+
+      implicit def stringShow: Show[Double] = cats.instances.double.catsStdShowForDouble
+    }
+
     object string {
 
-      implicit def stringOrder: Order[String] = kernel.instances.string.catsKernelStdOrderForString
-
-      implicit def stringHash: Hash[String] = kernel.instances.string.catsKernelStdOrderForString
+      implicit val stringOrderWithHash: StringBoundedBelowOrder = new StringBoundedBelowOrder
 
       implicit def stringShow: Show[String] = cats.instances.string.catsStdShowForString
     }
 
     object list {
 
-      implicit def listOrder[T](implicit ev: Order[T]): Order[List[T]] =
-        kernel.instances.list.catsKernelStdOrderForList
+      implicit def listOrderWithHash[T](implicit ord: Order[T], hash: Hash[T]): ListBoundedBelowOrder[T] =
+        new ListBoundedBelowOrder
 
-      implicit def listHash[T](implicit ev: Hash[T]): Hash[List[T]] =
-        kernel.instances.list.catsKernelStdHashForList
-
-      implicit def listShow[T](implicit ev: Show[T]): Show[List[T]] =
-        cats.instances.list.catsStdShowForList
+      implicit def listShow[T](implicit ev: Show[T]): Show[List[T]] = cats.instances.list.catsStdShowForList
     }
 
     object lazyList {
 
-      implicit def lazyListOrder[T](implicit ev: Order[T]): Order[LazyList[T]] =
-        kernel.instances.lazyList.catsKernelStdOrderForLazyList
-
-      implicit def lazyListHash[T](implicit ev: Hash[T]): Hash[LazyList[T]] =
-        kernel.instances.lazyList.catsKernelStdHashForLazyList
+      implicit def lazyListOrderWithHash[T](implicit ord: Order[T], hash: Hash[T]): LazyListBoundedBelowOrder[T] =
+        new LazyListBoundedBelowOrder
 
       implicit def lazyListShow[T](implicit ev: Show[T]): Show[LazyList[T]] =
         cats.instances.lazyList.catsStdShowForLazyList
@@ -89,11 +108,8 @@ package object ordset {
 
     object queue {
 
-      implicit def queueOrder[T](implicit ev: Order[T]): Order[Queue[T]] =
-        kernel.instances.queue.catsKernelStdOrderForQueue
-
-      implicit def queueHash[T](implicit ev: Hash[T]): Hash[Queue[T]] =
-        kernel.instances.queue.catsKernelStdHashForQueue
+      implicit def queueOrderWithHash[T](implicit ord: Order[T], hash: Hash[T]): QueueBoundedBelowOrder[T] =
+        new QueueBoundedBelowOrder
 
       implicit def queueShow[T](implicit ev: Show[T]): Show[Queue[T]] =
         cats.instances.queue.catsStdShowForQueue
@@ -110,9 +126,6 @@ package object ordset {
 
     object tuple2 {
 
-      implicit def tuple2Order[T1, T2](implicit ev1: Order[T1], ev2: Order[T2]): Order[(T1, T2)] =
-        kernel.instances.tuple.catsKernelStdOrderForTuple2
-
       implicit def tuple2Hash[T1, T2](implicit ev1: Hash[T1], ev2: Hash[T2]): Hash[(T1, T2)] =
         kernel.instances.tuple.catsKernelStdHashForTuple2
 
@@ -121,9 +134,6 @@ package object ordset {
     }
 
     object either {
-
-      implicit def eitherOrder[T1, T2](implicit ev1: Order[T1], ev2: Order[T2]): Order[Either[T1, T2]] =
-        kernel.instances.either.catsStdOrderForEither
 
       implicit def eitherHash[T1, T2](implicit ev1: Hash[T1], ev2: Hash[T2]): Hash[Either[T1, T2]] =
         kernel.instances.either.catsStdHashForEither

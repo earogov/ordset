@@ -61,7 +61,7 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
   )(
     implicit rngManager: RngManager
   ): SSeq
@@ -76,7 +76,7 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
     complementary: Boolean,
     domainOps: DomainOps[E, D]
   )(
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
   )(
     implicit rngManager: RngManager
   ): Try[SSeq] =
@@ -151,7 +151,7 @@ trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] {
   final def provided(
     domainOps: DomainOps[E, D],
   )(
-    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+    boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
   )(
     implicit rngManager: RngManager
   ): Partial =
@@ -240,7 +240,7 @@ object OrderedSetFactory {
       complementary: Boolean,
       domainOps: DomainOps[E, D]
     )(
-      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
     )(
       implicit rngManager: RngManager
     ): SSeq = {

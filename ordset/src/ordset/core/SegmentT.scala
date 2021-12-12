@@ -1,10 +1,10 @@
 package ordset.core
 
+import ordset.{Order, Hash}
 import ordset.core.domain.*
 import ordset.core.interval.*
 import ordset.core.map.{LazyTreapOrderedMap, UniformOrderedMap, TreapOrderedMap}
 import ordset.util
-import ordset.util.label.Label
 
 import scala.collection.{AbstractIterable, AbstractIterator}
 
@@ -114,8 +114,8 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * <tr>- upper bound of last segment has maximal value (equivalent to plus infinity);   </tr>
  * <tr>- lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
  * <tr>
- * These properties MUST be provided by implementations of [[DomainOps.segmentUpperOrd]] and
- * [[DomainOps.segmentLowerOrd]].
+ * These properties MUST be provided by implementations of [[DomainOps.segments.upperOrd]] and
+ * [[DomainOps.segments.lowerOrd]].
  * </tr>
  * <tr></tr>
  *
@@ -140,19 +140,11 @@ sealed trait SegmentT[E, D <: Domain[E], V, +S] extends SegmentLikeT[E, D, V, S]
 
 object SegmentT {
 
-  type UpperBoundAscOrder[E, D <: Domain[E]] = UpperBoundOrder[E, D, AscDir]
-  type UpperBoundDescOrder[E, D <: Domain[E]] = UpperBoundOrder[E, D, DescDir]
+  implicit def upperBoundOrder[E, D <: Domain[E]](implicit domain: D): UpperBoundOrder[E, D] =
+    new UpperBoundOrderImpl(domain)
 
-  type LowerBoundAscOrder[E, D <: Domain[E]] = LowerBoundOrder[E, D, AscDir]
-  type LowerBoundDescOrder[E, D <: Domain[E]] = LowerBoundOrder[E, D, DescDir]
-
-  implicit def upperBoundAscOrder[E, D <: Domain[E]]: UpperBoundAscOrder[E, D] = new UpperBoundOrder
-
-  def upperBoundDescOrder[E, D <: Domain[E]]: UpperBoundDescOrder[E, D] = new UpperBoundOrder
-
-  def lowerBoundAscOrder[E, D <: Domain[E]]: LowerBoundAscOrder[E, D] = new LowerBoundOrder
-
-  def lowerBoundDescOrder[E, D <: Domain[E]]: LowerBoundDescOrder[E, D] = new LowerBoundOrder
+  implicit def lowerBoundOrder[E, D <: Domain[E]](implicit domain: D): LowerBoundOrder[E, D] =
+    new LowerBoundOrderImpl(domain)
 
   /**
    * Segment which has next segment. May be [[Initial]] or [[Inner]].
@@ -286,7 +278,7 @@ object SegmentT {
 
     override def restrictBound(bound: Bound[E]): Bound[E] = bound
 
-    override def interval: Interval[E, D] = domainOps.interval.universal
+    override def interval: Interval[E, D] = domainOps.intervals.builder.universal
 
     override def toString: String = SetBuilderFormat.singleSegment(this)
 
@@ -360,7 +352,7 @@ object SegmentT {
       if (domainOps.boundOrd.gt(bound, upperBound)) upperBound
       else bound
 
-    override def interval: Interval[E, D] = domainOps.interval.belowBound(upperBound)
+    override def interval: Interval[E, D] = domainOps.intervals.builder.belowBound(upperBound)
 
     override def toString: String = SetBuilderFormat.initialSegment(this)
 
@@ -430,7 +422,7 @@ object SegmentT {
       if (domainOps.boundOrd.lt(bound, lowerBound)) lowerBound
       else bound
 
-    override def interval: Interval[E, D] = domainOps.interval.aboveBound(lowerBound)
+    override def interval: Interval[E, D] = domainOps.intervals.builder.aboveBound(lowerBound)
 
     override def toString: String = SetBuilderFormat.terminalSegment(this)
 
@@ -505,7 +497,7 @@ object SegmentT {
       else bound
     }
 
-    override def interval: Interval[E, D] = domainOps.interval.betweenBounds(lowerBound, upperBound)
+    override def interval: Interval[E, D] = domainOps.intervals.builder.betweenBounds(lowerBound, upperBound)
 
     override def toString: String = SetBuilderFormat.innerSegment(this)
 
@@ -548,74 +540,56 @@ object SegmentT {
     }
   }
 
-  final class UpperBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
-    implicit dirValue: ValueOf[Dir]
-  ) extends DirectedOrder.Abstract[Segment[E, D, ?], Dir] {
+  /**
+   * Order of segments by their upper bounds.
+   *
+   * The order enforces condition:
+   * <tr>
+   *   - [[Segment.Last]] is maximal segment (i.e. upper bound of last segment is maximal in domain).
+   * </tr>
+   */
+  trait UpperBoundOrder[E, D <: Domain[E]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
 
     import util.HashUtil._
 
-    override val labels: Set[Label] = Set(OrderLabels.SegmentByUpperBound)
+    def domain: D
 
-    override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = (x, y) match {
-      case (x: Segment.WithNext[E, D, ?], y: Segment.WithNext[E, D, ?]) =>
-        x.domainOps.boundOrd.compare(x.upperBound, y.upperBound)
-      case (_, _: Segment.WithNext[E, D, ?]) =>
-        sign
-      case (_: Segment.WithNext[E, D, ?], _) =>
-        invertedSign
-      case _ => 
-        0
-    }
+    final override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = 
+      domain.extendedOrd.compare(x.upperExtended, y.upperExtended)
 
-    override def hash(x: Segment[E, D, ?]): Int = x match {
-      case x: Segment.WithNext[E, D, ?] => product1Hash(x.domainOps.boundOrd.hash(x.upperBound))
-      case _ => product1Hash(x.hashCode())
-    }
+    final override def hash(x: Segment[E, D, ?]): Int = 
+      product1Hash(domain.extendedOrd.hash(x.upperExtended))  
 
-    override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean = (x, y) match {
-      case (x: Segment.WithNext[E, D, ?], y: Segment.WithNext[E, D, ?]) =>
-        x.domainOps.boundOrd.eqv(x.upperBound, y.upperBound)
-      case (_, _: Segment.WithNext[E, D, ?]) =>
-        false
-      case (_: Segment.WithNext[E, D, ?], _) =>
-        false
-      case _ => 
-        true
-    }
+    final override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean =
+      domain.extendedOrd.eqv(x.upperExtended, y.upperExtended)
   }
 
-  final class LowerBoundOrder[E, D <: Domain[E], Dir <: OrderDir]()(
-    implicit dirValue: ValueOf[Dir]
-  ) extends DirectedOrder.Abstract[Segment[E, D, ?], Dir] {
+  /**
+   * Order of segments by their lower bounds.
+   *
+   * The order enforces condition:
+   * <tr>
+   *   - [[Segment.First]] is minimal segment (i.e. lower bound of first segment is minimal in domain).
+   * </tr>
+   */
+  trait LowerBoundOrder[E, D <: Domain[E]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
 
     import util.HashUtil._
 
-    override def labels: Set[Label] = Set(OrderLabels.SegmentByLowerBound)
+    def domain: D
 
-    override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = (x, y) match {
-      case (x: Segment.WithPrev[E, D, ?], y: Segment.WithPrev[E, D, ?]) =>
-        x.domainOps.boundOrd.compare(x.lowerBound, y.lowerBound)
-      case (_, _: Segment.WithPrev[E, D, ?]) =>
-        invertedSign
-      case (_: Segment.WithPrev[E, D, ?], _) =>
-        sign
-      case _ => 0
-    }
+    final override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = 
+      domain.extendedOrd.compare(x.lowerExtended, y.lowerExtended)
 
-    override def hash(x: Segment[E, D, ?]): Int = x match {
-      case x: Segment.WithPrev[E, D, ?] => product1Hash(x.domainOps.boundOrd.hash(x.lowerBound))
-      case _ => product1Hash(x.hashCode())
-    }
+    final override def hash(x: Segment[E, D, ?]): Int =
+      product1Hash(domain.extendedOrd.hash(x.lowerExtended))  
 
-    override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean = (x, y) match {
-      case (x: Segment.WithPrev[E, D, ?], y: Segment.WithPrev[E, D, ?]) =>
-        x.domainOps.boundOrd.eqv(x.lowerBound, y.lowerBound)
-      case (_, _: Segment.WithPrev[E, D, ?]) =>
-        false
-      case (_: Segment.WithPrev[E, D, ?], _) =>
-        false
-      case _ => 
-        true
-    }
+    final override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean = 
+      domain.extendedOrd.eqv(x.lowerExtended, y.lowerExtended)
   }
+
+  // Private section ---------------------------------------------------------- //
+  private final class UpperBoundOrderImpl[E, D <: Domain[E]](override val domain: D) extends UpperBoundOrder[E, D]
+
+  private final class LowerBoundOrderImpl[E, D <: Domain[E]](override val domain: D) extends LowerBoundOrder[E, D]
 }

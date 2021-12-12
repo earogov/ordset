@@ -27,7 +27,7 @@ class DegenerateSetSample1[D <: Domain[Int]](
     ArrayOrderedSet.getFactory.unsafeBuildAsc(
       bounds, !complementary, domainOps
     )(
-      domainOps.boundOrd.strictValidation
+      domainOps.validation.boundsSeq
     )(
       rngManager
     )

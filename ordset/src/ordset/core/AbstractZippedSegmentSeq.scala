@@ -1,7 +1,8 @@
 package ordset.core
 
+import ordset.Order
 import ordset.core.value.ValueOps
-import ordset.core.domain.{AscOrder, Domain, DomainOps}
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.internal.lazySeq.LazySegmentSeqBuilder
 import ordset.core.internal.SegmentSeqExceptionUtil.*
 import AbstractZippedSegmentSeq.*
@@ -218,11 +219,11 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     (castSegmentToFirstSeq(left), castSegmentToSecondSeq(right)) match {
       case (firstSegment: SegmentT[E, D, U1, S1], secondSegment: SegmentT[E, D, U2, S2]) =>
         operator(firstSegment.value, secondSegment.value)
-      case (null, null) =>
+      case _ =>
         (castSegmentToFirstSeq(right), castSegmentToSecondSeq(left)) match {
           case (firstSegment: SegmentT[E, D, U1, S1], secondSegment: SegmentT[E, D, U2, S2]) =>
             operator(firstSegment.value, secondSegment.value)
-          case (null, null) =>
+          case _ =>
             throwSegmentsMustBelongToOriginalSeqs(left, right)
         }
     }
@@ -778,7 +779,7 @@ object AbstractZippedSegmentSeq {
       right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
     ): Boolean =
       if (validateSequences(left, right)) {
-        val ord = sequence.domainOps.segmentUpperOrd
+        val ord = sequence.domainOps.segments.upperOrd
         if (ord.eqv(left, this.left)) ord.eqv(right, this.right)
         else if (ord.eqv(right, this.left)) ord.eqv(left, this.right)
         else false
@@ -870,14 +871,14 @@ object AbstractZippedSegmentSeq {
      * @return `true` if `backward` and `forward` segments are ordered according to specified `order`.
      */
     def isValidOrder[E, D <: Domain[E], U1, U2, V, S1, S2](
-      order: AscOrder[Segment[E, D, ?]],
+      order: Order[Segment[E, D, ?]],
       backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
       forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
     ): Boolean =
       order.lteqv(backward, forward)
 
     /**
-     * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segmentUpperOrd]]:
+     * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segments.upperOrd]]:
      */
     trait ByUpperBound[E, D <: Domain[E], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
 
@@ -893,7 +894,7 @@ object AbstractZippedSegmentSeq {
         left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
       ): ByUpperBound[E, D, U1, U2, V, S1, S2] =
-        if (isValidOrder(sequence.domainOps.segmentUpperOrd, left, right))
+        if (isValidOrder(sequence.domainOps.segments.upperOrd, left, right))
           DefaultImpl(sequence, left, right)
         else
           DefaultImpl(sequence, right, left)
@@ -903,7 +904,7 @@ object AbstractZippedSegmentSeq {
        *
        * Preconditions:
        *
-       * 1. `backward` `≤` `forward` according to [[DomainOps.segmentUpperOrd]] of `sequence`.
+       * 1. `backward` `≤` `forward` according to [[DomainOps.segments.upperOrd]] of `sequence`.
        *
        * @see preconditions of [[ZippedTuple]].
        */
@@ -934,7 +935,7 @@ object AbstractZippedSegmentSeq {
     }
 
     /**
-     * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segmentLowerOrd]]:
+     * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segments.lowerOrd]]:
      */
     trait ByLowerBound[E, D <: Domain[E], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
 
@@ -950,7 +951,7 @@ object AbstractZippedSegmentSeq {
         left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
       ): ByLowerBound[E, D, U1, U2, V, S1, S2] =
-        if (isValidOrder(sequence.domainOps.segmentLowerOrd, left, right))
+        if (isValidOrder(sequence.domainOps.segments.lowerOrd, left, right))
           DefaultImpl(sequence, left, right)
         else
           DefaultImpl(sequence, right, left)
@@ -960,7 +961,7 @@ object AbstractZippedSegmentSeq {
        *
        * Preconditions:
        *
-       * 1. `backward` `≤` `forward` according to [[DomainOps.segmentLowerOrd]] of `sequence`.
+       * 1. `backward` `≤` `forward` according to [[DomainOps.segments.lowerOrd]] of `sequence`.
        *
        * @see preconditions of [[ZippedTuple]].
        */

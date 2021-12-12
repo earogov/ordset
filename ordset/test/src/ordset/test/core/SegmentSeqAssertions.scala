@@ -19,7 +19,7 @@ object SegmentSeqAssertions {
     valueHash: Hash[V]
   ): Unit = {
     assert(
-      domainOps.domainHash.eqv(
+      domainOps.domains.hash.eqv(
         expected.domainOps.domain,
         actual.domainOps.domain
       )
@@ -48,7 +48,7 @@ object SegmentSeqAssertions {
     valueHash: Hash[V]
   ): Unit =
     assert(
-      domainOps.intervalRelationHash(valueHash).eqv(expected, actual),
+      domainOps.intervalRelations.hash(valueHash).eqv(expected, actual),
       debugInfo(expected, actual, info)
     )
 
@@ -62,7 +62,7 @@ object SegmentSeqAssertions {
     valueHash: Hash[V]
   ): Unit = {
     assert(
-      domainOps.domainHash.eqv(
+      domainOps.domains.hash.eqv(
         expected.domainOps.domain,
         actual.domainOps.domain
       )
@@ -103,7 +103,7 @@ object SegmentSeqAssertions {
         actual.iterator,
         expected.iterator
       )(
-        domainOps.intervalRelationHash(valueHash)
+        domainOps.intervalRelations.hash(valueHash)
       ),
       debugInfo(expected, actual, info)
     )

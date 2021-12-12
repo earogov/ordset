@@ -34,7 +34,7 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   /**
    * Typeclass for equality checks and hash calculation of [[IntervalRelation]].
    */
-  lazy val intervalRelationHash: Hash[IntervalRelation[E, D, V]] = domainOps.intervalRelationHash(valueOps.valueHash)
+  lazy val intervalRelationHash: Hash[IntervalRelation[E, D, V]] = domainOps.intervalRelations.hash(valueOps.valueHash)
 
   /**
    * ID of sequence under test.
@@ -54,11 +54,13 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   /**
    * Upper bounds of [[sequence]].
    */
-  lazy val bounds: Seq[Bound.Upper[E]] =
+  lazy val bounds: Seq[Bound.Upper[E]] = {
+    import scala.language.unsafeNulls
     reference.map(rel => rel.interval match
       case int: Interval.WithUpperBound[_, _] => int.upperBound
       case _ => null
     ).takeWhile(_ != null)
+  }
 
   /**
    * Extended upper bounds of [[sequence]].

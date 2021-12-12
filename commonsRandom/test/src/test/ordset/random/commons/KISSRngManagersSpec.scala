@@ -22,10 +22,10 @@ class KISSRngManagersSpec extends AnyFunSpec {
     s"${classOf[KISSSynchronizedRngManager]} should provide same sequences when accessed concurrently and sequentially"
   ) {
     val fixedExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newFixedThreadPool(20)
+      Executors.newFixedThreadPool(20).nn
     )
     val singleExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newSingleThreadExecutor()
+      Executors.newSingleThreadExecutor().nn
     )
     val rngManager1 = new KISSSynchronizedRngManager(seed1, seed2)
     val rngManager2 = new KISSSynchronizedRngManager(seed1, seed2)
@@ -40,10 +40,10 @@ class KISSRngManagersSpec extends AnyFunSpec {
     s"${classOf[KISSSynchronizedRngManager]} should not provide repeated sequences"
   ) {
     val fixedExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newFixedThreadPool(20)
+      Executors.newFixedThreadPool(20).nn
     )
     val singleExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newSingleThreadExecutor()
+      Executors.newSingleThreadExecutor().nn
     )
     val rngManager = new KISSSynchronizedRngManager(seed2, seed1)
 
@@ -66,10 +66,10 @@ class KISSRngManagersSpec extends AnyFunSpec {
     import Ordering.Implicits.seqOrdering
 
     val fixedExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newFixedThreadPool(20)
+      Executors.newFixedThreadPool(20).nn
     )
     val singleExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newSingleThreadExecutor()
+      Executors.newSingleThreadExecutor().nn
     )
     val rngManager1 = new KISSThreadLocalRngManager(seed1, seed2)
     val rngManager2 = new KISSThreadLocalRngManager(seed1, seed2)
@@ -86,10 +86,10 @@ class KISSRngManagersSpec extends AnyFunSpec {
     s"${classOf[KISSThreadLocalRngManager]} should not provide repeated sequences"
   ) {
     val fixedExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newFixedThreadPool(20)
+      Executors.newFixedThreadPool(20).nn
     )
     val singleExecutionContext = scala.concurrent.ExecutionContext.fromExecutorService(
-      Executors.newSingleThreadExecutor()
+      Executors.newSingleThreadExecutor().nn
     )
     val rngManager = new KISSThreadLocalRngManager(seed2, seed1)
 

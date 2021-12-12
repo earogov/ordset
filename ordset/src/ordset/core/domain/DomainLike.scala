@@ -1,24 +1,27 @@
 package ordset.core.domain
 
+import ordset.{Order, Hash}
 import ordset.core.{Bound, ExtendedBound}
-import ordset.core.interval.{Interval, IntervalBuilder}
-import ordset.util.label.{Label, LabeledEntity}
 
-trait DomainLike[E] extends LabeledEntity {
+trait DomainLike[E] {
 
-  def lowerExtendedBound: ExtendedBound.Lower[E]
+  implicit def elementOrd: Order[E] with Hash[E]
 
-  def upperExtendedBound: ExtendedBound.Upper[E]
+  implicit def boundOrd: Bound.DefaultOrder[E]
 
-  implicit def elementOrd: AscOrder[E]
+  implicit def extendedOrd: ExtendedBound.DefaultOrder[E]
 
-  implicit def intOrd: AscOrder[Int]
+  def lowerExtendedBound: ExtendedBound[E] = extendedOrd.lowerBound
 
-  implicit def longOrd: AscOrder[Long]
+  def upperExtendedBound: ExtendedBound[E] = extendedOrd.upperBound
 
-  implicit def boundOrd: AscOrder[Bound[E]]
+  def isContinuos: Boolean
 
-  implicit def extendedOrd: AscOrder[ExtendedBound[E]]
+  def isDiscrete: Boolean
+
+  def isBounded: Boolean
+
+  def isUnbounded: Boolean
 }
 
 object DomainLike {
@@ -27,21 +30,23 @@ object DomainLike {
 
     def domain: D
 
-    override def lowerExtendedBound: ExtendedBound.Lower[E] = domain.lowerExtendedBound
+    override implicit def elementOrd: Order[E] with Hash[E] = domain.elementOrd
 
-    override def upperExtendedBound: ExtendedBound.Upper[E] = domain.upperExtendedBound
+    override implicit def boundOrd: Bound.DefaultOrder[E] = domain.boundOrd
 
-    override def labels: Set[Label] = domain.labels
+    override implicit def extendedOrd: ExtendedBound.DefaultOrder[E] = domain.extendedOrd
 
-    override implicit def elementOrd: AscOrder[E] = domain.elementOrd
+    override def lowerExtendedBound: ExtendedBound[E] = domain.lowerExtendedBound
 
-    override implicit def intOrd: AscOrder[Int] = domain.intOrd
+    override def upperExtendedBound: ExtendedBound[E] = domain.upperExtendedBound
 
-    override implicit def longOrd: AscOrder[Long] = domain.longOrd
+    override def isContinuos: Boolean = domain.isContinuos
 
-    override implicit def boundOrd: AscOrder[Bound[E]] = domain.boundOrd
+    override def isDiscrete: Boolean = domain.isDiscrete
 
-    override implicit def extendedOrd: AscOrder[ExtendedBound[E]] = domain.extendedOrd
+    override def isBounded: Boolean = domain.isBounded
+
+    override def isUnbounded: Boolean = domain.isUnbounded
   }
 
   final case class ProxyImpl[E, D <: Domain[E]](override val domain: D) extends Proxy[E, D]

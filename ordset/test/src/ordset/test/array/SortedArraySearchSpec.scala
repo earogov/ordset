@@ -13,7 +13,7 @@ trait SortedArraySearchBehaviors {
 
   def searchClosestNotGreater(searchFun: (Int, ArraySeq[Int], Order[Int], Int, Int) => Int): Unit = {
 
-    val ord: Order[Int] = instances.int.intAscOrder
+    val ord: Order[Int] = ordset.instances.int.intOrderWithHash
 
     it("should throw OutOfBounds exception for illegal indexes") {
       val emp = ArraySeq.empty[Int]
@@ -87,7 +87,7 @@ trait SortedArraySearchBehaviors {
 
   def searchClosestLess(searchFun: (Int, ArraySeq[Int], Order[Int], Int, Int) => Int): Unit = {
 
-    val ord: Order[Int] = instances.int.intAscOrder
+    val ord: Order[Int] = ordset.instances.int.intOrderWithHash
 
     it("should throw OutOfBounds exception for illegal indexes") {
       val emp = ArraySeq.empty[Int]
@@ -169,7 +169,7 @@ trait SortedArraySearchBehaviors {
 
   def searchClosestNotLess(searchFun: (Int, ArraySeq[Int], Order[Int], Int, Int) => Int): Unit = {
 
-    val ord: Order[Int] = instances.int.intAscOrder
+    val ord: Order[Int] = ordset.instances.int.intOrderWithHash
 
     it("should throw OutOfBounds exception for illegal indexes") {
       val emp = ArraySeq.empty[Int]
@@ -243,7 +243,7 @@ trait SortedArraySearchBehaviors {
 
   def searchClosestGreater(searchFun: (Int, ArraySeq[Int], Order[Int], Int, Int) => Int): Unit = {
 
-    val ord: Order[Int] = instances.int.intAscOrder
+    val ord: Order[Int] = ordset.instances.int.intOrderWithHash
 
     it("should throw OutOfBounds exception for illegal indexes") {
       val emp = ArraySeq.empty[Int]

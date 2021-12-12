@@ -91,7 +91,7 @@ import scala.specialized as sp
  *   - lower bound of first segment has minimal value in domain (for unbounded domain it's equivalent to minus infinity). 
  * </tr>
  * <tr>
- * These properties MUST be provided by implementations of [[DomainOps.segmentUpperOrd]] and [[DomainOps.segmentLowerOrd]].
+ * These properties MUST be provided by implementations of [[DomainOps.segments.upperOrd]] and [[DomainOps.segments.lowerOrd]].
  * </tr>
  * <tr></tr>
  * 

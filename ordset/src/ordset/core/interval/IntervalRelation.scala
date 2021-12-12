@@ -30,19 +30,26 @@ case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
 object IntervalRelation {
 
   implicit def defaultHash[E, D <: Domain[E], V](
-    implicit intervalHash: Hash[Interval[E, D]], valueHash: Hash[V]): Hash[IntervalRelation[E, D, V]] =
-    new DefaultHash()(intervalHash, valueHash)
+    implicit 
+    intervalHash: Hash[Interval[E, D]], 
+    valueHash: Hash[V]
+  ): DefaultHash[E, D, V] =
+    new DefaultHashImpl(intervalHash, valueHash)
 
   implicit def defaultShow[E, D <: Domain[E], V](
-    implicit  elementShow: Show[E], valueShow: Show[V]): Show[IntervalRelation[E, D, V]] =
+    implicit  
+    elementShow: Show[E], 
+    valueShow: Show[V]
+  ): Show[IntervalRelation[E, D, V]] =
     SetBuilderFormat.intervalRelationShow(elementShow, valueShow)
 
-  final class DefaultHash[E, D <: Domain[E], V]()(
-    implicit intervalHash: Hash[Interval[E, D]],
-    valueHash: Hash[V]
-  ) extends Hash[IntervalRelation[E, D, V]] {
+  trait DefaultHash[E, D <: Domain[E], V] extends Hash[IntervalRelation[E, D, V]] {
 
     import util.HashUtil._
+
+    def intervalHash: Hash[Interval[E, D]]
+    
+    def valueHash: Hash[V]
 
     override def hash(x: IntervalRelation[E, D, V]): Int =
       product2Hash(intervalHash.hash(x.interval), valueHash.hash(x.value))
@@ -50,4 +57,9 @@ object IntervalRelation {
     override def eqv(x: IntervalRelation[E, D, V], y: IntervalRelation[E, D, V]): Boolean =
       intervalHash.eqv(x.interval, y.interval) && valueHash.eqv(x.value, y.value)
   }
+
+  case class DefaultHashImpl[E, D <: Domain[E], V](
+    override val intervalHash: Hash[Interval[E, D]],
+    override val valueHash: Hash[V]
+  ) extends DefaultHash[E, D, V]
 }

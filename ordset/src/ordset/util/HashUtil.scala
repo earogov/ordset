@@ -109,8 +109,20 @@ protected[ordset] object HashUtil {
       finalizeHash(h, 10)
     }
 
+  /**
+   * Returns [[Hash]] instance such that: 
+   * <tr>- two objects `x` and `y` are equal iff they are equal according to `hash1` and `hash2`;</tr>
+   * <tr>- hash of object `x` is calculated as a mix of hashes returned by `hash1` and `hash2`.</tr>
+   */
   def composeHash[E1, E2, E](hash1: Hash[E1], hash2: Hash[E2], f1: E => E1, f2: E => E2): Hash[E] = 
     new ComposedHash(hash1, hash2, f1, f2)
+
+  /**
+   * Returns [[Hash]] instance such that: 
+   * <tr>- two objects `x` and `y` are equal iff they have the same class name;</tr>
+   * <tr>- hash of object `x` is calculated by its class name.</tr>
+   */
+  def classBasedHash[E]: Hash[E] = ClassBasedHash.asInstanceOf[Hash[E]]
 
   // Private section ---------------------------------------------------------- //
   private final case class ComposedHash[E1, E2, E](
@@ -123,5 +135,12 @@ protected[ordset] object HashUtil {
     override def eqv(x: E, y: E): Boolean = hash1.eqv(f1(x), f1(y)) && hash2.eqv(f2(x), f2(y))
 
     override def hash(x: E): Int = product2Hash(hash1.hash(f1(x)), hash2.hash(f2(x)))
+  }
+
+  private object ClassBasedHash extends Hash[Any] {
+
+    override def eqv(x: Any, y: Any): Boolean = x.getClass().getName() == y.getClass().getName()
+
+    override def hash(x: Any): Int = product1Hash(x.getClass().getName().hashCode)
   }
 }

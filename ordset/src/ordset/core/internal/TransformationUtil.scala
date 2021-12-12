@@ -37,6 +37,6 @@ protected[ordset] object TransformationUtil {
     // If `front` and `back` is the same segment we can do an optimization:
     // treap based original sequence, for example, can build both left and right slice parts simultaneously,
     // so we should use `segment.slice` whenever possible.
-    if (front.domainOps.segmentUpperOrd.eqv(back, front)) front.slice
+    if (front.domainOps.segments.upperOrd.eqv(back, front)) front.slice
     else (back.takeBelow, front.takeAbove)
 }

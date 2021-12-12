@@ -1,22 +1,10 @@
 package ordset
 
-import ordset.core.domain.{DirectedOrder, Domain, OrderDir}
-import ordset.util.label.Label
+import ordset.core.domain.Domain
 
 package object core {
 
-  object OrderLabels {
-
-    val BoundDefault: Label = Label("BoundDefault")
-
-    val SegmentByUpperBound: Label = Label("SegmentByUpperBound")
-
-    val SegmentByLowerBound: Label = Label("SegmentByLowerBound")
-  }
-
   type SegmentOrder[E, D <: Domain[E]] = Order[Segment[E, D, Any]]
-
-  type SegmentOrderWithDir[E, D <: Domain[E],  +Dir <: OrderDir] = DirectedOrder[Segment[E, D, Any], Dir]
 
   // General sequence --------------------------------------------------------- //
   type SegmentLike[E, D <: Domain[E], V] = SegmentLikeT[E, D, V, Any]

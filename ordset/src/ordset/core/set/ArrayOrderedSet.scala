@@ -46,7 +46,7 @@ object ArrayOrderedSet {
       complementary: Boolean,
       domainOps: DomainOps[E, D]
     )(
-      boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] = domainOps.boundOrd.strictValidation
+      boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
     )(
       implicit rngManager: RngManager
     ): ArrayOrderedSet[E, D] =

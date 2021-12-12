@@ -40,7 +40,7 @@ object SegmentSeqUtil {
     import scala.language.unsafeNulls
     if (including)
       segment.moveToFirst.forwardIterable.map { s =>
-        if (segment.domainOps.segmentUpperOrd.gt(s, segment)) null
+        if (segment.domainOps.segments.upperOrd.gt(s, segment)) null
         else s match {
           case s: Segment.WithNext[E, D, V] => s.upperBound
           case _ => null
@@ -48,7 +48,7 @@ object SegmentSeqUtil {
       }.takeWhile(_ != null)
     else
       segment.moveToFirst.forwardIterable.map { s =>
-        if (segment.domainOps.segmentUpperOrd.gteqv(s, segment)) null
+        if (segment.domainOps.segments.upperOrd.gteqv(s, segment)) null
         else s match {
           case s: Segment.WithNext[E, D, V] => s.upperBound
           case _ => null
@@ -67,7 +67,7 @@ object SegmentSeqUtil {
     var size = 0
     var list: List[Bound.Upper[E]] = Nil
 
-    val ord = segment.domainOps.segmentUpperOrd
+    val ord = segment.domainOps.segments.upperOrd
     val loopCondition =
       if (including) (s: Segment[E, D, V]) => ord.gteqv(s, segment)
       else (s: Segment[E, D, V]) => ord.gt(s, segment)

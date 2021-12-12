@@ -63,8 +63,8 @@ object Interval {
     implicit 
     boundHash: Hash[Bound[E]], 
     domainHash: Hash[D]
-  ): Hash[Interval[E, D]] =
-    new DefaultHash()(boundHash, domainHash)
+  ): DefaultHash[E, D] =
+    new DefaultHashImpl(boundHash, domainHash)
 
   implicit def defaultShow[E, D <: Domain[E]](
     implicit elementShow: Show[E]
@@ -253,19 +253,19 @@ object Interval {
     override def toString: String = SetBuilderFormat.boundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
-  final class DefaultHash[E, D <: Domain[E]]()(
-    implicit 
-    boundHash: Hash[Bound[E]], 
-    domainHash: Hash[D]
-  ) extends Hash[Interval[E, D]] {
+  trait DefaultHash[E, D <: Domain[E]] extends Hash[Interval[E, D]] {
 
     import util.HashUtil._
 
+    def boundHash: Hash[Bound[E]]
+
+    def domainHash: Hash[D]
+
     override def hash(x: Interval[E, D]): Int = x match {
       case x: Empty[e, d] => 
-        product1Hash(domainHash.hash(x.domain))
+        product2Hash(domainHash.hash(x.domain), 0xA1F63D02)
       case x: Universal[e, d] => 
-        product1Hash(domainHash.hash(x.domain))
+        product2Hash(domainHash.hash(x.domain), 0x13E0FF65)
       case x: Greater[e, d] => 
         product2Hash(boundHash.hash(x.lowerBound), domainHash.hash(x.domain))
       case x: Less[e, d] => 
@@ -300,4 +300,9 @@ object Interval {
       }
       else false
   }
+
+  case class DefaultHashImpl[E, D <: Domain[E]](
+    override val boundHash: Hash[Bound[E]], 
+    override val domainHash: Hash[D]
+  ) extends DefaultHash[E, D]
 }

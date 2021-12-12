@@ -566,7 +566,7 @@ object AbstractMappedSegmentSeq {
      * @return `true` if given `segment` is the `front` segment of current mapped segment.
      */
     def isSpecifiedBy(segment: SegmentT[E, D, U, S]): Boolean =
-      sequence.originalSeq.eq(segment.sequence) && sequence.domainOps.segmentUpperOrd.eqv(front, segment)
+      sequence.originalSeq.eq(segment.sequence) && sequence.domainOps.segments.upperOrd.eqv(front, segment)
 
     // Navigation --------------------------------------------------------------- //
     /**
@@ -628,7 +628,7 @@ object AbstractMappedSegmentSeq {
      */
     def originalForwardIterable: Iterable[SegmentT[E, D, U, S]] = {
       val b = back
-      val ord = domainOps.segmentUpperOrd
+      val ord = domainOps.segments.upperOrd
       front.forwardIterable.takeWhile(ord.lteqv(_, b))
     }
 
@@ -639,7 +639,7 @@ object AbstractMappedSegmentSeq {
      */
     def originalForwardLazyList: LazyList[SegmentT[E, D, U, S]] = {
       val b = back
-      val ord = domainOps.segmentUpperOrd
+      val ord = domainOps.segments.upperOrd
       front.forwardLazyList.takeWhile(ord.lteqv(_, b))
     }
 
@@ -660,7 +660,7 @@ object AbstractMappedSegmentSeq {
      */
     def originalBackwardIterable: Iterable[SegmentT[E, D, U, S]] = {
       val f = front
-      val ord = domainOps.segmentUpperOrd
+      val ord = domainOps.segments.upperOrd
       back.backwardIterable.takeWhile(ord.gteqv(_, f))
     }
 
@@ -671,7 +671,7 @@ object AbstractMappedSegmentSeq {
      */
     def originalBackwardLazyList: LazyList[SegmentT[E, D, U, S]] = {
       val f = front
-      val ord = domainOps.segmentUpperOrd
+      val ord = domainOps.segments.upperOrd
       back.backwardLazyList.takeWhile(ord.gteqv(_, f))
     }
 

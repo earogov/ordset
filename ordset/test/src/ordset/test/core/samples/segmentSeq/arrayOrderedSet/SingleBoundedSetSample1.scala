@@ -22,5 +22,5 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
   override val labels: Set[Label] = super.labels + Labels.singleBoundedSeq
 
   override val sequence: ArraySegmentSeq[Int, D, Boolean] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary, domainOps)(domainOps.boundOrd.strictValidation)
+    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary, domainOps)(domainOps.validation.boundsSeq)
 }

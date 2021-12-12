@@ -16,8 +16,8 @@ import scala.language.postfixOps
 @RunWith(classOf[JUnitRunner])
 class SegmentSeqUtilSpec extends AnyFunSpec {
 
-  import ordset.core.instances.boolean._
-  import ordset.core.instances.int._
+  import ordset.instances.boolean._
+  import ordset.instances.int._
   import ordset.core.syntax.BoundSyntax._
   import ordset.core.syntax.SetBuilderNotation._
   import ordset.instances.list._
@@ -27,8 +27,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
 
   type Dom = Domain.UnboundedContinuous[Int]
 
-  private val domainOps: DomainOps[Int, Dom] = implicitly[DomainOps[Int, Dom]]
-  private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom](domainOps)
+  private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
 
   private val seq1: OrderedSet[Int, Dom] = ArrayOrderedSet.unchecked[Int, Dom](
     ArraySeq.empty,
@@ -254,12 +253,12 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
 
   it("should convert segment sequence to iterable of (bound, value) tuples") {
 
-    assertSameBoundValueIterable(
+    assertSameBoundValueIterable[Int, Dom, Boolean](
       List((ExtendedBound.AboveAll, false)),
       SegmentSeqUtil.getExtendedBoundValueIterableForSeq(seq1)
     )
 
-    assertSameBoundValueIterable(
+    assertSameBoundValueIterable[Int, Dom, Boolean](
       List(
         (0 `)[`, true),
         (10 `)[`, false),

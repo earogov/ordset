@@ -49,9 +49,9 @@ object Label {
     Show.show(iterableShow.show(_))
   }
 
-  lazy val defaultQueueOrder: Order[Queue[Label]] = ordset.instances.queue.queueOrder
+  lazy val defaultQueueOrder: Order[Queue[Label]] = ordset.instances.queue.queueOrderWithHash
 
-  lazy val defaultQueueHash: Hash[Queue[Label]] = ordset.instances.queue.queueHash
+  lazy val defaultQueueHash: Hash[Queue[Label]] = ordset.instances.queue.queueOrderWithHash
 
   lazy val defaultQueueShow: Show[Queue[Label]] = ordset.instances.queue.queueShow
 
@@ -103,11 +103,11 @@ object Label {
 
     override lazy val toOrdering: Ordering[Label] = super.toOrdering
 
-    override def compare(x: Label, y: Label): Int = stringOrder.compare(x.value, y.value)
+    override def compare(x: Label, y: Label): Int = stringOrderWithHash.compare(x.value, y.value)
 
-    override def eqv(x: Label, y: Label): Boolean = stringOrder.eqv(x.value, y.value)
+    override def eqv(x: Label, y: Label): Boolean = stringOrderWithHash.eqv(x.value, y.value)
 
-    override def hash(x: Label): Int = product1Hash(stringHash.hash(x.value))
+    override def hash(x: Label): Int = product1Hash(stringOrderWithHash.hash(x.value))
   }
 
   // Private section ---------------------------------------------------------- //

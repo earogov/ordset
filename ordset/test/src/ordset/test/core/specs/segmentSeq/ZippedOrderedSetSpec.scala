@@ -16,8 +16,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   with TransformationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
   with ZippedSeqBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean, Boolean, Boolean] {
 
-  import ordset.core.instances.boolean._
-  import ordset.core.instances.int._
+  import ordset.instances.boolean._
+  import ordset.instances.int._
   import ordset.test.core.TestRngUtil.Implicits._
 
   type Dom = Domain.UnboundedContinuous[Int]

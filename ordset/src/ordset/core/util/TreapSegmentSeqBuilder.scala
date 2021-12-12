@@ -1,6 +1,7 @@
 package ordset.core.util
 
-import ordset.core.domain.{AscOrder, Domain, DomainOps}
+import ordset.Order
+import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.{Bound, SegmentSeq, TreapSegmentSeq}
 import ordset.core.map.TreapOrderedMap
@@ -86,7 +87,7 @@ object TreapSegmentSeqBuilder {
     // Private section ---------------------------------------------------------- //
     private val rng: UnsafeUniformRng = rngManager.newUnsafeUniformRng()
 
-    private val boundOrd: AscOrder[Bound[E]] = domainOps.boundOrd
+    private val boundOrd: Order[Bound[E]] = domainOps.boundOrd
 
     private var buffer: TreapBuffer[E, V] = List.empty
 

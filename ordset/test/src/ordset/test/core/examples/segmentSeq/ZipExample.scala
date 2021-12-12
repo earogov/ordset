@@ -15,8 +15,8 @@ import scala.language.postfixOps
 
 object ZipExample {
 
-  import ordset.core.instances.boolean.*
-  import ordset.core.instances.int.*
+  import ordset.instances.boolean.*
+  import ordset.instances.int.*
   import ordset.test.core.TestRngUtil.Implicits.*
 
   private val sep = "-----------------"

@@ -1,110 +1,53 @@
 package ordset.core.domain
 
-import ordset.Hash
-import ordset.core.interval.{Interval, IntervalBuilder, IntervalOps, IntervalRelation}
-import ordset.core.SegmentT
-import scala.util.Try
+import ordset.core.domain.DomainOpsComponents.*
 
-trait DomainOps[E, D <: Domain[E]] extends DomainLike.Proxy[E, D] {
+sealed trait DomainOps[E, D <: Domain[E]] extends DomainLike.Proxy[E, D] {
 
-  def domainBounds: Interval.NonEmpty[E, D]
+  def domains: Domains[E, D]
 
-  implicit def domainHash: Hash[D]
+  def intervals: Intervals[E, D]
 
-  implicit def interval: IntervalBuilder[E, D]
+  def intervalRelations: IntervalRelations[E, D]
 
-  implicit def intervalOps: IntervalOps[E, D]
+  def segments: Segments[E, D]
 
-  implicit def intervalHash: Hash[Interval[E, D]]
-
-  implicit def intervalRelationHash[V](implicit valueHash: Hash[V]): Hash[IntervalRelation[E, D, V]]
-
-  /**
-   * Ascending order of segments by their upper bounds.
-   *
-   * All order implementations MUST provide property:
-   * <tr>
-   *   - upper bound of last segment has maximal value in domain 
-   *   (for unbounded domain it's equivalent to plus infinity).
-   * </tr>
-   * <tr></tr>
-   * I.e [[Segment.Last]] MUST be maximal segment according to this order.
-   */
-  implicit def segmentUpperOrd: SegmentT.UpperBoundAscOrder[E, D]
-
-  /**
-   * Ascending order of segments by their lower bounds.
-   *
-   * All order implementations MUST provide property:
-   * <tr>
-   *   - lower bound of first segment has minimal value in domain 
-   *   (for unbounded domain it's equivalent to minus infinity). 
-   * </tr>
-   * <tr></tr>
-   * I.e [[Segment.First]] MUST be minimal segment according to this order.
-   */
-  implicit def segmentLowerOrd: SegmentT.LowerBoundAscOrder[E, D]
+  def validation: Validation[E, D]
 }
 
 object DomainOps {
 
-  implicit def defaultDomainOps[E, D <: Domain.UnboundedContinuous[E]](
-    implicit 
-    domain: D,
-    domainHash: Hash[D]
-  ): DomainOps[E, D] = 
-    new DefaultUnboundedImpl(domain, domainHash)
+  implicit def default[E, D <: Domain[E]](implicit domain: D): DomainOps[E, D] = domain match {
+    case d: Domain.Unbounded[E] => UnboundedOps.default(d)
+    // TODO: implement bounded DomainOps
+    case d: Domain.Bounded[E] => ???
+  }
 
-  def tryDefault[E, D <: Domain[E]](implicit domain: D, domainHash: Hash[D]): Try[DomainOps[E, D]] = {
-    val intervalBuilder = IntervalBuilder.defaultBuilder(domain)
-    val intervalOps = IntervalOps.defaultOps(domain, intervalBuilder)
-    DomainValidation.tryBuildBounds(domain, intervalBuilder).map { bounds =>
-      DefaultImpl(domain, bounds, domainHash, intervalBuilder, intervalOps)
+  trait UnboundedOps[E, D <: Domain[E]] extends DomainOps[E, D] {
+
+    override def domain: D & Domain.Unbounded[E]
+
+    override def intervals: Intervals.Unbounded[E, D]
+  }
+
+  object UnboundedOps {
+
+    implicit def default[E, D <: Domain[E]](domain: D & Domain.Unbounded[E]): UnboundedOps[E, D] = 
+      new DefaultImpl(domain)
+
+    class DefaultImpl[E, D <: Domain[E]](
+      override val domain: D & Domain.Unbounded[E],
+    ) extends UnboundedOps[E, D] {
+
+      override val domains: Domains[E, D] = Domains.default
+
+      override val intervals: Intervals.Unbounded[E, D] = Intervals.Unbounded.default(domain, domains.hash)
+
+      override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
+
+      override val segments: Segments[E, D] = Segments.default(domain)
+
+      override val validation: Validation[E, D] = Validation.default(domain) 
     }
-  }
-
-  trait Unbounded[E, D <: Domain.Unbounded[E]] extends DomainOps[E, D] {
-
-    override def domainBounds: Interval.Universal[E, D]
-  }
-
-  // Private section ---------------------------------------------------------- //
-  private final case class DefaultImpl[E, D <: Domain[E]](
-    override val domain: D,
-    override val domainBounds: Interval.NonEmpty[E, D],
-    override val domainHash: Hash[D],
-    override val interval: IntervalBuilder[E, D],
-    override val intervalOps: IntervalOps[E, D],
-  ) extends DomainOps[E, D] {
-
-    override implicit val intervalHash: Hash[Interval[E, D]] = Interval.defaultHash(boundOrd, domainHash)
-
-    override implicit def intervalRelationHash[V](implicit valueHash: Hash[V]): Hash[IntervalRelation[E, D, V]] =
-      IntervalRelation.defaultHash(intervalHash, valueHash)
-
-    override implicit val segmentUpperOrd: SegmentT.UpperBoundAscOrder[E, D] = SegmentT.upperBoundAscOrder
-
-    override implicit val segmentLowerOrd: SegmentT.LowerBoundAscOrder[E, D] = SegmentT.lowerBoundAscOrder
-  }
-
-  private final case class DefaultUnboundedImpl[E, D <: Domain.Unbounded[E]](
-    override val domain: D,
-    override val domainHash: Hash[D]
-  ) extends DomainOps.Unbounded[E, D] {
-
-    override implicit val intervalHash: Hash[Interval[E, D]] = Interval.defaultHash(boundOrd, domainHash)
-
-    override implicit val interval: IntervalBuilder.UnboundedBuilder[E, D] = IntervalBuilder.UnboundedBuilder(domain)
-    
-    override implicit val intervalOps: IntervalOps.UnboundedOps[E, D] = IntervalOps.UnboundedOps(domain, interval)
-
-    override implicit def intervalRelationHash[V](implicit valueHash: Hash[V]): Hash[IntervalRelation[E, D, V]] =
-      IntervalRelation.defaultHash(intervalHash, valueHash)
-
-    override implicit val segmentUpperOrd: SegmentT.UpperBoundAscOrder[E, D] = SegmentT.upperBoundAscOrder
-
-    override implicit val segmentLowerOrd: SegmentT.LowerBoundAscOrder[E, D] = SegmentT.lowerBoundAscOrder
-
-    override val domainBounds: Interval.Universal[E, D] = interval.universal
   }
 }

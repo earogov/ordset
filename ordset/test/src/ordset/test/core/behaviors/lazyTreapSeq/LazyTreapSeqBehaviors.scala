@@ -97,7 +97,7 @@ trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
       implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
 
       implicit val fixedExecutionContext: ExecutionContext =
-        ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(tasksNum))
+        ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(tasksNum).nn)
 
       it(s"should have valid state of $sample after concurrent random access") {
 

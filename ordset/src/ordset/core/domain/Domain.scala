@@ -1,256 +1,100 @@
 package ordset.core.domain
 
+import ordset.{BoundedOrder, DiscreteOrder, DiscreteFiniteOrder, Order, Hash}
 import ordset.core.{Bound, ExtendedBound}
-import ordset.util.label.Label
-import ordset.{Hash, Show}
-import scala.annotation.meta.field
 
-sealed trait Domain[E] extends DomainLike[E] {
-
-  override def labels: Set[Label] = Set.empty
-
-  override implicit val intOrd: AscOrder[Int] = ordset.core.instances.int.intAscOrder
-
-  override implicit val longOrd: AscOrder[Long] = ordset.core.instances.long.longAscOrder
-}
+sealed trait Domain[E] extends DomainLike[E]
 
 object Domain {
 
+  implicit def defaultHash[E, D <: Domain[E]]: Hash[D] = defaultHashInstance.asInstanceOf
+
   sealed trait Unbounded[E] extends Domain[E] {
 
-    override def labels: Set[Label] = super.labels + DomainLabels.Unbounded
+    override implicit def boundOrd: Bound.DefaultUnboundedOrder[E]
 
-    final override val lowerExtendedBound: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
+    override implicit def extendedOrd: ExtendedBound.DefaultUnboundedOrder[E]
 
-    final override val upperExtendedBound: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
+    override def lowerExtendedBound: ExtendedBound.BelowAll.type = extendedOrd.lowerBound
+
+    override def upperExtendedBound: ExtendedBound.AboveAll.type = extendedOrd.upperBound
+
+    final override val isUnbounded: Boolean = false
+
+    final override val isBounded: Boolean = true
   }
 
   sealed trait Bounded[E] extends Domain[E] {
 
-    override def labels: Set[Label] = super.labels + DomainLabels.Bounded
+    override implicit def elementOrd: BoundedOrder[E, E, E] with Hash[E]
+
+    override implicit def boundOrd: Bound.DefaultBoundedOrder[E]
+
+    override implicit def extendedOrd: ExtendedBound.DefaultBoundedOrder[E]
+
+    override def lowerExtendedBound: Bound.Lower[E] = extendedOrd.lowerBound
+
+    override def upperExtendedBound: Bound.Upper[E] = extendedOrd.upperBound
+
+    final override val isUnbounded: Boolean = true
+
+    final override val isBounded: Boolean = false
   }
 
   sealed trait Continuous[E] extends Domain[E] {
 
-    override def labels: Set[Label] = super.labels + DomainLabels.Continuous
+    final override val isContinuos: Boolean = true
 
-    override implicit val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd, intOrd)
-
-    override implicit val extendedOrd: AscOrder[ExtendedBound[E]] = ExtendedBound.defaultAscOrder(boundOrd, intOrd)
-
-    override def toString: String = Continuous.getDefaultShowInstance.show(this)
-  }
-
-  object Continuous {
-
-    implicit def defaultShow[E, D <: Continuous[E]](
-      implicit 
-      boundsShow: Show[ExtendedBound[E]],
-      labelsShow: Show[Set[Label]],
-      orderShow: Show[DirectedOrder[_, _ <: OrderDir]]
-    ): Show[D] =
-      new DefaultShow(boundsShow, labelsShow, orderShow)
-
-    final case class DefaultShow[E, D <: Continuous[E]](
-      val boundsShow: Show[ExtendedBound[E]],
-      val labelsShow: Show[Set[Label]],
-      val orderShow: Show[DirectedOrder[_, _ <: OrderDir]]
-    ) extends Show[D] {
-
-      import ordset.util.ShowUtil.{standardShow, fieldShow}
-
-      private val stdShow: Show[D] = standardShow("Domain"){ d =>
-        val boundsFieldShow = fieldShow(boundsShow)
-        val labelsFieldShow = fieldShow(labelsShow)
-        val orderFieldShow = fieldShow(orderShow)
-        List(
-          ("labels", labelsFieldShow.show(d.labels)), 
-          ("extendedLowerBound", boundsFieldShow.show(d.lowerExtendedBound)),
-          ("extendedUpperBound", boundsFieldShow.show(d.upperExtendedBound)),
-          ("elementOrd", orderFieldShow.show(d.elementOrd)),
-          ("intOrd", orderFieldShow.show(d.intOrd)),
-          ("longOrd", orderFieldShow.show(d.longOrd)),
-          ("boundOrd", orderFieldShow.show(d.boundOrd)),
-          ("extendedOrd", orderFieldShow.show(d.extendedOrd))
-        )
-      }
-
-      override def show(t: D): String = stdShow.show(t)
-    }
-
-    // Private section ---------------------------------------------------------- //
-    private def getDefaultShowInstance[E]: Show[Continuous[E]] = defaultShowInstance.asInstanceOf
-
-    private lazy val defaultShowInstance: Show[Continuous[Any]] =
-      defaultShow(
-        ExtendedBound.defaultShow(Show.fromToString), 
-        Label.defaultSetShow, 
-        DirectedOrder.defaultShow
-      )
+    final override val isDiscrete: Boolean = false
   }
 
   sealed trait Discrete[E] extends Domain[E] {
 
-    override def labels: Set[Label] = super.labels + DomainLabels.Discrete
+    override implicit def elementOrd: DiscreteOrder[E] with Hash[E]
 
-    implicit def discrete: AscDiscrete[E]
+    final override val isContinuos: Boolean = false
 
-    // TODO: implement discrete order and replace it here.
-    override implicit val boundOrd: AscOrder[Bound[E]] = Bound.defaultAscOrder(elementOrd, intOrd)
-
-    override implicit val extendedOrd: AscOrder[ExtendedBound[E]] = ExtendedBound.defaultAscOrder(boundOrd, intOrd)
-
-    override def toString: String = Discrete.getDefaultShowInstance.show(this)
-  }
-
-  object Discrete {
-
-    implicit def defaultShow[E, D <: Discrete[E]](
-      implicit 
-      boundsShow: Show[ExtendedBound[E]],
-      labelsShow: Show[Set[Label]],
-      orderShow: Show[DirectedOrder[_, _ <: OrderDir]],
-      discreteShow: Show[DirectedDiscrete[_, _ <: OrderDir]],
-    ): Show[D] =
-      new DefaultShow(boundsShow, labelsShow, orderShow, discreteShow)
-
-    final case class DefaultShow[E, D <: Discrete[E]](
-      val boundsShow: Show[ExtendedBound[E]],
-      val labelsShow: Show[Set[Label]],
-      val orderShow: Show[DirectedOrder[_, _ <: OrderDir]],
-      val discreteShow: Show[DirectedDiscrete[_, _ <: OrderDir]],
-    ) extends Show[D] {
-
-      import ordset.util.ShowUtil.{standardShow, fieldShow}
-
-      private val stdShow: Show[D] = standardShow("Domain"){ d =>
-        val boundsFieldShow = fieldShow(boundsShow)
-        val labelsFieldShow = fieldShow(labelsShow)
-        val orderFieldShow = fieldShow(orderShow)
-        val discreteFieldShow = fieldShow(discreteShow)
-        List(
-          ("labels", labelsFieldShow.show(d.labels)), 
-          ("extendedLowerBound", boundsFieldShow.show(d.lowerExtendedBound)),
-          ("extendedUpperBound", boundsFieldShow.show(d.upperExtendedBound)),
-          ("elementOrd", orderFieldShow.show(d.elementOrd)),
-          ("intOrd", orderFieldShow.show(d.intOrd)),
-          ("longOrd", orderFieldShow.show(d.longOrd)),
-          ("boundOrd", orderFieldShow.show(d.boundOrd)),
-          ("extendedOrd", orderFieldShow.show(d.extendedOrd)),
-          ("discrete", discreteFieldShow.show(d.discrete))
-        )
-      }
-
-      override def show(t: D): String = stdShow.show(t)
-    }
-
-    // Private section ---------------------------------------------------------- //
-    private def getDefaultShowInstance[E]: Show[Discrete[E]] = defaultShowInstance.asInstanceOf
-
-    private lazy val defaultShowInstance: Show[Discrete[Any]] =
-      defaultShow(
-        ExtendedBound.defaultShow(Show.fromToString), 
-        Label.defaultSetShow, 
-        DirectedOrder.defaultShow, 
-        DirectedDiscrete.defaultShow
-      )
+    final override val isDiscrete: Boolean = true
   }
 
   trait UnboundedContinuous[E] extends Unbounded[E] with Continuous[E]
 
   object UnboundedContinuous {
 
-    def apply[E](implicit elementOrd: AscOrder[E]): UnboundedContinuous[E] = new DefaultImpl(elementOrd)
+    implicit def default[E](implicit elementOrd: Order[E] with Hash[E]): UnboundedContinuous[E] = 
+      new DefaultImpl(elementOrd)
 
-    implicit def defaultDomain[E](implicit elementOrd: AscOrder[E]): UnboundedContinuous[E] = apply
+    class DefaultImpl[E](ord: Order[E] with Hash[E]) extends UnboundedContinuous[E] {
 
-    implicit def defaultHash[E, D <: UnboundedContinuous[E]](
-      implicit 
-      orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      labelsHash: Hash[Set[Label]]
-    ): Hash[D] = 
-      new DefaultHash(orderHash, labelsHash)
+      override implicit val elementOrd: Order[E] with Hash[E] = ord
 
-    final case class DefaultImpl[E](
-      override val elementOrd: AscOrder[E],
-      val customLabels: Set[Label] = Set()
-    ) extends UnboundedContinuous[E] {
-
-      override val labels: Set[Label] = super.labels ++ customLabels
-    }
-
-    final case class DefaultHash[E, D <: UnboundedContinuous[E]](
-      val orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      val labelsHash: Hash[Set[Label]]
-    ) extends Hash[D] {
-
-      import ordset.util.HashUtil._
-
-      override def eqv(x: D, y: D): Boolean =
-        (x eq y) ||
-        (
-          orderHash.eqv(x.elementOrd, y.elementOrd) &&
-          labelsHash.eqv(x.labels, y.labels)
-        )
-
-      override def hash(x: D): Int =
-        product2Hash(
-          orderHash.hash(x.elementOrd),
-          labelsHash.hash(x.labels)
-        )
+      override implicit val boundOrd: Bound.DefaultUnboundedOrder[E] = 
+        Bound.defaultUnboundedOrder(elementOrd)
+      
+      override implicit val extendedOrd: ExtendedBound.DefaultUnboundedOrder[E] =
+        ExtendedBound.defaultUnboundedOrder(boundOrd)
     }
   }
 
-  trait UnboundedDiscrete[E] extends Unbounded[E] with Discrete[E]
+  trait UnboundedDiscrete[E] extends Unbounded[E] with Discrete[E] {
+
+    override implicit def elementOrd: DiscreteOrder[E] with Hash[E]
+  }
 
   object UnboundedDiscrete {
 
-    def apply[E](
-      implicit
-      elementOrd: AscOrder[E],
-      discrete: AscDiscrete[E],
-    ): UnboundedDiscrete[E] =
-      new DefaultImpl(elementOrd, discrete)
+    implicit def default[E](implicit elementOrd: DiscreteOrder[E] with Hash[E]): UnboundedDiscrete[E] =
+      new DefaultImpl(elementOrd)
 
-    implicit def defaultHash[E, D <: UnboundedDiscrete[E]](
-      implicit 
-      orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      labelsHash: Hash[Set[Label]],
-      discreteHash: Hash[DirectedDiscrete[E, _ <: OrderDir]]
-    ): Hash[D] = 
-      new DefaultHash(orderHash, labelsHash, discreteHash)
+    class DefaultImpl[E](ord: DiscreteOrder[E] with Hash[E]) extends UnboundedDiscrete[E] {
 
-    final case class DefaultImpl[E](
-      override val elementOrd: AscOrder[E],
-      override val discrete: AscDiscrete[E],
-      val customLabels: Set[Label] = Set()
-    ) extends UnboundedDiscrete[E] {
+      override implicit val elementOrd: DiscreteOrder[E] with Hash[E] = ord
 
-      override val labels: Set[Label] = super.labels ++ customLabels
-    }
+      override implicit val boundOrd: Bound.DefaultUnboundedOrder[E] = 
+        Bound.defaultUnboundedOrder(elementOrd)
 
-    final case class DefaultHash[E, D <: UnboundedDiscrete[E]](
-      val orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      val labelsHash: Hash[Set[Label]],
-      val discreteHash: Hash[DirectedDiscrete[E, _ <: OrderDir]]
-    ) extends Hash[D] {
-
-      import ordset.util.HashUtil._
-
-      override def eqv(x: D, y: D): Boolean =
-        (x eq y) ||
-        (
-          orderHash.eqv(x.elementOrd, y.elementOrd) &&
-          discreteHash.eqv(x.discrete, y.discrete) &&
-          labelsHash.eqv(x.labels, y.labels)
-        )
-
-      override def hash(x: D): Int =
-        product3Hash(
-          orderHash.hash(x.elementOrd),
-          discreteHash.hash(x.discrete),
-          labelsHash.hash(x.labels),
-        )
+      override implicit val extendedOrd: ExtendedBound.DefaultUnboundedOrder[E] =
+        ExtendedBound.defaultUnboundedOrder(boundOrd)
     }
   }
 
@@ -258,118 +102,66 @@ object Domain {
 
   object BoundedContinuous {
 
-    def apply[E](
-      lowerExtendedBound: ExtendedBound.Lower[E],
-      upperExtendedBound: ExtendedBound.Upper[E],
-    )(
-      implicit
-      elementOrd: AscOrder[E],
-      discrete: AscDiscrete[E],
-    ): BoundedContinuous[E] =
-      new DefaultImpl(elementOrd, lowerExtendedBound, upperExtendedBound)
+    implicit def default[E](implicit elementOrd: BoundedOrder[E, E, E] with Hash[E]): BoundedContinuous[E] =
+      new DefaultImpl(elementOrd)
 
-    implicit def defaultHash[E, D <: BoundedContinuous[E]](
-      implicit 
-      orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      labelsHash: Hash[Set[Label]]
-    ): Hash[D] = 
-      new DefaultHash(orderHash, labelsHash)
+    class DefaultImpl[E](ord: BoundedOrder[E, E, E] with Hash[E]) extends BoundedContinuous[E] {
 
-    final case class DefaultImpl[E](
-      override val elementOrd: AscOrder[E],
-      override val lowerExtendedBound: ExtendedBound.Lower[E],
-      override val upperExtendedBound: ExtendedBound.Upper[E],
-      val customLabels: Set[Label] = Set()
-    ) extends BoundedContinuous[E] {
+      override implicit val elementOrd: BoundedOrder[E, E, E] with Hash[E] = ord
 
-      override val labels: Set[Label] = super.labels ++ customLabels
-    }
+      override implicit val boundOrd: Bound.DefaultBoundedOrder[E] =
+        Bound.defaultBoundedOrder(elementOrd)
 
-    final case class DefaultHash[E, D <: BoundedContinuous[E]](
-      val orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      val labelsHash: Hash[Set[Label]]
-    ) extends Hash[D] {
-
-      import ordset.util.HashUtil._
-
-      override def eqv(x: D, y: D): Boolean =
-        (x eq y) ||
-        (
-          orderHash.eqv(x.elementOrd, y.elementOrd) &&
-          x.extendedOrd.eqv(x.lowerExtendedBound, y.lowerExtendedBound) &&
-          x.extendedOrd.eqv(x.upperExtendedBound, y.upperExtendedBound) &&
-          labelsHash.eqv(x.labels, y.labels)
-        )
-
-      override def hash(x: D): Int =
-        product4Hash(
-          orderHash.hash(x.elementOrd),
-          x.extendedOrd.hash(x.lowerExtendedBound),
-          x.extendedOrd.hash(x.upperExtendedBound),
-          labelsHash.hash(x.labels),
-        )
+      override implicit val extendedOrd: ExtendedBound.DefaultBoundedOrder[E] =
+        ExtendedBound.defaultBoundedOrder(boundOrd)
     }
   }
 
-  trait BoundedDiscrete[E] extends Bounded[E] with Discrete[E]
+  trait BoundedDiscrete[E] extends Bounded[E] with Discrete[E] {
+
+    override implicit def elementOrd: DiscreteFiniteOrder[E, E, E] with Hash[E]
+  }
 
   object BoundedDiscrete {
 
-    def apply[E](
-      lowerExtendedBound: ExtendedBound.Lower[E],
-      upperExtendedBound: ExtendedBound.Upper[E],
-    )(
-      implicit
-      elementOrd: AscOrder[E],
-      discrete: AscDiscrete[E],
-    ): BoundedDiscrete[E] =
-      new DefaultImpl(elementOrd, discrete, lowerExtendedBound, upperExtendedBound)
+    implicit def default[E](implicit elementOrd: DiscreteFiniteOrder[E, E, E] with Hash[E]): BoundedDiscrete[E] =
+      new DefaultImpl(elementOrd)
 
-    implicit def defaultHash[E, D <: BoundedDiscrete[E]](
-      implicit 
-      orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      labelsHash: Hash[Set[Label]],
-      discreteHash: Hash[DirectedDiscrete[E, _ <: OrderDir]]
-    ): Hash[D] = 
-      new DefaultHash(orderHash, labelsHash, discreteHash)
+    class DefaultImpl[E](ord: DiscreteFiniteOrder[E, E, E] with Hash[E]) extends BoundedDiscrete[E] {
 
-    final case class DefaultImpl[E](
-      override val elementOrd: AscOrder[E],
-      override val discrete: AscDiscrete[E],
-      override val lowerExtendedBound: ExtendedBound.Lower[E],
-      override val upperExtendedBound: ExtendedBound.Upper[E],
-      val customLabels: Set[Label] = Set()
-    ) extends BoundedDiscrete[E] {
+      override implicit val elementOrd: DiscreteFiniteOrder[E, E, E] with Hash[E] = ord
 
-      override val labels: Set[Label] = super.labels ++ customLabels
-    }
+      override implicit val boundOrd: Bound.DefaultBoundedOrder[E] =
+        Bound.defaultBoundedOrder(elementOrd)
 
-    final case class DefaultHash[E, D <: BoundedDiscrete[E]](
-      val orderHash: Hash[DirectedOrder[E, _ <: OrderDir]],
-      val labelsHash: Hash[Set[Label]],
-      val discreteHash: Hash[DirectedDiscrete[E, _ <: OrderDir]]
-    ) extends Hash[D] {
-
-      import ordset.util.HashUtil._
-
-      override def eqv(x: D, y: D): Boolean =
-        (x eq y) ||
-        (
-          orderHash.eqv(x.elementOrd, y.elementOrd) &&
-          discreteHash.eqv(x.discrete, y.discrete) &&
-          x.extendedOrd.eqv(x.lowerExtendedBound, y.lowerExtendedBound) &&
-          x.extendedOrd.eqv(x.upperExtendedBound, y.upperExtendedBound) &&
-          labelsHash.eqv(x.labels, y.labels)
-        )
-
-      override def hash(x: D): Int =
-        product5Hash(
-          orderHash.hash(x.elementOrd),
-          discreteHash.hash(x.discrete),
-          x.extendedOrd.hash(x.lowerExtendedBound),
-          x.extendedOrd.hash(x.upperExtendedBound),
-          labelsHash.hash(x.labels),
-        )
+      override implicit val extendedOrd: ExtendedBound.DefaultBoundedOrder[E] =
+        ExtendedBound.defaultBoundedOrder(boundOrd)
     }
   }
+
+  class DefaultHash[E, D <: Domain[E]](
+    val orderHash: Hash[Order[E]]
+  ) extends Hash[D] {
+
+    import ordset.util.HashUtil._
+
+    override def eqv(x: D, y: D): Boolean =
+      (x eq y) || 
+      (
+        x.isUnbounded == y.isUnbounded && 
+        x.isContinuos == y.isContinuos && 
+        orderHash.eqv(x.elementOrd, y.elementOrd)
+      )
+
+    override def hash(x: D): Int = {
+      val h1 = if (x.isUnbounded) 0xC3BB071A else 0x084E22F0
+      val h2 = if (x.isContinuos) 0x84CE051B else 0x6E78FA31
+      val h3 = product2Hash(orderHash.hash(x.elementOrd), h1)
+      product2Hash(h3, h2)
+    }
+  }
+
+  // Private section ---------------------------------------------------------- //
+  private val defaultHashInstance: DefaultHash[Any, Domain[Any]] = 
+    new DefaultHash(ordset.util.HashUtil.classBasedHash)
 }

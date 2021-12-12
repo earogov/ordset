@@ -136,7 +136,7 @@ trait RangeAlgebra[E] {
 
 object RangeAlgebra {
 
-  implicit def defaultAlg[E](): RangeAlgebra[E] = algebraInstance.asInstanceOf
+  implicit def defaultAlgebra[E](): RangeAlgebra[E] = algebraInstance.asInstanceOf
 
   // Private section ---------------------------------------------------------- //
   private val algebraInstance: RangeAlgebra[Any] = new RangeAlgebra {}

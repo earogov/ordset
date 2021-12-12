@@ -8,9 +8,9 @@ import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 
 @RunWith(classOf[JUnitRunner])
-class IntervalOpsSpec extends AnyFunSpec {
+class IntervalAlgebraSpec extends AnyFunSpec {
   
-  import ordset.core.instances.int._
+  import ordset.instances.int._
   import ordset.core.syntax.BoundSyntax._
   import ordset.core.syntax.SetBuilderNotation._
 
@@ -19,8 +19,8 @@ class IntervalOpsSpec extends AnyFunSpec {
   type Dom = Domain.UnboundedContinuous[Int]
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
-  val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
-  val interval: IntervalBuilder[Int, Dom] = ops.interval
+  val ops: DomainOps[Int, Dom] = DomainOps.default
+  val interval: IntervalBuilder[Int, Dom] = ops.intervals.builder
 
   private implicit def toAssertOps[E, D <: Domain[E]](interval: Interval[E, D]): AssertOps[E, D] =
     new AssertOps[E, D](interval)
@@ -254,13 +254,13 @@ class IntervalOpsSpec extends AnyFunSpec {
   private class AssertOps[E, D <: Domain[E]](interval: Interval[E, D]) {
 
     def isCrossOf(x: Interval[E, D], y: Interval[E, D])(implicit ops: DomainOps[E, D]): Boolean =
-      ops.intervalHash.eqv(interval, ops.intervalOps.cross(x, y)) &&
-        ops.intervalHash.eqv(interval, ops.intervalOps.cross(y, x))
+      ops.intervals.hash.eqv(interval, ops.intervals.alg.cross(x, y)) &&
+        ops.intervals.hash.eqv(interval, ops.intervals.alg.cross(y, x))
 
     def isTakeAbove(bound: Bound.Lower[E], x: Interval[E, D])(implicit ops: DomainOps[E, D]): Boolean =
-      ops.intervalHash.eqv(interval, ops.intervalOps.takeAbove(bound, x))
+      ops.intervals.hash.eqv(interval, ops.intervals.alg.takeAbove(bound, x))
 
     def isTakeBelow(bound: Bound.Upper[E], x: Interval[E, D])(implicit ops: DomainOps[E, D]): Boolean =
-      ops.intervalHash.eqv(interval, ops.intervalOps.takeBelow(bound, x))
+      ops.intervals.hash.eqv(interval, ops.intervals.alg.takeBelow(bound, x))
   }
 }

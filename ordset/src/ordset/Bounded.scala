@@ -3,17 +3,17 @@ package ordset
 /**
  * Typeclass specifying set bounded from below and above.
  */ 
-trait Bounded[+E] extends Bounded.Below[E] with Bounded.Above[E]
+trait Bounded[+L, +U] extends Bounded.Below[L] with Bounded.Above[U]
 
 object Bounded {
 
   /**
    * Typeclass specifying set bounded from below.
    */ 
-  trait Below[+E] {
+  trait Below[+L] {
 
     /** Greatest lower bound of the set. */
-    def lowerBound: E
+    def lowerBound: L
 
     /** Returns `true`, if lower bound is included in the set. */
     def lowerBoundIncluded: Boolean
@@ -27,7 +27,7 @@ object Bounded {
     /**
      * Typeclass specifying set bounded from below. Lower bound is included in the set.
      */ 
-    trait Including[+E] extends Bounded.Below[E] {
+    trait Including[+L] extends Bounded.Below[L] {
 
       final override val lowerBoundIncluded: Boolean = true
 
@@ -38,10 +38,10 @@ object Bounded {
   /**
    * Typeclass specifying set bounded from above.
    */ 
-  trait Above[+E] {
+  trait Above[+U] {
 
     /** Least upper bound of the set. */
-    def upperBound: E
+    def upperBound: U
 
     /** Returns `true`, if upper bound is included in the set. */
     def upperBoundIncluded: Boolean
@@ -55,7 +55,7 @@ object Bounded {
     /**
      * Typeclass specifying set bounded from above. Upper bound is included in the set.
      */ 
-    trait Including[+E] extends Bounded.Above[E] {
+    trait Including[+U] extends Bounded.Above[U] {
 
       final override val upperBoundIncluded: Boolean = true
 
@@ -66,5 +66,5 @@ object Bounded {
   /**
    * Typeclass specifying set bounded from below and above. Lower and upper bounds are included in the set.
    */ 
-  trait Including[+E] extends Below.Including[E] with Above.Including[E]
+  trait Including[+L, +U] extends Below.Including[L] with Above.Including[U]
 }

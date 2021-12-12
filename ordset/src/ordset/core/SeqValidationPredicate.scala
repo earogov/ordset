@@ -1,7 +1,5 @@
 package ordset.core
 
-import ordset.core.SeqValidationPredicate
-
 /**
  * Functional trait that allows to validate two adjacent elements of sequence.
  */
@@ -10,7 +8,7 @@ trait SeqValidationPredicate[-E] extends ((E, E) => Boolean) {
 
   /**
    * Returns `true` if two given elements satisfy validation condition.
-   * First argument occurs in validated sequence before second.
+   * Order of arguments corresponds to order in validated sequence.
    */
   override def apply(prev: E, next: E): Boolean
 

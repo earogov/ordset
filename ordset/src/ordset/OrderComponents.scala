@@ -1,6 +1,7 @@
 package ordset
 
 import cats.kernel.Comparison
+import scala.collection.immutable.Queue
 
 object OrderComponents {
 
@@ -65,15 +66,114 @@ object OrderComponents {
     }
   }
 
-  class IntDiscreteBoundedOrder()
-    extends OrderProxy[Int] 
-      with HashComponents.HashProxy[Int]
-      with DiscreteComponents.Numeric.Discrete[Int]
-      with BoundedComponents.IntBounded
-      with Directed.Ascending {
+  class UnitDiscreteFiniteOrder()
+    extends cats.kernel.instances.UnitOrder
+      with DiscreteFiniteOrder[Unit, Unit, Unit]
+      with DiscreteComponents.Unit.Discrete
+      with BoundedComponents.UnitBounded
+      with Directed.Ascending
 
-    override val original: Order[Int] with Hash[Int] = cats.kernel.instances.int.catsKernelStdOrderForInt
+  class BooleanDiscreteFiniteOrder()
+    extends cats.kernel.instances.BooleanOrder
+    with DiscreteFiniteOrder[Boolean, Boolean, Boolean]
+    with DiscreteComponents.Boolean.Discrete
+    with BoundedComponents.BooleanBounded
+    with Directed.Ascending
 
-    override val num: Numeric[Int] = implicitly[Numeric[Int]]
+  class ByteDiscreteFiniteOrder()
+    extends cats.kernel.instances.ByteOrder
+    with DiscreteFiniteOrder[Byte, Byte, Byte]
+    with DiscreteComponents.Numeric.Discrete[Byte]
+    with BoundedComponents.ByteBounded
+    with Directed.Ascending {
+
+    override protected val num: Numeric[Byte] = implicitly[Numeric[Byte]]
+  }
+
+  class ShortDiscreteFiniteOrder()
+    extends cats.kernel.instances.ShortOrder
+    with DiscreteFiniteOrder[Short, Short, Short]
+    with DiscreteComponents.Numeric.Discrete[Short]
+    with BoundedComponents.ShortBounded
+    with Directed.Ascending {
+
+    override protected val num: Numeric[Short] = implicitly[Numeric[Short]]
+  }
+
+  class IntDiscreteFiniteOrder()
+    extends cats.kernel.instances.IntOrder
+    with DiscreteFiniteOrder[Int, Int, Int]
+    with DiscreteComponents.Numeric.Discrete[Int]
+    with BoundedComponents.IntBounded
+    with Directed.Ascending {
+
+    override protected val num: Numeric[Int] = implicitly[Numeric[Int]]
+  }
+
+  class LongDiscreteFiniteOrder()
+    extends cats.kernel.instances.LongOrder
+    with DiscreteFiniteOrder[Long, Long, Long]
+    with DiscreteComponents.Numeric.Discrete[Long]
+    with BoundedComponents.LongBounded
+    with Directed.Ascending {
+
+    override protected val num: Numeric[Long] = implicitly[Numeric[Long]]
+  }
+
+  class FloatBoundedOrder()
+    extends cats.kernel.instances.FloatOrder
+    with BoundedOrder.Including[Float, Float, Float]
+    with BoundedComponents.FloatBounded
+    with Directed.Ascending
+
+  class DoubleBoundedOrder()
+    extends cats.kernel.instances.DoubleOrder
+    with BoundedOrder.Including[Double, Double, Double]
+    with BoundedComponents.DoubleBounded
+    with Directed.Ascending
+
+  class StringBoundedBelowOrder()
+    extends cats.kernel.instances.StringOrder
+    with BoundedOrder.Below.Including[String, String]
+    with BoundedComponents.StringBoundedBelow
+    with Directed.Ascending
+
+  class ListBoundedBelowOrder[T](
+    implicit 
+    ord: Order[T],
+    hash: Hash[T]
+  ) extends cats.kernel.instances.ListOrder[T]
+    with Hash[List[T]]
+    with BoundedOrder.Below.Including[List[T], Nil.type]
+    with BoundedComponents.ListBoundedBelow
+    with Directed.Ascending {
+
+    override def hash(x: List[T]): Int = cats.kernel.instances.StaticMethods.listHash(x)
+  }
+
+  class QueueBoundedBelowOrder[T](
+    implicit 
+    ord: Order[T],
+    hash: Hash[T]
+  ) extends cats.kernel.instances.QueueOrder[T]
+    with Hash[Queue[T]]
+    with BoundedOrder.Below.Including[Queue[T], Queue[Nothing]]
+    with BoundedComponents.QueueBoundedBelow
+    with Directed.Ascending {
+
+    override def hash(x: Queue[T]): Int = cats.kernel.instances.StaticMethods.orderedHash(x)
+  }
+
+  class LazyListBoundedBelowOrder[T](
+    implicit 
+    ord: Order[T],
+    hash: Hash[T]
+  ) extends cats.kernel.instances.LazyListOrder[T]
+    with Hash[LazyList[T]]
+    with BoundedOrder.Below.Including[LazyList[T], LazyList[Nothing]]
+    with BoundedComponents.LazyListBoundedBelow
+    with Directed.Ascending {
+
+    override def hash(x: LazyList[T]): Int = cats.kernel.instances.StaticMethods.orderedHash(x)
   }
 }

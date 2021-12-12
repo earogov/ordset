@@ -3,7 +3,7 @@ package ordset.core.interval
 import ordset.core.Bound
 import ordset.core.domain.Domain
 
-trait IntervalOps[E, D <: Domain[E]] {
+trait IntervalAlgebra[E, D <: Domain[E]] {
 
   /**
    * Returns subset of elements that belongs to both input intervals.
@@ -48,23 +48,22 @@ trait IntervalOps[E, D <: Domain[E]] {
   def takeBelow(bound: Bound.Upper[E], x: Interval[E, D]): Interval[E, D]
 }
 
-object IntervalOps {
+object IntervalAlgebra {
   
-  implicit def defaultOps[E, D <: Domain[E]](
-    implicit 
-    domain: D,
-    intervalBuilder: IntervalBuilder[E, D]
-  ): IntervalOps[E, D] =
+  implicit def defaultAlgebra[E, D <: Domain[E]](implicit domain: D): IntervalAlgebra[E, D] =
     domain match {
-      case d: Domain.Unbounded[E] => new UnboundedOps(d, intervalBuilder)
+      case d: Domain.Unbounded[E] => unboundedAlgebra(d)
       // TODO: implement bounded builder
       case d: Domain.Bounded[E] => ???
     }
 
-  final class UnboundedOps[E, D <: Domain[E]](
+  def unboundedAlgebra[E, D <: Domain[E]](implicit domain: D & Domain.Unbounded[E]): UnboundedAlgebra[E, D] =
+    new UnboundedAlgebra(domain, IntervalBuilder.unboundedBuilder(domain))
+
+  final class UnboundedAlgebra[E, D <: Domain[E]](
     val domain: D & Domain.Unbounded[E],
-    val interval: IntervalBuilder[E, D]
-  ) extends IntervalOps[E, D] {
+    val interval: IntervalBuilder.UnboundedBuilder[E, D]
+  ) extends IntervalAlgebra[E, D] {
 
     override def cross(x: Interval[E, D], y: Interval[E, D]): Interval[E, D] = x match {
       case x: Interval.Empty[e, d] => x

@@ -27,7 +27,7 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
     TreapOrderedSet.getFactory.unsafeBuildAsc(
       bounds, complementary, domainOps
     )(
-      domainOps.boundOrd.strictValidation
+      domainOps.validation.boundsSeq
     )(
       TestRngUtil.defaultRngManager(seed)
     )

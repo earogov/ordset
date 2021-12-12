@@ -771,7 +771,7 @@ protected[ordset] object ZSegmentSeqBuilder {
     val patchControlSeq = NonMergingMappedValueOrderedMap.apply(
       supplierSeq,
       v => v match {
-        case Some(f) => new LazyValue.Unbounded(f)
+        case Some(f) => LazyValue.Unbounded(f)
         case _ => EagerValue.unstable[E, D, V]
       }
     )(

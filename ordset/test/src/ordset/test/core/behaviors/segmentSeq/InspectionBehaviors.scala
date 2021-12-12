@@ -22,7 +22,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
 
       val boundOrd = sample.domainOps.boundOrd
       val extendedOrd = sample.domainOps.extendedOrd
-      val segmentOrd = sample.domainOps.segmentUpperOrd
+      val segmentOrd = sample.domainOps.segments.upperOrd
   
       it(s"should have valid navigation indicators (`hasNext`, `hasPrev`, `isFirst`, ...) for $sample") {
         @tailrec

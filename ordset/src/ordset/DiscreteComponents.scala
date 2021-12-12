@@ -117,32 +117,62 @@ object DiscreteComponents {
     }
   }
 
+  object Unit {
+
+    trait Succeeding extends Discrete.Succeeding[Unit] {
+
+      override def successorOrNull(x: Unit): Null = null
+    }
+
+    trait Preceding extends Discrete.Preceding[Unit] {
+
+      override def predecessorOrNull(x: Unit): Null = null
+    }
+
+    trait Discrete extends ordset.Discrete[Unit] with Succeeding with Preceding
+  }
+
+  object Boolean {
+
+    trait Succeeding extends Discrete.Succeeding[Boolean] {
+
+      override def successorOrNull(x: Boolean): Boolean | Null = if !x then true else null
+    }
+
+    trait Preceding extends Discrete.Preceding[Boolean] {
+
+      override def predecessorOrNull(x: Boolean): Boolean | Null = if x then false else null
+    }
+
+    trait Discrete extends ordset.Discrete[Boolean] with Succeeding with Preceding
+  }
+
   object Numeric {
 
     trait Succeeding[E] extends Discrete.Succeeding[E] {
 
-      def num: Numeric[E]
+      protected def num: Numeric[E]
 
       override def successorOrNull(x: E): E | Null = if hasSuccessor(x) then num.plus(x, num.one) else null
     }
 
     trait SucceedingInfinite[E] extends Discrete.Succeeding.Infinite[E] {
 
-      def num: Numeric[E]
+      protected def num: Numeric[E]
 
       override def successor(x: E): E = num.plus(x, num.one)
     }
 
     trait Preceding[E] extends Discrete.Preceding[E] {
 
-      def num: Numeric[E]
+      protected def num: Numeric[E]
 
       override def predecessorOrNull(x: E): E | Null = if hasPredecessor(x) then num.minus(x, num.one) else null
     }
 
     trait PrecedingInfinite[E] extends Discrete.Preceding.Infinite[E] {
 
-      def num: Numeric[E]
+      protected def num: Numeric[E]
 
       override def predecessor(x: E): E = num.minus(x, num.one)
     }

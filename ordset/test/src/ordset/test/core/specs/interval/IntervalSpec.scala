@@ -12,14 +12,14 @@ import cats.syntax.validated
 @RunWith(classOf[JUnitRunner])
 class IntervalSpec extends AnyFunSpec {
 
-  import ordset.core.instances.int._
+  import ordset.instances.int._
   import ordset.core.syntax.SetBuilderNotation._
 
   type Dom = Domain.UnboundedContinuous[Int]
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
-  val ops: DomainOps[Int, Dom] = DomainOps.defaultDomainOps
-  val interval: IntervalBuilder[Int, Dom] = ops.interval
+  val ops: DomainOps[Int, Dom] = DomainOps.default
+  val interval: IntervalBuilder[Int, Dom] = ops.intervals.builder
 
   it("should have valid bound indicators") {
     // Interval.Less

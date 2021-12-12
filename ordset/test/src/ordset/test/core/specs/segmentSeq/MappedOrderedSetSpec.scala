@@ -14,9 +14,9 @@ class MappedOrderedSetSpec extends AnyFunSpec
   with NavigationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
   with TransformationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean] {
 
-  import ordset.core.instances.boolean.*
-  import ordset.core.instances.int.*
-  import ordset.test.core.TestRngUtil.Implicits.*
+  import ordset.instances.boolean._
+  import ordset.instances.int._
+  import ordset.test.core.TestRngUtil.Implicits._
 
   type Dom = Domain.UnboundedContinuous[Int]
   type SegmentSeq = OrderedSet[Int, Dom]

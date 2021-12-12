@@ -758,7 +758,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   ): ZSegmentSeq[E, D, V] =
     makeZippedSeq(
       makeUniformBaseSeq(valueOps.unit),
-      makeUniformControlSeq(new LazyValue.Unbounded(seqFunc))
+      makeUniformControlSeq(LazyValue.Unbounded(seqFunc))
     )
 
   /**
@@ -1435,7 +1435,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       //  X--------------------X   - output
       //            \
       //        stable if both `eagerLowerBound` and `eagerUpperBound` are `true`
-      if (domainOps.segmentUpperOrd.eqv(boundSegments._1, boundSegments._2)) {
+      if (domainOps.segments.upperOrd.eqv(boundSegments._1, boundSegments._2)) {
         makeUniformControlSeq(EagerValue.cons(isStable = stableLowerBound && stableUpperBound))
 
       } else boundSegments match {
@@ -1444,7 +1444,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
           //         (----------------]           - zsegment
           //  X---)[---------)[-----------](--X   - baseSeq
-          if (domainOps.segmentUpperOrd.eqv(nextSegment, upperSegment)) {
+          if (domainOps.segments.upperOrd.eqv(nextSegment, upperSegment)) {
             // If `eagerLowerBound` == `eagerUpperBound` then both `eagerLowerBound` and `eagerUpperBound` are `false`,
             // because the case when they are both `true` was considered before.
             //
@@ -2159,7 +2159,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       // If `front` and `back` is the same segment we can do an optimization:
       // treap based original sequence can build both left and right slice parts simultaneously,
       // so we should use `segment.slice` whenever possible.
-      if (front.domainOps.segmentUpperOrd.eqv(back, front)) TreapSegmentSeqUtil.sliceSegment(front)
+      if (front.domainOps.segments.upperOrd.eqv(back, front)) TreapSegmentSeqUtil.sliceSegment(front)
       else (TreapSegmentSeqUtil.takeBelowSegment(back), TreapSegmentSeqUtil.takeAboveSegment(front))
   }
 }

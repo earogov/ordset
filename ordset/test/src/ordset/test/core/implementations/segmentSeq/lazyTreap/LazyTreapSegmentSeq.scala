@@ -63,7 +63,7 @@ object LazyTreapSegmentSeq {
         valueOps
       )(),
       TreapOrderedMap.getFactory.unsafeBuildAsc(
-        initSeq.map(p => (p._1, new LazyValue.Unbounded(p._2))),
+        initSeq.map(p => (p._1, LazyValue.Unbounded(p._2))),
         domainOps,
         ControlValueOps.get
       )(),
@@ -177,7 +177,7 @@ object LazyTreapSegmentSeq {
       domainOps: DomainOps[E, D],
       valueOps: ValueOps[V]
     )(
-      boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.extendedOrd.strictValidation,
+      boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.validation.extendedBoundsSeq,
       valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
     )(
       implicit rngManager: RngManager

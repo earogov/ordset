@@ -76,28 +76,28 @@ object ValueOps {
   implicit lazy val booleanValueOps: ValueOps[Boolean] =
     new DefaultImpl[Boolean](
       false,
-      ordset.instances.boolean.booleanHash,
+      ordset.instances.boolean.booleanOrderWithHash,
       InclusionPredicate.booleanInclusion
     )
 
   implicit lazy val intValueOps: ValueOps[Int] =
     new DefaultImpl[Int](
       0,
-      ordset.instances.int.intHash,
+      ordset.instances.int.intOrderWithHash,
       InclusionPredicate.alwaysIncluded
     )
 
   implicit lazy val longValueOps: ValueOps[Long] =
     new DefaultImpl[Long](
       0L,
-      ordset.instances.long.longHash,
+      ordset.instances.long.longOrderWithHash,
       InclusionPredicate.alwaysIncluded
     )
 
   implicit lazy val stringValueOps: ValueOps[String] =
     new DefaultImpl[String](
       "",
-      ordset.instances.string.stringHash,
+      ordset.instances.string.stringOrderWithHash,
       InclusionPredicate.alwaysIncluded
     )
 

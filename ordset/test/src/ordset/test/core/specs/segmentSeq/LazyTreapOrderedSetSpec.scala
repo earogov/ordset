@@ -19,8 +19,8 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
   with NavigationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]
   with TransformationBehaviors[Int, Domain.UnboundedContinuous[Int], Boolean]{
 
-  import ordset.core.instances.boolean._
-  import ordset.core.instances.int._
+  import ordset.instances.boolean._
+  import ordset.instances.int._
   import ordset.test.core.TestRngUtil.Implicits._
 
   type Dom = Domain.UnboundedContinuous[Int]

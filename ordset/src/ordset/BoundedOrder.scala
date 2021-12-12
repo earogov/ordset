@@ -1,14 +1,12 @@
 package ordset
 
-import ordset.BoundedOrder.BoundedBelow
-
 /**
  * Typeclass specifying ordered set bounded from below and above.
  * 
  * Implementations must enforce conditions:
  * <tr>1. [[lowerBound]] `≤` [[upperBound]] according to the current order.</tr>
  */ 
-trait BoundedOrder[E] extends BoundedOrder.BoundedBelow[E] with BoundedOrder.BoundedAbove[E] {
+trait BoundedOrder[E, +L <: E, +U <: E] extends BoundedOrder.Below[E, L] with BoundedOrder.Above[E, U] {
 
   /**
    * Returns `true`, if element is included in set specified by typeclass.
@@ -27,7 +25,7 @@ object BoundedOrder {
   /**
    * Typeclass specifying ordered set bounded from below.
    */ 
-  trait BoundedBelow[E] extends Order[E] with Bounded.Below[E] {
+  trait Below[E, +L <: E] extends Order[E] with Bounded.Below[L] {
 
     /**
      * Returns `true`, if element is included in set specified by typeclass.
@@ -64,12 +62,12 @@ object BoundedOrder {
       else gt(x, lowerBound)
   }
 
-  object BoundedBelow {
+  object Below {
 
     /**
      * Typeclass specifying ordered set bounded from below. Lower bound is included in the set.
      */ 
-    trait Including[E] extends BoundedOrder.BoundedBelow[E] with Bounded.Below.Including[E] {
+    trait Including[E, +L <: E] extends BoundedOrder.Below[E, L] with Bounded.Below.Including[L] {
 
       /**
        * Returns `true`, if x is the least element included in the set.
@@ -88,7 +86,7 @@ object BoundedOrder {
   /**
    * Typeclass specifying ordered set bounded from above.
    */ 
-  trait BoundedAbove[E] extends Order[E] with Bounded.Above[E] {
+  trait Above[E, +U <: E] extends Order[E] with Bounded.Above[U] {
 
     /**
      * Returns `true`, if element is included in set specified by typeclass.
@@ -125,12 +123,12 @@ object BoundedOrder {
       else gteqv(x, upperBound)
   }
 
-  object BoundedAbove {
+  object Above {
 
     /**
      * Typeclass specifying ordered set bounded from above. Upper bound is included in the set.
      */ 
-    trait Including[E] extends BoundedOrder.BoundedAbove[E] with Bounded.Above.Including[E] {
+    trait Including[E, +U <: E] extends BoundedOrder.Above[E, U] with Bounded.Above.Including[U] {
 
       /**
        * Returns `true`, if x is the greatest element included in the set.
@@ -149,7 +147,11 @@ object BoundedOrder {
   /**
    * Typeclass specifying ordered set bounded from below and above. Lower and upper bounds are included in the set.
    */ 
-  trait Including[E] extends BoundedOrder[E] with Bounded.Including[E] {
+  trait Including[E, +L <: E, +U <: E] 
+    extends BoundedOrder[E, L, U] 
+    with BoundedOrder.Below.Including[E, L] 
+    with BoundedOrder.Above.Including[E, U] 
+    with Bounded.Including[L, U] {
 
     /**
      * Returns:
@@ -157,7 +159,7 @@ object BoundedOrder {
      * <tr>- [[upperBound]], if x is above upper bound (see [[aboveUpperBound]]);</tr>
      * <tr>- x otherwise.</tr>
      */ 
-    def restrict(x: E): E = 
+    override def restrict(x: E): E = 
       if belowLowerBound(x) then lowerBound
       else if aboveUpperBound(x) then upperBound
       else x

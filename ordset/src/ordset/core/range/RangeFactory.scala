@@ -1,7 +1,5 @@
 package ordset.core.range
 
-import ordset.core.domain.DirectedDiscrete.DefaultImpl
-
 trait RangeFactory[-E, +R <: Range[E]] {
 
   def empty: R & Range.Empty
