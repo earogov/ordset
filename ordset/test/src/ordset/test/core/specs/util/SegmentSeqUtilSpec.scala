@@ -25,7 +25,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
   import ordset.test.core.SegmentSeqAssertions._
   import ordset.test.core.TestRngUtil.Implicits._
 
-  type Dom = Domain.UnboundedContinuous[Int]
+  type Dom = Domain.ContinuousUnbounded[Int]
 
   private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
 

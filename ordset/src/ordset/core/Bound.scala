@@ -1,9 +1,8 @@
 package ordset.core
 
-import ordset.core.Bound.DefaultOrder
 import ordset.core.domain.*
 import ordset.core.interval.*
-import ordset.{BoundedOrder, Order, Hash, Show, util}
+import ordset.{Order, Hash, Discrete, Show, util}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -119,25 +118,45 @@ object Bound {
   implicit def upperToInterval[E, D <: Domain[E]](upper: Upper[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
     ops.intervals.builder.belowBound(upper)
 
-  implicit def defaultUnboundedOrder[E](
+  implicit def continuousUnboundedOrder[E](
     implicit elementOrd: Order[E] with Hash[E]
-  ): DefaultUnboundedOrder[E] =
-    new DefaultUnboundedOrderImpl(elementOrd)
+  ): ContinuousUnboundedOrder[E] =
+    new ContinuousUnboundedOrderImpl(elementOrd)
 
-  def defaultBoundedBelowOrder[E, L <: Bound[E], U <: Bound[E]](
-    implicit elementOrd: BoundedOrder.Below[E, E] with Hash[E]
-  ): DefaultBoundedBelowOrder[E] =
-    new DefaultBoundedBelowOrderImpl(elementOrd)
+  implicit def continuousBoundedBelowOrder[E](
+    implicit elementOrd: ordset.BoundedOrder.Below[E, E] with Hash[E]
+  ): ContinuousBoundedBelowOrder[E] =
+    new ContinuousBoundedBelowOrderImpl(elementOrd)
 
-  def defaultBoundedAboveOrder[E, L <: Bound[E], U <: Bound[E]](
-    implicit elementOrd: BoundedOrder.Above[E, E] with Hash[E]
-  ): DefaultBoundedAboveOrder[E] =
-    new DefaultBoundedAboveOrderImpl(elementOrd)
+  implicit def continuousBoundedAboveOrder[E](
+    implicit elementOrd: ordset.BoundedOrder.Above[E, E] with Hash[E]
+  ): ContinuousBoundedAboveOrder[E] =
+    new ContinuousBoundedAboveOrderImpl(elementOrd)
 
-  def defaultBoundedOrder[E, L <: Bound[E], U <: Bound[E]](
-    implicit elementOrd: BoundedOrder[E, E, E] with Hash[E]
-  ): DefaultBoundedOrder[E] =
-    new DefaultBoundedOrderImpl(elementOrd)
+  implicit def continuousBoundedOrder[E](
+    implicit elementOrd: ordset.BoundedOrder[E, E, E] with Hash[E]
+  ): ContinuousBoundedOrder[E] =
+    new ContinuousBoundedOrderImpl(elementOrd)
+
+  implicit def discreteUnboundedOrder[E](
+    implicit elementOrd: ordset.DiscreteOrder[E] with Discrete.Infinite[E] with Hash[E]
+  ): DiscreteUnboundedOrder[E] =
+    new DiscreteUnboundedOrderImpl(elementOrd)
+
+  implicit def discreteBoundedBelowOrder[E](
+    implicit elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder.Below[E, E] with Hash[E]
+  ): DiscreteBoundedBelowOrder[E] =
+    new DiscreteBoundedBelowOrderImpl(elementOrd)
+
+  implicit def discreteBoundedAboveOrder[E](
+    implicit elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder.Above[E, E] with Hash[E]
+  ): DiscreteBoundedAboveOrder[E] =
+    new DiscreteBoundedAboveOrderImpl(elementOrd)
+
+  implicit def discreteBoundedOrder[E](
+    implicit elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder[E, E, E] with Hash[E]
+  ): DiscreteBoundedOrder[E] =
+    new DiscreteBoundedOrderImpl(elementOrd)
 
   implicit def defaultShow[E](implicit elementShow: Show[E]): Show[Bound[E]] =
     SetBuilderFormat.boundShow(elementShow)
@@ -228,12 +247,43 @@ object Bound {
       order.min(x, y).asInstanceOf[Lower[E]]
   }
 
-  trait DefaultOrder[E] extends Order[Bound[E]] with Hash[Bound[E]] {
+  sealed trait DefaultOrder[E] extends Order[Bound[E]] with Hash[Bound[E]] {
+
+    def elementOrd: Order[E] with Hash[E]
+  }
+
+  sealed trait BoundedBelowOrder[E] 
+    extends ordset.BoundedOrder.Below.Including[Bound[E], Bound.Lower[E]]
+    with DefaultOrder[E] {
+
+    override def elementOrd: ordset.BoundedOrder.Below[E, E] with Hash[E]
+
+    final override val lowerBound: Bound.Lower[E] = 
+      new Bound.Lower(elementOrd.lowerBound, elementOrd.lowerBoundIncluded)
+  }
+
+  sealed trait BoundedAboveOrder[E] 
+    extends ordset.BoundedOrder.Above.Including[Bound[E], Bound.Upper[E]]
+    with DefaultOrder[E] {
+
+    override def elementOrd: ordset.BoundedOrder.Above[E, E] with Hash[E]
+
+    final override val upperBound: Bound.Upper[E] = 
+      new Bound.Upper(elementOrd.upperBound, elementOrd.upperBoundIncluded)
+  }
+
+  sealed trait BoundedOrder[E]
+    extends ordset.BoundedOrder.Including[Bound[E], Bound.Lower[E], Bound.Upper[E]]
+    with BoundedBelowOrder[E]
+    with BoundedAboveOrder[E] {
+
+    override def elementOrd: ordset.BoundedOrder[E, E, E] with Hash[E]
+  }
+
+  sealed trait ContinuousOrder[E] extends DefaultOrder[E] {
 
     import util.HashUtil._
     import ordset.instances.int.{intOrderWithHash => intOrd}
-
-    def elementOrd: Order[E] with Hash[E]
 
     final override def compare(x: Bound[E], y: Bound[E]): Int = {
       val cmp = elementOrd.compare(x.element, y.element)
@@ -248,52 +298,289 @@ object Bound {
       elementOrd.eqv(x.element, y.element) && intOrd.eqv(x.offset, y.offset)
   }
 
-  trait DefaultUnboundedOrder[E] extends DefaultOrder[E]
+  trait ContinuousUnboundedOrder[E] extends ContinuousOrder[E]
 
-  trait DefaultBoundedBelowOrder[E] 
-    extends BoundedOrder.Below.Including[Bound[E], Bound.Lower[E]]
-    with DefaultOrder[E] {
+  trait ContinuousBoundedBelowOrder[E] extends BoundedBelowOrder[E] with ContinuousOrder[E]
 
-    override def elementOrd: BoundedOrder.Below[E, E] with Hash[E]
+  trait ContinuousBoundedAboveOrder[E] extends BoundedAboveOrder[E] with ContinuousOrder[E]
 
-    final override val lowerBound: Bound.Lower[E] = 
-      new Bound.Lower(elementOrd.lowerBound, elementOrd.lowerBoundIncluded)
+  trait ContinuousBoundedOrder[E] 
+    extends BoundedOrder[E]
+    with ContinuousBoundedBelowOrder[E]
+    with ContinuousBoundedAboveOrder[E] {
+
+    override def elementOrd: ordset.BoundedOrder[E, E, E] with Hash[E]
   }
 
-  trait DefaultBoundedAboveOrder[E] 
-    extends BoundedOrder.Above.Including[Bound[E], Bound.Upper[E]]
-    with DefaultOrder[E] {
+  sealed trait DiscreteOrder[E] extends DefaultOrder[E] {
 
-    override def elementOrd: BoundedOrder.Above[E, E] with Hash[E]
+    import util.HashUtil._
+    import ordset.instances.int.{intOrderWithHash => intOrd}
 
-    final override val upperBound: Bound.Upper[E] = 
-      new Bound.Upper(elementOrd.upperBound, elementOrd.upperBoundIncluded) 
+    override def elementOrd: ordset.DiscreteOrder[E] with Hash[E]
+
+    override def compare(x: Bound[E], y: Bound[E]): Int = {
+      var xe = x.element
+      var xo = x.offset
+      if (x.isExcluding) {
+        // ( N  =>  [ N+1
+        if (x.isLower) {
+          val xs = elementOrd.successorOrNull(xe)
+          if (xs != null) {
+            xe = xs
+            xo = 0
+          }
+        // N )  =>  N-1 ]
+        } else {
+          val xp = elementOrd.predecessorOrNull(xe)
+          if (xp != null) {
+            xe = xp
+            xo = 0
+          }
+        }
+      }
+      var ye = y.element
+      var yo = y.offset
+      if (y.isExcluding) {
+        // ( N  =>  [ N+1
+        if (y.isLower) {
+          val ys = elementOrd.successorOrNull(ye)
+          if (ys != null) {
+            ye = ys
+            yo = 0
+          }
+        // N )  =>  N-1 ]
+        } else {
+          val yp = elementOrd.predecessorOrNull(ye)
+          if (yp != null) {
+            ye = yp
+            yo = 0
+          }
+        }
+      }
+      val cmp = elementOrd.compare(xe, ye)
+      if (cmp != 0) cmp
+      else intOrd.compare(xo, yo)
+    }
+
+    override def hash(x: Bound[E]): Int = {
+      var xe = x.element
+      var xo = x.offset
+      if (x.isExcluding) {
+        // ( N  =>  [ N+1
+        if (x.isLower) {
+          val xs = elementOrd.successorOrNull(xe)
+          if (xs != null) {
+            xe = xs
+            xo = 0
+          }
+        // N )  =>  N-1 ]
+        } else {
+          val xp = elementOrd.predecessorOrNull(xe)
+          if (xp != null) {
+            xe = xp
+            xo = 0
+          }
+        }
+      }
+      product2Hash(elementOrd.hash(xe), intOrd.hash(xo))
+    }
+
+    override def eqv(x: Bound[E], y: Bound[E]): Boolean = {
+      var xe = x.element
+      var xo = x.offset
+      if (x.isExcluding) {
+        // ( N  =>  [ N+1
+        if (x.isLower) {
+          val xs = elementOrd.successorOrNull(xe)
+          if (xs != null) {
+            xe = xs
+            xo = 0
+          }
+        // N )  =>  N-1 ]
+        } else {
+          val xp = elementOrd.predecessorOrNull(xe)
+          if (xp != null) {
+            xe = xp
+            xo = 0
+          }
+        }
+      }
+      var ye = y.element
+      var yo = y.offset
+      if (y.isExcluding) {
+        // ( N  =>  [ N+1
+        if (y.isLower) {
+          val ys = elementOrd.successorOrNull(ye)
+          if (ys != null) {
+            ye = ys
+            yo = 0
+          }
+        // N )  =>  N-1 ]
+        } else {
+          val yp = elementOrd.predecessorOrNull(ye)
+          if (yp != null) {
+            ye = yp
+            yo = 0
+          }
+        }
+      }
+      elementOrd.eqv(xe, ye) && intOrd.eqv(xo, yo)
+    }
   }
 
-  trait DefaultBoundedOrder[E] 
-    extends BoundedOrder.Including[Bound[E], Bound.Lower[E], Bound.Upper[E]]
-    with DefaultBoundedBelowOrder[E]
-    with DefaultBoundedAboveOrder[E] {
+  trait DiscreteUnboundedOrder[E] extends DiscreteOrder[E] {
 
-    override def elementOrd: BoundedOrder[E, E, E] with Hash[E]
+    import util.HashUtil._
+    import ordset.instances.int.{intOrderWithHash => intOrd}
+
+    override def elementOrd: ordset.DiscreteOrder[E] with Discrete.Infinite[E] with Hash[E]
+
+    final override def compare(x: Bound[E], y: Bound[E]): Int = {
+      var xe = x.element
+      var xo = x.offset
+      if (x.isExcluding) {
+        // ( N  =>  [ N+1
+        if (x.isLower) {
+          xe = elementOrd.successor(xe)
+          xo = 0
+        // N )  =>  N-1 ]
+        } else {
+          xe = elementOrd.predecessor(xe)
+          xo = 0
+        }
+      }
+      var ye = y.element
+      var yo = y.offset
+      if (y.isExcluding) {
+        // ( N  =>  [ N+1
+        if (y.isLower) {
+          ye = elementOrd.successor(ye)
+          yo = 0
+        // N )  =>  N-1 ]
+        } else {
+          ye = elementOrd.predecessor(ye)
+          yo = 0
+        }
+      }
+      val cmp = elementOrd.compare(xe, ye)
+      if (cmp != 0) cmp
+      else intOrd.compare(xo, yo)
+    }
+
+    final override def hash(x: Bound[E]): Int = {
+      var xe = x.element
+      var xo = x.offset
+      if (x.isExcluding) {
+        // ( N  =>  [ N+1
+        if (x.isLower) {
+          xe = elementOrd.successor(xe)
+          xo = 0
+        // N )  =>  N-1 ]
+        } else {
+          xe = elementOrd.predecessor(xe)
+          xo = 0
+        }
+      }
+      product2Hash(elementOrd.hash(xe), intOrd.hash(xo))
+    }
+
+    final override def eqv(x: Bound[E], y: Bound[E]): Boolean = {
+      var xe = x.element
+      var xo = x.offset
+      if (x.isExcluding) {
+        // ( N  =>  [ N+1
+        if (x.isLower) {
+          xe = elementOrd.successor(xe)
+          xo = 0
+        // N )  =>  N-1 ]
+        } else {
+          xe = elementOrd.predecessor(xe)
+          xo = 0
+        }
+      }
+      var ye = y.element
+      var yo = y.offset
+      if (y.isExcluding) {
+        // ( N  =>  [ N+1
+        if (y.isLower) {
+          ye = elementOrd.successor(ye)
+          yo = 0
+        // N )  =>  N-1 ]
+        } else {
+          ye = elementOrd.predecessor(ye)
+          yo = 0
+        }
+      }
+      elementOrd.eqv(xe, ye) && intOrd.eqv(xo, yo)
+    }
+  }
+
+  trait DiscreteBoundedBelowOrder[E] extends BoundedBelowOrder[E] with DiscreteOrder[E] {
+  
+    override def elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder.Below[E, E] with Hash[E]
+
+    final override def compare(x: Bound[E], y: Bound[E]): Int = super.compare(x, y)
+
+    final override def hash(x: Bound[E]): Int = super.hash(x)
+
+    final override def eqv(x: Bound[E], y: Bound[E]): Boolean = super.eqv(x, y)
+  }
+
+  trait DiscreteBoundedAboveOrder[E] extends BoundedAboveOrder[E] with DiscreteOrder[E] {
+
+    override def elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder.Above[E, E] with Hash[E]
+
+    final override def compare(x: Bound[E], y: Bound[E]): Int = super.compare(x, y)
+
+    final override def hash(x: Bound[E]): Int = super.hash(x)
+
+    final override def eqv(x: Bound[E], y: Bound[E]): Boolean = super.eqv(x, y)
+  }
+
+  trait DiscreteBoundedOrder[E] extends BoundedOrder[E] with DiscreteOrder[E] {
+
+    override def elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder[E, E, E] with Hash[E]
+
+    final override def compare(x: Bound[E], y: Bound[E]): Int = super.compare(x, y)
+
+    final override def hash(x: Bound[E]): Int = super.hash(x)
+
+    final override def eqv(x: Bound[E], y: Bound[E]): Boolean = super.eqv(x, y)
   }
 
   // Private section ---------------------------------------------------------- //
-  private final class DefaultUnboundedOrderImpl[E](
+  private final class ContinuousUnboundedOrderImpl[E](
     override val elementOrd: Order[E] with Hash[E]
-  ) extends DefaultUnboundedOrder[E]
+  ) extends ContinuousUnboundedOrder[E]
 
-  private final class DefaultBoundedBelowOrderImpl[E](
-    override val elementOrd: BoundedOrder.Below[E, E] with Hash[E]
-  ) extends DefaultBoundedBelowOrder[E]
+  private final class ContinuousBoundedBelowOrderImpl[E](
+    override val elementOrd: ordset.BoundedOrder.Below[E, E] with Hash[E]
+  ) extends ContinuousBoundedBelowOrder[E]
 
-  private final class DefaultBoundedAboveOrderImpl[E](
-    override val elementOrd: BoundedOrder.Above[E, E] with Hash[E]
-  ) extends DefaultBoundedAboveOrder[E]
+  private final class ContinuousBoundedAboveOrderImpl[E](
+    override val elementOrd: ordset.BoundedOrder.Above[E, E] with Hash[E]
+  ) extends ContinuousBoundedAboveOrder[E]
 
-  private final class DefaultBoundedOrderImpl[E](
-    override val elementOrd: BoundedOrder[E, E, E] with Hash[E]
-  ) extends DefaultBoundedOrder[E]
+  private final class ContinuousBoundedOrderImpl[E](
+    override val elementOrd: ordset.BoundedOrder[E, E, E] with Hash[E]
+  ) extends ContinuousBoundedOrder[E]
+
+  private final class DiscreteUnboundedOrderImpl[E](
+    override val elementOrd: ordset.DiscreteOrder[E] with Discrete.Infinite[E] with Hash[E]
+  ) extends DiscreteUnboundedOrder[E]
+
+  private final class DiscreteBoundedBelowOrderImpl[E](
+    override val elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder.Below[E, E] with Hash[E]
+  ) extends DiscreteBoundedBelowOrder[E]
+
+  private final class DiscreteBoundedAboveOrderImpl[E](
+    override val elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder.Above[E, E] with Hash[E]
+  ) extends DiscreteBoundedAboveOrder[E]
+
+  private final class DiscreteBoundedOrderImpl[E](
+    override val elementOrd: ordset.DiscreteOrder[E] with ordset.BoundedOrder[E, E, E] with Hash[E]
+  ) extends DiscreteBoundedOrder[E]
 }
 
 /**
@@ -370,25 +657,17 @@ sealed trait ExtendedBound[@sp(spNum) +E] {
 
 object ExtendedBound {
 
-  implicit def defaultUnboundedOrder[E](
-    implicit boundOrd: Bound.DefaultUnboundedOrder[E]
-  ): DefaultUnboundedOrder[E] =
-    new DefaultUnboundedOrderImpl(boundOrd)
+  implicit def unboundedOrder[E](implicit boundOrd: Bound.DefaultOrder[E]): UnboundedOrder[E] =
+    new UnboundedOrderImpl(boundOrd)
 
-  def defaultBoundedBelowOrder[E](
-    implicit boundOrd: Bound.DefaultBoundedBelowOrder[E]
-  ): DefaultBoundedBelowOrder[E] =
-    new DefaultBoundedBelowOrderImpl(boundOrd)
+  implicit def boundedBelowOrder[E](implicit boundOrd: Bound.BoundedBelowOrder[E]): BoundedBelowOrder[E] =
+    new BoundedBelowOrderImpl(boundOrd)
 
-  def defaultBoundedAboveOrder[E](
-    implicit boundOrd: Bound.DefaultBoundedAboveOrder[E]
-  ): DefaultBoundedAboveOrder[E] =
-    new DefaultBoundedAboveOrderImpl(boundOrd)
+  implicit def boundedAboveOrder[E](implicit boundOrd: Bound.BoundedAboveOrder[E]): BoundedAboveOrder[E] =
+    new BoundedAboveOrderImpl(boundOrd)
 
-  def defaultBoundedOrder[E](
-    implicit boundOrd: Bound.DefaultBoundedOrder[E]
-  ): DefaultBoundedOrder[E] =
-    new DefaultBoundedOrderImpl(boundOrd)
+  implicit def boundedOrder[E](implicit boundOrd: Bound.BoundedOrder[E]): BoundedOrder[E] =
+    new BoundedOrderImpl(boundOrd)
 
   implicit def defaultShow[E](implicit elementShow: Show[E]): Show[ExtendedBound[E]] =
     SetBuilderFormat.extendedBoundShow(elementShow)
@@ -467,8 +746,8 @@ object ExtendedBound {
     override def toString: String = SetBuilderFormat.belowAllBound
   }
 
-  trait DefaultOrder[E]
-    extends BoundedOrder.Including[ExtendedBound[E], ExtendedBound[E], ExtendedBound[E]] 
+  sealed trait DefaultOrder[E] 
+    extends ordset.BoundedOrder.Including[ExtendedBound[E], ExtendedBound[E], ExtendedBound[E]] 
     with Hash[ExtendedBound[E]] {
 
     import ordset.instances.int.{intOrderWithHash => intOrd}
@@ -500,44 +779,44 @@ object ExtendedBound {
     }
   }
 
-  trait DefaultUnboundedOrder[E] 
-    extends BoundedOrder.Including[ExtendedBound[E], ExtendedBound.BelowAll.type, ExtendedBound.AboveAll.type]
+  trait UnboundedOrder[E] 
+    extends ordset.BoundedOrder.Including[ExtendedBound[E], ExtendedBound.BelowAll.type, ExtendedBound.AboveAll.type]
     with DefaultOrder[E] {
 
-    override def boundOrd: Bound.DefaultUnboundedOrder[E]
+    override def boundOrd: Bound.DefaultOrder[E]
 
     final override val lowerBound: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
 
     final override val upperBound: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
   }
 
-  trait DefaultBoundedBelowOrder[E] 
-    extends BoundedOrder.Including[ExtendedBound[E], Bound.Lower[E], ExtendedBound.AboveAll.type]
+  trait BoundedBelowOrder[E] 
+    extends ordset.BoundedOrder.Including[ExtendedBound[E], Bound.Lower[E], ExtendedBound.AboveAll.type]
     with DefaultOrder[E] {
 
-    override def boundOrd: Bound.DefaultBoundedBelowOrder[E]
+    override def boundOrd: Bound.BoundedBelowOrder[E]
 
     final override val lowerBound: Bound.Lower[E] = boundOrd.lowerBound
 
-    override val upperBound: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
+    final override val upperBound: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
   }
 
-  trait DefaultBoundedAboveOrder[E] 
-    extends BoundedOrder.Including[ExtendedBound[E], ExtendedBound.BelowAll.type, Bound.Upper[E]]
+  trait BoundedAboveOrder[E] 
+    extends ordset.BoundedOrder.Including[ExtendedBound[E], ExtendedBound.BelowAll.type, Bound.Upper[E]]
     with DefaultOrder[E] {
 
-    override def boundOrd: Bound.DefaultBoundedAboveOrder[E]
+    override def boundOrd: Bound.BoundedAboveOrder[E]
 
-    override val lowerBound: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
+    final override val lowerBound: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
 
     final override val upperBound: Bound.Upper[E] = boundOrd.upperBound
   }
 
-  trait DefaultBoundedOrder[E] 
-    extends BoundedOrder.Including[ExtendedBound[E], Bound.Lower[E], Bound.Upper[E]]
+  trait BoundedOrder[E] 
+    extends ordset.BoundedOrder.Including[ExtendedBound[E], Bound.Lower[E], Bound.Upper[E]]
     with DefaultOrder[E] {
 
-    override def boundOrd: Bound.DefaultBoundedOrder[E]
+    override def boundOrd: Bound.BoundedOrder[E]
 
     final override val lowerBound: Bound.Lower[E] = boundOrd.lowerBound
 
@@ -545,19 +824,19 @@ object ExtendedBound {
   }
 
   // Private section ---------------------------------------------------------- //
-  private final class DefaultUnboundedOrderImpl[E](
-    val boundOrd: Bound.DefaultUnboundedOrder[E]
-  ) extends DefaultUnboundedOrder[E]
+  private final class UnboundedOrderImpl[E](
+    override val boundOrd: Bound.DefaultOrder[E]
+  ) extends UnboundedOrder[E]
 
-  private final class DefaultBoundedBelowOrderImpl[E](
-    val boundOrd: Bound.DefaultBoundedBelowOrder[E]
-  ) extends DefaultBoundedBelowOrder[E]
+  private final class BoundedBelowOrderImpl[E](
+    override val boundOrd: Bound.BoundedBelowOrder[E]
+  ) extends BoundedBelowOrder[E]
 
-  private final class DefaultBoundedAboveOrderImpl[E](
-    val boundOrd: Bound.DefaultBoundedAboveOrder[E]
-  ) extends DefaultBoundedAboveOrder[E]
+  private final class BoundedAboveOrderImpl[E](
+    override val boundOrd: Bound.BoundedAboveOrder[E]
+  ) extends BoundedAboveOrder[E]
 
-  private final class DefaultBoundedOrderImpl[E](
-    val boundOrd: Bound.DefaultBoundedOrder[E]
-  ) extends DefaultBoundedOrder[E]
+  private final class BoundedOrderImpl[E](
+    override val boundOrd: Bound.BoundedOrder[E]
+  ) extends BoundedOrder[E]
 }

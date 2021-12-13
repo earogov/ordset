@@ -68,21 +68,21 @@ object OrderComponents {
 
   class UnitDiscreteFiniteOrder()
     extends cats.kernel.instances.UnitOrder
-      with DiscreteFiniteOrder[Unit, Unit, Unit]
+      with DiscreteOrder.Finite[Unit, Unit, Unit]
       with DiscreteComponents.Unit.Discrete
       with BoundedComponents.UnitBounded
       with Directed.Ascending
 
   class BooleanDiscreteFiniteOrder()
     extends cats.kernel.instances.BooleanOrder
-    with DiscreteFiniteOrder[Boolean, Boolean, Boolean]
+    with DiscreteOrder.Finite[Boolean, Boolean, Boolean]
     with DiscreteComponents.Boolean.Discrete
     with BoundedComponents.BooleanBounded
     with Directed.Ascending
 
   class ByteDiscreteFiniteOrder()
     extends cats.kernel.instances.ByteOrder
-    with DiscreteFiniteOrder[Byte, Byte, Byte]
+    with DiscreteOrder.Finite[Byte, Byte, Byte]
     with DiscreteComponents.Numeric.Discrete[Byte]
     with BoundedComponents.ByteBounded
     with Directed.Ascending {
@@ -92,7 +92,7 @@ object OrderComponents {
 
   class ShortDiscreteFiniteOrder()
     extends cats.kernel.instances.ShortOrder
-    with DiscreteFiniteOrder[Short, Short, Short]
+    with DiscreteOrder.Finite[Short, Short, Short]
     with DiscreteComponents.Numeric.Discrete[Short]
     with BoundedComponents.ShortBounded
     with Directed.Ascending {
@@ -102,7 +102,7 @@ object OrderComponents {
 
   class IntDiscreteFiniteOrder()
     extends cats.kernel.instances.IntOrder
-    with DiscreteFiniteOrder[Int, Int, Int]
+    with DiscreteOrder.Finite[Int, Int, Int]
     with DiscreteComponents.Numeric.Discrete[Int]
     with BoundedComponents.IntBounded
     with Directed.Ascending {
@@ -112,7 +112,7 @@ object OrderComponents {
 
   class LongDiscreteFiniteOrder()
     extends cats.kernel.instances.LongOrder
-    with DiscreteFiniteOrder[Long, Long, Long]
+    with DiscreteOrder.Finite[Long, Long, Long]
     with DiscreteComponents.Numeric.Discrete[Long]
     with BoundedComponents.LongBounded
     with Directed.Ascending {

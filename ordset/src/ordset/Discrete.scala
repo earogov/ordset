@@ -5,11 +5,22 @@ import ordset.util.OptionUtil
 /**
  * Typeclass specifying sequence of elements of discrete ordered set. 
  *
- * Implementations must enforce conditions:
- * <tr>1. predecessor(successor(x)) `=` x</tr>
- * <tr>2. successor(predecessor(x)) `=` x</tr>  
- * 
- * @tparam E element type parameter
+ * Implementations MUST enforce conditions: 
+ * <tr>
+ *   1.a If `x` has successor, then: `predecessor(successor(x)) = x`.
+ * </tr>
+ * <tr>
+ *   1.b Otherwise `∄` `y` such that: `predecessor(y) = x`.
+ * </tr>
+ * <tr>
+ *   2.a If `x` has predecessor, then: `successor(predecessor(x)) = x`.
+ * </tr>
+ * <tr>
+ *   2.b Otherwise `∄` `y` such that: `successor(y) = x`.
+ * </tr>
+ * <tr>
+ *   3. If `x` is not included in set, then it doesn't have successor and predecessor.
+ * </tr>
  */
 trait Discrete[E] extends Discrete.Succeeding[E] with Discrete.Preceding[E]
 
@@ -17,6 +28,8 @@ object Discrete {
 
   /** 
    * Typeclass to get succeeding elements of sequence.
+   * 
+   * See condition 3 of [[Discrete]].
    */
   trait Succeeding[E] {
 
@@ -60,6 +73,8 @@ object Discrete {
 
   /** 
    * Typeclass to get preceding elements of sequence.
+   * 
+   * See condition 3 of [[Discrete]].
    */
   trait Preceding[E] {
 
@@ -106,6 +121,7 @@ object Discrete {
    *
    * Each element of the set has both successor and predecessor.
    * 
+   * See conditions 1.a and 2.a of [[Discrete]].
    */
   trait Infinite[E] extends Discrete[E] with Succeeding.Infinite[E] with Preceding.Infinite[E] {
 

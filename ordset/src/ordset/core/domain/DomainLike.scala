@@ -15,9 +15,13 @@ trait DomainLike[E] {
 
   def upperExtendedBound: ExtendedBound[E] = extendedOrd.upperBound
 
-  def isContinuos: Boolean
+  def isContinuous: Boolean
 
   def isDiscrete: Boolean
+
+  def isBoundedBelow: Boolean
+
+  def isBoundedAbove: Boolean
 
   def isBounded: Boolean
 
@@ -40,9 +44,13 @@ object DomainLike {
 
     override def upperExtendedBound: ExtendedBound[E] = domain.upperExtendedBound
 
-    override def isContinuos: Boolean = domain.isContinuos
+    override def isContinuous: Boolean = domain.isContinuous
 
     override def isDiscrete: Boolean = domain.isDiscrete
+
+    override def isBoundedBelow: Boolean = domain.isBoundedBelow
+
+    override def isBoundedAbove: Boolean = domain.isBoundedAbove
 
     override def isBounded: Boolean = domain.isBounded
 

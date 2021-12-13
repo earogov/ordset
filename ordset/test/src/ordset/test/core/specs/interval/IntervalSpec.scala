@@ -15,7 +15,7 @@ class IntervalSpec extends AnyFunSpec {
   import ordset.instances.int._
   import ordset.core.syntax.SetBuilderNotation._
 
-  type Dom = Domain.UnboundedContinuous[Int]
+  type Dom = Domain.ContinuousUnbounded[Int]
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
   val ops: DomainOps[Int, Dom] = DomainOps.default

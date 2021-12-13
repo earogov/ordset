@@ -22,7 +22,7 @@ object ZipExample {
   private val sep = "-----------------"
   
   private val stringValueOps: ValueOps[String] = implicitly
-  private val domainOps: DomainOps[Int, Domain.UnboundedContinuous[Int]] = implicitly
+  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
   @main
   def zipExampleMain(): Unit = {

@@ -4,7 +4,7 @@ package ordset
  * Entity with direction property. Direction can be either ascending or descending.
  * It is defined both with type parameter ([[Directed!.Dir]]) and value ([[Directed!.direction]]).
  * 
- * Trait should be combined with typeclasses like [[Order]], [[Discrete]], etc to distinguish instances
+ * Trait should be combined with typeclasses like [[Order]], [[Discrete]], etc. to distinguish instances
  * with different directions.
  * 
  * @tparam Dir direction type parameter

@@ -22,7 +22,7 @@ object MapExample {
 
   private val intValueOps: ValueOps[Int] = implicitly
   private val booleanValueOps: ValueOps[Boolean] = implicitly
-  private val domainOps: DomainOps[Int, Domain.UnboundedContinuous[Int]] = implicitly
+  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
   @main
   def mapExampleMain(): Unit = {

@@ -16,7 +16,7 @@ class IntervalAlgebraSpec extends AnyFunSpec {
 
   import scala.language.postfixOps
 
-  type Dom = Domain.UnboundedContinuous[Int]
+  type Dom = Domain.ContinuousUnbounded[Int]
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
   val ops: DomainOps[Int, Dom] = DomainOps.default
