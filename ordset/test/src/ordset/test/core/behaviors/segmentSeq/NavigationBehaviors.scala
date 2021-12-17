@@ -2,7 +2,6 @@ package ordset.test.core.behaviors.segmentSeq
 
 import ordset.core.domain.{Domain, DomainOps}
 import org.scalatest.funspec.AnyFunSpec
-import ordset.test.core.SegmentSeqAssertions
 import ordset.test.core.SegmentSeqAssertions._
 import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 

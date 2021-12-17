@@ -88,8 +88,8 @@ object Interval {
     def upperExtended: ExtendedBound.Upper[E] = ExtendedBound.AboveAll
 
     /**
-     * If `bound` is outside of interval, returns closest bound of interval (either lower or upper).
-     * Otherwise returns `bound`.
+     * Returns input `bound`, if it is inside interval, otherwise returns interval bound closest to input `bound` 
+     * (either lower or upper).
      *
      * <h3>Note</h3>
      *

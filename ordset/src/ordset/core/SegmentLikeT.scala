@@ -99,8 +99,8 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     }
 
   /**
-   * If `bound` is outside of segment, returns closest bound of segment (either lower or upper).
-   * Otherwise returns `bound`.
+   * Returns input `bound`, if it is inside segment, otherwise returns segment bound closest to input `bound` 
+   * (either lower or upper).
    *
    * <h3>Note</h3>
    *

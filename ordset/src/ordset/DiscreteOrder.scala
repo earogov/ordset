@@ -42,7 +42,10 @@ package ordset
  * <tr>- `predecessor(7) = null`</tr>   
  * <tr>- `successor(7) = null`  </tr>   
  */ 
-trait DiscreteOrder[E] extends Order[E] with Discrete[E] {
+trait DiscreteOrder[E] 
+  extends Order[E] 
+  with Discrete[E]
+  with Reversible[DiscreteOrder[E], DiscreteOrder[E]] {
 
   /**
    * Returns `true`, if `y` is successor of `x`.
@@ -57,6 +60,8 @@ trait DiscreteOrder[E] extends Order[E] with Discrete[E] {
    */
   def isAdjacent(x: E, y: E): Boolean =
     isSuccessor(x, y) || isSuccessor(y, x)
+
+  override def reversed: DiscreteOrder[E] = new DiscreteOrder.ReversedImpl(this)
 }
 
 object DiscreteOrder {
@@ -69,7 +74,11 @@ object DiscreteOrder {
   trait Finite[E, +L <: E, +U <: E] 
     extends BoundedOrder.Including[E, L, U]
     with Finite.Below[E, L] 
-    with Finite.Above[E, U] 
+    with Finite.Above[E, U]
+    with Reversible[Finite[E, L, U], Finite[E, U, L]] {
+
+    override def reversed: Finite[E, U, L] = new Finite.ReversedImpl(this)
+  }
 
   object Finite {
 
@@ -99,9 +108,30 @@ object DiscreteOrder {
      *      Lower bound is 0, but there is infinite number of elements.
      * </tr>
      */
-    trait Below[E, +L <: E] extends DiscreteOrder[E] with BoundedOrder.Below.Including[E, L] {
+    trait Below[E, +L <: E] 
+      extends DiscreteOrder[E] 
+      with BoundedOrder.Below.Including[E, L] 
+      with Reversible[Below[E, L], Above[E, L]] {
 
       override def hasPredecessor(x: E): Boolean = includes(x) && !isLeastElement(x)
+
+      override def reversed: Above[E, L] = new Above.ReversedImpl(this)
+    }
+
+    object Below {
+
+      /**
+       * [[DiscreteOrder.Finite.Below]] typeclass received by reverting [[DiscreteOrder.Finite.Above]] instance.
+       */
+      trait Reversed[E, +L <: E] 
+        extends DiscreteOrder.Reversed[E]
+        with BoundedOrder.Below.Including.Reversed[E, L] 
+        with Below[E, L]
+
+      class ReversedImpl[E, +L <: E](original: Above[E, L]) extends Reversed[E, L] {
+
+        override val reversed: Above[E, L] = original
+      }
     }
 
     /**
@@ -130,9 +160,54 @@ object DiscreteOrder {
      *      Upper bound is 0, but there is infinite number of elements.
      * </tr>
      */
-    trait Above[E, +U <: E] extends DiscreteOrder[E] with BoundedOrder.Above.Including[E, U] {
+    trait Above[E, +U <: E] 
+      extends DiscreteOrder[E] 
+      with BoundedOrder.Above.Including[E, U]
+      with Reversible[Above[E, U], Below[E, U]] {
 
       override def hasSuccessor(x: E): Boolean = includes(x) && !isGreatestElement(x)
+
+      override def reversed: Below[E, U] = new Below.ReversedImpl(this)
     }
+
+    object Above {
+
+      /**
+       * [[DiscreteOrder.Finite.Above]] typeclass received by reverting [[DiscreteOrder.Finite.Below]] instance.
+       */
+      trait Reversed[E, +U <: E] 
+        extends DiscreteOrder.Reversed[E]
+        with BoundedOrder.Above.Including.Reversed[E, U] 
+        with Above[E, U]
+
+      class ReversedImpl[E, +U <: E](original: Below[E, U]) extends Reversed[E, U] {
+
+        override val reversed: Below[E, U] = original
+      }
+    }
+
+    /**
+     * [[DiscreteOrder.Finite]] typeclass received by reverting another [[DiscreteOrder.Finite]] instance.
+     */
+    trait Reversed[E, +L <: E, +U <: E] 
+      extends BoundedOrder.Including.Reversed[E, L, U]
+      with Finite.Below.Reversed[E, L]
+      with Finite.Above.Reversed[E, U]
+      with Finite[E, L, U]
+
+    class ReversedImpl[E, +L <: E, +U <: E](original: Finite[E, U, L]) extends Reversed[E, L, U] {
+
+      override val reversed: Finite[E, U, L] = original
+    }
+  }
+
+  /**
+   * [[DiscreteOrder]] typeclass received by reverting another [[DiscreteOrder]] instance.
+   */
+  trait Reversed[E] extends Addition.Order.Reversed[E] with Discrete.Reversed[E] with DiscreteOrder[E]
+
+  class ReversedImpl[E](original: DiscreteOrder[E]) extends Reversed[E] {
+
+    override val reversed: DiscreteOrder[E] = original
   }
 }

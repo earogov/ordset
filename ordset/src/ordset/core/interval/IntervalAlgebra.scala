@@ -9,20 +9,27 @@ trait IntervalAlgebra[E, D <: Domain[E]] {
    * Returns subset of elements that belongs to both input intervals.
    *
    * Set of intervals with cross operation forms a commutative monoid with universal interval as identity:
-   * {{{ cross(x, universal) == cross(universal, x) == x }}}
+   *  
+   * `cross(x, universal) == cross(universal, x) == x`
+   * 
+   * {{{
+   * 
+   *         |-------------|  - x
+   *
+   *    |-----------|         - y
+   * 
+   *         |------|         - output
+  * }}}
    */
   def cross(x: Interval[E, D], y: Interval[E, D]): Interval[E, D]
 
   /**
-   * Returns subset of elements that belongs to interval and not less then specified bound.
+   * Returns subset of elements that belongs to interval and not less than specified bound.
    * {{{
    *
    *              bound
    *                |
    *         |-------------|  - x
-   *
-   *                |
-   *                V
    *
    *                |------|  - output
    *              bound
@@ -31,15 +38,12 @@ trait IntervalAlgebra[E, D <: Domain[E]] {
   def takeAbove(bound: Bound.Lower[E], x: Interval[E, D]): Interval[E, D]
 
   /**
-   * Returns subset of elements that belongs to interval and not greater then specified bound.
+   * Returns subset of elements that belongs to interval and not greater than specified bound.
    * {{{
    *
    *              bound
    *                |
    *         |-------------|  - x
-   *
-   *                |
-   *                V
    *
    *         |------|         - output
    *              bound

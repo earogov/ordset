@@ -283,7 +283,7 @@ object Bound {
   sealed trait ContinuousOrder[E] extends DefaultOrder[E] {
 
     import util.HashUtil._
-    import ordset.instances.int.{intOrderWithHash => intOrd}
+    import ordset.givens.int.{intNaturalOrder => intOrd}
 
     final override def compare(x: Bound[E], y: Bound[E]): Int = {
       val cmp = elementOrd.compare(x.element, y.element)
@@ -315,7 +315,7 @@ object Bound {
   sealed trait DiscreteOrder[E] extends DefaultOrder[E] {
 
     import util.HashUtil._
-    import ordset.instances.int.{intOrderWithHash => intOrd}
+    import ordset.givens.int.{intNaturalOrder => intOrd}
 
     override def elementOrd: ordset.DiscreteOrder[E] with Hash[E]
 
@@ -432,7 +432,7 @@ object Bound {
   trait DiscreteUnboundedOrder[E] extends DiscreteOrder[E] {
 
     import util.HashUtil._
-    import ordset.instances.int.{intOrderWithHash => intOrd}
+    import ordset.givens.int.{intNaturalOrder => intOrd}
 
     override def elementOrd: ordset.DiscreteOrder[E] with Discrete.Infinite[E] with Hash[E]
 
@@ -750,7 +750,7 @@ object ExtendedBound {
     extends ordset.BoundedOrder.Including[ExtendedBound[E], ExtendedBound[E], ExtendedBound[E]] 
     with Hash[ExtendedBound[E]] {
 
-    import ordset.instances.int.{intOrderWithHash => intOrd}
+    import ordset.givens.int.{intNaturalOrder => intOrd}
 
     def boundOrd: Order[Bound[E]] with Hash[Bound[E]]
 

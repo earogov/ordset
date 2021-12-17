@@ -7,8 +7,8 @@ import ordset.{Hash, Show, util}
 import scala.{specialized => sp}
 
 case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
-    interval: Interval[E, D], 
-    value: V
+    val interval: Interval[E, D], 
+    val value: V
 ) {
 
   /**

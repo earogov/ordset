@@ -1,31 +1,56 @@
 package ordset.core.range
 
-import ordset.Order
-import ordset.core.range.Range.NonEmpty
-import ordset.core.range.Range.Empty
+/**
+ * Range of elements (empty or non-empty).
+ * 
+ * Note, any range implementation MUST be a subclass of [[Range.Empty]] or [[Range.NonEmpty]].
+ * 
+ * @tparam E type of elements.
+ */
+trait Range[+E] {
 
-sealed trait Range[+E]
+  /** 
+   * Returns `true` if range is empty. 
+   */
+  def isEmpty: Boolean
+
+  /** 
+   * Returns `true` if range is non-empty. 
+   */
+  def isNonEmpty: Boolean
+}
 
 object Range {
 
-  trait Empty extends Range[Nothing]
+  /**
+   * Empty range. Doesn't include any elements.
+   */
+  trait Empty extends Range[Nothing] {
 
-  object Empty extends Empty
+    final override def isEmpty: Boolean = true
 
-  trait NonEmpty[+E] extends Range[E] {
-
-    def lower: E
-
-    def upper: E
+    final override def isNonEmpty: Boolean = false
   }
 
-  object NonEmpty {
+  /**
+   * Non-empty range. Includes all elements between `lower` (including) and `upper` (including).
+   * 
+   * @tparam E type of elements.
+   */
+  trait NonEmpty[+E] extends Range[E] {
 
-    def apply[E](lower: E, upper: E): NonEmpty[E] = new DefaultImpl(lower, upper)
+    /**
+     * Lower bound of range (including).
+     */
+    def lower: E
 
-    private case class DefaultImpl[+E](
-      override val lower: E,
-      override val upper: E
-    ) extends NonEmpty[E]
+    /**
+     * Upper bound of range (including).
+     */
+    def upper: E
+
+    final override def isEmpty: Boolean = false
+
+    final override def isNonEmpty: Boolean = true
   }
 }

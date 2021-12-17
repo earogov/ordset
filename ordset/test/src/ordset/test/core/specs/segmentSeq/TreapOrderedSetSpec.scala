@@ -14,8 +14,8 @@ class TreapOrderedSetSpec extends AnyFunSpec
   with NavigationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean] {
 
-  import ordset.instances.boolean._
-  import ordset.instances.int._
+  import ordset.givens.boolean._
+  import ordset.givens.int._
   import ordset.test.core.TestRngUtil.Implicits._
 
   type Dom = Domain.ContinuousUnbounded[Int]

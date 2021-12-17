@@ -7,12 +7,11 @@ import ordset.core.interval.{Interval, IntervalBuilder}
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import cats.syntax.validated
 
 @RunWith(classOf[JUnitRunner])
 class IntervalSpec extends AnyFunSpec {
 
-  import ordset.instances.int._
+  import ordset.givens.int._
   import ordset.core.syntax.SetBuilderNotation._
 
   type Dom = Domain.ContinuousUnbounded[Int]

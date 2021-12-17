@@ -5,9 +5,11 @@ import ordset.core._
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.interval.IntervalRelation
 import ordset.util.IterableUtil
-import org.scalatest.Assertions._
 
 object SegmentSeqAssertions {
+
+  import ordset.test.AssertionsUtil.debugInfo
+  import org.scalatest.Assertions._
 
   def assertSameSegment[E, D <: Domain[E], V](
     expected: Segment[E, D, V],
@@ -67,7 +69,7 @@ object SegmentSeqAssertions {
         actual.domainOps.domain
       )
     )
-    assertSameRelationSeq(
+    IntervalAssertions.assertSameRelationSeq(
       expected.firstSegment.forwardIterable.map(_.intervalRelation),
       actual.firstSegment.forwardIterable.map(_.intervalRelation),
       info
@@ -83,29 +85,10 @@ object SegmentSeqAssertions {
     domainOps: DomainOps[E, D],
     valueHash: Hash[V]
   ): Unit =
-    assertSameRelationSeq(
+    IntervalAssertions.assertSameRelationSeq(
       expected,
       actual.firstSegment.forwardIterable.map(_.intervalRelation),
       info
-    )
-
-  def assertSameRelationSeq[E, D <: Domain[E], V](
-    expected: Iterable[IntervalRelation[E, D, V]],
-    actual: Iterable[IntervalRelation[E, D, V]],
-    info: String = ""
-  )(
-    implicit
-    domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
-  ): Unit =
-    assert(
-      IterableUtil.iteratorEq(
-        actual.iterator,
-        expected.iterator
-      )(
-        domainOps.intervalRelations.hash(valueHash)
-      ),
-      debugInfo(expected, actual, info)
     )
 
   def assertSameBoundValueIterable[E, D <: Domain[E], V](
@@ -140,13 +123,5 @@ object SegmentSeqAssertions {
         "different bounds" + debugInfo(expItem._1, actItem._1, info)
       )
     }
-  }
-
-  // Private section ---------------------------------------------------------- //
-  private def debugInfo(expected: Any, actual: Any, info: String = ""): String = {
-    val sep = System.lineSeparator
-    val msg = s"${sep}expected: $expected${sep}actual: $actual"
-    if (info.nonEmpty) msg + sep + info
-    else msg
   }
 }

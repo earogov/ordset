@@ -317,6 +317,8 @@ object Domain {
 
     import ordset.util.HashUtil._
 
+    private val hashConst: Array[Int] = Array(0xC38B071A, 0x084E22F0, 0x4FE710A5, 0xAA63B51C, 0x84CE051B, 0x6E78FA31)
+
     override def eqv(x: D, y: D): Boolean =
       (x eq y) || 
       (
@@ -327,9 +329,9 @@ object Domain {
       )
 
     override def hash(x: D): Int = {
-      val h1 = if (x.isBoundedBelow) 0xC38B071A else 0x084E22F0
-      val h2 = if (x.isBoundedAbove) 0x4FE710A5 else 0xAA63B51C
-      val h3 = if (x.isContinuous) 0x84CE051B else 0x6E78FA31
+      val h1 = if (x.isBoundedBelow) hashConst(0) else hashConst(1)
+      val h2 = if (x.isBoundedAbove) hashConst(2) else hashConst(3)
+      val h3 = if (x.isContinuous) hashConst(4) else hashConst(5)
       product4Hash(orderHash.hash(x.elementOrd), h1, h2, h3)
     }
   }

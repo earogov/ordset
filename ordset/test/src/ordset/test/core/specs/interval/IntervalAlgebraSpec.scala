@@ -10,7 +10,7 @@ import org.scalatest.funspec.AnyFunSpec
 @RunWith(classOf[JUnitRunner])
 class IntervalAlgebraSpec extends AnyFunSpec {
   
-  import ordset.instances.int._
+  import ordset.givens.int._
   import ordset.core.syntax.BoundSyntax._
   import ordset.core.syntax.SetBuilderNotation._
 

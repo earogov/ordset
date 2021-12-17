@@ -76,28 +76,28 @@ object ValueOps {
   implicit lazy val booleanValueOps: ValueOps[Boolean] =
     new DefaultImpl[Boolean](
       false,
-      ordset.instances.boolean.booleanOrderWithHash,
+      ordset.givens.boolean.booleanNaturalOrder,
       InclusionPredicate.booleanInclusion
     )
 
   implicit lazy val intValueOps: ValueOps[Int] =
     new DefaultImpl[Int](
       0,
-      ordset.instances.int.intOrderWithHash,
+      ordset.givens.int.intNaturalOrder,
       InclusionPredicate.alwaysIncluded
     )
 
   implicit lazy val longValueOps: ValueOps[Long] =
     new DefaultImpl[Long](
       0L,
-      ordset.instances.long.longOrderWithHash,
+      ordset.givens.long.longNaturalOrder,
       InclusionPredicate.alwaysIncluded
     )
 
   implicit lazy val stringValueOps: ValueOps[String] =
     new DefaultImpl[String](
       "",
-      ordset.instances.string.stringOrderWithHash,
+      ordset.givens.string.stringNaturalOrder,
       InclusionPredicate.alwaysIncluded
     )
 
@@ -116,7 +116,7 @@ object ValueOps {
     override val unit: (V1, V2) = (valueOps1.unit, valueOps2.unit)
 
     override val valueHash: Hash[(V1, V2)] =
-      ordset.instances.tuple2.tuple2Hash(valueOps1.valueHash, valueOps2.valueHash)
+      ordset.givens.tuple2.tuple2Hash(valueOps1.valueHash, valueOps2.valueHash)
   }
   
   final class EitherImpl[V1, V2](
@@ -131,7 +131,7 @@ object ValueOps {
       else Right(valueOps2.unit)
       
     override val valueHash: Hash[Either[V1, V2]] =
-      ordset.instances.either.eitherHash(valueOps1.valueHash, valueOps2.valueHash)
+      ordset.givens.either.eitherHash(valueOps1.valueHash, valueOps2.valueHash)
   }
 
   final class MapImpl[V1, V2](

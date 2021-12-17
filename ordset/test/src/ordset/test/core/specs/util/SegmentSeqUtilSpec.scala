@@ -16,13 +16,14 @@ import scala.language.postfixOps
 @RunWith(classOf[JUnitRunner])
 class SegmentSeqUtilSpec extends AnyFunSpec {
 
-  import ordset.instances.boolean._
-  import ordset.instances.int._
+  import ordset.givens.boolean._
+  import ordset.givens.int._
   import ordset.core.syntax.BoundSyntax._
   import ordset.core.syntax.SetBuilderNotation._
-  import ordset.instances.list._
-  import ordset.instances.tuple2._
+  import ordset.givens.list._
+  import ordset.givens.tuple2._
   import ordset.test.core.SegmentSeqAssertions._
+  import ordset.test.core.IntervalAssertions._
   import ordset.test.core.TestRngUtil.Implicits._
 
   type Dom = Domain.ContinuousUnbounded[Int]

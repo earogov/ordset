@@ -74,5 +74,5 @@ object Treap {
       nodePriorityEq(x.priority, x.key, y.priority, y.key)(keyOrder)
   }
 
-  private val intOrder = ordset.instances.int.intOrderWithHash
+  private val intOrder = ordset.givens.int.intNaturalOrder
 }
