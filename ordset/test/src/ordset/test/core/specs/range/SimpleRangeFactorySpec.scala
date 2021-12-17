@@ -15,7 +15,7 @@ class RangeFactorySpec extends AnyFunSpec {
   import ordset.givens.int._
   import ordset.givens.string._
 
-  it("unbounded domain") {
+  it("should build ranges for unbounded domain") {
 
     implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.unbounded
 
@@ -27,7 +27,7 @@ class RangeFactorySpec extends AnyFunSpec {
     defaultEmptyRangeTests
   }
 
-  it("bounded below domain") {
+  it("should build ranges for bounded below domain") {
 
     val intOrder = int.tryNaturalOrderWithBounds(0, Int.MaxValue).get
     implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.boundedBelow(intOrder)
@@ -45,7 +45,7 @@ class RangeFactorySpec extends AnyFunSpec {
     validateEmptyRange(-15, -15)
   }
 
-  it("bounded above domain") {
+  it("should build ranges for bounded above domain") {
 
     val intOrder = int.tryNaturalOrderWithBounds(Int.MinValue, 0).get
     implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.boundedAbove(intOrder)
@@ -63,7 +63,7 @@ class RangeFactorySpec extends AnyFunSpec {
     validateEmptyRange(15, 15)
   }
 
-  it("bounded domain") {
+  it("should build ranges for bounded domain") {
 
     val intOrd = int.tryNaturalOrderWithBounds(0, 10).get
     implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.bounded(intOrd)
