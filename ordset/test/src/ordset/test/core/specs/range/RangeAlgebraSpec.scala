@@ -1,14 +1,13 @@
 package ordset.test.core.specs.range
 
 import ordset.Eq
-import ordset.core.range.{RangeAlgebra, SimpleRange, SimpleRangeFactory}
+import ordset.core.range.{RangeAlgebra, SimpleRange, SimpleRangeFactory, RangeFactory}
 import ordset.test.core.RangeAssertions._
 
+import org.scalatest.Assertions._
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import ordset.core.range.RangeFactory
-import ordset.core.range.SimpleRangeFactory
 
 @RunWith(classOf[JUnitRunner])
 class RangeAlgebraSpec extends AnyFunSpec {

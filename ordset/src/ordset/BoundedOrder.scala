@@ -125,7 +125,7 @@ object BoundedOrder {
     /**
      * [[BoundedOrder.Below]] typeclass received by reverting [[BoundedOrder.Above]] instance.
      */
-    trait Reversed[E, +L <: E] extends Addition.Order.Reversed[E] with Bounded.Below.Reversed[L] with Below[E, L]
+    trait Reversed[E, +L <: E] extends Additional.Order.Reversed[E] with Bounded.Below.Reversed[L] with Below[E, L]
 
     class ReversedImpl[E, +L <: E](original: Above[E, L]) extends Reversed[E, L] {
 
@@ -219,7 +219,7 @@ object BoundedOrder {
     /**
      * [[BoundedOrder.Above]] typeclass received by reverting [[BoundedOrder.Below]] instance.
      */
-    trait Reversed[E, +U <: E] extends Addition.Order.Reversed[E] with Bounded.Above.Reversed[U] with Above[E, U]
+    trait Reversed[E, +U <: E] extends Additional.Order.Reversed[E] with Bounded.Above.Reversed[U] with Above[E, U]
 
     class ReversedImpl[E, +U <: E](original: Below[E, U]) extends Reversed[E, U] {
 

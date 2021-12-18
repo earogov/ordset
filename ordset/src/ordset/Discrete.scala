@@ -128,7 +128,7 @@ object Discrete {
      * <tr>[[Option.empty]], if element has no predecessor;</tr>
      * <tr>the predecessor of element otherwise.</tr>
      */
-    def predecessorOpt(x: E): Option[E] = Option(x)
+    def predecessorOpt(x: E): Option[E] = OptionUtil.optionOfNullable(predecessorOrNull(x))
 
     /**
      * Returns `true` if element has predecessor.
