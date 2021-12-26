@@ -2,21 +2,31 @@ package ordset.core.interval
 
 import ordset.core.{Bound, ExtendedBound, SetBuilderFormat}
 import ordset.core.domain.Domain
+import ordset.core.range.Range
 import ordset.{Hash, Show, util}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
-sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
+sealed trait Interval[@sp(spNum) E, D <: Domain[E]] extends Range[ExtendedBound[E]] {
 
   /** Domain of interval. */
   def domain: D
 
   /** @return `true` if interval is empty, i.e. contains no elements. */
-  def isEmpty: Boolean = false
+  override def isEmpty: Boolean
 
-  /** @return `true` if interval is universal, i.e. contains all elements of domain. */
-  def isUniversal: Boolean = false
+  /** @return `true` if interval is non-empty, i.e. contains some elements. */
+  override def isNonEmpty: Boolean
+
+  /** @return `true` if interval has both lower and upper bounds. */
+  def isBounded: Boolean
+
+  /** @return `true` if interval has lower bound. */
+  def isBoundedBelow: Boolean
+
+  /** @return `true` if interval has upper bound. */
+  def isBoundedAbove: Boolean
 
   /** @return `true` if `bound` is between interval bounds. */
   def containsBound(bound: Bound[E]): Boolean
@@ -27,30 +37,24 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] {
   /** @return `true` if `element` is between interval bounds. */
   def containsElement(element: E): Boolean = containsBound(Bound.Upper.including(element))
 
-  /** @return `true` if interval has limited lower bound. */
-  def hasLowerBound: Boolean = false
-
-  /** @return `true` if interval has specified limited lower bound. */
-  def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+  /** @return `true` if interval has specified lower bound. */
+  def hasLowerBound(bound: Bound.Lower[E]): Boolean
 
   /** @return `true` if interval has specified extended lower bound. */
   def hasLowerExtended(bound: ExtendedBound.Lower[E]): Boolean =
     bound match {
       case b: Bound.Lower[E] => hasLowerBound(b)
-      case ExtendedBound.BelowAll => !hasLowerBound && !isEmpty
+      case ExtendedBound.BelowAll => !isBoundedBelow && !isEmpty
     }
 
-  /** @return `true` if interval has limited upper bound. */
-  def hasUpperBound: Boolean = false
-
-  /** @return `true` if interval has specified limited upper bound. */
-  def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
+  /** @return `true` if interval has specified upper bound. */
+  def hasUpperBound(bound: Bound.Upper[E]): Boolean
 
   /** @return `true` if interval has specified extended upper bound. */
   def hasUpperExtended(bound: ExtendedBound.Upper[E]): Boolean =
     bound match {
       case b: Bound.Upper[E] => hasUpperBound(b)
-      case ExtendedBound.AboveAll => !hasUpperBound && !isEmpty
+      case ExtendedBound.AboveAll => !isBoundedAbove && !isEmpty
     }
 
   /** @return [[IntervalRelation]] for current interval and specified `value`. */
@@ -71,21 +75,11 @@ object Interval {
   ): Show[Interval[E, D]] =
     SetBuilderFormat.intervalShow(elementShow)
 
-  sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D] {
+  sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D] with Range.NonEmpty[ExtendedBound[E]] {
 
-    /**
-     * Get extended lower bound of interval:
-     * <tr>- if interval doesn't have limited lower bound, returns [[ExtendedBound.BelowAll]];</tr>
-     * <tr>- otherwise returns limited lower bound.</tr>
-     */
-    def lowerExtended: ExtendedBound.Lower[E] = ExtendedBound.BelowAll
+    override def lower: ExtendedBound.Lower[E]
 
-    /**
-     * Get extended upper bound of interval:
-     * <tr>- if interval doesn't have limited upper bound, returns [[ExtendedBound.AboveAll]];</tr>
-     * <tr>- otherwise returns limited upper bound.</tr>
-     */
-    def upperExtended: ExtendedBound.Upper[E] = ExtendedBound.AboveAll
+    override def upper: ExtendedBound.Upper[E]
 
     /**
      * Returns input `bound`, if it is inside interval, otherwise returns interval bound closest to input `bound` 
@@ -114,47 +108,50 @@ object Interval {
     def restrictBound(bound: Bound[E]): Bound[E]
 
     /**
-     * If `bound` is outside of interval, returns closest bound of interval (either lower or upper).
-     * Otherwise returns `bound`.
+     * Returns input extended `bound`, if it is inside interval, otherwise returns interval bound closest to
+     * input `bound` (either lower or upper).
      *
      * @see [[restrictBound]]
      */
     def restrictExtended(bound: ExtendedBound[E]): ExtendedBound[E] =
       bound match {
         case b: Bound[E] => restrictBound(b)
-        case ExtendedBound.BelowAll => lowerExtended
-        case ExtendedBound.AboveAll => upperExtended
+        case ExtendedBound.BelowAll => lower
+        case ExtendedBound.AboveAll => upper
       }
   }
 
-  sealed trait WithLowerBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
+  sealed trait BoundedBelow[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
 
-    def lowerBound: Bound.Lower[E]
+    override def lower: Bound.Lower[E]
 
-    override def hasLowerBound: Boolean = true
+    override def isBoundedBelow: Boolean = true
 
-    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domain.boundOrd.eqv(lowerBound, bound)
-
-    override def lowerExtended: ExtendedBound.Lower[E] = lowerBound
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domain.boundOrd.eqv(lower, bound)
   }
 
-  sealed trait WithUpperBound[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
+  sealed trait BoundedAbove[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
 
-    def upperBound: Bound.Upper[E]
+    override def upper: Bound.Upper[E]
 
-    override def hasUpperBound: Boolean = true
+    override def isBoundedAbove: Boolean = true
 
-    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domain.boundOrd.eqv(upperBound, bound)
-
-    override def upperExtended: ExtendedBound.Upper[E] = upperBound
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domain.boundOrd.eqv(upper, bound)
   }
 
   final case class Empty[E, D <: Domain[E]](
-  )(
-    implicit override val domain: D
-  ) extends Interval[E, D] {
+    override val domain: D
+  ) extends Interval[E, D] with Range.Empty {
 
-    override def isEmpty: Boolean = true
+    override def isBounded: Boolean = false
+
+    override def isBoundedBelow: Boolean = false
+
+    override def isBoundedAbove: Boolean = false
+
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
     override def containsBound(bound: Bound[E]): Boolean = false
 
@@ -163,12 +160,23 @@ object Interval {
     override def toString: String = SetBuilderFormat.emptyInterval
   }
 
-  final case class Universal[E, D <: Domain[E]](
-  )(
-    implicit override val domain: D
+  final case class Unbounded[E, D <: Domain[E]](
+    override val domain: D
   ) extends NonEmpty[E, D] {
 
-    override def isUniversal: Boolean = true
+    override def lower: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
+
+    override def upper: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
+
+    override def isBounded: Boolean = false
+
+    override def isBoundedBelow: Boolean = false
+
+    override def isBoundedAbove: Boolean = false
+
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
     override def containsBound(bound: Bound[E]): Boolean = true
 
@@ -178,16 +186,23 @@ object Interval {
 
     override def restrictExtended(bound: ExtendedBound[E]): ExtendedBound[E] = bound
 
-    override def toString: String = SetBuilderFormat.universalInterval
+    override def toString: String = SetBuilderFormat.unboundedInterval
   }
 
   final case class Greater[@sp(spNum) E, D <: Domain[E]](
-    override val lowerBound: Bound.Lower[E]
-  )(
-    implicit override val domain: D
-  ) extends WithLowerBound[E, D] {
+    override val lower: Bound.Lower[E],
+    override val domain: D
+  ) extends BoundedBelow[E, D] {
 
-    override def containsBound(bound: Bound[E]): Boolean = domain.boundOrd.lteqv(lowerBound, bound)
+    override def upper: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
+
+    override def isBounded: Boolean = false
+
+    override def isBoundedAbove: Boolean = false
+
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
+
+    override def containsBound(bound: Bound[E]): Boolean = domain.boundOrd.lteqv(lower, bound)
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean =
       bound match {
@@ -197,19 +212,26 @@ object Interval {
       }
 
     override def restrictBound(bound: Bound[E]): Bound[E] =
-      if (domain.boundOrd.lt(bound, lowerBound)) lowerBound
+      if (domain.boundOrd.lt(bound, lower)) lower
       else bound
 
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
   final case class Less[@sp(spNum) E, D <: Domain[E]](
-    override val upperBound: Bound.Upper[E]
-  )(
-    implicit override val domain: D
-  ) extends WithUpperBound[E, D] {
+    override val upper: Bound.Upper[E],
+    override val domain: D
+  ) extends BoundedAbove[E, D] {
 
-    override def containsBound(bound: Bound[E]): Boolean = domain.boundOrd.gteqv(upperBound, bound)
+    override def lower: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
+
+    override def isBounded: Boolean = false
+
+    override def isBoundedBelow: Boolean = false
+
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
+
+    override def containsBound(bound: Bound[E]): Boolean = domain.boundOrd.gteqv(upper, bound)
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean =
       bound match {
@@ -219,22 +241,23 @@ object Interval {
       }
 
     override def restrictBound(bound: Bound[E]): Bound[E] =
-      if (domain.boundOrd.gt(bound, upperBound)) upperBound
+      if (domain.boundOrd.gt(bound, upper)) upper
       else bound
 
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
   final case class Between[@sp(spNum) E, D <: Domain[E]](
-    override val lowerBound: Bound.Lower[E],
-    override val upperBound: Bound.Upper[E]
-  )(
-    implicit override val domain: D
-  ) extends WithLowerBound[E, D] with WithUpperBound[E, D] {
+    override val lower: Bound.Lower[E],
+    override val upper: Bound.Upper[E],
+    override val domain: D
+  ) extends BoundedBelow[E, D] with BoundedAbove[E, D] with Range[Bound[E]] {
+
+    override def isBounded: Boolean = true
 
     override def containsBound(bound: Bound[E]): Boolean = {
       val boundOrd = domain.boundOrd
-      boundOrd.lteqv(lowerBound, bound) && boundOrd.gteqv(upperBound, bound)
+      boundOrd.lteqv(lower, bound) && boundOrd.gteqv(upper, bound)
     }
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean =
@@ -245,8 +268,8 @@ object Interval {
 
     override def restrictBound(bound: Bound[E]): Bound[E] = {
       val boundOrd = domain.boundOrd
-      if (boundOrd.lt(bound, lowerBound)) lowerBound
-      else if (boundOrd.gt(bound, upperBound)) upperBound
+      if (boundOrd.lt(bound, lower)) lower
+      else if (boundOrd.gt(bound, upper)) upper
       else bound
     }
 
@@ -264,14 +287,14 @@ object Interval {
     override def hash(x: Interval[E, D]): Int = x match {
       case x: Empty[e, d] => 
         product2Hash(domainHash.hash(x.domain), 0xA1F63D02)
-      case x: Universal[e, d] => 
+      case x: Unbounded[e, d] => 
         product2Hash(domainHash.hash(x.domain), 0x13E0FF65)
       case x: Greater[e, d] => 
-        product2Hash(boundHash.hash(x.lowerBound), domainHash.hash(x.domain))
+        product2Hash(boundHash.hash(x.lower), domainHash.hash(x.domain))
       case x: Less[e, d] => 
-        product2Hash(boundHash.hash(x.upperBound), domainHash.hash(x.domain))
+        product2Hash(boundHash.hash(x.upper), domainHash.hash(x.domain))
       case x: Between[e, d] => 
-        product3Hash(boundHash.hash(x.lowerBound), boundHash.hash(x.upperBound), domainHash.hash(x.domain))
+        product3Hash(boundHash.hash(x.lower), boundHash.hash(x.upper), domainHash.hash(x.domain))
     }
 
     override def eqv(x: Interval[E, D], y: Interval[E, D]): Boolean =
@@ -280,21 +303,21 @@ object Interval {
           case _: Empty[e, d] => true
           case _ => false
         }
-        case x: Universal[e, d] => y match {
-          case _: Universal[e, d] => true
+        case x: Unbounded[e, d] => y match {
+          case _: Unbounded[e, d] => true
           case _ => false
         }
         case x: Greater[e, d] => y match {
-          case y: Greater[e, d] => boundHash.eqv(x.lowerBound: Bound.Lower[E], y.lowerBound)
+          case y: Greater[e, d] => boundHash.eqv(x.lower: Bound.Lower[E], y.lower)
           case _ => false
         }
         case x: Less[e, d] => y match {
-          case y: Less[e, d] => boundHash.eqv(x.upperBound, y.upperBound)
+          case y: Less[e, d] => boundHash.eqv(x.upper, y.upper)
           case _ => false
         }
         case x: Between[e, d] => y match {
           case y: Between[e, d] => 
-            boundHash.eqv(x.lowerBound, y.lowerBound) && boundHash.eqv(x.upperBound, y.upperBound)
+            boundHash.eqv(x.lower, y.lower) && boundHash.eqv(x.upper, y.upper)
           case _ => false
         }
       }

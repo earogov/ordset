@@ -57,7 +57,7 @@ abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, 
   lazy val bounds: Seq[Bound.Upper[E]] = {
     import scala.language.unsafeNulls
     reference.map(rel => rel.interval match
-      case int: Interval.WithUpperBound[_, _] => int.upperBound
+      case int: Interval.BoundedAbove[_, _] => int.upper
       case _ => null
     ).takeWhile(_ != null)
   }

@@ -18,7 +18,20 @@ class RangeAlgebraSpec extends AnyFunSpec {
   private val eq: Eq[SimpleRange[Int]] = implicitly
   private val range: SimpleRangeFactory[Int] = implicitly
 
-  it("should support `contains` operation") {
+  it("should support `isValid` check") {
+    // Non-empty range
+    assert(alg.isValid(SimpleRange(1, 3)))
+    assert(alg.isValid(SimpleRange(1, 1)))
+    assert(!alg.isValid(SimpleRange(1, -1)))
+    assert(alg.isValidNE(SimpleRange(1, 3)))
+    assert(alg.isValidNE(SimpleRange(1, 1)))
+    assert(!alg.isValidNE(SimpleRange(1, -1)))
+
+    // Empty range
+    assert(alg.isValid(SimpleRange.Empty))
+  }
+
+  it("should support `contains` check") {
     // Non-empty range
     assert(alg.contains(SimpleRange(1, 3), 1))
     assert(alg.contains(SimpleRange(1, 3), 2))

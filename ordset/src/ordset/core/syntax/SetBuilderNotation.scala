@@ -30,23 +30,23 @@ object SetBuilderNotation {
   }
 
   implicit def boundBuilderToUniversal[E, D <: Domain[E]](builder: BoundBuilder[E, D]): Interval[E, D] =
-    builder.domainOps.intervals.builder.universal
+    builder.domainOps.intervals.factory.universal
 
   implicit class BoundsToInterval[@sp(spNum) E, D <: Domain[E]](val lower: DomainBound.Lower[E, D]) {
 
     def &(upper: DomainBound.Upper[E, D]): Interval[E, D] = 
-      lower.domainOps.intervals.builder.betweenBounds(lower.bound, upper.bound)
+      lower.domainOps.intervals.factory.betweenBounds(lower.bound, upper.bound)
   }
 
   implicit def upperBoundToInterval[@sp(spNum) E, D <: Domain[E]](upper: DomainBound.Upper[E, D])(
     implicit domainOps: DomainOps[E, D]
   ): Interval[E, D] =
-    upper.domainOps.intervals.builder.belowBound(upper.bound)
+    upper.domainOps.intervals.factory.belowBound(upper.bound)
 
   implicit def lowerBoundToInterval[@sp(spNum) E, D <: Domain[E]](lower: DomainBound.Lower[E, D])(
     implicit domainOps: DomainOps[E, D]
   ): Interval[E, D] =
-    lower.domainOps.intervals.builder.aboveBound(lower.bound)
+    lower.domainOps.intervals.factory.aboveBound(lower.bound)
 
   implicit class ValueToIntervalRelation[@sp(Boolean) +V](val value: V) {
 

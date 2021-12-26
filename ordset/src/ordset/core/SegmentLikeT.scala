@@ -67,18 +67,18 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Get extended lower bound of segment:
    * <tr>- if segment is first, returns [[ExtendedBound.BelowAll]];</tr>
-   * <tr>- if segment has next segment, returns its limited upper bound.</tr>
+   * <tr>- if segment has previous segment, returns its lower bound.</tr>
    */
   def lowerExtended: ExtendedBound.Lower[E]
 
   /**
    * Get extended upper bound of segment:
    * <tr>- if segment is last, returns [[ExtendedBound.AboveAll]];</tr>
-   * <tr>- if segment has previous segment, returns its limited lower bound.</tr>
+   * <tr>- if segment has next segment, returns its upper bound.</tr>
    */
   def upperExtended: ExtendedBound.Upper[E]
 
-  /** @return `true` if segment has specified limited lower bound. */
+  /** @return `true` if segment has specified lower bound. */
   def hasLowerBound(bound: Bound.Lower[E]): Boolean
 
   /** @return `true` if segment has specified extended lower bound. */
@@ -88,7 +88,7 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
       case ExtendedBound.BelowAll => isFirst
     }
 
-  /** @return `true` if segment has specified limited upper bound. */
+  /** @return `true` if segment has specified upper bound. */
   def hasUpperBound(bound: Bound.Upper[E]): Boolean
 
   /** @return `true` if segment has specified extended upper bound. */
@@ -125,8 +125,8 @@ trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   def restrictBound(bound: Bound[E]): Bound[E]
 
   /**
-   * If `bound` is outside of segment, returns closest bound of segment (either lower or upper).
-   * Otherwise returns `bound`.
+   * Returns input extended `bound`, if it is inside segment, otherwise returns segment bound closest to input `bound` 
+   * (either lower or upper).
    *
    * @see [[restrictBound]]
    */

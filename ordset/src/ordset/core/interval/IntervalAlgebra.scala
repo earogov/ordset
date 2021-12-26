@@ -55,45 +55,38 @@ trait IntervalAlgebra[E, D <: Domain[E]] {
 object IntervalAlgebra {
   
   implicit def defaultAlgebra[E, D <: Domain[E]](implicit domain: D): IntervalAlgebra[E, D] =
-    domain match {
-      case d: Domain.Unbounded[E] => unboundedAlgebra(d)
-      // TODO: implement bounded builder
-      case d: Domain.Bounded[E] => ???
-    }
+    new DefaultAlgebra(domain, IntervalFactory.defaultFactory(domain))
 
-  def unboundedAlgebra[E, D <: Domain[E]](implicit domain: D & Domain.Unbounded[E]): UnboundedAlgebra[E, D] =
-    new UnboundedAlgebra(domain, IntervalBuilder.unboundedBuilder(domain))
-
-  final class UnboundedAlgebra[E, D <: Domain[E]](
-    val domain: D & Domain.Unbounded[E],
-    val interval: IntervalBuilder.UnboundedBuilder[E, D]
+  final class DefaultAlgebra[E, D <: Domain[E]](
+    val domain: D,
+    val interval: IntervalFactory[E, D]
   ) extends IntervalAlgebra[E, D] {
 
     override def cross(x: Interval[E, D], y: Interval[E, D]): Interval[E, D] = x match {
       case x: Interval.Empty[e, d] => x
-      case _: Interval.Universal[e, d] => y
+      case _: Interval.Unbounded[e, d] => y
       case x: Interval.Greater[e, d] => y match {
         case y: Interval.Empty[e, d] => y
-        case _: Interval.Universal[e, d] => x
+        case _: Interval.Unbounded[e, d] => x
         case y: Interval.Greater[e, d] =>
           // x:      |--------------
           // y:  |------------------
-          if (domain.boundOrd.lt(y.lowerBound, x.lowerBound)) x
+          if (domain.boundOrd.lt(y.lower, x.lower)) x
           // x:      |--------------
           // y:          |----------
           else y
-        case y: Interval.WithUpperBound[e, d] =>
+        case y: Interval.BoundedAbove[e, d] =>
           // x:      |--------------
           // y: ?--|
-          if (domain.boundOrd.lt(y.upperBound, x.lowerBound)) interval.empty
+          if (domain.boundOrd.lt(y.upper, x.lower)) interval.empty
           else y match {
             // x:      |------------
             // y: ---------|
-            case y: Interval.Less[e, d] => interval.betweenBounds(x.lowerBound, y.upperBound)
+            case y: Interval.Less[e, d] => interval.betweenBounds(x.lower, y.upper)
             case y: Interval.Between[e, d] =>
               // x:      |----------
               // y:    |---|
-              if (domain.boundOrd.lt(y.lowerBound, x.lowerBound)) interval.betweenBounds(x.lowerBound, y.upperBound)
+              if (domain.boundOrd.lt(y.lower, x.lower)) interval.betweenBounds(x.lower, y.upper)
               // x:      |----------
               // y:        |---|
               else y
@@ -101,26 +94,26 @@ object IntervalAlgebra {
       }
       case x: Interval.Less[e, d] => y match {
         case y: Interval.Empty[e, d] => y
-        case _: Interval.Universal[e, d] => x
+        case _: Interval.Unbounded[e, d] => x
         case y: Interval.Less[e, d] =>
           // x: ---------|
           // y: --------------|
-          if (domain.boundOrd.lt(x.upperBound, y.upperBound)) x
+          if (domain.boundOrd.lt(x.upper, y.upper)) x
           // x: ---------|
           // y: -----|
           else y
-        case y: Interval.WithLowerBound[e, d] =>
+        case y: Interval.BoundedBelow[e, d] =>
           // x: ---------|
           // y:            |------?
-          if (domain.boundOrd.lt(x.upperBound, y.lowerBound)) interval.empty
+          if (domain.boundOrd.lt(x.upper, y.lower)) interval.empty
           else y match {
             // x: ---------|
             // y:      |-----------
-            case y: Interval.Greater[e, d] => interval.betweenBounds(y.lowerBound, x.upperBound)
+            case y: Interval.Greater[e, d] => interval.betweenBounds(y.lower, x.upper)
             case y: Interval.Between[e, d] =>
               // x: ---------|
               // y:        |---|
-              if (domain.boundOrd.lt(x.upperBound, y.upperBound)) interval.betweenBounds(y.lowerBound, x.upperBound)
+              if (domain.boundOrd.lt(x.upper, y.upper)) interval.betweenBounds(y.lower, x.upper)
               // x: ---------|
               // y:    |---|
               else y
@@ -128,40 +121,40 @@ object IntervalAlgebra {
       }
       case x: Interval.Between[e, d] => y match {
         case y: Interval.Empty[e, d] => y
-        case _: Interval.Universal[e, d] => x
+        case _: Interval.Unbounded[e, d] => x
         case y: Interval.Greater[e, d] =>
           // x:       |-----|
           // y:   |----------------
-          if (domain.boundOrd.lteqv(y.lowerBound, x.lowerBound)) x
+          if (domain.boundOrd.lteqv(y.lower, x.lower)) x
           // x:       |-----|
           // y:          |---------
-          else if (domain.boundOrd.lteqv(y.lowerBound, x.upperBound)) interval.betweenBounds(y.lowerBound, x.upperBound)
+          else if (domain.boundOrd.lteqv(y.lower, x.upper)) interval.betweenBounds(y.lower, x.upper)
           // x:       |-----|
           // y:                |---
           else interval.empty
         case y: Interval.Less[e, d] =>
           // x:       |-----|
           // y: ----------------|
-          if (domain.boundOrd.lteqv(x.upperBound, y.upperBound)) x
+          if (domain.boundOrd.lteqv(x.upper, y.upper)) x
           // x:       |-----|
           // y: ---------|
-          else if (domain.boundOrd.lteqv(x.lowerBound, y.upperBound)) interval.betweenBounds(x.lowerBound, y.upperBound)
+          else if (domain.boundOrd.lteqv(x.lower, y.upper)) interval.betweenBounds(x.lower, y.upper)
           // x:       |-----|
           // y: ----|
           else interval.empty
         case y: Interval.Between[e, d] =>
-          if (domain.boundOrd.lteqv(x.lowerBound, y.upperBound))
-            if (domain.boundOrd.lteqv(y.lowerBound, x.lowerBound))
+          if (domain.boundOrd.lteqv(x.lower, y.upper))
+            if (domain.boundOrd.lteqv(y.lower, x.lower))
               // x:         |-----|
               // y:      |-----|
-              if (domain.boundOrd.lt(y.upperBound, x.upperBound)) interval.betweenBounds(x.lowerBound, y.upperBound)
+              if (domain.boundOrd.lt(y.upper, x.upper)) interval.betweenBounds(x.lower, y.upper)
               // x:         |-----|
               // y:      |-----------|
               else x
-            else if (domain.boundOrd.lteqv(y.lowerBound, x.upperBound))
+            else if (domain.boundOrd.lteqv(y.lower, x.upper))
               // x:         |-----|
               // y:            |-----|
-              if (domain.boundOrd.lt(x.upperBound, y.upperBound)) interval.betweenBounds(y.lowerBound, x.upperBound)
+              if (domain.boundOrd.lt(x.upper, y.upper)) interval.betweenBounds(y.lower, x.upper)
               // x:         |-----|
               // y:           |-|
               else y
@@ -178,31 +171,31 @@ object IntervalAlgebra {
       // takeAbove(x, bound) = cross(x, y) where
       // y = interval(bound)
       case x: Interval.Empty[e, d] => x
-      case _: Interval.Universal[e, d] => interval.aboveBound(bound)
+      case _: Interval.Unbounded[e, d] => interval.aboveBound(bound)
       case x: Interval.Greater[e, d] =>
         //       bound
         // y:      |--------------
         // x:  |------------------
-        if (domain.boundOrd.lt(x.lowerBound, bound)) interval.aboveBound(bound)
+        if (domain.boundOrd.lt(x.lower, bound)) interval.aboveBound(bound)
         //       bound
         // y:      |--------------
         // x:          |----------
         else x
-      case x: Interval.WithUpperBound[e, d] =>
+      case x: Interval.BoundedAbove[e, d] =>
         //       bound
         // y:      |--------------
         // x: ?--|
-        if (domain.boundOrd.lt(x.upperBound, bound)) interval.empty
+        if (domain.boundOrd.lt(x.upper, bound)) interval.empty
         else x match {
           //       bound
           // y:      |------------
           // x: ---------|
-          case x: Interval.Less[e, d] => interval.betweenBounds(bound, x.upperBound)
+          case x: Interval.Less[e, d] => interval.betweenBounds(bound, x.upper)
           case x: Interval.Between[e, d] =>
             //       bound
             // y:      |----------
             // x:    |---|
-            if (domain.boundOrd.lt(x.lowerBound, bound)) interval.betweenBounds(bound, x.upperBound)
+            if (domain.boundOrd.lt(x.lower, bound)) interval.betweenBounds(bound, x.upper)
             //       bound
             // y:      |----------
             // x:        |---|
@@ -214,31 +207,31 @@ object IntervalAlgebra {
       // takeBelow(x, bound) = cross(x, y) where
       // y = interval(bound)
       case x: Interval.Empty[e, d] => x
-      case _: Interval.Universal[e, d] => interval.belowBound(bound)
+      case _: Interval.Unbounded[e, d] => interval.belowBound(bound)
       case x: Interval.Less[e, d] =>
         //           bound
         // y: ---------|
         // x: --------------|
-        if (domain.boundOrd.lt(bound, x.upperBound)) interval.belowBound(bound)
+        if (domain.boundOrd.lt(bound, x.upper)) interval.belowBound(bound)
         //           bound
         // y: ---------|
         // x: -----|
         else x
-      case x: Interval.WithLowerBound[e, d] =>
+      case x: Interval.BoundedBelow[e, d] =>
         //           bound
         // y: ---------|
         // x:            |------?
-        if (domain.boundOrd.lt(bound, x.lowerBound)) interval.empty
+        if (domain.boundOrd.lt(bound, x.lower)) interval.empty
         else x match {
           //           bound
           // y: ---------|
           // x:      |-----------
-          case x: Interval.Greater[e, d] => interval.betweenBounds(x.lowerBound, bound)
+          case x: Interval.Greater[e, d] => interval.betweenBounds(x.lower, bound)
           case x: Interval.Between[e, d] =>
             //           bound
             // y: ---------|
             // x:        |---|
-            if (domain.boundOrd.lt(bound, x.upperBound)) interval.betweenBounds(x.lowerBound, bound)
+            if (domain.boundOrd.lt(bound, x.upper)) interval.betweenBounds(x.lower, bound)
             //           bound
             // y: ---------|
             // x:    |---|

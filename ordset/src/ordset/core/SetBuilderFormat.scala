@@ -15,8 +15,6 @@ object SetBuilderFormat { format =>
 
   val emptySet: String = setBegin + setEnd
 
-  val universalSet: String = "U"
-
   val relationSeparator: String = "->"
 
   val segmentSeparator: String = ","
@@ -54,13 +52,28 @@ object SetBuilderFormat { format =>
     case b: Bound.Lower[? <: E] => format.lowerBound(b, elementToStr)
   }
 
+  def lowerExtendedBound[E](
+    bound: ExtendedBound.Lower[? <: E],
+    elementToStr: E => String = toStringFunc[E]
+  ): String = bound match {
+    case b: Bound.Lower[? <: E] => format.lowerBound(b, elementToStr)
+    case ExtendedBound.BelowAll => belowAllBound
+  }
+
+  def upperExtendedBound[E](
+    bound: ExtendedBound.Upper[? <: E],
+    elementToStr: E => String = toStringFunc[E]
+  ): String = bound match {
+    case b: Bound.Upper[? <: E] => format.upperBound(b, elementToStr)
+    case ExtendedBound.AboveAll => aboveAllBound
+  }
+
   def extendedBound[E](
     bound: ExtendedBound[? <: E],
     elementToStr: E => String = toStringFunc[E]
   ): String = bound match {
-    case b: Bound[? <: E] => format.bound(b, elementToStr)
-    case ExtendedBound.BelowAll => belowAllBound
-    case ExtendedBound.AboveAll => aboveAllBound
+    case b: ExtendedBound.Upper[? <: E] => format.upperExtendedBound(b, elementToStr)
+    case b: ExtendedBound.Lower[? <: E] => format.lowerExtendedBound(b, elementToStr)
   }
 
   def boundShow[E](elementShow: Show[? >: E]): Show[Bound[E]] =
@@ -72,26 +85,26 @@ object SetBuilderFormat { format =>
   // Intervals ---------------------------------------------------------------- //
   val emptyInterval: String = emptySet
 
-  val universalInterval: String = s"$setBegin$variable in $universalSet$setEnd"
+  val unboundedInterval: String = s"$setBegin$variable$setEnd"
 
   def lowerBoundedInterval[E, D <: Domain[E]](
     interval: Interval.Greater[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String =
-    s"$setBegin${format.lowerBound(interval.lowerBound, elementToStr)}$setEnd"
+    s"$setBegin${format.lowerBound(interval.lower, elementToStr)}$setEnd"
 
   def upperBoundedInterval[E, D <: Domain[E]](
     interval: Interval.Less[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String =
-    s"$setBegin${format.upperBound(interval.upperBound, elementToStr)}$setEnd"
+    s"$setBegin${format.upperBound(interval.upper, elementToStr)}$setEnd"
 
   def boundedInterval[E, D <: Domain[E]](
     interval: Interval.Between[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String = {
-    val lowerBound = interval.lowerBound
-    val upperBound = interval.upperBound
+    val lowerBound = interval.lower
+    val upperBound = interval.upper
     s"$setBegin${elementToStr(lowerBound.element)} ${lessSign(lowerBound.isIncluding)} " +
       s"$variable ${lessSign(upperBound.isIncluding)} ${elementToStr(upperBound.element)}$setEnd"
   }
@@ -101,7 +114,7 @@ object SetBuilderFormat { format =>
     elementToStr: E => String = toStringFunc[E]
   ): String = interval match {
     case _: Interval.Empty[e, d] => format.emptyInterval
-    case _: Interval.Universal[e, d] => format.universalInterval
+    case _: Interval.Unbounded[e, d] => format.unboundedInterval
     case i: Interval.Greater[e, d] => format.lowerBoundedInterval(i, elementToStr)
     case i: Interval.Less[e, d] => format.upperBoundedInterval(i, elementToStr)
     case i: Interval.Between[e, d] => format.boundedInterval(i, elementToStr)
@@ -121,7 +134,7 @@ object SetBuilderFormat { format =>
     value: V,
     valueToStr: V => String = toStringFunc[V]
   ): String =
-    s"${format.universalInterval} $relationSeparator ${valueToStr(value)}"
+    s"${format.unboundedInterval} $relationSeparator ${valueToStr(value)}"
 
   def lowerBoundedIntervalRelation[E, D <: Domain[E], V](
     interval: Interval.Greater[E, D],

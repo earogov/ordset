@@ -278,7 +278,7 @@ object SegmentT {
 
     override def restrictBound(bound: Bound[E]): Bound[E] = bound
 
-    override def interval: Interval[E, D] = domainOps.intervals.builder.universal
+    override def interval: Interval[E, D] = domainOps.intervals.factory.universal
 
     override def toString: String = SetBuilderFormat.singleSegment(this)
 
@@ -352,7 +352,7 @@ object SegmentT {
       if (domainOps.boundOrd.gt(bound, upperBound)) upperBound
       else bound
 
-    override def interval: Interval[E, D] = domainOps.intervals.builder.belowBound(upperBound)
+    override def interval: Interval[E, D] = domainOps.intervals.factory.belowBound(upperBound)
 
     override def toString: String = SetBuilderFormat.initialSegment(this)
 
@@ -422,7 +422,7 @@ object SegmentT {
       if (domainOps.boundOrd.lt(bound, lowerBound)) lowerBound
       else bound
 
-    override def interval: Interval[E, D] = domainOps.intervals.builder.aboveBound(lowerBound)
+    override def interval: Interval[E, D] = domainOps.intervals.factory.aboveBound(lowerBound)
 
     override def toString: String = SetBuilderFormat.terminalSegment(this)
 
@@ -497,7 +497,7 @@ object SegmentT {
       else bound
     }
 
-    override def interval: Interval[E, D] = domainOps.intervals.builder.betweenBounds(lowerBound, upperBound)
+    override def interval: Interval[E, D] = domainOps.intervals.factory.betweenBounds(lowerBound, upperBound)
 
     override def toString: String = SetBuilderFormat.innerSegment(this)
 

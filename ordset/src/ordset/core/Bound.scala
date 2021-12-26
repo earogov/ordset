@@ -8,7 +8,7 @@ import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
 /**
- * Bound defines subset of ordered set of elements `E`.
+ * Bound defines subset of some ordered set of elements `E`.
  * <tr>[[Upper]] bound defines maximal element in subset (including or excluding);</tr>
  * <tr>[[Lower]] bound defines minimal element in subset (including or excluding).</tr>
  * <tr></tr>
@@ -113,10 +113,10 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 object Bound {
 
   implicit def lowerToInterval[E, D <: Domain[E]](lower: Lower[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
-    ops.intervals.builder.aboveBound(lower)
+    ops.intervals.factory.aboveBound(lower)
 
   implicit def upperToInterval[E, D <: Domain[E]](upper: Upper[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
-    ops.intervals.builder.belowBound(upper)
+    ops.intervals.factory.belowBound(upper)
 
   implicit def continuousUnboundedOrder[E](
     implicit elementOrd: Order[E] with Hash[E]
@@ -586,8 +586,7 @@ object Bound {
 /**
  * Extension of [[Bound]] with unlimited cases:
  * <tr>[[ExtendedBound.BelowAll]] - unlimited bound that is less then any other;</tr>
- * <tr>[[ExtendedBound.AboveAll]] - unlimited bound that is greater then any other;</tr>
- * <tr>[[Bound]] - standard (limited) bound.</tr>
+ * <tr>[[ExtendedBound.AboveAll]] - unlimited bound that is greater then any other.</tr>
  * <tr></tr>
  *
  * Unlimited cases don't have any value associated with them.
@@ -683,6 +682,8 @@ object ExtendedBound {
     override def isUpper: Boolean = true
 
     override def isLower: Boolean = false
+
+    override def toString: String = SetBuilderFormat.upperExtendedBound(this, SetBuilderFormat.toStringFunc[E])
   }
 
   /**
@@ -696,6 +697,8 @@ object ExtendedBound {
     override def isUpper: Boolean = false
 
     override def isLower: Boolean = true
+
+    override def toString: String = SetBuilderFormat.lowerExtendedBound(this, SetBuilderFormat.toStringFunc[E])
   }
 
   /**

@@ -3,7 +3,7 @@ package ordset.test.core.specs.interval
 import ordset.core.{ExtendedBound, Bound}
 import ordset.core.ExtendedBound.{BelowAll, AboveAll}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.interval.{Interval, IntervalBuilder}
+import ordset.core.interval.{Interval, IntervalFactory}
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
@@ -18,7 +18,7 @@ class IntervalSpec extends AnyFunSpec {
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
   val ops: DomainOps[Int, Dom] = DomainOps.default
-  val interval: IntervalBuilder[Int, Dom] = ops.intervals.builder
+  val interval: IntervalFactory[Int, Dom] = ops.intervals.factory
 
   it("should have valid bound indicators") {
     // Interval.Less
@@ -54,8 +54,8 @@ class IntervalSpec extends AnyFunSpec {
     validateUpperBound(false, interval.empty, x < 0)
     validateUpperBound(false, interval.empty, x <= 0)
     validateUpperBound(false, interval.empty, AboveAll)
-    // Interval.Universal
-    validateUniversal(interval.universal)
+    // Interval.Unbounded
+    validateUnbounded(interval.universal)
     validateLowerBound(false, interval.universal, x > 0)
     validateLowerBound(false, interval.universal, x >= 0)
     validateLowerBound(true, interval.universal, BelowAll)
@@ -89,7 +89,7 @@ class IntervalSpec extends AnyFunSpec {
     validateRestrict(x >= 10, x >= 0 & x <= 10, x >= 10)
     validateRestrict(x >= 0, x >= 0 & x <= 10, BelowAll)
     validateRestrict(x <= 10, x >= 0 & x <= 10, AboveAll)
-    // Interval.Universal
+    // Interval.Unbounded
     validateRestrict(x > 0, interval.universal, x > 0)
     validateRestrict(x <= 10, interval.universal, x <= 10)
     validateRestrict(BelowAll, interval.universal, BelowAll)
@@ -123,7 +123,7 @@ class IntervalSpec extends AnyFunSpec {
     validateContains(false, interval.empty, x <= 15)
     validateContains(false, interval.empty, BelowAll)
     validateContains(false, interval.empty, AboveAll)
-    // Interval.Universal
+    // Interval.Unbounded
     validateContains(true, interval.universal, x <= 5)
     validateContains(true, interval.universal, x <= 15)
     validateContains(true, interval.universal, BelowAll)
@@ -195,36 +195,36 @@ class IntervalSpec extends AnyFunSpec {
 
   private def validateLess[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
     assert(!x.isEmpty, s"// expected $x is not empty")
-    assert(!x.hasLowerBound, s"// expected $x does not have lower bound")
-    assert(x.hasUpperBound, s"// expected $x has upper bound")
-    assert(!x.isUniversal, s"// expected $x is not universal")
+    assert(!x.isBoundedBelow, s"// expected $x does not have lower bound")
+    assert(x.isBoundedAbove, s"// expected $x has upper bound")
+    assert(!x.isBounded, s"// expected $x is not bounded")
   }
 
   private def validateGreater[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
     assert(!x.isEmpty, s"// expected $x is not empty")
-    assert(x.hasLowerBound, s"// expected $x has lower bound")
-    assert(!x.hasUpperBound, s"// expected $x does not have upper bound")
-    assert(!x.isUniversal, s"// expected $x is not universal")
+    assert(x.isBoundedBelow, s"// expected $x has lower bound")
+    assert(!x.isBoundedAbove, s"// expected $x does not have upper bound")
+    assert(!x.isBounded, s"// expected $x is not bounded")
   }
 
   private def validateBetween[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
     assert(!x.isEmpty, s"// expected $x is not empty")
-    assert(x.hasLowerBound, s"// expected $x has lower bound")
-    assert(x.hasUpperBound, s"// expected $x has upper bound")
-    assert(!x.isUniversal, s"// expected $x is not universal")
+    assert(x.isBoundedBelow, s"// expected $x has lower bound")
+    assert(x.isBoundedAbove, s"// expected $x has upper bound")
+    assert(x.isBounded, s"// expected $x is bounded")
   }
 
   private def validateEmpty[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
     assert(x.isEmpty, s"// expected $x is empty")
-    assert(!x.hasLowerBound, s"// expected $x does not have lower bound")
-    assert(!x.hasUpperBound, s"// expected $x does not have upper bound")
-    assert(!x.isUniversal, s"// expected $x is not universal")
+    assert(!x.isBoundedBelow, s"// expected $x does not have lower bound")
+    assert(!x.isBoundedAbove, s"// expected $x does not have upper bound")
+    assert(!x.isBounded, s"// expected $x is not bounded")
   }
 
-  private def validateUniversal[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
+  private def validateUnbounded[E, D <: Domain[E]](x: Interval[E, D]): Unit = {
     assert(!x.isEmpty, s"// expected $x is not empty")
-    assert(!x.hasLowerBound, s"// expected $x does not have lower bound")
-    assert(!x.hasUpperBound, s"// expected $x does not have upper bound")
-    assert(x.isUniversal, s"// expected $x is universal")
+    assert(!x.isBoundedBelow, s"// expected $x does not have lower bound")
+    assert(!x.isBoundedAbove, s"// expected $x does not have upper bound")
+    assert(!x.isBounded, s"// expected $x is not bounded")
   }
 }

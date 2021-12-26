@@ -1,7 +1,7 @@
 package ordset.core.domain
 
 import ordset.Hash
-import ordset.core.interval.{Interval, IntervalRelation, IntervalAlgebra, IntervalBuilder}
+import ordset.core.interval.{Interval, IntervalRelation, IntervalAlgebra, IntervalFactory}
 import ordset.core.{Bound, ExtendedBound, SegmentT, SeqValidationPredicate}
 
 object DomainOpsComponents {
@@ -27,22 +27,18 @@ object DomainOpsComponents {
 
     implicit val alg: IntervalAlgebra[E, D]
 
-    implicit val builder: IntervalBuilder[E, D]
+    implicit val factory: IntervalFactory[E, D]
 
-    def bounds: Interval.NonEmpty[E, D] = builder.universal
+    def bounds: Interval.NonEmpty[E, D] = factory.universal
   }
 
   object Intervals {
 
     trait Unbounded[E, D <: Domain[E]] extends Intervals[E, D] {
 
-      override implicit val hash: Hash[Interval[E, D]]
+      override implicit val factory: IntervalFactory.UnboundedFactory[E, D]
 
-      override implicit val alg: IntervalAlgebra.UnboundedAlgebra[E, D]
-
-      override implicit val builder: IntervalBuilder.UnboundedBuilder[E, D]
-
-      override def bounds: Interval.Universal[E, D] = builder.universal
+      override def bounds: Interval.Unbounded[E, D] = factory.universal
     }
 
     object Unbounded {
@@ -57,9 +53,86 @@ object DomainOpsComponents {
 
         override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
 
-        override implicit val alg: IntervalAlgebra.UnboundedAlgebra[E, D] = IntervalAlgebra.unboundedAlgebra(domain)
+        override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
 
-        override implicit val builder: IntervalBuilder.UnboundedBuilder[E, D] = IntervalBuilder.UnboundedBuilder(domain)
+        override implicit val factory: IntervalFactory.UnboundedFactory[E, D] = IntervalFactory.UnboundedFactory(domain)
+      }
+    }
+
+    trait BoundedBelow[E, D <: Domain[E]] extends Intervals[E, D] {
+
+      override implicit val factory: IntervalFactory.BoundedBelowFactory[E, D]
+
+      override def bounds: Interval.Greater[E, D] = factory.universal
+    }
+
+    object BoundedBelow {
+
+      def default[E, D <: Domain[E]](domain: D & Domain.BoundedBelow[E], domainHash: Hash[D]): BoundedBelow[E, D] =
+        new DefaultImpl(domain, domainHash)
+
+      class DefaultImpl[E, D <: Domain[E]](
+        domain: D & Domain.BoundedBelow[E],
+        domainHash: Hash[D]
+      ) extends BoundedBelow[E, D] {
+
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+
+        override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
+
+        override implicit val factory: IntervalFactory.BoundedBelowFactory[E, D] = 
+          IntervalFactory.BoundedBelowFactory(domain)
+      }
+    }
+
+    trait BoundedAbove[E, D <: Domain[E]] extends Intervals[E, D] {
+
+      override implicit val factory: IntervalFactory.BoundedAboveFactory[E, D]
+
+      override def bounds: Interval.Less[E, D] = factory.universal
+    }
+
+    object BoundedAbove {
+
+      def default[E, D <: Domain[E]](domain: D & Domain.BoundedAbove[E], domainHash: Hash[D]): BoundedAbove[E, D] =
+        new DefaultImpl(domain, domainHash)
+
+      class DefaultImpl[E, D <: Domain[E]](
+        domain: D & Domain.BoundedAbove[E],
+        domainHash: Hash[D]
+      ) extends BoundedAbove[E, D] {
+
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+
+        override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
+
+        override implicit val factory: IntervalFactory.BoundedAboveFactory[E, D] = 
+          IntervalFactory.BoundedAboveFactory(domain)
+      }
+    }
+
+    trait Bounded[E, D <: Domain[E]] extends Intervals[E, D] {
+
+      override implicit val factory: IntervalFactory.BoundedFactory[E, D]
+
+      override def bounds: Interval.Between[E, D] = factory.universal
+    }
+
+    object Bounded {
+
+      def default[E, D <: Domain[E]](domain: D & Domain.Bounded[E], domainHash: Hash[D]): Bounded[E, D] =
+        new DefaultImpl(domain, domainHash)
+
+      class DefaultImpl[E, D <: Domain[E]](
+        domain: D & Domain.Bounded[E],
+        domainHash: Hash[D]
+      ) extends Bounded[E, D] {
+
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+
+        override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
+
+        override implicit val factory: IntervalFactory.BoundedFactory[E, D] = IntervalFactory.BoundedFactory(domain)
       }
     }
   }

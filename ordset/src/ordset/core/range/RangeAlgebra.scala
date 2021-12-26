@@ -11,7 +11,27 @@ import ordset.Order
 trait RangeAlgebra[E] {
 
   /**
+   * Returns `true`, if:
+   * <tr>- range 'r' is empty;</tr>
+   * <tr>- range `r` is non-empty and `r.lower ≤ r.upper` according to given `order`.</tr>
+   */
+  def isValid(r: Range[E])(implicit order: Order[E]): Boolean =
+    r match {
+      case r: Range.NonEmpty[E] => isValidNE(r)
+      case _ => true
+    }
+
+  /**
+   * Returns `true`, if `r.lower ≤ r.upper` according to given `order`.
+   */
+  def isValidNE(r: Range.NonEmpty[E])(implicit order: Order[E]): Boolean =
+    order.lteqv(r.lower, r.upper)
+
+  /**
    * Returns `true` if range `r` contains element `e`.
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def contains(r: Range[E], e: E)(implicit order: Order[E]): Boolean = 
     r match {
@@ -21,6 +41,9 @@ trait RangeAlgebra[E] {
 
   /**
    * Returns `true` if non-empty range `r` contains element `e`.
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def containsNE(r: Range.NonEmpty[E], e: E)(implicit order: Order[E]): Boolean = 
     order.lteqv(r.lower, e) && order.gteqv(r.upper, e)
@@ -47,6 +70,9 @@ trait RangeAlgebra[E] {
    *                       |         
    *                    r.upper    - output
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def restrictNE(r: Range.NonEmpty[E], e: E)(implicit order: Order[E]): E =
     if order.lteqv(e, r.lower) then r.lower
@@ -64,6 +90,9 @@ trait RangeAlgebra[E] {
    *                |------|  - output
    *                e
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def takeAbove[R <: Range[E]](r: Range[E], e: E)(implicit range: RangeFactory[E, R]): R =
     r match {
@@ -82,6 +111,9 @@ trait RangeAlgebra[E] {
    *                |------|  - output
    *                e
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def takeAboveNE[R <: Range[E]](r: Range.NonEmpty[E], e: E)(implicit range: RangeFactory[E, R]): R =
     //       e
@@ -108,6 +140,9 @@ trait RangeAlgebra[E] {
    *         |------|         - output
    *                e
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def takeBelow[R <: Range[E]](r: Range[E], e: E)(implicit range: RangeFactory[E, R]): R =
     r match {
@@ -126,6 +161,9 @@ trait RangeAlgebra[E] {
    *         |------|         - output
    *                e
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def takeBelowNE[R <: Range[E]](r: Range.NonEmpty[E], e: E)(implicit range: RangeFactory[E, R]): R =
     //                        e
@@ -151,6 +189,9 @@ trait RangeAlgebra[E] {
    * 
    *         |------|         - output
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def cross[R <: Range[E]](x: Range[E], y: Range[E])(implicit range: RangeFactory[E, R]): R = 
     (x, y) match {
@@ -168,6 +209,9 @@ trait RangeAlgebra[E] {
    * 
    *         |------|         - output
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def crossNE[R <: Range[E]](x: Range.NonEmpty[E], y: Range.NonEmpty[E])(implicit range: RangeFactory[E, R]): R = 
     // x:         |-----|
@@ -203,6 +247,9 @@ trait RangeAlgebra[E] {
    *      |----------------|  - output
    * 
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def span[R <: Range[E]](x: Range[E], y: Range[E])(implicit range: RangeFactory[E, R]): R =
     (x, y) match {
@@ -223,6 +270,9 @@ trait RangeAlgebra[E] {
    *      |----------------|  - output
    * 
    * }}}
+   * 
+   * Preconditions:
+   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
    */
   def spanNE[R <: Range[E]](x: Range.NonEmpty[E], y: Range.NonEmpty[E])(implicit range: RangeFactory[E, R]): R = {
     val ord = range.order
