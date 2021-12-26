@@ -1,13 +1,19 @@
 package ordset.core.interval
 
+import ordset.Order
 import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.Domain
-import ordset.core.range.RangeFactory
+import ordset.core.range
 
 /**
  * Factory to construct intervals.
  */
 trait IntervalFactory[E, D <: Domain[E]] {
+
+  /**
+   * Returns range factory for intervals.
+   */
+  lazy val asRangeFactory: IntervalFactory.RangeFactory[E, D] = new IntervalFactory.RangeFactory(this)
 
   /**
    * Domain of interval.
@@ -144,7 +150,7 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on unbounded domain.
    */
-  final class UnboundedFactory[E, D <: Domain[E]](
+  class UnboundedFactory[E, D <: Domain[E]](
     override val domain: D & Domain.Unbounded[E]
   ) extends IntervalFactory[E, D] {
 
@@ -185,7 +191,7 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on bounded from below domain.
    */
-  final class BoundedBelowFactory[E, D <: Domain[E]](
+  class BoundedBelowFactory[E, D <: Domain[E]](
     override val domain: D & Domain.BoundedBelow[E]
   ) extends IntervalFactory[E, D] {
 
@@ -252,7 +258,7 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on bounded from above domain.
    */
-  final class BoundedAboveFactory[E, D <: Domain[E]](
+  class BoundedAboveFactory[E, D <: Domain[E]](
     override val domain: D & Domain.BoundedAbove[E]
   ) extends IntervalFactory[E, D] {
 
@@ -319,7 +325,7 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on bounded domain.
    */
-  final class BoundedFactory[E, D <: Domain[E]](
+  class BoundedFactory[E, D <: Domain[E]](
     override val domain: D & Domain.Bounded[E]
   ) extends IntervalFactory[E, D] {
 
@@ -408,5 +414,54 @@ object IntervalFactory {
       //          lowerBound   upperBound
       // bounds:      |------------|
       else empty
+  }
+
+  /**
+   * Implementation of range factory for intervals.
+   */
+  class RangeFactory[E, D <: Domain[E]](
+    val intervalFactory: IntervalFactory[E, D]
+  ) extends range.RangeFactory[ExtendedBound[E], Interval[E, D]] {
+
+    override val order: Order[ExtendedBound[E]] = intervalFactory.domain.extendedOrd
+
+    override def empty: Interval.Empty[E, D] = Interval.Empty(intervalFactory.domain)
+
+    /**
+     * Returns interval between specified extended bounds.
+     * 
+     * Lower bound of interval has type [[Bound.Lower]] and upper bound - [[Bound.Upper]].
+     * If input bounds `lower` and `upper` have other types, they are adjusted with [[Bound.flip]] operation:
+     * <p>
+     * between(Bound.Upper(0, isIncluding = false), Bound.Lower(10, isIncluding = false)) returns 
+     * Interval.Between(Bound.Lower(0, isIncluding = true), Bound.Upper(10, isIncluding = true))
+     * </p>
+     * {{{
+     * 
+     *       0)          (10     - input bounds
+     *         [--------]        - output interval
+     * }}}
+     * <p>
+     * between(Bound.Upper(0, isIncluding = true), Bound.Lower(10, isIncluding = true)) returns 
+     * Interval.Between(Bound.Lower(0, isIncluding = false), Bound.Upper(10, isIncluding = false))
+     * </p>
+     * {{{
+     * 
+     *       0]          [10     - input bounds
+     *         (--------)        - output interval
+     * }}}
+     * 
+     * If `lower` bound is [[ExtendedBound.AboveAll]] or `upper` bound is [[ExtendedBound.BelowAll]],
+     * then [[Interval.Empty]] will be returned.
+     */
+    override def between(lower: ExtendedBound[E], upper: ExtendedBound[E]): Interval[E, D] =
+      (lower, upper) match {
+        case (lower: Bound[E], upper: Bound[E]) => intervalFactory.betweenBounds(lower.provideLower, upper.provideUpper)
+        case (lower: Bound[E], ExtendedBound.AboveAll) => intervalFactory.aboveBound(lower.provideLower)
+        case (ExtendedBound.BelowAll, upper: Bound[E]) => intervalFactory.belowBound(upper.provideUpper)
+        case (ExtendedBound.BelowAll, ExtendedBound.AboveAll) => intervalFactory.universal
+        // (AboveAll, Bound[E]) | (Bound[E], BelowAll) | (AboveAll, BelowAll)
+        case _ => intervalFactory.empty
+      }
   }
 }

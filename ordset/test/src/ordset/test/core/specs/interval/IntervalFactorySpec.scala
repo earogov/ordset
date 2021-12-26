@@ -45,6 +45,21 @@ class IntervalFactorySpec extends AnyFunSpec {
     validateBetween(Interval.Greater(x >= 0, d), x >= 0, AboveAll)
 
     validateBetween(Interval.Unbounded(d), BelowAll, AboveAll)
+
+
+    validateRangeFactoryBetween(Interval.Between(x >= 0, x <= 10, d), x < 0, x > 10)
+
+    validateRangeFactoryBetween(Interval.Between(x > 0, x < 10, d), x <= 0, x >= 10)
+
+    validateRangeFactoryBetween(Interval.Less(x < 10, d), BelowAll, x < 10)
+
+    validateRangeFactoryBetween(Interval.Greater(x > 0, d), x > 0, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Unbounded(d), BelowAll, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Empty(d), AboveAll, x < 0)
+
+    validateRangeFactoryBetween(Interval.Empty(d), x > 0, BelowAll)
   }
 
   it("should build intervals for bounded below domain") {
@@ -113,6 +128,21 @@ class IntervalFactorySpec extends AnyFunSpec {
     //          X---------X
     // bounds:      |------
     validateBetween(Interval.Greater(x >= 0, d), BelowAll, AboveAll)
+
+
+    validateRangeFactoryBetween(Interval.Between(x >= 0, x <= 10, d), x < 0, x > 10)
+
+    validateRangeFactoryBetween(Interval.Between(x > 0, x < 10, d), x <= 0, x >= 10)
+
+    validateRangeFactoryBetween(Interval.Between(x >= 0, x < 10, d), BelowAll, x < 10)
+
+    validateRangeFactoryBetween(Interval.Greater(x > 10, d), x > 10, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Greater(x >= 0, d), BelowAll, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Empty(d), AboveAll, x < 10)
+
+    validateRangeFactoryBetween(Interval.Empty(d), x > 0, BelowAll)
   }
 
   it("should build intervals for bounded above domain") {
@@ -181,6 +211,21 @@ class IntervalFactorySpec extends AnyFunSpec {
     //              X----------X
     // bounds:      ------|
     validateBetween(Interval.Less(x <= 0, d), BelowAll, AboveAll)
+
+
+    validateRangeFactoryBetween(Interval.Between(x >= -10, x <= 0, d), x < -10, x > 0)
+
+    validateRangeFactoryBetween(Interval.Between(x > -10, x < 0, d), x <= -10, x >= 0)
+
+    validateRangeFactoryBetween(Interval.Less(x < -10, d), BelowAll, x < -10)
+
+    validateRangeFactoryBetween(Interval.Between(x > -10, x <= 0, d), x > -10, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Less(x <= 0, d), BelowAll, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Empty(d), AboveAll, x < -10)
+
+    validateRangeFactoryBetween(Interval.Empty(d), x > -10, BelowAll)
   }
 
   it("should build intervals for bounded domain") {
@@ -288,6 +333,21 @@ class IntervalFactorySpec extends AnyFunSpec {
     //          X-------------X
     // bounds:      |-----|
     validateBetween(Interval.Between(x >= 0, x <= 100, d), BelowAll, AboveAll)
+
+
+    validateRangeFactoryBetween(Interval.Between(x >= 10, x <= 100, d), x < 10, x > 100)
+
+    validateRangeFactoryBetween(Interval.Between(x > 10, x < 90, d), x <= 10, x >= 90)
+
+    validateRangeFactoryBetween(Interval.Between(x >= 0, x < 10, d), BelowAll, x < 10)
+
+    validateRangeFactoryBetween(Interval.Between(x > 50, x <= 100, d), x > 50, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Between(x >= 0, x <= 100, d), BelowAll, AboveAll)
+
+    validateRangeFactoryBetween(Interval.Empty(d), AboveAll, x < 10)
+
+    validateRangeFactoryBetween(Interval.Empty(d), x > 10, BelowAll)
   }
 
   private def validateBelow[E, D <: Domain[E]](
@@ -346,5 +406,16 @@ class IntervalFactorySpec extends AnyFunSpec {
       case _ => 
         // nothing to do
     }
+  }
+
+  private def validateRangeFactoryBetween[E, D <: Domain[E]](
+    expected: Interval[E, D],
+    lower: ExtendedBound[E],
+    upper: ExtendedBound[E]
+  )(
+    implicit domainOps: DomainOps[E, D]
+  ): Unit = {
+    val interval = domainOps.intervals.factory.asRangeFactory
+    assertSameIntervals(expected, interval.between(lower, upper))
   }
 }
