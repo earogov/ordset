@@ -132,7 +132,7 @@ class IntervalAlgebraSpec extends AnyFunSpec {
     (x >= 5 & x <= 5).isCrossOf(x > -10 & x <= 5, x >= 5 & x < 10)
   }
 
-  it("should support `takeAbove` operation") {
+  it("should support `takeAboveBound` operation") {
 
     // Empty cases
     interval.empty.isTakeAbove(0`[`, interval.empty)
@@ -192,7 +192,7 @@ class IntervalAlgebraSpec extends AnyFunSpec {
     interval.empty.isTakeAbove(3`[`, x >= 0 & x < 2)
   }
 
-  it("should support `takeBelow` operation") {
+  it("should support `takeBelowBound` operation") {
 
     // Empty cases
     interval.empty.isTakeBelow(0`]`, interval.empty)
@@ -260,9 +260,9 @@ class IntervalAlgebraSpec extends AnyFunSpec {
     }
 
     def isTakeAbove(bound: Bound.Lower[E], x: Interval[E, D])(implicit ops: DomainOps[E, D]): Unit =
-      assertSameIntervals(interval, ops.intervals.alg.takeAbove(bound, x))
+      assertSameIntervals(interval, ops.intervals.alg.takeAboveBound(bound, x))
 
     def isTakeBelow(bound: Bound.Upper[E], x: Interval[E, D])(implicit ops: DomainOps[E, D]): Unit =
-      assertSameIntervals(interval, ops.intervals.alg.takeBelow(bound, x))
+      assertSameIntervals(interval, ops.intervals.alg.takeBelowBound(bound, x))
   }
 }
