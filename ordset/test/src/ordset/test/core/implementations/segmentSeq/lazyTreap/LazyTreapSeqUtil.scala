@@ -49,14 +49,14 @@ object LazyTreapSeqUtil {
     rngManager: RngManager
   ): LazyTreapSegmentSeq[E, D, V] = {
 
-    def split(lowerBound: ExtendedBound[E], upperBound: ExtendedBound[E]): Seq[ExtendedBound[E]] = {
+    def split(lower: ExtendedBound[E], upper: ExtendedBound[E]): Seq[ExtendedBound[E]] = {
       val ord = seq.domainOps.extendedOrd
-      val midOpt = boundSelector.between(lowerBound, upperBound)(ord)
+      val midOpt = boundSelector.between(lower, upper)(ord)
         // Convert bound into upper and keep it only if it's steel between input bounds.
         .map(_.provideUpper)
-        .filter(b => ord.gt(b, lowerBound) && ord.lt(b, upperBound))
-      if (midOpt.isDefined) Seq(lowerBound, midOpt.get)
-      else Seq(lowerBound)
+        .filter(b => ord.gt(b, lower) && ord.lt(b, upper))
+      if (midOpt.isDefined) Seq(lower, midOpt.get)
+      else Seq(lower)
     }
 
     @tailrec
@@ -98,7 +98,7 @@ object LazyTreapSeqUtil {
     val initBounds = LazyList(ExtendedBound.BelowAll).appendedAll(seq.extendedUpperBounds)
 
     // Split with some probability each interval (some intervals may be splitted several times, others may leave
-    // unsplitted):
+    // non-splitted):
     //
     //        n1      n2                             n3
     //    |    |      |    |                |        |          |

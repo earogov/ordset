@@ -39,5 +39,5 @@ class SingleBoundedSetSample1[D <: Domain[Int]](
   // X-----)[-----](-----)[-----)[-----)[-----](-----](-----](----------X
   //     -100    -80    -60    -40    -20     0      20     40
   override val sequence: MappedSegmentSeq[Int, D, Boolean, Boolean, Any] =
-    MappedOrderedSet.apply(originalSeq, s => s.domainOps.extendedOrd.lteqv(s.upperExtended, 0`](`))
+    MappedOrderedSet.apply(originalSeq, s => s.domainOps.extendedOrd.lteqv(s.upper, 0`](`))
 }

@@ -53,7 +53,7 @@ object MapExample {
     
     println()
     println(s"Map all segments below $bound1 to `true` and above - to `false`.")
-    val mapFunc = (s: Segment[Int, _ <: Domain[Int], Boolean]) => s.domainOps.extendedOrd.lteqv(s.upperExtended, bound1)
+    val mapFunc = (s: Segment[Int, _ <: Domain[Int], Boolean]) => s.domainOps.extendedOrd.lteqv(s.upper, bound1)
     val seq2 = seq1.mapSegments(mapFunc)(booleanValueOps)
 
     println("Received sequence:")

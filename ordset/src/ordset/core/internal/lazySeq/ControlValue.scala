@@ -95,7 +95,7 @@ protected[ordset] object ControlValue {
     //   ) extends LazyValue[E, D, V] {
 
     //     override def compute: SegmentSeq[E, D, V] = 
-    //       seqFunc().takeAboveExtended(bounds.lowerExtended).takeBelowExtended(bounds.upperExtended)
+    //       seqFunc().takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
 
     //     override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = {
     //       val requestedInterval = domainOps.intervals.builder.aboveBound(bound.provideLower)
@@ -110,7 +110,7 @@ protected[ordset] object ControlValue {
     //         //        [------------------------]
     //         //                                     [/////
     //         //                                   bound
-    //         case _ => new LazyValue.Single(seqFunc, bounds.upperExtended)
+    //         case _ => new LazyValue.Single(seqFunc, bounds.upper)
     //       }
     //     }
 

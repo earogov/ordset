@@ -152,7 +152,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *         [[ExtendedBound.AboveAll]].
    */
   def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = 
-    firstSegment.forwardIterable.map(_.upperExtended)
+    firstSegment.forwardIterable.map(_.upper)
   
   /** @return first segment of sequence. */
   def firstSegment: SegmentT.First[E, D, V, S] with S
@@ -206,16 +206,16 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing
-   * <tr>- segment (minBound, u,,0,,) -> v,,0,,</tr>
-   * <tr>- segments {i > 0: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` u,,0,,</tr> 
+   * <tr>- segment ([[ExtendedBound.BelowAll]], upper) -> value</tr>
+   * <tr>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper</tr>
    * <tr>where</tr>
-   * <tr>minBound - minimal bound of domain;</tr>
+   * <tr>lower - lower bound of segment S at specified `bound`;</tr>
+   * <tr>upper - upper bound of segment S at specified `bound`;</tr>
+   * <tr>value - value of segment S at specified `bound`;</tr>
+   * <tr>S - segment of original sequence such that lower `≤` `bound` and upper `≥` `bound`;</tr>
    * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,;</tr>
-   * <tr>
-   *   S,,0,, - segment of original sequence for which l,,0,, `≤` `bound` and u,,0,, `≥` `bound`;
-   * </tr>
+   * <tr>v,,i,, - value of segment S,,i,,.</tr>
    *
    * <h3>Example 1</h3>
    * {{{
@@ -223,8 +223,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *                 bound
    *                   )
    *   X--------](---------)[--------)[---------X
-   *        A         B         C         D        - values
-   *
+   *        A    ^    B    ^     C         D        - values
+   *           lower     upper
+   * 
    * original.takeAboveBound(bound):
    *
    *   X-------------------)[--------)[---------X
@@ -236,7 +237,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *                     bound
    *                       )
    *   X--------](---------)[--------)[---------X
-   *        A         B         C         D        - values
+   *        A    ^    B    ^     C         D        - values
+   *           lower     upper
    *
    * original.takeAboveBound(bound):
    *
@@ -274,16 +276,16 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
 
   /**
    * Returns sequence containing
-   * <tr>- segments {i ∈ [0, N-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` l,,N,,</tr>
-   * <tr>- segment (l,,N,,, maxBound) -> v,,N,,</tr>
+   * <tr>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower</tr>
+   * <tr>- segment (lower, [[ExtendedBound.AboveAll]]) -> value</tr>
    * <tr>where</tr>
-   * <tr>maxBound - maximal bound of domain;</tr>
+   * <tr>lower - lower bound of segment S at specified `bound`;</tr>
+   * <tr>upper - upper bound of segment S at specified `bound`;</tr>
+   * <tr>value - value of segment S at specified `bound`;</tr>
+   * <tr>S - segment of original sequence such that lower `≤` `bound` and upper `≥` `bound`;</tr>
    * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
    * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,;</tr>
-   * <tr>
-   *   S,,N,, - segment of original sequence for which l,,N,, `≤` `bound` and u,,N,, `≥` `bound`;
-   * </tr>
+   * <tr>v,,i,, - value of segment S,,i,,.</tr>
    *
    * <h3>Example 1</h3>
    * {{{
@@ -291,7 +293,8 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *                 bound
    *                   )
    *   X--------](---------)[--------)[---------X
-   *        A         B         C         D        - values
+   *        A    ^    B    ^    C         D        - values
+   *           lower     upper
    *
    * original.takeBelowBound(bound):
    *
@@ -304,8 +307,9 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *            bound
    *             (
    *   X--------](---------)[--------)[---------X
-   *        A         B         C         D        - values
-   *
+   *        A    ^    B    ^     C         D        - values
+   *           lower     upper
+   * 
    * original.takeBelowBound(bound):
    *
    *   X--------](------------------------------X
@@ -385,26 +389,24 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns sequence containing:
    * <tr>
-   *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, originalFirstBound)) -> v,,i,,}
-   *   of `other` sequence for which l,,i,, `≤` originalFirstBound
+   *   - segments {(l,,i,,, min(u,,i,,, firstUpper)) -> v,,i,,} of `other` sequence for which l,,i,, `≤` firstUpper
    * </tr>
    * <tr>
-   *   - segments {i ∈ [M, N-1]: (l,,i,,, u,,i,,) -> v,,i,,}
-   *   of original sequence for which l,,i,, `>` originalFirstBound
+   *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` firstUpper
    * </tr>
    * <tr>where</tr>
-   * <tr>originalFirstBound - upper bound of first segment of original sequence;</tr>
+   * <tr>firstUpper - upper bound of first segment of original sequence;</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   * <tr>v,,i,, - value of segment i in sequence.</tr>
    *
    * <h3>Example</h3>
    * {{{
    * original:
    *
    *   X------------------------](-------------X
-   *                A                   B          - values
-   *
+   *                A           ^       B          - values
+   *                        firstUpper
    * other:
    *
    *   X-------)[--------](--------------------X
@@ -425,22 +427,20 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   sequence.prepend(other) == other
    * }}}
    */
-  def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing:
    * <tr>
-   *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
-   *   of `other` sequence for which l,,i,, `<` `bound`;
+   *   - segments {(l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,} of `other` sequence for which l,,i,, `≤` U(`bound`)
    * </tr>
    * <tr>
-   *   - segments {i ∈ [M, N-1]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
-   *   of original sequence for which u,,i,, `>` `bound`;
+   *   - segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `≥` L(`bound`)
    * </tr>
    * <tr>where</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   * <tr>v,,i,, - value of segment i in sequence;</tr>
    * <tr>
    *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
@@ -506,7 +506,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   for any bound and `other` sequence
    * }}}
    */
-  def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Adds support of unlimited bounds to [[prependBelowBound]]:
@@ -519,26 +519,25 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
   /**
    * Returns sequence containing:
    * <tr>
-   *   - segments {i ∈ [0, M-1]: (l,,i,,, u,,i,,) -> v,,i,,}
-   *   of original sequence for which u,,i,, `<` originalLastBound;
+   *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lastLower
    * </tr>
    * <tr>
-   *   - segments {i ∈ [M, N-1]: (max(l,,i,,, originalLastBound), u,,i,,) -> v,,i,,}
-   *   of `other` sequence for which u,,i,, `≥` originalLastBound;
+   *   - segments {(max(l,,i,,, lastLower), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `≥` lastLower
    * </tr>
    * <tr>where</tr>
-   * <tr>originalLastBound - lower bound of last segment of original sequence;</tr>
+   * <tr>lastLower - lower bound of last segment of original sequence;</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   * <tr>v,,i,, - value of segment i in sequence.</tr>
    *
    * <h3>Example</h3>
    * {{{
    * original:
    *
    *   X--------](------------------------------X
-   *        A                    B                 - values
-   *
+   *        A    ^               B                 - values
+   *          lastLower
+   * 
    * other:
    *
    *   X----------------)[-----------](--------X
@@ -559,22 +558,20 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *   sequence.append(other) == other
    * }}}
    */
-  def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = ???
+  def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing:
    * <tr>
-   *   - segments {i ∈ [0, M-1]: (l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,}
-   *   of original sequence for which l,,i,, `<` `bound`;
+   *   - segments {(l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `≤` U(`bound`);
    * </tr>
    * <tr>
-   *   - segments {i ∈ [M, N-1]: (max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,}
-   *   of `other` sequence for which u,,i,, `>` `bound`;
+   *   - segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `≥` L(`bound`);
    * </tr>
    * <tr>where</tr>
    * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
    * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence;      </tr>
+   * <tr>v,,i,, - value of segment i in sequence;</tr>
    * <tr>
    *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
@@ -587,7 +584,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    * <h3>Example 1</h3>
    * {{{
    * original:
-   *                        bound
+   *                       bound
    *                         [
    *   X--------](-----------------)[-----------X
    *        A              B               C       - values
@@ -747,7 +744,7 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
     implicit valueOps: ValueOps[U]
   ): SegmentSeq[E, D, U] = {
     val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      firstSegment.forwardIterable.map(s => (s.upperExtended, Some(() => mapFunc(s)))),
+      firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s)))),
       domainOps,
       SeqSupplier.ValueOpsImpl.get
     )(

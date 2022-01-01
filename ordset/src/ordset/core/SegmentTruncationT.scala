@@ -48,7 +48,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
    *                                )       v
    *   X--------](-----------)[----------------X
    *        A          B      ^        C           - values
-   *                      lowerBound
+   *                        lower
    *
    * other:
    *
@@ -76,7 +76,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
    *                       v        )        v
    *   X------------](--------------)[---------X
    *         A               B      ^     C        - values
-   *                            upperBound
+   *                              upper
    * }}}
    *
    * [[getSegmentForPrepending]] returns next segment in special case and segment itself otherwise.
@@ -99,7 +99,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
    *       v     (
    *   X------------](--------------)[---------X
    *         A      ^        B            C        - values
-   *            upperBound
+   *              upper
    *
    * other:
    *
@@ -127,7 +127,7 @@ abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, 
    *         v          (        v
    *   X---------------](-----------)[---------X
    *         A          ^     B           C       - values
-   *                lowerBound
+   *                  lower
    * }}}
    *
    * [[getSegmentForAppending]] returns previous segment in special case and segment itself otherwise.
@@ -356,7 +356,7 @@ object SegmentTruncationT {
   protected [ordset] final def lowerTruncation[E, D <: Domain[E], V, S](
     segment: SegmentT[E, D, V, S]
   ): SegmentTruncationT[E, D, V, S, segment.type] =
-    segment.truncation(segment.lowerExtended)
+    segment.truncation(segment.lower)
 
   /**
    * Implementation of [[SegmentT.upperTruncation]].
@@ -365,5 +365,5 @@ object SegmentTruncationT {
   protected [ordset] final def upperTruncation[E, D <: Domain[E], V, S](
     segment: SegmentT[E, D, V, S]
   ): SegmentTruncationT[E, D, V, S, segment.type] =
-    segment.truncation(segment.upperExtended)
+    segment.truncation(segment.upper)
 }

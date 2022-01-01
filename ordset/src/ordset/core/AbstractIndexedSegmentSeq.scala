@@ -145,7 +145,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   
   final override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = secondSegment
-    prependBelowBoundInternal(segment.lowerBound, segment, other)
+    prependBelowBoundInternal(segment.lower, segment, other)
   }
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
@@ -156,7 +156,7 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
   
   final override def append(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
-    appendAboveBoundInternal(segment.upperBound, segment, other)
+    appendAboveBoundInternal(segment.upper, segment, other)
   }
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
@@ -416,7 +416,7 @@ object AbstractIndexedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: IndexedSegmentWithNext[E, D, V]
 
-    override def upperBound: Bound.Upper[E] = sequence.getUpperBound(index)
+    override def upper: Bound.Upper[E] = sequence.getUpperBound(index)
 
     // Navigation --------------------------------------------------------------- //
     override def moveNext: IndexedSegmentWithPrev[E, D, V] = sequence.makeSegmentWithPrev(index + 1)
@@ -427,7 +427,7 @@ object AbstractIndexedSegmentSeq {
     override def slice: (IndexedSegmentSeq[E, D, V], NonuniformIndexedSegmentSeq[E, D, V])
 
     override def append(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-      sequence.appendAboveBoundInternal(upperBound, this, other)
+      sequence.appendAboveBoundInternal(upper, this, other)
   }
 
   /**
@@ -444,7 +444,7 @@ object AbstractIndexedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: IndexedSegmentWithPrev[E, D, V]
 
-    override def lowerBound: Bound.Lower[E] = sequence.getLowerBound(index)
+    override def lower: Bound.Lower[E] = sequence.getLowerBound(index)
 
     // Navigation --------------------------------------------------------------- //
     override def movePrev: IndexedSegmentWithNext[E, D, V] = sequence.makeSegmentWithNext(index - 1)
@@ -455,7 +455,7 @@ object AbstractIndexedSegmentSeq {
     override def slice: (NonuniformIndexedSegmentSeq[E, D, V], IndexedSegmentSeq[E, D, V])
 
     override def prepend(other: SegmentSeq[E, D, V]): IndexedSegmentSeq[E, D, V] =
-      sequence.prependBelowBoundInternal(lowerBound, this, other)
+      sequence.prependBelowBoundInternal(lower, this, other)
   }
 
   /** Initial segment of sequence. */

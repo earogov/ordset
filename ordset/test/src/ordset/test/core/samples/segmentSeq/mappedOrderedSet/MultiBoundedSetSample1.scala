@@ -41,6 +41,6 @@ class MultiBoundedSetSample1[D <: Domain[Int]](
   //       -10      0        10      12      15      20     22      30      40
   override val sequence: MappedSegmentSeq[Int, D, Boolean, Boolean, Any] = {
     val originalArraySeq = ArrayOrderedSet.unchecked[Int, D](ArraySeq.from(bounds), complementary)
-    MappedOrderedSet.apply(originalSeq, s => originalArraySeq.getValueForExtended(s.upperExtended))
+    MappedOrderedSet.apply(originalSeq, s => originalArraySeq.getValueForExtended(s.upper))
   }
 }

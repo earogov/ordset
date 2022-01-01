@@ -88,7 +88,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     getSegmentForExtended(bound).slice
 
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-    prependBelowExtended(firstSegment.upperExtended, other)
+    prependBelowExtended(firstSegment.upper, other)
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
     LazySegmentSeqBuilder.appendSeq(bound, other, this)(domainOps, valueOps, rngManager)
@@ -97,7 +97,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     super.prependBelowExtended(bound, other)
 
   final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
-    appendAboveExtended(lastSegment.lowerExtended, other)
+    appendAboveExtended(lastSegment.lower, other)
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     LazySegmentSeqBuilder.appendSeq(bound, this, other)(domainOps, valueOps, rngManager)
@@ -178,7 +178,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
     // Here we just lazily replace everything below upper bound of `segment` with value of `segment`.
     // Warning! Each mapped value can depend on any part of `originalSeq`. So it's forbidden to drop some parts of 
     // `originalSeq`(even far below `segment`), apply mapping it and use it instead of `this` to free some memory.
-    LazySegmentSeqBuilder.appendSeq(segment.upperBound, consUniform(segment.value), this)
+    LazySegmentSeqBuilder.appendSeq(segment.upper, consUniform(segment.value), this)
   }
 
   /**
@@ -186,7 +186,7 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
    */ 
   protected def takeBelowInternal(segment: MappedInnerSegment[E, D, U, V, S]): SegmentSeq[E, D, V] = {
     // See description in [[takeAboveInternal]] method.
-    LazySegmentSeqBuilder.appendSeq(segment.lowerBound, this, consUniform(segment.value))
+    LazySegmentSeqBuilder.appendSeq(segment.lower, this, consUniform(segment.value))
   }
 
   /**
@@ -197,8 +197,8 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
   ): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) = {
     // See description in [[takeAboveInternal]] method.
     val uniformSeq = consUniform(segment.value)
-    val leftSeq = LazySegmentSeqBuilder.appendSeq(segment.lowerBound, this, uniformSeq)
-    val rightSeq = LazySegmentSeqBuilder.appendSeq(segment.upperBound, uniformSeq, this)
+    val leftSeq = LazySegmentSeqBuilder.appendSeq(segment.lower, this, uniformSeq)
+    val rightSeq = LazySegmentSeqBuilder.appendSeq(segment.upper, uniformSeq, this)
     (leftSeq, rightSeq)
   }
 
@@ -735,18 +735,18 @@ object AbstractMappedSegmentSeq {
      *
      * Returns sequence containing
      * <tr>
-     *   - segments {i ∈ [0, L-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lowerBound
+     *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower
      * </tr>
      * <tr>
-     *   - segments {i ∈ [L, M-1]: (max(lowerBound, l,,i,,), min(upperBound, u,,i,,)) -> v,,i,,}
-     *   of `other` sequence for which l,,i,, `≤` upperBound and u,,i,, `≥` lowerBound
+     *   - segments {(max(lower, l,,i,,), min(upper, u,,i,,)) -> v,,i,,}
+     *   of `other` sequence for which l,,i,, `≤` upper and u,,i,, `≥` lower
      * </tr>
      * <tr>
-     *   - segments {i ∈ [M, N-1]: (l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upperBound
+     *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper
      * </tr>
      * <tr>where</tr>
-     * <tr>lowerBound - lower bound of current mapped segment;</tr>
-     * <tr>upperBound - upper bound of current mapped segment;</tr>
+     * <tr>lower - lower bound of current mapped segment;</tr>
+     * <tr>upper - upper bound of current mapped segment;</tr>
      * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
      * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
      * <tr>v,,i,, - value of segment S,,i,,.</tr>
@@ -761,7 +761,7 @@ object AbstractMappedSegmentSeq {
      *
      *   X-----)[-----------------------------](-------X
      *      A   ^               B             ^    D
-     *         lower bound           upper bound
+     *        lower                         upper
      *
      *   mapping function:
      *   A -> A    C -> B
@@ -810,7 +810,7 @@ object AbstractMappedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentWithNext[E, D, U, V, S]
 
-    override def upperBound: Bound.Upper[E] = front.upperBound
+    override def upper: Bound.Upper[E] = front.upper
 
     // Navigation --------------------------------------------------------------- //
     override def front: SegmentT.WithNext[E, D, U, S]
@@ -826,7 +826,7 @@ object AbstractMappedSegmentSeq {
 
     // Transformation ----------------------------------------------------------- //
     override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
-      sequence.appendAboveBoundInternal(upperBound, this, other)
+      sequence.appendAboveBoundInternal(upper, this, other)
 
     // Protected section -------------------------------------------------------- //
     protected override def original: SegmentT.WithNext[E, D, U, S] = front
@@ -864,7 +864,7 @@ object AbstractMappedSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: MappedSegmentWithPrev[E, D, U, V, S]
 
-    override def lowerBound: Bound.Lower[E] = back.lowerBound
+    override def lower: Bound.Lower[E] = back.lower
 
     // Navigation --------------------------------------------------------------- //
     override def front: SegmentT.WithPrev[E, D, U, S]
@@ -882,7 +882,7 @@ object AbstractMappedSegmentSeq {
 
     // Transformation ----------------------------------------------------------- //
     override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-      sequence.prependBelowBoundInternal(lowerBound, this, other)
+      sequence.prependBelowBoundInternal(lower, this, other)
 
     // Protected section -------------------------------------------------------- //
     protected override def original: SegmentT.WithPrev[E, D, U, S] = front

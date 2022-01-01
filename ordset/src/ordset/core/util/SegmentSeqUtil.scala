@@ -24,7 +24,7 @@ object SegmentSeqUtil {
       }
     if (startSegment == null) Nil
     else startSegment.forwardIterable.map {
-      case s: Segment.WithNext[E, D, V] => s.upperBound
+      case s: Segment.WithNext[E, D, V] => s.upper
       case _ => null
     }.takeWhile(_ != null)
   }
@@ -42,7 +42,7 @@ object SegmentSeqUtil {
       segment.moveToFirst.forwardIterable.map { s =>
         if (segment.domainOps.segments.upperOrd.gt(s, segment)) null
         else s match {
-          case s: Segment.WithNext[E, D, V] => s.upperBound
+          case s: Segment.WithNext[E, D, V] => s.upper
           case _ => null
         }
       }.takeWhile(_ != null)
@@ -50,7 +50,7 @@ object SegmentSeqUtil {
       segment.moveToFirst.forwardIterable.map { s =>
         if (segment.domainOps.segments.upperOrd.gteqv(s, segment)) null
         else s match {
-          case s: Segment.WithNext[E, D, V] => s.upperBound
+          case s: Segment.WithNext[E, D, V] => s.upper
           case _ => null
         }
       }.takeWhile(_ != null)
@@ -77,7 +77,7 @@ object SegmentSeqUtil {
       s match {
         case s: Segment.WithNext[E, D, V] =>
           size = size + 1
-          list = list.prepended(s.upperBound)
+          list = list.prepended(s.upper)
         case _ => // nothing to do
       }
       s match {
@@ -106,7 +106,7 @@ object SegmentSeqUtil {
       s match {
         case s: Segment.WithNext[E, D, V] =>
           size = size + 1
-          list = list.prepended(s.upperBound)
+          list = list.prepended(s.upper)
         case _ => // nothing to do
       }
       s match {
@@ -149,7 +149,7 @@ object SegmentSeqUtil {
   def getExtendedBoundValueIterableForSeq[E, D <: Domain[E], V](
     seq: SegmentSeq[E, D, V]
   ): Iterable[(ExtendedBound.Upper[E], V)] =
-    seq.firstSegment.forwardIterable.map(s => (s.upperExtended, s.value))
+    seq.firstSegment.forwardIterable.map(s => (s.upper, s.value))
 
   /**
    * Returns tuple of segments of sequence `seq`:
@@ -163,7 +163,6 @@ object SegmentSeqUtil {
    *           
    *               [--------------]
    *             lower          upper
-   *             bound          bound
    *   seq:
    *   
    *       A       B      C       D         E 
@@ -180,9 +179,9 @@ object SegmentSeqUtil {
     seq: SegmentSeqT[E, D, V, S]
   ): (SegmentT[E, D, V, S], SegmentT[E, D, V, S]) =
     segment match {
-      case s: Segment.Inner[E, D, ?]    => (seq.getSegmentForBound(s.lowerBound), seq.getSegmentForBound(s.upperBound))
-      case s: Segment.WithNext[E, D, ?] => (seq.firstSegment, seq.getSegmentForBound(s.upperBound))
-      case s: Segment.WithPrev[E, D, ?] => (seq.getSegmentForBound(s.lowerBound), seq.lastSegment)
+      case s: Segment.Inner[E, D, ?]    => (seq.getSegmentForBound(s.lower), seq.getSegmentForBound(s.upper))
+      case s: Segment.WithNext[E, D, ?] => (seq.firstSegment, seq.getSegmentForBound(s.upper))
+      case s: Segment.WithPrev[E, D, ?] => (seq.getSegmentForBound(s.lower), seq.lastSegment)
       case _                            => (seq.firstSegment, seq.lastSegment)
     }
 
@@ -194,7 +193,6 @@ object SegmentSeqUtil {
    *
    *               [--------------]
    *             lower
-   *             bound          
    *   seq:
    *
    *       A       B      C       D         E
@@ -210,7 +208,7 @@ object SegmentSeqUtil {
     seq: SegmentSeqT[E, D, V, S]
   ): SegmentT[E, D, V, S] =
     segment match {
-      case s: Segment.WithPrev[E, D, ?] => seq.getSegmentForBound(s.lowerBound)
+      case s: Segment.WithPrev[E, D, ?] => seq.getSegmentForBound(s.lower)
       case _ => seq.firstSegment
     }
 
@@ -222,7 +220,6 @@ object SegmentSeqUtil {
    *
    *               [--------------]
    *                            upper
-   *                            bound
    *   seq:
    *
    *       A       B      C       D         E 
@@ -238,7 +235,7 @@ object SegmentSeqUtil {
     seq: SegmentSeqT[E, D, V, S]
   ): SegmentT[E, D, V, S] =
     segment match {
-      case s: Segment.WithNext[E, D, ?] => seq.getSegmentForBound(s.upperBound)
+      case s: Segment.WithNext[E, D, ?] => seq.getSegmentForBound(s.upper)
       case _ => seq.lastSegment
     }
 }

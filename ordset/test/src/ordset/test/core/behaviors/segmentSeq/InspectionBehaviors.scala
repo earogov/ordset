@@ -55,32 +55,32 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             )
 
             assert(
-              seg.hasLowerBound(seg.lowerBound),
-              s"expected $seg has lower bound ${seg.lowerBound}"
+              seg.hasLowerBound(seg.lower),
+              s"expected $seg has lower bound ${seg.lower}"
             )
             assert(
-              !seg.hasLowerBound(seg.upperBound.flipUpper),
-              s"expected $seg doesn't have lower bound ${seg.upperBound.flipUpper}"
+              !seg.hasLowerBound(seg.upper.flipUpper),
+              s"expected $seg doesn't have lower bound ${seg.upper.flipUpper}"
             )
             assert(
-              seg.hasLowerExtended(seg.lowerBound),
-              s"expected $seg has lower extended bound ${seg.lowerBound}"
+              seg.hasLowerExtended(seg.lower),
+              s"expected $seg has lower extended bound ${seg.lower}"
             )
             assert(
               !seg.hasLowerExtended(ExtendedBound.BelowAll),
               s"expected $seg doesn't have lower extended bound ${ExtendedBound.BelowAll}"
             )
             assert(
-              seg.hasUpperBound(seg.upperBound),
-              s"expected $seg has upper bound ${seg.upperBound}"
+              seg.hasUpperBound(seg.upper),
+              s"expected $seg has upper bound ${seg.upper}"
             )
             assert(
-              !seg.hasUpperBound(seg.lowerBound.flipLower),
-              s"expected $seg doesn't have upper bound ${seg.lowerBound.flipLower}"
+              !seg.hasUpperBound(seg.lower.flipLower),
+              s"expected $seg doesn't have upper bound ${seg.lower.flipLower}"
             )
             assert(
-              seg.hasUpperExtended(seg.upperBound),
-              s"expected $seg has upper extended bound ${seg.upperBound}"
+              seg.hasUpperExtended(seg.upper),
+              s"expected $seg has upper extended bound ${seg.upper}"
             )
             assert(
               !seg.hasUpperExtended(ExtendedBound.AboveAll),
@@ -90,8 +90,8 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
               s._1 match {
                 case bound: Bound[E] =>
                   if (
-                    boundOrd.lt(bound.provideLower, seg.lowerBound) ||
-                    boundOrd.gt(bound.provideUpper, seg.upperBound)
+                    boundOrd.lt(bound.provideLower, seg.lower) ||
+                    boundOrd.gt(bound.provideUpper, seg.upper)
                   ) {
                     assertSegmentDoesNotHaveBounds(seg, bound)
                   }
@@ -125,12 +125,12 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             )
 
             assert(
-              seg.hasUpperBound(seg.upperBound),
-              s"expected $seg has upper bound ${seg.upperBound}"
+              seg.hasUpperBound(seg.upper),
+              s"expected $seg has upper bound ${seg.upper}"
             )
             assert(
-              seg.hasUpperExtended(seg.upperBound),
-              s"expected $seg has upper extended bound ${seg.upperBound}"
+              seg.hasUpperExtended(seg.upper),
+              s"expected $seg has upper extended bound ${seg.upper}"
             )
             assert(
               seg.hasLowerExtended(ExtendedBound.BelowAll),
@@ -143,7 +143,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             sample.moveToBoundCases.foreach { s =>
               s._1 match {
                 case bound: Bound[E] =>
-                  if (boundOrd.gt(bound.provideUpper, seg.upperBound)) {
+                  if (boundOrd.gt(bound.provideUpper, seg.upper)) {
                     assertSegmentDoesNotHaveBounds(seg, bound)
                   }
                 case _ => // skip extended bounds
@@ -176,12 +176,12 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             )
 
             assert(
-              seg.hasLowerBound(seg.lowerBound),
-              s"expected $seg has lower bound ${seg.lowerBound}"
+              seg.hasLowerBound(seg.lower),
+              s"expected $seg has lower bound ${seg.lower}"
             )
             assert(
-              seg.hasLowerExtended(seg.lowerBound),
-              s"expected $seg has lower extended bound ${seg.lowerBound}"
+              seg.hasLowerExtended(seg.lower),
+              s"expected $seg has lower extended bound ${seg.lower}"
             )
             assert(
               seg.hasUpperExtended(ExtendedBound.AboveAll),
@@ -194,7 +194,7 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
             sample.moveToBoundCases.foreach { s =>
               s._1 match {
                 case bound: Bound[E] =>
-                  if (boundOrd.lt(bound.provideLower, seg.lowerBound)) {
+                  if (boundOrd.lt(bound.provideLower, seg.lower)) {
                     assertSegmentDoesNotHaveBounds(seg, bound)
                   }
                 case _ => // skip extended bounds
@@ -428,8 +428,8 @@ trait InspectionBehaviors[E, D <: Domain[E], V] {
           assert(valueHash.eqv(segment.value, refValue), s"segment $segment should have value $refValue")
 
           // `sequence.getValueForBound` etc are correct
-          checkSequenceValueForBound(segment.lowerExtended, refRelation)
-          checkSequenceValueForBound(segment.upperExtended, refRelation)
+          checkSequenceValueForBound(segment.lower, refRelation)
+          checkSequenceValueForBound(segment.upper, refRelation)
         }
       }
     }

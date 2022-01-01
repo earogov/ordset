@@ -92,7 +92,7 @@ object FlatmapExample {
       implicit val rngManager = segment.rngManager
 
       val midBoundOpt = boundSelector
-        .between(segment.lowerExtended, segment.upperExtended)(boundOrd)
+        .between(segment.lower, segment.upper)(boundOrd)
         .map(_.provideUpper)
         .filter(segment.containsExtended(_))
 

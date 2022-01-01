@@ -59,14 +59,14 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           assertSameRelationAndSegmentSeq(testCase.expected, actual3)
 
           // 1. If `segment` has previous segment:
-          // `segment.prepend(otherSeq)` should equals to `sequence.prependBelowBound(segment.lowerBound, otherSeq)`
+          // `segment.prepend(otherSeq)` should equals to `sequence.prependBelowBound(segment.lower, otherSeq)`
           // 2. If `segment` is first:
           // `segment.prepend(otherSeq)` should equals to `sequence`.
           val boundSegment = sample.sequence.getSegmentForExtended(testCase.bound)
           val actual4 = boundSegment.prepend(testCase.otherSeq)
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
-              val expected = seqValidator.prependBelowExtended(s.lowerBound, testCase.otherSeq)
+              val expected = seqValidator.prependBelowExtended(s.lower, testCase.otherSeq)
               assertSameSegmentSeq(expected, actual4)
             case _ =>
               assertSameSegmentSeq(sample.sequence, actual4)
@@ -88,29 +88,29 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           }
 
           // 1. If `segment` has previous segment:
-          // `segment.truncation(segment.lowerBound.flip).prepend(otherSeq)` should equals to
+          // `segment.truncation(segment.lower.flip).prepend(otherSeq)` should equals to
           // `segment.prepend(otherSeq)`
           //
-          //      boundSegment.lowerBound.flip
+          //      boundSegment.lower.flip
           //          v
           // ---------](-----------------](---------
           //               boundSegment
           //
           // 2. If `segment` has next segment:
-          // `segment.truncation(segment.upperBound.flip).prepend(otherSeq)` should equals to
+          // `segment.truncation(segment.upper.flip).prepend(otherSeq)` should equals to
           // `segment.moveNext.prepend(otherSeq)`
           //
-          //      boundSegment.upperBound.flip
+          //      boundSegment.upper.flip
           //                              v
           // ---------](-----------------](---------
           //               boundSegment
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
-              val actual7 = s.truncation(s.lowerBound.flip).prepend(testCase.otherSeq)
+              val actual7 = s.truncation(s.lower.flip).prepend(testCase.otherSeq)
               assertSameSegmentSeq(actual4, actual7)
 
             case s: Segment.WithNext[E, D, V] =>
-              val actual7 = s.truncation(s.upperBound.flip).prepend(testCase.otherSeq)
+              val actual7 = s.truncation(s.upper.flip).prepend(testCase.otherSeq)
               val expected7 = s.moveNext.prepend(testCase.otherSeq)
               assertSameSegmentSeq(expected7, actual7)
 
@@ -168,14 +168,14 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           assertSameRelationAndSegmentSeq(testCase.expected, actual3)
 
           // 1. If `segment` has next segment:
-          // `segment.append(otherSeq)` should equals to `sequence.appendAboveBound(segment.upperBound, otherSeq)`
+          // `segment.append(otherSeq)` should equals to `sequence.appendAboveBound(segment.upper, otherSeq)`
           // 2. If `segment` is last:
           // `segment.append(otherSeq)` should equals to `sequence`.
           val boundSegment = sample.sequence.getSegmentForExtended(testCase.bound)
           val actual4 = boundSegment.append(testCase.otherSeq)
           boundSegment match {
             case s: Segment.WithNext[E, D, V] =>
-              val expected = seqValidator.appendAboveExtended(s.upperBound, testCase.otherSeq)
+              val expected = seqValidator.appendAboveExtended(s.upper, testCase.otherSeq)
               assertSameSegmentSeq(expected, actual4)
             case _ =>
               assertSameSegmentSeq(sample.sequence, actual4)
@@ -197,30 +197,30 @@ trait TransformationBehaviors[E, D <: Domain[E], V] {
           }
 
           // 1. If `segment` has previous segment:
-          // `segment.truncation(segment.lowerBound.flip).append(otherSeq)` should equals to
+          // `segment.truncation(segment.lower.flip).append(otherSeq)` should equals to
           // `segment.movePrev.append(otherSeq)`
           //
-          //      boundSegment.lowerBound.flip
+          //      boundSegment.lower.flip
           //          v
           // ---------](-----------------](---------
           //               boundSegment
           //
           // 2. If `segment` has next segment:
-          // `segment.truncation(segment.upperBound.flip).append(otherSeq)` should equals to
+          // `segment.truncation(segment.upper.flip).append(otherSeq)` should equals to
           // `segment.append(otherSeq)`
           //
-          //      boundSegment.upperBound.flip
+          //      boundSegment.upper.flip
           //                              v
           // ---------](-----------------](---------
           //               boundSegment
           boundSegment match {
             case s: Segment.WithPrev[E, D, V] =>
-              val actual7 = s.truncation(s.lowerBound.flip).append(testCase.otherSeq)
+              val actual7 = s.truncation(s.lower.flip).append(testCase.otherSeq)
               val expected7 = s.movePrev.append(testCase.otherSeq)
               assertSameSegmentSeq(expected7, actual7)
 
             case s: Segment.WithNext[E, D, V] =>
-              val actual7 = s.truncation(s.upperBound.flip).append(testCase.otherSeq)
+              val actual7 = s.truncation(s.upper.flip).append(testCase.otherSeq)
               assertSameSegmentSeq(actual4, actual7)
 
             case _ => // nothing to do

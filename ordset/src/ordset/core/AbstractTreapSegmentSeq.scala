@@ -157,10 +157,10 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
   final override def sliceAtBound(bound: Bound[E]): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) = {
     val ord = domainOps.boundOrd
-    if (ord.compare(bound, firstSegment.upperBound) <= 0) {
+    if (ord.compare(bound, firstSegment.upper) <= 0) {
       (consUniform(firstSegment.value), this)
 
-    } else if (ord.compare(bound, lastSegment.lowerBound) >= 0) {
+    } else if (ord.compare(bound, lastSegment.lower) >= 0) {
       (this, consUniform(lastSegment.value))
 
     } else {
@@ -188,7 +188,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   
   final override def prepend(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
     val segment = secondSegment
-    prependBelowBoundInternal(segment.lowerBound, segment, other)
+    prependBelowBoundInternal(segment.lower, segment, other)
   }
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
@@ -199,7 +199,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
   
   final override def append(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] = {
     val segment = penultimateSegment
-    appendAboveBoundInternal(segment.upperBound, segment, other)
+    appendAboveBoundInternal(segment.upper, segment, other)
   }
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
@@ -318,7 +318,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
           (buf, seg) => seg match {
             case seg: Segment.WithNext[E, D, V] =>
               BuildDesc.addToBuffer[Bound.Upper[E], Bound[E], V](
-                buf, seg.upperBound, rng.nextInt(), seg.value
+                buf, seg.upper, rng.nextInt(), seg.value
               )(
                 boundOrd
               )
@@ -435,7 +435,7 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
           (buf, seg) => seg match {
             case seg: Segment.WithNext[E, D, V] =>
               BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], V](
-                buf, seg.upperBound, rng.nextInt(), seg.value
+                buf, seg.upper, rng.nextInt(), seg.value
               )(
                 boundOrd
               )
@@ -604,7 +604,7 @@ object AbstractTreapSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: TreapSegmentWithNext[E, D, V]
 
-    override def upperBound: Bound.Upper[E] = node.key
+    override def upper: Bound.Upper[E] = node.key
 
     // Navigation --------------------------------------------------------------- //
     override def moveNext: TreapSegmentWithPrev[E, D, V] = sequence.makeNextSegment(this)
@@ -615,7 +615,7 @@ object AbstractTreapSegmentSeq {
     override def slice: (TreapSegmentSeq[E, D, V], NonuniformTreapSegmentSeq[E, D, V])
 
     override def append(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-      sequence.appendAboveBoundInternal(upperBound, this, other)
+      sequence.appendAboveBoundInternal(upper, this, other)
   }
 
   /**
@@ -628,7 +628,7 @@ object AbstractTreapSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def self: TreapSegmentWithPrev[E, D, V]
 
-    override lazy val lowerBound: Bound.Lower[E] = {
+    override lazy val lower: Bound.Lower[E] = {
       val contextExtract =
         ContextExtract.foldAfter[Bound.Upper[E], V, ImmutableTreap.Node, NodeVisitContext[Bound.Upper[E], V]](
           node,
@@ -652,7 +652,7 @@ object AbstractTreapSegmentSeq {
     override def slice: (NonuniformTreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V])
 
     override def prepend(other: SegmentSeq[E, D, V]): TreapSegmentSeq[E, D, V] =
-      sequence.prependBelowBoundInternal(lowerBound, this, other)
+      sequence.prependBelowBoundInternal(lower, this, other)
   }
 
   /**
@@ -725,7 +725,7 @@ object AbstractTreapSegmentSeq {
     // Inspection --------------------------------------------------------------- //
     override def value: V = sequence.lastValue
 
-    override lazy val lowerBound: Bound.Lower[E] = node.key.flipUpper
+    override lazy val lower: Bound.Lower[E] = node.key.flipUpper
 
     override def self: TreapTerminalSegment[E, D, V] = this
 
@@ -816,14 +816,14 @@ object AbstractTreapSegmentSeq {
         NodeDownward.foldForRightSplit[Bound.Upper[E], Bound[E], V, NodeStackContext[Bound.Upper[E], V]](
           node,
           context.stack.map(_.tree),
-          upperBound,
+          upper,
           TreeStack.function
         )(
           domainOps.boundOrd
         )
       val splitFunc = 
         TreeSplit.splitRightFunc[Bound.Upper[E], Bound[E], V, NodeStackContext[Bound.Upper[E], V]](
-          upperBound
+          upper
         )(
           domainOps.boundOrd
         )

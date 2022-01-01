@@ -158,14 +158,9 @@ object SegmentT {
 
     override def hasNextSuchThat(p: SegmentT.WithPrev[E, D, V, S] with S => Boolean): Boolean = p.apply(moveNext)
 
-    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upperBound, bound)
+    override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domainOps.boundOrd.eqv(upper, bound)
 
-    /**
-     * @return upper bound of segment.
-     */
-    def upperBound: Bound.Upper[E]
-
-    override def upperExtended: ExtendedBound.Upper[E] = upperBound
+    override def upper: Bound.Upper[E]
 
     override def self: SegmentT.WithNext[E, D, V, S] with S
 
@@ -190,14 +185,9 @@ object SegmentT {
 
     override def hasPrevSuchThat(p: SegmentT.WithNext[E, D, V, S] with S => Boolean): Boolean = p.apply(movePrev)
 
-    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lowerBound, bound)
+    override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domainOps.boundOrd.eqv(lower, bound)
 
-    /**
-     * @return lower bound of segment.
-     */
-    def lowerBound: Bound.Lower[E]
-
-    override def lowerExtended: ExtendedBound.Lower[E] = lowerBound
+    override def lower: Bound.Lower[E]
 
     override def self: SegmentT.WithPrev[E, D, V, S] with S
 
@@ -222,7 +212,7 @@ object SegmentT {
 
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = false
 
-    override def lowerExtended: ExtendedBound.Lower[E] = ExtendedBound.BelowAll
+    override def lower: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
 
     override def self: SegmentT.First[E, D, V, S] with S
 
@@ -247,7 +237,7 @@ object SegmentT {
 
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = false
 
-    override def upperExtended: ExtendedBound.Upper[E] = ExtendedBound.AboveAll
+    override def upper: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
 
     override def self: SegmentT.Last[E, D, V, S] with S
 
@@ -339,7 +329,7 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isInitial: Boolean = true
 
-    override def containsBound(bound: Bound[E]): Boolean = domainOps.boundOrd.gteqv(upperBound, bound)
+    override def containsBound(bound: Bound[E]): Boolean = domainOps.boundOrd.gteqv(upper, bound)
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean =
       bound match {
@@ -349,10 +339,10 @@ object SegmentT {
       }
 
     override def restrictBound(bound: Bound[E]): Bound[E] =
-      if (domainOps.boundOrd.gt(bound, upperBound)) upperBound
+      if (domainOps.boundOrd.gt(bound, upper)) upper
       else bound
 
-    override def interval: Interval[E, D] = domainOps.intervals.factory.belowBound(upperBound)
+    override def interval: Interval[E, D] = domainOps.intervals.factory.belowBound(upper)
 
     override def toString: String = SetBuilderFormat.initialSegment(this)
 
@@ -366,7 +356,7 @@ object SegmentT {
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
       val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((upperBound, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
+        List((upper, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
         domainOps,
         SeqSupplier.ValueOpsImpl.get
       )(
@@ -409,7 +399,7 @@ object SegmentT {
     // Inspection --------------------------------------------------------------- //
     override def isTerminal: Boolean = true
 
-    override def containsBound(bound: Bound[E]): Boolean = domainOps.boundOrd.lteqv(lowerBound, bound)
+    override def containsBound(bound: Bound[E]): Boolean = domainOps.boundOrd.lteqv(lower, bound)
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean =
       bound match {
@@ -419,10 +409,10 @@ object SegmentT {
       }
 
     override def restrictBound(bound: Bound[E]): Bound[E] =
-      if (domainOps.boundOrd.lt(bound, lowerBound)) lowerBound
+      if (domainOps.boundOrd.lt(bound, lower)) lower
       else bound
 
-    override def interval: Interval[E, D] = domainOps.intervals.factory.aboveBound(lowerBound)
+    override def interval: Interval[E, D] = domainOps.intervals.factory.aboveBound(lower)
 
     override def toString: String = SetBuilderFormat.terminalSegment(this)
 
@@ -436,7 +426,7 @@ object SegmentT {
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
       val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((lowerBound.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc))),
+        List((lower.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc))),
         domainOps,
         SeqSupplier.ValueOpsImpl.get
       )(
@@ -481,7 +471,7 @@ object SegmentT {
 
     override def containsBound(bound: Bound[E]): Boolean = {
       val boundOrd = domainOps.boundOrd
-      boundOrd.lteqv(lowerBound, bound) && boundOrd.gteqv(upperBound, bound)
+      boundOrd.lteqv(lower, bound) && boundOrd.gteqv(upper, bound)
     }
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean =
@@ -492,12 +482,12 @@ object SegmentT {
 
     override def restrictBound(bound: Bound[E]): Bound[E] = {
       val boundOrd = domainOps.boundOrd
-      if (boundOrd.lt(bound, lowerBound)) lowerBound
-      else if (boundOrd.gt(bound, upperBound)) upperBound
+      if (boundOrd.lt(bound, lower)) lower
+      else if (boundOrd.gt(bound, upper)) upper
       else bound
     }
 
-    override def interval: Interval[E, D] = domainOps.intervals.factory.betweenBounds(lowerBound, upperBound)
+    override def interval: Interval[E, D] = domainOps.intervals.factory.betweenBounds(lower, upper)
 
     override def toString: String = SetBuilderFormat.innerSegment(this)
 
@@ -508,7 +498,7 @@ object SegmentT {
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
       val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((lowerBound.flipLower, None), (upperBound, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
+        List((lower.flipLower, None), (upper, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
         domainOps,
         SeqSupplier.ValueOpsImpl.get
       )(
@@ -555,13 +545,13 @@ object SegmentT {
     def domain: D
 
     final override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = 
-      domain.extendedOrd.compare(x.upperExtended, y.upperExtended)
+      domain.extendedOrd.compare(x.upper, y.upper)
 
     final override def hash(x: Segment[E, D, ?]): Int = 
-      product1Hash(domain.extendedOrd.hash(x.upperExtended))  
+      product1Hash(domain.extendedOrd.hash(x.upper))  
 
     final override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean =
-      domain.extendedOrd.eqv(x.upperExtended, y.upperExtended)
+      domain.extendedOrd.eqv(x.upper, y.upper)
   }
 
   /**
@@ -579,13 +569,13 @@ object SegmentT {
     def domain: D
 
     final override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = 
-      domain.extendedOrd.compare(x.lowerExtended, y.lowerExtended)
+      domain.extendedOrd.compare(x.lower, y.lower)
 
     final override def hash(x: Segment[E, D, ?]): Int =
-      product1Hash(domain.extendedOrd.hash(x.lowerExtended))  
+      product1Hash(domain.extendedOrd.hash(x.lower))  
 
     final override def eqv(x: Segment[E, D, ?], y: Segment[E, D, ?]): Boolean = 
-      domain.extendedOrd.eqv(x.lowerExtended, y.lowerExtended)
+      domain.extendedOrd.eqv(x.lower, y.lower)
   }
 
   // Private section ---------------------------------------------------------- //

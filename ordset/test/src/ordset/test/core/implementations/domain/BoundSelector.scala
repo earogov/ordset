@@ -10,13 +10,13 @@ trait BoundSelector[E] {
    *
    * Output bound must satisfy condition:
    * {{{
-   *   `lowerBound` < output bound < `upperBound`
+   *   `lower` < output bound < `upper`
    * }}}
    * with ordering according to input `ord`.
    */
   def between(
-    lowerBound: ExtendedBound[E],
-    upperBound: ExtendedBound[E]
+    lower: ExtendedBound[E],
+    upper: ExtendedBound[E]
   )(
     implicit ord: Order[ExtendedBound[E]]
   ): Option[Bound[E]]
@@ -30,17 +30,17 @@ object BoundSelector {
   private object IntBoundSelector extends BoundSelector[Int] {
 
     override def between(
-      lowerBound: ExtendedBound[Int],
-      upperBound: ExtendedBound[Int]
+      lower: ExtendedBound[Int],
+      upper: ExtendedBound[Int]
     )(
       implicit ord: Order[ExtendedBound[Int]]
     ): Option[Bound[Int]] =
-      (lowerBound, upperBound) match {
-        case (lowerBound: Bound[Int], upperBound: Bound[Int]) =>
-          if (ord.gteqv(lowerBound, upperBound)) {
+      (lower, upper) match {
+        case (lower: Bound[Int], upper: Bound[Int]) =>
+          if (ord.gteqv(lower, upper)) {
             Option.empty
           } else {
-            val m = mid(lowerBound.element, upperBound.element)
+            val m = mid(lower.element, upper.element)
             LazyList(0, -1, 1)
               .map(shift => m + shift)
               .flatMap(element =>
@@ -50,15 +50,15 @@ object BoundSelector {
                   case 0 => Bound.Upper.including(element)
                 }
               )
-              .filter(bound => ord.gt(bound, lowerBound) && ord.lt(bound, upperBound))
+              .filter(bound => ord.gt(bound, lower) && ord.lt(bound, upper))
               .headOption
           }
-        case (ExtendedBound.BelowAll, upperBound: Bound[Int]) =>
-          Option(upperBound.mapElement(_ - 1))
-            .filter(bound => ord.lt(bound, upperBound))
-        case (lowerBound: Bound[Int], ExtendedBound.AboveAll) =>
-          Option(lowerBound.mapElement(_ + 1))
-            .filter(bound => ord.gt(bound, lowerBound))
+        case (ExtendedBound.BelowAll, upper: Bound[Int]) =>
+          Option(upper.mapElement(_ - 1))
+            .filter(bound => ord.lt(bound, upper))
+        case (lower: Bound[Int], ExtendedBound.AboveAll) =>
+          Option(lower.mapElement(_ + 1))
+            .filter(bound => ord.gt(bound, lower))
         case (ExtendedBound.BelowAll, ExtendedBound.AboveAll) =>
           Option(Bound.Upper.including(0))
         case _ =>

@@ -180,7 +180,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     super.sliceAtExtended(bound)
 
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-    prependBelowExtended(firstSegment.upperExtended, other)
+    prependBelowExtended(firstSegment.upper, other)
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
     prependBelowBoundInternal(bound, zippedSeq.getSegmentForBound(bound.provideLower), other)
@@ -189,7 +189,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     super.prependBelowExtended(bound, other)
 
   final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-    appendAboveExtended(lastSegment.lowerExtended, other)
+    appendAboveExtended(lastSegment.lower, other)
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
     appendAboveBoundInternal(bound, zippedSeq.getSegmentForBound(bound.provideUpper), other)
@@ -857,7 +857,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *          Z         B         C       D         Z          - values
    *   X-----------](------](----------](--](---------------X
    *                ^                      ^
-   *        zsegment.lowerBound      zsegment.upperBound
+   *         zsegment.lower         zsegment.upper
    * }}}
    * where u - unstable eager segment; s - stable eager segment; ? - lazy segment.
    *
@@ -926,7 +926,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     //                 ^            zsegment            ^
     //          patchLowerBound                   patchUpperBound
     //
-    //    Let's call patch bound shifted if `patchLowerBound` != `zsegment.lowerBound` and non-shifted otherwise.
+    //    Let's call patch bound shifted if `patchLowerBound` != `zsegment.lower` and non-shifted otherwise.
     //
     // 2. Define isolation flag for lower bound of `zsegment`:
     //    - if left adjacent segment of `zsegment` is eager unstable and has the same base value as new base sequence
@@ -1076,8 +1076,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
     /**
      * [[PatchBoundInfo]] for case when bound is non-shifted (p.1):
-     * <tr>`patchLowerBound` == `zsegment.lowerBound` - for left side info;</tr>
-     * <tr>`patchUpperBound` == `zsegment.upperBound` - for right side info.</tr>
+     * <tr>`patchLowerBound` == `zsegment.lower` - for left side info;</tr>
+     * <tr>`patchUpperBound` == `zsegment.upper` - for right side info.</tr>
      */
     case class NonShiftedPatchBoundInfo(
       override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
@@ -1091,8 +1091,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
     /**
      * [[PatchBoundInfo]] for case when bound is shifted (p.1):
-     * <tr>`patchLowerBound` != `zsegment.lowerBound` - for left side info;</tr>
-     * <tr>`patchUpperBound` != `zsegment.upperBound` - for right side info.</tr>
+     * <tr>`patchLowerBound` != `zsegment.lower` - for left side info;</tr>
+     * <tr>`patchUpperBound` != `zsegment.upper` - for right side info.</tr>
      */
     case class ShiftedPatchBoundInfo(
       override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
@@ -1212,13 +1212,13 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
                 // case 5.1.1
                 if (patchBoundIsLazy)
                   if (isolatedAdjacent)
-                    makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upperBound)
+                    makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.upper)
                   else
                     makeUniformControlSeq(EagerValue.unstable)
                 // otherwise case 5.1.2
                 else
                   if (isolatedAdjacent)
-                    makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.upperBound)
+                    makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.upper)
                   else
                     makeUniformControlSeq(EagerValue.stable)
               case _ =>
@@ -1239,7 +1239,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
         override def getZsegmentIterable: Iterable[ZSegment[E, D, V]] = zsegment.backwardIterable
 
-        override def getZsegmentBoundBaseValue: V = newBaseSeq.getValueForExtended(zsegment.lowerExtended)
+        override def getZsegmentBoundBaseValue: V = newBaseSeq.getValueForExtended(zsegment.lower)
       }
 
       private class RightSideFactory(
@@ -1264,13 +1264,13 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
                 // case 5.2.1
                 if (patchBoundIsLazy)
                   if (isolatedAdjacent)
-                    makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lowerBound.flipLower)
+                    makeSingleBoundedControlSeq(EagerValue.stable, EagerValue.unstable, s.lower.flipLower)
                   else
                     makeUniformControlSeq(EagerValue.unstable)
                 // otherwise case 5.2.2
                 else
                   if (isolatedAdjacent)
-                    makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.lowerBound.flipLower)
+                    makeSingleBoundedControlSeq(EagerValue.unstable, EagerValue.stable, s.lower.flipLower)
                   else
                     makeUniformControlSeq(EagerValue.stable)
               case _ =>
@@ -1291,7 +1291,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
         override def getZsegmentIterable: Iterable[ZSegment[E, D, V]] = zsegment.forwardIterable
 
-        override def getZsegmentBoundBaseValue: V = newBaseSeq.getValueForExtended(zsegment.upperExtended)
+        override def getZsegmentBoundBaseValue: V = newBaseSeq.getValueForExtended(zsegment.upper)
       }
     }
 
@@ -1469,7 +1469,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
               makeSingleBoundedControlSeq(
                 EagerValue.cons(stableLowerBound),
                 EagerValue.cons(stableUpperBound),
-                lowerSegment.upperBound
+                lowerSegment.upper
               )
             }
             //         (-----------------]          - zsegment
@@ -1487,7 +1487,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
               buffer =
                 BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
                   buffer,
-                  lowerSegment.upperBound,
+                  lowerSegment.upper,
                   rng.nextInt(),
                   EagerValue.unstable
                 )(
@@ -1502,7 +1502,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
               buffer =
                 BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], ControlValue[E, D, V]](
                   buffer,
-                  upperSegment.lowerBound.flipLower,
+                  upperSegment.lower.flipLower,
                   rng.nextInt(),
                   EagerValue.stable
                 )(
@@ -1854,7 +1854,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     // Inspection --------------------------------------------------------------- //
     override def self: LazySegmentWithNext[E, D, V]
 
-    override def upperBound: Bound.Upper[E] = original.upperBound
+    override def upper: Bound.Upper[E] = original.upper
 
     // Navigation --------------------------------------------------------------- //
     override def moveNext: LazySegmentWithPrev[E, D, V] = {
@@ -1864,7 +1864,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     // Transformation ----------------------------------------------------------- //
     override def append(other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
-      sequence.appendAboveBoundInternal(upperBound, original, other)
+      sequence.appendAboveBoundInternal(upper, original, other)
 
     // Protected section -------------------------------------------------------- //
     protected override def original: Stable.ZSegmentWithNext[E, D, V]
@@ -1880,7 +1880,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     // Inspection --------------------------------------------------------------- //
     override def self: LazySegmentWithPrev[E, D, V]
 
-    override def lowerBound: Bound.Lower[E] = original.lowerBound
+    override def lower: Bound.Lower[E] = original.lower
 
     // Navigation --------------------------------------------------------------- //
     override def movePrev: LazySegmentWithNext[E, D, V] = {
@@ -1890,7 +1890,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     // Transformation ----------------------------------------------------------- //
     override def prepend(other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
-      sequence.prependBelowBoundInternal(lowerBound, original, other)
+      sequence.prependBelowBoundInternal(lower, original, other)
 
     // Protected section -------------------------------------------------------- //
     protected override def original: Stable.ZSegmentWithPrev[E, D, V]
@@ -2093,7 +2093,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   protected object SliceOps {
 
     /**
-     * Same as `sequence.takeAboveExtended(zsegment.upperExtended)` but doesn't apply any correction of
+     * Same as `sequence.takeAboveExtended(zsegment.upper)` but doesn't apply any correction of
      * control values (see [[AbstractLazyTreapSegmentSeq.takeAboveBoundInternal]]).
      *
      * I.e. it just applies [[SegmentSeqT.takeAboveExtended]] to base and control sequences and builds new lazy
@@ -2116,7 +2116,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     }
 
     /**
-     * Same as `sequence.takeBelowExtended(zsegment.lowerExtended)` but doesn't apply any correction of
+     * Same as `sequence.takeBelowExtended(zsegment.lower)` but doesn't apply any correction of
      * control values (see [[AbstractLazyTreapSegmentSeq.takeBelowBoundInternal]]).
      *
      * I.e. it just applies [[SegmentSeqT.takeBelowExtended]] to base and control sequences and builds new lazy

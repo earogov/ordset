@@ -106,7 +106,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     super.sliceAtExtended(bound)
 
   final override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-    prependBelowExtended(firstSegment.upperExtended, other)
+    prependBelowExtended(firstSegment.upper, other)
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     LazySegmentSeqBuilder.appendSeq(bound, other, this)(domainOps, valueOps, rngManager)
@@ -115,7 +115,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     super.prependBelowExtended(bound, other)
 
   final override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-    appendAboveExtended(lastSegment.lowerExtended, other)
+    appendAboveExtended(lastSegment.lower, other)
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     LazySegmentSeqBuilder.appendSeq(bound, this, other)(domainOps, valueOps, rngManager)
@@ -311,7 +311,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   ): ZippedFirstSegment[E, D, U1, U2, V, S1, S2] =
     (left, right) match {
       case (ln: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2], rn: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]) =>
-        if (domainOps.boundOrd.compare(ln.upperBound, rn.upperBound) >= 0)
+        if (domainOps.boundOrd.compare(ln.upper, rn.upper) >= 0)
           ZippedInitialSegment[E, D, U1, U2, V, S1, S2](this, rn, ln)
         else
           ZippedInitialSegment[E, D, U1, U2, V, S1, S2](this, ln, rn)
@@ -360,7 +360,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
   ): ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2] =
     (left, right) match {
       case (ln: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2], rn: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]) =>
-        if (domainOps.boundOrd.compare(ln.upperBound, rn.upperBound) >= 0)
+        if (domainOps.boundOrd.compare(ln.upper, rn.upper) >= 0)
           ZippedInnerSegment[E, D, U1, U2, V, S1, S2](this, rn, ln)
         else
           ZippedInnerSegment[E, D, U1, U2, V, S1, S2](this, ln, rn)
@@ -393,7 +393,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
       firstSegmentInstance.asInstanceOf[ZippedInitialSegment[E, D, U1, U2, V, S1, S2]]
     else right match {
       case rn: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2] =>
-        if (domainOps.boundOrd.compare(left.upperBound, rn.upperBound) >= 0)
+        if (domainOps.boundOrd.compare(left.upper, rn.upper) >= 0)
           ZippedInnerSegment[E, D, U1, U2, V, S1, S2](this, rn, left)
         else
           ZippedInnerSegment[E, D, U1, U2, V, S1, S2](this, left, rn)
@@ -643,7 +643,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     left: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2],
     right: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ): R = {
-    val cmp = domainOps.boundOrd.compare(left.upperBound, right.upperBound)
+    val cmp = domainOps.boundOrd.compare(left.upper, right.upper)
     // left:  ?---------------|
     // right: ?---------------|
     if (cmp == 0) zipper(left.moveNext, right.moveNext)
@@ -662,7 +662,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     left: SegmentT.WithPrev[E, D, ? <: U1 | U2, ? <: S1 | S2],
     right: SegmentT.WithPrev[E, D, ? <: U1 | U2, ? <: S1 | S2]
   ): R = {
-    val cmp = domainOps.boundOrd.compare(left.lowerBound, right.lowerBound)
+    val cmp = domainOps.boundOrd.compare(left.lower, right.lower)
     // left:  |---------------?
     // right: |---------------?
     if (cmp == 0) zipper(left.movePrev, right.movePrev)
@@ -690,7 +690,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     // we can immediately define operator value up to upper bound of forward segment skipping segments of
     // backward sequence below it.
     if (isInvariantSegment(forward))
-      zipper(backward.moveToBound(forward.upperBound), forward)
+      zipper(backward.moveToBound(forward.upper), forward)
     else
       zipper(backward.moveNext, forward)
 
@@ -711,7 +711,7 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
     // Input forward segment has previous segment => all previous segments of corresponding sequence has next segment
     // => cast is safe.
     if (isInvariantSegment(backward))
-      zipper(forward.moveToBound(backward.lowerBound).asInstanceOf[SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]], backward)
+      zipper(forward.moveToBound(backward.lower).asInstanceOf[SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2]], backward)
     else
       zipper(forward.movePrev, backward)
 
@@ -1204,20 +1204,20 @@ object AbstractZippedSegmentSeq {
      *
      * Returns sequence containing
      * <tr>
-     *   - segments {i ∈ [0, L-1]: (l,,i,,, min(u,,i,,, U(lowerBound))) -> v,,i,,}
-     *   of first original sequence for which l,,i,, `<` lowerBound
+     *   - segments {(l,,i,,, min(u,,i,,, U(lower))) -> v,,i,,}
+     *   of first original sequence for which l,,i,, `<` lower
      * </tr>
      * <tr>
-     *   - segments {i ∈ [L, M-1]: (max(lowerBound, l,,i,,), min(upperBound, u,,i,,)) -> v,,i,,}
-     *   of `other` sequence for which l,,i,, `≤` upperBound and u,,i,, `≥` lowerBound
+     *   - segments {(max(lower, l,,i,,), min(upper, u,,i,,)) -> v,,i,,}
+     *   of `other` sequence for which l,,i,, `≤` upper and u,,i,, `≥` lower
      * </tr>
      * <tr>
-     *   - segments {i ∈ [M, N-1]: (max(l,,i,,, L(upperBound)), u,,i,,) -> v,,i,,}
-     *   of first original sequence for which u,,i,, `>` upperBound
+     *   - segments {(max(l,,i,,, L(upper)), u,,i,,) -> v,,i,,}
+     *   of first original sequence for which u,,i,, `>` upper
      * </tr>
      * <tr>where</tr>
-     * <tr>lowerBound - lower bound of current zipped segment;</tr>
-     * <tr>upperBound - upper bound of current zipped segment;</tr>
+     * <tr>lower - lower bound of current zipped segment;</tr>
+     * <tr>upper - upper bound of current zipped segment;</tr>
      * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
      * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
      * <tr>v,,i,, - value of segment S,,i,,.</tr>
@@ -1245,7 +1245,7 @@ object AbstractZippedSegmentSeq {
      *                    segment
      *   X-------](----------------------](-------X
      *       A    ^           B          ^    C     - values
-     *       lowerBound             upperBound
+     *          lower                  upper
      *
      * operator:
      *   A + A = A   A + B = B   B + B = B
@@ -1297,7 +1297,7 @@ object AbstractZippedSegmentSeq {
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
-    override def upperBound: Bound.Upper[E] = frontBackward.upperBound
+    override def upper: Bound.Upper[E] = frontBackward.upper
 
     override def self: ZippedSegmentWithNext[E, D, U1, U2, V, S1, S2]
 
@@ -1322,13 +1322,13 @@ object AbstractZippedSegmentSeq {
 
     // Transformation ----------------------------------------------------------- //
     override def append(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = 
-      sequence.appendAboveBoundInternal(upperBound, this, other)
+      sequence.appendAboveBoundInternal(upper, this, other)
     
     override def firstSeqUpperTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] =
-      firstSeqSegment.self.truncation(upperBound)
+      firstSeqSegment.self.truncation(upper)
 
     override def secondSeqUpperTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2] with S2] =
-      secondSeqSegment.self.truncation(upperBound)
+      secondSeqSegment.self.truncation(upper)
   }
 
   /**
@@ -1367,7 +1367,7 @@ object AbstractZippedSegmentSeq {
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
     // Inspection --------------------------------------------------------------- //
-    override def lowerBound: Bound.Lower[E] = backForward.lowerBound
+    override def lower: Bound.Lower[E] = backForward.lower
 
     override def self: ZippedSegmentWithPrev[E, D, U1, U2, V, S1, S2]
 
@@ -1386,13 +1386,13 @@ object AbstractZippedSegmentSeq {
     
     // Transformation ----------------------------------------------------------- //
     override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
-      sequence.prependBelowBoundInternal(lowerBound, this, other)
+      sequence.prependBelowBoundInternal(lower, this, other)
 
     override def firstSeqLowerTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1] with S1] =
-      back.firstSeqSegment.self.truncation(lowerBound)
+      back.firstSeqSegment.self.truncation(lower)
 
     override def secondSeqLowerTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2] with S2] =
-      back.secondSeqSegment.self.truncation(lowerBound)
+      back.secondSeqSegment.self.truncation(lower)
   }
 
   /**

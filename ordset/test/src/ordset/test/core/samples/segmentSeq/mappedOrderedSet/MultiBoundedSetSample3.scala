@@ -42,7 +42,7 @@ class MultiBoundedSetSample3[D <: Domain[Int]](
     MappedOrderedSet.apply(
       originalSeq,
       s =>
-        if (s.domainOps.extendedOrd.lteqv(s.lowerExtended, 80`)[`)) !s.value
+        if (s.domainOps.extendedOrd.lteqv(s.lower, 80`)[`)) !s.value
         else true
     )
 }

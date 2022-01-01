@@ -475,16 +475,16 @@ protected[ordset] object ZSegmentSeqBuilder {
       val zippedSegment = zippedTruncation.segment
       zippedSegment match {
         case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
-          if (builder.hasLastBound(zippedSegment.upperBound))
+          if (builder.hasLastBound(zippedSegment.upper))
             // Bound had been already added => nothing to do.
             builder
           else {
             zippedSegment match {
               case zippedSegment: InitialZSegmentWithPrev[E, D, V] =>
-                builder.addBound(zippedSegment.lowerBound.flipLower, EagerValue.stable)
+                builder.addBound(zippedSegment.lower.flipLower, EagerValue.stable)
               case _ => // nothing to do
             }
-            builder.addBound(zippedSegment.upperBound, EagerValue.unstable)
+            builder.addBound(zippedSegment.upper, EagerValue.unstable)
           }
         case _ =>
           // `zippedSegment` contains previous segment of `maskSegment` => `zippedSegment` has next segment.
@@ -501,7 +501,7 @@ protected[ordset] object ZSegmentSeqBuilder {
         case Some(f) =>
           supplierSegment match {
             case s: SupplierSegmentWithNext[E, D, V] =>
-              builder.addBound(s.upperBound, LazyValue.Unbounded(f))
+              builder.addBound(s.upper, LazyValue.Unbounded(f))
               addLazySegments(s.moveNext, builder)
             case _ =>
               builder.setLastValue(LazyValue.Unbounded(f))
@@ -517,7 +517,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       val zippedTruncation = maskTruncation.zipIntoTuple(baseSeq)
       zippedTruncation.segment match {
         case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
-          builder.addBound(zippedSegment.upperBound, EagerValue.unstable)
+          builder.addBound(zippedSegment.upper, EagerValue.unstable)
         case _ =>
           builder
       }
@@ -687,7 +687,7 @@ protected[ordset] object ZSegmentSeqBuilder {
             val n = s.moveNext
             n.value match {
               case _: LazyValue[E, D, V] => 
-                builder.addBound(s.upperBound, s.value)
+                builder.addBound(s.upper, s.value)
                 // Save next lazy segment as current and execute one more step.
                 segment = n
               case _ => 
@@ -728,8 +728,8 @@ protected[ordset] object ZSegmentSeqBuilder {
       else {
         val (endSegmentOpt, controlSeqPatch) = buildControlSeqPatch(startSegment)
 
-        val patchLowerBound = startSegment.lowerExtended
-        val patchUpperBound = endSegmentOpt.map(_.lowerExtended.flipLimited).getOrElse(ExtendedBound.AboveAll)
+        val patchLowerBound = startSegment.lower
+        val patchUpperBound = endSegmentOpt.map(_.lower.flipLimited).getOrElse(ExtendedBound.AboveAll)
 
         val baseSeqPatch = makeUniformBaseSeq[E, D, V]
 
