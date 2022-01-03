@@ -15,18 +15,20 @@ import scala.language.postfixOps
 object FlatmapExample {
 
   import ordset.givens.boolean.*
+  import ordset.givens.string.*
   import ordset.givens.int.*
   import ordset.test.core.TestRngUtil.Implicits.*
 
   private val sep = "-----------------"
 
-  private val valueOps: ValueOps[Boolean] = implicitly
+  private val booleanOps: ValueOps[Boolean] = implicitly
+  private val stringOps: ValueOps[String] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
-  @main
-  def flatmapExampleMain(): Unit = {
+  def main(args: Array[String]): Unit = {
     example1()
     example2()
+    example3()
   }
 
   def example1(): Unit = {
@@ -67,7 +69,7 @@ object FlatmapExample {
 
   def example2(): Unit = {
     println()
-    println(s"$sep SegmentSeq.flatMap example $sep")
+    println(s"$sep SegmentSeq.flatMapSegments example $sep")
 
     /**
      * Splits (if possible) input `segment` into two with random different values:
@@ -127,13 +129,13 @@ object FlatmapExample {
         (AboveAll, true)
       ),
       domainOps,
-      valueOps
+      booleanOps
     )()
     println(seq1)
 
     println()
     println("Split each segment into two with random values. Adjacent segments with same values are merged.")
-    val seq2 = seq1.flatMap(randomSplit(BoundSelector.intBoundSelector, booleanGenerator(seq1.rngManager)))
+    val seq2 = seq1.flatMapSegments(randomSplit(BoundSelector.intBoundSelector, booleanGenerator(seq1.rngManager)))
 
     println("Received lazy sequence:")
     println(seq2)
@@ -152,5 +154,52 @@ object FlatmapExample {
     println()
     println("Compute all lazy values:")
     println(TreapOrderedMap.getFactory.convertMap(seq2))
+  }
+
+  def example3(): Unit = {
+    println()
+    println(s"$sep SegmentSeq.flatMap example $sep")
+
+    println("Initial sequence:")
+    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
+      List(
+        (0`)[`, true),
+        (10`)[`, false),
+        (AboveAll, true)
+      ),
+      domainOps,
+      booleanOps
+    )()
+    println(seq1)
+
+    println()
+    println("Apply flatMap with function such that:")
+    println("- if segment value is `false`, then returns universal sequence with string `empty`;")
+    println("- if segment value is `true`, then returns sequence:")
+
+    val seq2 = TreapOrderedMap.getFactory.unsafeBuildAsc(
+      List(
+        (-10`)[`, "A"),
+        (-5`)[`, "B"),
+        (5`)[`, "C"),
+        (7`)[`, "D"),
+        (20`)[`, "E"),
+        (25`)[`, "F"),
+        (AboveAll, "G")
+      ),
+      domainOps,
+      stringOps
+    )()
+    println(seq2)
+
+    val seq3 = seq1.flatMap { v => if v then seq2 else UniformOrderedMap.default("empty") }
+
+    println()
+    println("Received lazy sequence:")
+    println(seq3)
+
+    println()
+    println("Compute all lazy values:")
+    println(TreapOrderedMap.getFactory.convertMap(seq3))
   }
 }

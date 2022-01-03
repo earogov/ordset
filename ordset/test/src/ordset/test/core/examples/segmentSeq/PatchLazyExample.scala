@@ -24,8 +24,7 @@ object PatchLazyExample {
   private val stringValueOps: ValueOps[String] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
-  @main
-  def patchLazyExampleMain(): Unit = {
+  def main(args: Array[String]): Unit = {
     example1()
     example2()
     example3()
@@ -133,7 +132,7 @@ object PatchLazyExample {
 
     val bound1 = Bound.Upper.including(-5)
     println()
-    println(s"No let's request segment at bound $bound1")
+    println(s"Now let's request segment at bound $bound1")
     seq3.getSegmentForBound(bound1)
 
     println()
@@ -161,7 +160,7 @@ object PatchLazyExample {
       domainOps,
       stringValueOps
     )()
-    val seq2 = seq1.flatMap(s => seq1)
+    val seq2 = seq1.flatMapSegments(s => seq1)
     println(seq2)
 
     println()

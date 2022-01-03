@@ -7,6 +7,8 @@ import ordset.core.interval.{Interval, IntervalRelation}
 object SetBuilderFormat { format =>
 
   // Common definitions ------------------------------------------------------- //
+  val indent: String = "  "
+
   val variable: String = "x"
 
   val setBegin: String = "{"
@@ -249,6 +251,7 @@ object SetBuilderFormat { format =>
         b.append(System.lineSeparator)
       }
       val rel = s.intervalRelation
+      b.append(indent)
       b.append(format.intervalRelation(rel.interval, rel.value, elementToStr, valueToStr))
       addSeparator = true
     }

@@ -24,8 +24,7 @@ object MapExample {
   private val booleanValueOps: ValueOps[Boolean] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
-  @main
-  def mapExampleMain(): Unit = {
+  def main(args: Array[String]): Unit = {
     example1()
     example2()
   }

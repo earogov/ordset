@@ -738,13 +738,88 @@ trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
    *      A          B            C           D    - values
    * }}}
    */
-  def flatMap[U](
+  def flatMapSegments[U](
     mapFunc: SegmentT[E, D, V, S] => SegmentSeq[E, D, U]
   )(
     implicit valueOps: ValueOps[U]
   ): SegmentSeq[E, D, U] = {
     val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
       firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s)))),
+      domainOps,
+      SeqSupplier.ValueOpsImpl.get
+    )(
+      SeqValidationPredicate.alwaysTrue,
+      SeqValidationPredicate.alwaysTrue
+    )(
+      rngManager
+    )
+    LazyTreapOrderedMap.apply(
+      UniformOrderedMap.default(valueOps.unit),
+      lazySeq
+    )(
+      domainOps,
+      valueOps,
+      rngManager
+    )
+  }
+
+  /**
+   * Returns lazy segment sequence which is equivalent to one received by applying [[SegmentLikeT.flatMap]] to
+   * each segment of original sequence (current) with map function:
+   *
+   * () `=>` mapFunc(v,,j,,)
+   *
+   * where v,,j,, - value of segment of original sequence.
+   *
+   * <h3>Example</h3>
+   *
+   * Assume `mapFunc` returns:
+   * <tr>- seq1 for value v1</tr>
+   * <tr>- seq2 for value v2</tr>
+   * <tr>- seq3 for value v3</tr>
+   * {{{
+   *
+   * original:
+   *
+   *   X------------)[-------------)[------------X
+   *         v1             v2            v3       - values
+   *
+   * seq1:
+   *
+   *   X-----](----------------------------------X
+   *      A                    B                   - values
+   *
+   * seq2:
+   *
+   *   X------------------)[---------------------X
+   *             B                    C            - values
+   *
+   * seq3:
+   *
+   *   X---------------------------------)[------X
+   *                     C                    D    - values
+   *
+   * output lazy sequence:
+   *
+   *   X------------)[-------------)[------------X
+   *  () => mapFunc(v1)      |              |      - values
+   *                  () => mapFunc(v2)     |
+   *                                () => mapFunc(v3)
+   *
+   * output lazy sequence after
+   * computation of all lazy values:
+   *
+   *   X-----](-----------)[-------------)[------X
+   *      A          B            C           D    - values
+   * }}}
+   */
+  def flatMap[U](
+    mapFunc: V => SegmentSeq[E, D, U]
+  )(
+    implicit valueOps: ValueOps[U]
+  ): SegmentSeq[E, D, U] = {
+    val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
+      firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s.value)))),
       domainOps,
       SeqSupplier.ValueOpsImpl.get
     )(

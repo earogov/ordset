@@ -24,8 +24,7 @@ object ZipExample {
   private val stringValueOps: ValueOps[String] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
-  @main
-  def zipExampleMain(): Unit = {
+  def main(args: Array[String]): Unit = {
     example1()
     example2()
     example3()

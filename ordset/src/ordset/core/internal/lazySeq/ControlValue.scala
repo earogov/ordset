@@ -48,7 +48,7 @@ protected[ordset] object ControlValue {
 
     object LazyValue {
 
-      final case class Unbounded[E, D <: Domain[E], V](
+      final case class Default[E, D <: Domain[E], V](
         val seqFunc: () => SegmentSeq[E, D, V]
       )(
         implicit val domain: Domain[E]
@@ -84,6 +84,8 @@ protected[ordset] object ControlValue {
             //     bound
             case _ => new LazyValue.Single(seqFunc, domain.lowerExtendedBound)
           }
+
+        override def toString(): String = s"LazyValue.Default(seqFunc = $seqFunc)"
       }
 
       final case class Bounded[E, D <: Domain[E], V](
@@ -129,6 +131,8 @@ protected[ordset] object ControlValue {
             case _ => new LazyValue.Single(seqFunc, domain.lowerExtendedBound)
           }
         }
+
+        override def toString(): String = s"LazyValue.Bounded(seqFunc = $seqFunc, bounds = $bounds)"
       }
       
       final case class Single[E, D <: Domain[E], V](
@@ -147,6 +151,8 @@ protected[ordset] object ControlValue {
         override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = this
 
         override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = this
+
+        override def toString(): String = s"LazyValue.Single(seqFunc = $seqFunc, bound = $bound)"
       }
     }
 
@@ -166,7 +172,7 @@ protected[ordset] object ControlValue {
 
       override def isLazyOrStable: Boolean = stable
 
-      override def toString: String = s"EagerValue(${if (stable) "stable" else "unstable"})"
+      override def toString: String = s"EagerValue(stable = $stable)"
     }
 
     object EagerValue {

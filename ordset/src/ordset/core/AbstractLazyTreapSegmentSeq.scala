@@ -758,7 +758,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   ): ZSegmentSeq[E, D, V] =
     makeZippedSeq(
       makeUniformBaseSeq(valueOps.unit),
-      makeUniformControlSeq(LazyValue.Unbounded(seqFunc)(domainOps.domain))
+      makeUniformControlSeq(LazyValue.Default(seqFunc)(domainOps.domain))
     )
 
   /**

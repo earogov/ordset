@@ -501,10 +501,10 @@ protected[ordset] object ZSegmentSeqBuilder {
         case Some(f) =>
           supplierSegment match {
             case s: SupplierSegmentWithNext[E, D, V] =>
-              builder.addBound(s.upper, LazyValue.Unbounded(f)(domainOps.domain))
+              builder.addBound(s.upper, LazyValue.Default(f)(domainOps.domain))
               addLazySegments(s.moveNext, builder)
             case _ =>
-              builder.setLastValue(LazyValue.Unbounded(f)(domainOps.domain))
+              builder.setLastValue(LazyValue.Default(f)(domainOps.domain))
           }
         case _ => builder
       }
@@ -771,7 +771,7 @@ protected[ordset] object ZSegmentSeqBuilder {
     val patchControlSeq = NonMergingMappedValueOrderedMap.apply(
       supplierSeq,
       v => v match {
-        case Some(f) => LazyValue.Unbounded(f)(domainOps.domain)
+        case Some(f) => LazyValue.Default(f)(domainOps.domain)
         case _ => EagerValue.unstable[E, D, V]
       }
     )(
