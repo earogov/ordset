@@ -63,7 +63,7 @@ object LazyTreapSegmentSeq {
         valueOps
       )(),
       TreapOrderedMap.getFactory.unsafeBuildAsc(
-        initSeq.map(p => (p._1, LazyValue.Unbounded(p._2))),
+        initSeq.map(p => (p._1, LazyValue.Unbounded(p._2)(domainOps.domain))),
         domainOps,
         ControlValueOps.get
       )(),

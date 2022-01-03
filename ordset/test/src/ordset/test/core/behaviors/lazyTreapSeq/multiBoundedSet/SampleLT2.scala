@@ -10,7 +10,7 @@ import ordset.core.syntax.SetBuilderNotation._
 import ordset.random.RngManager
 import ordset.util.label.Label
 import ordset.test.core.Labels
-import ordset.test.core.behaviors.lazyTreapSeq.LazyTreapSeqCacheTest
+import ordset.test.core.behaviors.lazyTreapSeq.{LazyTreapSeqCacheTest, LazyTreapSeqMultipleTakeTest}
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
 
@@ -18,7 +18,8 @@ import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 trait SampleLT2[D <: Domain[Int]]
-  extends LazyTreapSeqCacheTest[Int, D, Boolean] {
+  extends LazyTreapSeqCacheTest[Int, D, Boolean]
+  with LazyTreapSeqMultipleTakeTest[Int, D, Boolean] {
   self: LazyTreapSeqSample.Fixed[Int, D, Boolean] =>
 
   override val sample: String = "LT2"
@@ -157,6 +158,53 @@ trait SampleLT2[D <: Domain[Int]]
             (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20 & x < 25),
             (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 25 & x < 30),
             (false, EagerValue.stable[Int, D, Boolean]) forAll (x >= 30),
+          )
+        )
+      )
+    )
+  )
+
+  override lazy val multipleTakeCases: Iterable[LazyTreapSeqMultipleTakeTest.TestPackage[Int, D, Boolean]] = List(
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("A")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(15`[`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            true forAll (x <= 20),
+            false forAll (x > 20 & x < 25),
+            true forAll (x >= 25 & x < 30),
+            false forAll (x >= 30)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(25`)`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            true forAll (x <= 20),
+            false forAll (x > 20)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(20`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll x
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(25`)`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll x
+          )
+        )
+      )
+    ),
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("B")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(30`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll x
           )
         )
       )

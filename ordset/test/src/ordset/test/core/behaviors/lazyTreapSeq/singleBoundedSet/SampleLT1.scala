@@ -10,7 +10,7 @@ import ordset.core.syntax.SetBuilderNotation._
 import ordset.random.RngManager
 import ordset.util.label.Label
 import ordset.test.core.Labels
-import ordset.test.core.behaviors.lazyTreapSeq.LazyTreapSeqCacheTest
+import ordset.test.core.behaviors.lazyTreapSeq.{LazyTreapSeqCacheTest, LazyTreapSeqMultipleTakeTest}
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
 
@@ -18,7 +18,8 @@ import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 trait SampleLT1[D <: Domain[Int]]
-  extends LazyTreapSeqCacheTest[Int, D, Boolean] {
+  extends LazyTreapSeqCacheTest[Int, D, Boolean]
+  with LazyTreapSeqMultipleTakeTest[Int, D, Boolean] {
   self: LazyTreapSeqSample.Fixed[Int, D, Boolean] =>
 
   override val sample: String = "LT1"
@@ -78,6 +79,34 @@ trait SampleLT1[D <: Domain[Int]]
           15 `)`,
           true,
           zippedReference
+        )
+      )
+    )
+  )
+
+  override lazy val multipleTakeCases: Iterable[LazyTreapSeqMultipleTakeTest.TestPackage[Int, D, Boolean]] = List(
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("A")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(-1`[`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll (x < 0),
+            true forAll (x >= 0)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(1`)`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll (x < 0),
+            true forAll (x >= 0)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(0`)`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll x
+          )
         )
       )
     )

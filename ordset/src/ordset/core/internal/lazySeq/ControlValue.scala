@@ -2,11 +2,10 @@ package ordset.core.internal.lazySeq
 
 import ordset.Hash
 import ordset.random.RngManager
-import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.domain.Domain
 import ordset.core.value.{ValueOps, InclusionPredicate}
 import ordset.core.{SegmentSeq, Bound, ExtendedBound}
-import ordset.core.value.InclusionPredicate
-import ordset.core.interval.Interval
+import ordset.core.range.Range
 import ordset.core.map.UniformOrderedMap
 
 protected[ordset] sealed trait ControlValue[E, D <: Domain[E], V] {
@@ -26,134 +25,7 @@ protected[ordset] sealed trait ControlValue[E, D <: Domain[E], V] {
 
 protected[ordset] object ControlValue {
 
-    // sealed trait LazyValue[E, D <: Domain[E], V] extends ControlValue[E, D, V] {
-
-    //   override def isStable: Boolean = false
-
-    //   override def isUnstable: Boolean = true
-
-    //   override def isLazy: Boolean = true
-
-    //   override def isEager: Boolean = false
-
-    //   override def isEagerUnstable: Boolean = false
-
-    //   override def isLazyOrStable: Boolean = true
-
-    //   def compute: SegmentSeq[E, D, V]
-
-    //   def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V]
-
-    //   def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V]
-    // }
-
-    // object LazyValue {
-
-    //   final case class Unbounded[E, D <: Domain[E], V](
-    //     val seqFunc: () => SegmentSeq[E, D, V]
-    //   )(
-    //     implicit val domainOps: DomainOps[E, D]
-    //   ) extends LazyValue[E, D, V] {
-
-    //     override def compute: SegmentSeq[E, D, V] = 
-    //       seqFunc().takeAboveExtended(domainOps.lowerExtendedBound).takeBelowExtended(domainOps.upperExtendedBound)
-
-    //     override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] =
-    //       domainOps.intervals.builder.aboveBound(bound.provideLower) match {
-    //         //                  domain
-    //         //        [------------------------]
-    //         //               [///////////////////////////
-    //         //             bound
-    //         case i: Interval.NonEmpty[E, D] => new LazyValue.Bounded(seqFunc, i)
-    //         //                  domain
-    //         //        [------------------------]
-    //         //                                     [/////
-    //         //                                   bound
-    //         case _ => new LazyValue.Single(seqFunc, domainOps.upperExtendedBound)
-    //       }
-
-    //     override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] =
-    //       domainOps.intervals.builder.belowBound(bound.provideUpper) match {
-    //         //                  domain
-    //         //        [------------------------]
-    //         // ////////////////////////)
-    //         //                       bound
-    //         case i: Interval.NonEmpty[E, D] => new LazyValue.Bounded(seqFunc, i)
-    //         //                  domain
-    //         //        [------------------------]
-    //         // /////)
-    //         //     bound
-    //         case _ => new LazyValue.Single(seqFunc, domainOps.lowerExtendedBound)
-    //       }
-    //   }
-
-    //   final case class Bounded[E, D <: Domain[E], V](
-    //     val seqFunc: () => SegmentSeq[E, D, V],
-    //     val bounds: Interval.NonEmpty[E, D]
-    //   )(
-    //     implicit val domainOps: DomainOps[E, D]
-    //   ) extends LazyValue[E, D, V] {
-
-    //     override def compute: SegmentSeq[E, D, V] = 
-    //       seqFunc().takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
-
-    //     override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = {
-    //       val requestedInterval = domainOps.intervals.builder.aboveBound(bound.provideLower)
-    //       val newInterval = domainOps.intervals.alg.cross(requestedInterval, bounds)
-    //       newInterval match {
-    //         //                  bounds
-    //         //        [------------------------]
-    //         //               [///////////////////////////
-    //         //             bound
-    //         case i: Interval.NonEmpty[E, D] => new LazyValue.Bounded(seqFunc, i)
-    //         //                  bounds
-    //         //        [------------------------]
-    //         //                                     [/////
-    //         //                                   bound
-    //         case _ => new LazyValue.Single(seqFunc, bounds.upper)
-    //       }
-    //     }
-
-    //     override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = {
-    //       val requestedInterval = domainOps.intervals.builder.belowBound(bound.provideUpper)
-    //       val newInterval = domainOps.intervals.alg.cross(requestedInterval, bounds)
-    //       newInterval match {
-    //         //                  bounds
-    //         //        [------------------------]
-    //         // ////////////////////////)
-    //         //                       bound
-    //         case i: Interval.NonEmpty[E, D] => new LazyValue.Bounded(seqFunc, i)
-    //         //                  bounds
-    //         //        [------------------------]
-    //         // /////)
-    //         //     bound
-    //         case _ => new LazyValue.Single(seqFunc, domainOps.lowerExtendedBound)
-    //       }
-    //     }
-    //   }
-      
-    //   final case class Single[E, D <: Domain[E], V](
-    //     val seqFunc: () => SegmentSeq[E, D, V],
-    //     val bound: ExtendedBound[E]
-    //   )(
-    //     implicit val domainOps: DomainOps[E, D]
-    //   ) extends LazyValue[E, D, V] {
-
-    //     override def compute: SegmentSeq[E, D, V] = {
-    //       val seq = seqFunc()
-    //       val value = seq.getValueForExtended(bound)
-    //       UniformOrderedMap.default(value)(seq.domainOps, seq.valueOps, seq.rngManager)
-    //     }
-
-    //     override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = this
-
-    //     override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = this
-    //   }
-    // }
-
-    final case class LazyValue[E, D <: Domain[E], V](
-      private val seqFunc: () => SegmentSeq[E, D, V]
-    ) extends ControlValue[E, D, V] {
+    sealed trait LazyValue[E, D <: Domain[E], V] extends ControlValue[E, D, V] {
 
       override def isStable: Boolean = false
 
@@ -167,21 +39,114 @@ protected[ordset] object ControlValue {
 
       override def isLazyOrStable: Boolean = true
 
-      def compute: SegmentSeq[E, D, V] = seqFunc()
+      def compute: SegmentSeq[E, D, V]
 
-      def map[E1, D1 <: Domain[E1], V1](mapFunc: SegmentSeq[E, D, V] => SegmentSeq[E1, D1, V1]): LazyValue[E1, D1, V1] =
-        LazyValue(() => mapFunc(seqFunc()))
+      def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V]
 
-      def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = map(_.takeAboveBound(bound))
-
-      def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = map(_.takeBelowBound(bound))
+      def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V]
     }
 
     object LazyValue {
 
-      object Unbounded {
+      final case class Unbounded[E, D <: Domain[E], V](
+        val seqFunc: () => SegmentSeq[E, D, V]
+      )(
+        implicit val domain: Domain[E]
+      ) extends LazyValue[E, D, V] {
 
-        def apply[E, D <: Domain[E], V](seqFunc: () => SegmentSeq[E, D, V]): LazyValue[E, D, V] = LazyValue(seqFunc)
+        override def compute: SegmentSeq[E, D, V] = 
+          seqFunc().takeAboveExtended(domain.lowerExtendedBound).takeBelowExtended(domain.upperExtendedBound)
+
+        override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] =
+          (domain.rangeFactory.between(bound, domain.upperExtendedBound): Range[ExtendedBound[E]]) match {
+            //                  domain
+            //        [------------------------]
+            //               [///////////////////////////
+            //             bound
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            //                  domain
+            //        [------------------------]
+            //                                     [/////
+            //                                   bound
+            case _ => new LazyValue.Single(seqFunc, domain.upperExtendedBound)
+          }
+
+        override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] =
+          (domain.rangeFactory.between(domain.lowerExtendedBound, bound): Range[ExtendedBound[E]]) match {
+            //                  domain
+            //        [------------------------]
+            // ////////////////////////)
+            //                       bound
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            //                  domain
+            //        [------------------------]
+            // /////)
+            //     bound
+            case _ => new LazyValue.Single(seqFunc, domain.lowerExtendedBound)
+          }
+      }
+
+      final case class Bounded[E, D <: Domain[E], V](
+        val seqFunc: () => SegmentSeq[E, D, V],
+        val bounds: Range.NonEmpty[ExtendedBound[E]]
+      )(
+        implicit val domain: Domain[E]
+      ) extends LazyValue[E, D, V] {
+
+        override def compute: SegmentSeq[E, D, V] = 
+          seqFunc().takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
+
+        override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = {
+          val requestedRange= domain.rangeFactory.between(bound, domain.upperExtendedBound)
+          val newRange: Range[ExtendedBound[E]] = domain.rangeAlgebra.cross(requestedRange, bounds)(domain.rangeFactory)
+          newRange match {
+            //                  bounds
+            //        [------------------------]
+            //               [///////////////////////////
+            //             bound
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            //                  bounds
+            //        [------------------------]
+            //                                     [/////
+            //                                   bound
+            case _ => new LazyValue.Single(seqFunc, bounds.upper)
+          }
+        }
+
+        override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = {
+          val requestedRange = domain.rangeFactory.between(domain.lowerExtendedBound, bound)
+          val newRange: Range[ExtendedBound[E]] = domain.rangeAlgebra.cross(requestedRange, bounds)(domain.rangeFactory)
+          newRange match {
+            //                  bounds
+            //        [------------------------]
+            // ////////////////////////)
+            //                       bound
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            //                  bounds
+            //        [------------------------]
+            // /////)
+            //     bound
+            case _ => new LazyValue.Single(seqFunc, domain.lowerExtendedBound)
+          }
+        }
+      }
+      
+      final case class Single[E, D <: Domain[E], V](
+        val seqFunc: () => SegmentSeq[E, D, V],
+        val bound: ExtendedBound[E]
+      )(
+        implicit val domain: Domain[E]
+      ) extends LazyValue[E, D, V] {
+
+        override def compute: SegmentSeq[E, D, V] = {
+          val seq = seqFunc()
+          val value = seq.getValueForExtended(bound)
+          UniformOrderedMap.default(value)(seq.domainOps, seq.valueOps, seq.rngManager)
+        }
+
+        override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = this
+
+        override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = this
       }
     }
 

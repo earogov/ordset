@@ -10,7 +10,7 @@ import ordset.core.interval.IntervalRelation
 import ordset.random.RngManager
 import ordset.util.label.Label
 import ordset.test.core.Labels
-import ordset.test.core.behaviors.lazyTreapSeq.LazyTreapSeqCacheTest
+import ordset.test.core.behaviors.lazyTreapSeq.{LazyTreapSeqCacheTest, LazyTreapSeqMultipleTakeTest}
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
 
@@ -18,7 +18,8 @@ import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
 trait SampleLT1[D <: Domain[Int]]
-  extends LazyTreapSeqCacheTest[Int, D, Boolean] {
+  extends LazyTreapSeqCacheTest[Int, D, Boolean]
+  with LazyTreapSeqMultipleTakeTest[Int, D, Boolean] {
   self: LazyTreapSeqSample.Fixed[Int, D, Boolean] =>
 
   override val sample: String = "LT1"
@@ -122,6 +123,70 @@ trait SampleLT1[D <: Domain[Int]]
           zippedReference
         )
       )
+    )
+  )
+
+  override lazy val multipleTakeCases: Iterable[LazyTreapSeqMultipleTakeTest.TestPackage[Int, D, Boolean]] = List(
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("A")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(1`(`),
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(1`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll (x < 2),
+            true forAll (x >= 2 & x <= 8),
+            false forAll (x > 8 & x < 15),
+            true forAll (x >= 15 & x <= 20),
+            false forAll (x > 20)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(8`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll (x < 2),
+            true forAll (x >= 2 & x <= 8),
+            false forAll (x > 8)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(100`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll (x < 2),
+            true forAll (x >= 2 & x <= 8),
+            false forAll (x > 8)
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(0`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll x,
+          )
+        ),
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(-1`(`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            false forAll x,
+          )
+        )
+      )
+    ),
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("B")),
+      // Check that there is no stack overflow.
+      (-10000 to 0)
+        .map { i => LazyTreapSeqMultipleTakeTest.TakeAboveCommand(i`[`) }
+        .appended(
+          LazyTreapSeqMultipleTakeTest.Validation(
+            List(
+              false forAll (x < 2),
+              true forAll (x >= 2 & x <= 8),
+              false forAll (x > 8 & x < 15),
+              true forAll (x >= 15 & x <= 20),
+              false forAll (x > 20)
+            )
+          )
+        )
     )
   )
 }
