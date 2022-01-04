@@ -29,6 +29,7 @@ object FlatmapExample {
     example1()
     example2()
     example3()
+    example4()
   }
 
   def example1(): Unit = {
@@ -46,7 +47,7 @@ object FlatmapExample {
     val segment1 = seq1.getSegmentForBound(15`[`)
 
     println()
-    println(s"Apply flatmap to segment $segment1")
+    println(s"Apply flatMap to segment $segment1")
 
     val seq2 = segment1.flatMap { () =>
       TreapOrderedSet.getFactory.unsafeBuildAsc(
@@ -201,5 +202,60 @@ object FlatmapExample {
     println()
     println("Compute all lazy values:")
     println(TreapOrderedMap.getFactory.convertMap(seq3))
+  }
+
+  def example4(): Unit = {
+    println()
+    println(s"$sep SegmentSeq.flatMap advanced example $sep")
+
+    println("Initial sequence:")
+    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
+      List(
+        (20`)[`, false),
+        (AboveAll, true)
+      ),
+      domainOps,
+      booleanOps
+    )()
+    println(seq1)
+
+    println()
+    println("Let's apply flatMap with function, that returns following sequence for each segment:")
+    val seq2 = TreapOrderedMap.getFactory.unsafeBuildAsc(
+      List(
+        (0`)[`, "A"),
+        (10`)[`, "B"),
+        (20`)[`, "C"),
+        (30`)[`, "D"),
+        (40`)[`, "E"),
+        (AboveAll, "F")
+      ),
+      domainOps,
+      stringOps
+    )()
+    println(seq2)
+
+    println()
+    println("Received lazy sequence `seq3`:")
+    val seq3 = seq1.flatMap { v => seq2 }
+    println(seq3)
+
+    println()
+    println("Let's get some new sequence `seq4` from the received one.")
+    println("For example, we will drop all bounds greater than 25.")
+    val seq4 = seq3.takeBelowBound(25`]`)
+    println(seq4)
+
+    println()
+    println("Then request value of the first segment of `seq3` to compute corresponding lazy value. The result:")
+    val firstValue = seq3.firstSegment.value
+    println(firstValue)
+
+    println()
+    println("Finally let's look again at `seq4`:")
+    println(seq4)
+
+    println()
+    println("Note, that first lazy value printed as `computed`, because it was calculated earlier and cached.")
   }
 }

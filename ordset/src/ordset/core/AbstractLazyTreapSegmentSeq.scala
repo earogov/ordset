@@ -136,9 +136,15 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
   final override def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = super.extendedUpperBounds
 
-  final override lazy val firstSegment: LazyFirstSegment[E, D, V] = makeFirstSegment
+  // We shouldn't use lazy val here like we do it for other types of sequences.
+  // Memoized lazy segment will grab the first segment of `zippedSeq` (i.e. of our cache), 
+  // and it in turn will grab the initial version of `zippedSeq`. This version will become
+  // outdated after computation of any lazy value of current lazy sequence. 
+  // So it's a waste of memory to store old cache version for a long time.
+  final override def firstSegment: LazyFirstSegment[E, D, V] = makeFirstSegment
 
-  final override lazy val lastSegment: LazyLastSegment[E, D, V] = makeLastSegment
+  // We shouldn't use lazy val (see comment for `firstSegment`).
+  final override def lastSegment: LazyLastSegment[E, D, V] = makeLastSegment
 
   final override def getSegmentForBound(bound: Bound[E]): LazySegment[E, D, V] =
     makeSegment(zippedSeq.getSegmentForBound(bound).truncation(bound))
@@ -247,15 +253,20 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr></tr>
    * Steps 2.1 - 2.3 are performed with synchronization on field `lock`.
    */
-  protected final def cacheStable(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] = {
-    val zsegment = ztruncation.segment
-    if (zsegment.value._2.isStable) Stable.unsafe(zsegment)
-    else lock.synchronized {
-      val newZsegment = provideStableSegment(ztruncation)
-      zippedSeq = newZsegment.self.sequence
-      newZsegment
+  protected final def cacheStable(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] =
+    lock.synchronized {
+      // Input `ztruncation` can be out of date, due to `zippedSeq` (i.e. our cache) was modified.
+      // If this is the case receive new `ztruncation` from latest version of cache sequence.
+      val refreshedTruncation = provideZtruncation(ztruncation, zippedSeq)
+      val refreshedZsegment = refreshedTruncation.segment
+      if (refreshedZsegment.value._2.isStable) Stable.unsafe(refreshedZsegment)
+      else {
+        // Compute lazy values and update cache.
+        val stableZsegment = provideStableSegment(refreshedTruncation)
+        zippedSeq = stableZsegment.self.sequence
+        stableZsegment
+      }
     }
-  }
 
   /**
    * <tr>1. If segment of input `ztruncation` is eager then returns it.</tr>
@@ -273,17 +284,21 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr></tr>
    * Steps 2.1 - 2.3 are performed with synchronization on field `lock`.
    */
-  protected final def cacheEager(ztruncation: ZTruncation[E, D, V]): Eager.ZSegment[E, D, V] = {
-    val zsegment = ztruncation.segment
-    if (zsegment.value._2.isEager) Eager.assert(zsegment)
-    else lock.synchronized {
-      val newZippedSeq = provideEagerSeq(zsegment)
-      // Zipped sequence was changed (segment became eager) => search segment in new sequence.
-      val newZsegment = Eager.assert(newZippedSeq.getSegmentForExtended(ztruncation.bound))
-      zippedSeq = newZippedSeq
-      newZsegment
+  protected final def cacheEager(ztruncation: ZTruncation[E, D, V]): Eager.ZSegment[E, D, V] =
+    lock.synchronized {
+      // Input `ztruncation` can be out of date, due to `zippedSeq` (i.e. our cache) was modified.
+      // If this is the case receive new `ztruncation` from latest version of cache sequence.
+      val refreshedTruncation = provideZtruncation(ztruncation, zippedSeq)
+      val refreshedZsegment = refreshedTruncation.segment
+      if (refreshedZsegment.value._2.isEager) Eager.unsafe(refreshedZsegment)
+      else {
+        // Compute lazy values and update cache.
+        val newZippedSeq = provideEagerSeq(refreshedZsegment)
+        val eagerZsegment = Eager.assert(newZippedSeq.getSegmentForExtended(refreshedTruncation.bound))
+        zippedSeq = newZippedSeq
+        eagerZsegment
+      }
     }
-  }
 
   /**
    * Builds new zipped sequence (if required) with stable segment at bound `ztruncation.bound` and returns this
@@ -368,14 +383,6 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    */
   protected final def provideStableSegment(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] = {
 
-    def getNewZsegment(
-      zsegment: ZSegment[E, D, V],
-      bound: ExtendedBound[E],
-      newZippedSeq: ZSegmentSeq[E, D, V],
-    ): ZSegment[E, D, V] =
-      if (newZippedSeq.eq(zsegment.sequence)) zsegment   // take old segment if sequence didn't change
-      else newZippedSeq.getSegmentForExtended(bound)     // search segment in new sequence
-
     @tailrec
     def stabilizeLowerBound(zsegment: ZSegment[E, D, V], bound: ExtendedBound[E]): ZSegment[E, D, V] =
       zsegment match {
@@ -408,7 +415,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     val zsegment = ztruncation.segment
     if (zsegment.value._2.isStable) Stable.unsafe(zsegment.self)
     else {
-      val zsegment1 = getNewZsegment(zsegment, bound, provideEagerSeq(zsegment))
+      val zsegment1 = provideZsegment(zsegment, bound, provideEagerSeq(zsegment))
       if (zsegment1.value._2.isStable) Stable.unsafe(zsegment1.self)
       else {
         val zsegment2 = stabilizeLowerBound(zsegment1, bound)
@@ -441,6 +448,32 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
         makeZippedSeq(newBaseSeq, newControlSeq)
       case _ =>
         zsegment.self.sequence
+    }
+
+  /**
+   * Returns input `zsegment`, if it belongs to specified `zippedSeq`, otherwise returns segment of `zippedSeq`
+   * at specified `bound`.
+   */
+  protected inline def provideZsegment(
+    zsegment: ZSegment[E, D, V],
+    bound: ExtendedBound[E],
+    zippedSeq: ZSegmentSeq[E, D, V],
+  ): ZSegment[E, D, V] =
+    if (zippedSeq.eq(zsegment.sequence)) zsegment
+    else zippedSeq.getSegmentForExtended(bound)
+
+  /**
+   * Returns input `ztruncation`, if it belongs to specified `zippedSeq`, otherwise returns truncation of `zippedSeq`
+   * at the same bound as input `ztruncation`.
+   */
+  protected inline def provideZtruncation(
+    ztruncation: ZTruncation[E, D, V],
+    zippedSeq: ZSegmentSeq[E, D, V],
+  ): ZTruncation[E, D, V] =
+    if (zippedSeq.eq(ztruncation.sequence)) ztruncation
+    else {
+      val bound = ztruncation.bound
+      zippedSeq.getSegmentForExtended(bound).truncation(bound)
     }
 
   /**
@@ -1776,6 +1809,12 @@ object AbstractLazyTreapSegmentSeq { outer =>
     def assert[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
       if (segment.value._2.isEager) tagged(segment) else throwSegmentIsNotEager(segment)
 
+    /**
+     * Marks input segment with [[Eager]] tag. Strictness check must be provided by caller.
+     */
+    def unsafe[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
+      tagged(segment)
+
     def throwSegmentIsNotEager[E, D <: Domain[E], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
       throw AssertionError(s"Expected that segment $zsegment is eager.")
 
@@ -1789,10 +1828,14 @@ object AbstractLazyTreapSegmentSeq { outer =>
    * Wraps [[ZSegment]] - segment with internal representation of lazy sequence and
    * provides api to interact with lazy sequence.
    */
-  sealed trait LazySegmentBase[E, D <: Domain[E], V]
+  sealed trait LazySegmentBase[E, D <: Domain[E], V] 
     extends MappedSegmentLikeT[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
+
+    /**
+     * Lazy sequence that the current segment belongs to.
+     */
     override def sequence: LazySegmentSeq[E, D, V]
 
     override def isIncluded: Boolean = sequence.isValueIncluded(value)
@@ -1826,9 +1869,77 @@ object AbstractLazyTreapSegmentSeq { outer =>
     }
 
     // Protected section -------------------------------------------------------- //
+    final override protected val segmentMapFunc: Segment[E, D, ZValue[E, D, V]] => V = s => s.value._1
+
+    /**
+     * `this.sequence` - is the lazy sequence that the current segment belongs to.
+     * 
+     * `this.sequence.zippedSeq` - is a cache with computed values of lazy sequence.
+     * 
+     * `this.zsegment` - is the segment of cache sequence (`this.sequence.zippedSeq`).
+     * 
+     * Current segment wraps `zsegment` and provides client api for lazy sequence.
+     * 
+     * There several points to note:
+     * 
+     * 1. `this.sequence.zippedSeq` - is a mutable reference to store updated versions of cache sequence 
+     * (zipped sequence itself is immutable). It's possible that at some point in time `this.sequence.zippedSeq`
+     * will be updated, but `this.zsegment` will remain the part of old zipped sequence.
+     * 
+     * Outdated `zsegment` will not impact the correctness: it can't leak outside of `this` instance and 
+     * is passed only into methods of `this.sequence`. These methods can handle such cases properly - 
+     * they compare cache version of `zsegment` with the latest one and receive new `zsegment` if needed.
+     * 
+     * On the other hand we must get rid of irrelevant cache as soon as possible to optimize memory usage.
+     * So we still need actualize `this.zsegment` reference (see `this.getZsegment`).
+     *  
+     * 2. Types of `this.zsegment` and current segment are related: if `this.zsegment` is initial, then `this` is
+     * also is initial, etc. Subtypes of `LazySegmentBase` can redefine type of `this.original` in the following way:
+     * <tr>
+     *  - subtype of `LazySegmentBase` declares constructor parameter of some type `T <: Stable.ZSegment[E, D, V];
+     * </tr>  
+     * <tr>
+     *  - `this.zsegment` is initialized with specified constructor parameter;
+     * </tr>
+     * <tr>
+     *  - subtype of `LazySegmentBase` overrides `this.original` with type `T` and can safely cast `this.getZsegment`
+     * into type `T` to provide its implementation.
+     * </tr>
+     */
     override protected def original: Stable.ZSegment[E, D, V]
 
-    final override protected val segmentMapFunc: Segment[E, D, ZValue[E, D, V]] => V = s => s.value._1
+    /**
+     * Mutable reference to segment of cache sequence (`this.sequence.zippedSeq`).
+     * 
+     * Warning! Don't use it directly in subclassed, use `getZsegment` instead. Otherwise you can get out of date
+     * version of cache (see comments to `original` method).
+     */
+    @volatile 
+    protected var zsegment: Stable.ZSegment[E, D, V]
+
+    /**
+     * Returns actualized segment of cache sequence (`this.sequence.zippedSeq`).
+     * 
+     * If new version of cache sequence is available, then:
+     * <tr>- new segment is read from cache sequence `this.sequence.zippedSeq`;</tr>
+     * <tr>- received segment is saved into `this.zsegment` and returned.</tr>
+     * 
+     * Otherwise `this.zsegment` is returned.
+     * 
+     * Update of `this.zsegment` is synchronized on `this.segmentMapFunc` instance.
+     */
+    final protected def getZsegment: Stable.ZSegment[E, D, V] =
+      // Synchronization is relaxed here as performance trade off: 
+      // check of cache up-to-date is moved out from synchronized block.
+      // Outdated `this.zsegment` reference is not impact the correctness (see p.1 of comments to `this.original`).
+      val zs = zsegment
+      if (zs.sequence.eq(sequence.zippedSeq)) zs
+      else {
+        segmentMapFunc.synchronized {
+          zsegment = Stable.assert(sequence.zippedSeq.getSegmentForExtended(zsegment.upper))
+          zsegment
+        }
+      }
   }
 
   object LazySegmentBase {
@@ -1847,9 +1958,9 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy segment with next segment.
    */
-  sealed trait LazySegmentWithNext[E, D <: Domain[E], V]
-    extends MappedSegmentT.WithNext[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
-      with LazySegmentBase[E, D, V] {
+  sealed trait LazySegmentWithNext[E, D <: Domain[E], V] 
+    extends MappedSegmentT.WithNext[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] 
+    with LazySegmentBase[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
     override def self: LazySegmentWithNext[E, D, V]
@@ -1873,9 +1984,9 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy segment with previous segment.
    */
-  sealed trait LazySegmentWithPrev[E, D <: Domain[E], V]
+  sealed trait LazySegmentWithPrev[E, D <: Domain[E], V] 
     extends MappedSegmentT.WithPrev[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
-      with LazySegmentBase[E, D, V] {
+    with LazySegmentBase[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
     override def self: LazySegmentWithPrev[E, D, V]
@@ -1899,10 +2010,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy initial segment.
    */
-  final case class LazyInitialSegment[E, D <: Domain[E], V](
+  final case class LazyInitialSegment[E, D <: Domain[E], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
-    override protected val original: Stable.ZSegmentInitial[E, D, V]
-  ) extends MappedSegmentT.Initial[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
+    // Public constructor has more strict type to provide safe cast in implementation of `this.original`
+    // (see p.2 of comments to `LazySegmentBase.original`).
+    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+  ) extends LazySegmentBase[E, D, V]
+    with MappedSegmentT.Initial[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentWithNext[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
@@ -1928,9 +2042,20 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     override def upperTruncation: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    // Protected section -------------------------------------------------------- //
+
+    // Cast is safe (see p.2 of comments to `LazySegmentBase.original`).
+    protected override def original: Stable.ZSegmentInitial[E, D, V] = getZsegment.asInstanceOf
   }
 
   object LazyInitialSegment {
+
+    def apply[E, D <: Domain[E], V](
+      sequence: LazySegmentSeq[E, D, V],
+      zsegment: Stable.ZSegmentInitial[E, D, V]
+    ): LazyInitialSegment[E, D, V] = 
+      new LazyInitialSegment(sequence, zsegment)
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazyInitialSegment[E, D, V]](
       override val segment: Seg,
@@ -1944,10 +2069,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy terminal segment.
    */
-  final case class LazyTerminalSegment[E, D <: Domain[E], V](
+  final case class LazyTerminalSegment[E, D <: Domain[E], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
-    override protected val original: Stable.ZSegmentTerminal[E, D, V]
-  ) extends MappedSegmentT.Terminal[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
+    // Public constructor has more strict type to provide safe cast in implementation of `this.original`
+    // (see p.2 of comments to `LazySegmentBase.original`).
+    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+  ) extends LazySegmentBase[E, D, V]
+    with MappedSegmentT.Terminal[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentWithPrev[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
@@ -1973,9 +2101,20 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     override def upperTruncation: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    // Protected section -------------------------------------------------------- //
+
+    // Cast is safe (see p.2 of comments to `LazySegmentBase.original`).
+    protected override def original: Stable.ZSegmentTerminal[E, D, V] = getZsegment.asInstanceOf
   }
 
   object LazyTerminalSegment {
+
+    def apply[E, D <: Domain[E], V](
+      sequence: LazySegmentSeq[E, D, V],
+      zsegment: Stable.ZSegmentTerminal[E, D, V]
+    ): LazyTerminalSegment[E, D, V] = 
+      new LazyTerminalSegment(sequence, zsegment)
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazyTerminalSegment[E, D, V]](
       override val segment: Seg,
@@ -1989,10 +2128,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy inner segment.
    */
-  final case class LazyInnerSegment[E, D <: Domain[E], V](
+  final case class LazyInnerSegment[E, D <: Domain[E], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
-    override protected val original: Stable.ZSegmentInner[E, D, V]
-  ) extends MappedSegmentT.Inner[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
+    // Public constructor has more strict type to provide safe cast in implementation of `this.original`
+    // (see p.2 of comments to `LazySegmentBase.original`).
+    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+  ) extends LazySegmentBase[E, D, V]
+    with MappedSegmentT.Inner[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentWithPrev[E, D, V]
     with LazySegmentWithNext[E, D, V] {
 
@@ -2023,9 +2165,20 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     override def upperTruncation: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    // Protected section -------------------------------------------------------- //
+
+    // Cast is safe (see p.2 of comments to `LazySegmentBase.original`).
+    protected override def original: Stable.ZSegmentInner[E, D, V] = getZsegment.asInstanceOf
   }
 
   object LazyInnerSegment {
+
+    def apply[E, D <: Domain[E], V](
+      sequence: LazySegmentSeq[E, D, V],
+      zsegment: Stable.ZSegmentInner[E, D, V]
+    ): LazyInnerSegment[E, D, V] = 
+      new LazyInnerSegment(sequence, zsegment)
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazyInnerSegment[E, D, V]](
       override val segment: Seg,
@@ -2039,11 +2192,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy single segment.
    */
-  final case class LazySingleSegment[E, D <: Domain[E], V](
+  final case class LazySingleSegment[E, D <: Domain[E], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
-    override protected val original: Stable.ZSegmentSingle[E, D, V]
-  ) extends MappedSegmentT.Single[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
-    with LazySegmentBase[E, D, V] {
+    // Public constructor has more strict type to provide safe cast in implementation of `this.original`
+    // (see p.2 of comments to `LazySegmentBase.original`).
+    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+  ) extends LazySegmentBase[E, D, V]
+    with MappedSegmentT.Single[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
     override def self: LazySingleSegment[E, D, V] = this
@@ -2076,9 +2231,20 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     override def upperTruncation: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], this.type] =
       SegmentTruncationT.upperTruncation(this)
+
+    // Protected section -------------------------------------------------------- //
+
+    // Cast is safe (see p.2 of comments to `LazySegmentBase.original`).
+    protected override def original: Stable.ZSegmentSingle[E, D, V] = getZsegment.asInstanceOf
   }
 
   object LazySingleSegment {
+
+    def apply[E, D <: Domain[E], V](
+      sequence: LazySegmentSeq[E, D, V],
+      zsegment: Stable.ZSegmentSingle[E, D, V]
+    ): LazySingleSegment[E, D, V] = 
+      new LazySingleSegment(sequence, zsegment)
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazySingleSegment[E, D, V]](
       override val segment: Seg,

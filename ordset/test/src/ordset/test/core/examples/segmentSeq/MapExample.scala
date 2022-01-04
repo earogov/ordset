@@ -20,8 +20,8 @@ object MapExample {
 
   private val sep = "-----------------"
 
-  private val intValueOps: ValueOps[Int] = implicitly
-  private val booleanValueOps: ValueOps[Boolean] = implicitly
+  private val intOps: ValueOps[Int] = implicitly
+  private val booleanOps: ValueOps[Boolean] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
   def main(args: Array[String]): Unit = {
@@ -44,7 +44,7 @@ object MapExample {
         (AboveAll, true)
       ),
       domainOps,
-      booleanValueOps
+      booleanOps
     )()
     println(seq1)
 
@@ -53,19 +53,19 @@ object MapExample {
     println()
     println(s"Map all segments below $bound1 to `true` and above - to `false`.")
     val mapFunc = (s: Segment[Int, _ <: Domain[Int], Boolean]) => s.domainOps.extendedOrd.lteqv(s.upper, bound1)
-    val seq2 = seq1.mapSegments(mapFunc)(booleanValueOps)
+    val seq2 = seq1.mapSegments(mapFunc)(booleanOps)
 
     println("Received sequence:")
     println(seq2)
 
     println()
     println("We can also apply mapping to some segment and receive corresponding mapped segment:")
-    val mappedSegment = seq1.getSegmentForElement(15).mapSegments(mapFunc)(booleanValueOps)
+    val mappedSegment = seq1.getSegmentForElement(15).mapSegments(mapFunc)(booleanOps)
     println(mappedSegment)
 
     println()
     println("Or we can apply mapping to truncation and get mapped truncation:")
-    val mappedTruncation = seq1.getSegmentForBound(15`]`).truncation(15`]`).mapSegments(mapFunc)(booleanValueOps)
+    val mappedTruncation = seq1.getSegmentForBound(15`]`).truncation(15`]`).mapSegments(mapFunc)(booleanOps)
     println(mappedTruncation)
   }
 
@@ -84,13 +84,13 @@ object MapExample {
         (AboveAll, 20)
       ),
       domainOps,
-      intValueOps
+      intOps
     )()
     println(seq1)
 
     println()
     println(s"Map all positive or zero values to `true` and negative to `false`")
-    val seq2 = seq1.map(_ >= 0)(booleanValueOps)
+    val seq2 = seq1.map(_ >= 0)(booleanOps)
 
     println("Received sequence:")
     println(seq2)

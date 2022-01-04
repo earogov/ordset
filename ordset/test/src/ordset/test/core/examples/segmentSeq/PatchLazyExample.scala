@@ -21,7 +21,7 @@ object PatchLazyExample {
 
   private val sep = "-----------------"
 
-  private val stringValueOps: ValueOps[String] = implicitly
+  private val stringOps: ValueOps[String] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
   def main(args: Array[String]): Unit = {
@@ -45,7 +45,7 @@ object PatchLazyExample {
         (AboveAll, "F")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     println(seq1)
 
@@ -101,7 +101,7 @@ object PatchLazyExample {
         (AboveAll, "F")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     val seq2 = MappedValueOrderedMap.identity(seq1)
     println(seq1)
@@ -158,7 +158,7 @@ object PatchLazyExample {
         (AboveAll, "F")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     val seq2 = seq1.flatMapSegments(s => seq1)
     println(seq2)
@@ -200,7 +200,7 @@ object PatchLazyExample {
         (AboveAll, "Z")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     println("->>>")
     println("Patch sequence initialized:")

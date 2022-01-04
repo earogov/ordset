@@ -7,6 +7,7 @@ import ordset.core.value.{ValueOps, InclusionPredicate}
 import ordset.core.{SegmentSeq, Bound, ExtendedBound}
 import ordset.core.range.Range
 import ordset.core.map.UniformOrderedMap
+import ordset.util.StringUtil
 
 protected[ordset] sealed trait ControlValue[E, D <: Domain[E], V] {
 
@@ -27,6 +28,8 @@ protected[ordset] object ControlValue {
 
     sealed trait LazyValue[E, D <: Domain[E], V] extends ControlValue[E, D, V] {
 
+      import LazyValue.Dummy
+
       override def isStable: Boolean = false
 
       override def isUnstable: Boolean = true
@@ -44,18 +47,48 @@ protected[ordset] object ControlValue {
       def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V]
 
       def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V]
+
+      // Protected section -------------------------------------------------------- //
+      protected val lock: Dummy = new Dummy()
+
+      // One instance of `LazyValue` can be shared among several lazy segment sequences.
+      // Memoization of the result allows to call function only once for all of them.
+      //
+      // We don't use lazy val on `compute`, because we would like to:
+      // 1. perform additional side effects, when value is computed;
+      // 2. check, whether value was computed.
+      //
+      // Updates of `result` must be synchronized on `lock` instance.
+      @volatile protected var result: SegmentSeq[E, D, V] | Dummy = lock
+
+      protected def isComputed: Boolean = !lock.eq(result)
+
+      protected def computedSeqToString[E, D <: Domain[E], V]: String =
+        StringUtil.minify(StringUtil.collapse(result.toString), 50)
     }
 
     object LazyValue {
 
       final case class Default[E, D <: Domain[E], V](
-        val seqFunc: () => SegmentSeq[E, D, V]
+        @volatile private var func: () => SegmentSeq[E, D, V]
       )(
         implicit val domain: Domain[E]
       ) extends LazyValue[E, D, V] {
 
-        override def compute: SegmentSeq[E, D, V] = 
-          seqFunc().takeAboveExtended(domain.lowerExtendedBound).takeBelowExtended(domain.upperExtendedBound)
+        override def compute: SegmentSeq[E, D, V] = {
+          val r = result
+          if (!lock.eq(r)) r.asInstanceOf
+          else lock.synchronized {
+            if (!lock.eq(r)) r.asInstanceOf
+            else {
+              val r = func().takeAboveExtended(domain.lowerExtendedBound).takeBelowExtended(domain.upperExtendedBound)
+              result = r
+              // Value is computed, and we will never need `seqFunc` anymore => drop it to free memory.
+              func = dummyFunc
+              r
+            }
+          }
+        }
 
         override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] =
           (domain.rangeFactory.between(bound, domain.upperExtendedBound): Range[ExtendedBound[E]]) match {
@@ -63,12 +96,12 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             //               [///////////////////////////
             //             bound
-            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(this, r)
             //                  domain
             //        [------------------------]
             //                                     [/////
             //                                   bound
-            case _ => new LazyValue.Single(seqFunc, domain.upperExtendedBound)
+            case _ => new LazyValue.Single(this, domain.upperExtendedBound)
           }
 
         override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] =
@@ -77,26 +110,39 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             // ////////////////////////)
             //                       bound
-            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(this, r)
             //                  domain
             //        [------------------------]
             // /////)
             //     bound
-            case _ => new LazyValue.Single(seqFunc, domain.lowerExtendedBound)
+            case _ => new LazyValue.Single(this, domain.lowerExtendedBound)
           }
 
-        override def toString(): String = s"LazyValue.Default(seqFunc = $seqFunc)"
+        override def toString(): String = {
+          val params = if (isComputed) s"computed = ${computedSeqToString}" else s"function = $func"
+          s"LazyValue.Default($params)"
+        }
       }
 
       final case class Bounded[E, D <: Domain[E], V](
-        val seqFunc: () => SegmentSeq[E, D, V],
+        val lazyValue: LazyValue.Default[E, D, V],
         val bounds: Range.NonEmpty[ExtendedBound[E]]
       )(
         implicit val domain: Domain[E]
       ) extends LazyValue[E, D, V] {
 
-        override def compute: SegmentSeq[E, D, V] = 
-          seqFunc().takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
+        override def compute: SegmentSeq[E, D, V] = {
+          val r = result
+          if (!lock.eq(r)) r.asInstanceOf
+          else lock.synchronized {
+            if (!lock.eq(r)) r.asInstanceOf
+            else {
+              val r = lazyValue.compute.takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
+              result = r
+              r
+            }
+          }
+        }
 
         override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = {
           val requestedRange= domain.rangeFactory.between(bound, domain.upperExtendedBound)
@@ -106,12 +152,12 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             //               [///////////////////////////
             //             bound
-            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(lazyValue, r)
             //                  bounds
             //        [------------------------]
             //                                     [/////
             //                                   bound
-            case _ => new LazyValue.Single(seqFunc, bounds.upper)
+            case _ => new LazyValue.Single(lazyValue, bounds.upper)
           }
         }
 
@@ -123,37 +169,68 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             // ////////////////////////)
             //                       bound
-            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(seqFunc, r)
+            case r: Range.NonEmpty[ExtendedBound[E]] => new LazyValue.Bounded(lazyValue, r)
             //                  bounds
             //        [------------------------]
             // /////)
             //     bound
-            case _ => new LazyValue.Single(seqFunc, domain.lowerExtendedBound)
+            case _ => new LazyValue.Single(lazyValue, domain.lowerExtendedBound)
           }
         }
 
-        override def toString(): String = s"LazyValue.Bounded(seqFunc = $seqFunc, bounds = $bounds)"
+        override def toString(): String = {
+          val params = 
+            if (isComputed) s"computed = ${computedSeqToString}" 
+            else s"lazyValue = $lazyValue, bounds = $bounds"
+            
+          s"LazyValue.Bounded($params)"
+        }
       }
       
       final case class Single[E, D <: Domain[E], V](
-        val seqFunc: () => SegmentSeq[E, D, V],
+        val lazyValue: LazyValue.Default[E, D, V],
         val bound: ExtendedBound[E]
       )(
         implicit val domain: Domain[E]
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          val seq = seqFunc()
-          val value = seq.getValueForExtended(bound)
-          UniformOrderedMap.default(value)(seq.domainOps, seq.valueOps, seq.rngManager)
+          val r = result
+          if (!lock.eq(r)) r.asInstanceOf
+          else lock.synchronized {
+            if (!lock.eq(r)) r.asInstanceOf
+            else {
+              val seq = lazyValue.compute
+              val value = seq.getValueForExtended(bound)
+              val r = UniformOrderedMap.default(value)(seq.domainOps, seq.valueOps, seq.rngManager)
+              result = r
+              r
+            }
+          }
         }
 
         override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = this
 
         override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = this
 
-        override def toString(): String = s"LazyValue.Single(seqFunc = $seqFunc, bound = $bound)"
+        override def toString(): String = {
+          val params = 
+            if (isComputed) s"computed = ${computedSeqToString}" 
+            else s"lazyValue = $lazyValue, bound = $bound"
+
+          s"LazyValue.Single($params)"
+        }
       }
+
+      // Protected section -------------------------------------------------------- //
+      protected final class Dummy {
+
+        override def toString(): String = "undefined"
+      }
+
+      // Private section ---------------------------------------------------------- //
+      private val dummyFunc: () => Nothing = 
+        () => throw UnsupportedOperationException("Function should never be called.")
     }
 
     final case class EagerValue[E, D <: Domain[E], V] private (

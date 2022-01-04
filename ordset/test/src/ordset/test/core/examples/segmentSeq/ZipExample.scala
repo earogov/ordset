@@ -8,7 +8,7 @@ import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
-import ordset.test.core.examples.segmentSeq.PatchLazyExample.{domainOps, stringValueOps}
+import ordset.test.core.examples.segmentSeq.PatchLazyExample.{domainOps, stringOps}
 import ordset.test.core.implementations.domain.BoundSelector
 
 import scala.language.postfixOps
@@ -21,7 +21,7 @@ object ZipExample {
 
   private val sep = "-----------------"
   
-  private val stringValueOps: ValueOps[String] = implicitly
+  private val stringOps: ValueOps[String] = implicitly
   private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
 
   def main(args: Array[String]): Unit = {
@@ -42,7 +42,7 @@ object ZipExample {
         (AboveAll, "C")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     println(seq1)
 
@@ -54,7 +54,7 @@ object ZipExample {
         (AboveAll, "2")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     println(seq2)
 
@@ -77,7 +77,7 @@ object ZipExample {
         (AboveAll, "C")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     println(seq1)
 
@@ -90,7 +90,7 @@ object ZipExample {
         (AboveAll, "A")
       ),
       domainOps,
-      stringValueOps
+      stringOps
     )()
     println(seq2)
 
