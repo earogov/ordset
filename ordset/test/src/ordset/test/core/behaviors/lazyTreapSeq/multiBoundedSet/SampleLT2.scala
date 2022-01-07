@@ -208,6 +208,42 @@ trait SampleLT2[D <: Domain[Int]]
           )
         )
       )
+    ),
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("C")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(15`[`),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(10`)`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            true forAll x
+          )
+        )
+      )
+    ),
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("D")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(15`[`),
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(15`[`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            true forAll x
+          )
+        )
+      )
+    ),
+    LazyTreapSeqMultipleTakeTest.TestPackage(
+      Set(Label("E")),
+      List(
+        LazyTreapSeqMultipleTakeTest.TakeBelowCommand(-7`[`),
+        LazyTreapSeqMultipleTakeTest.TakeAboveCommand(0`[`),
+        LazyTreapSeqMultipleTakeTest.Validation(
+          List(
+            true forAll x
+          )
+        )
+      )
     )
   )
 }

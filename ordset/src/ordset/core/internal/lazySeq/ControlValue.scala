@@ -176,7 +176,7 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             // /////)
             //     bound
-            case _ => new LazyValue.Single(lazyValue, domain.lowerExtendedBound)
+            case _ => new LazyValue.Single(lazyValue, bounds.lower)
           }
         }
 

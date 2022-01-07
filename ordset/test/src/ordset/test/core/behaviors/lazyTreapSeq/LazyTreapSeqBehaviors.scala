@@ -19,6 +19,9 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
   this: AnyFunSpec =>
 
+  implicit lazy val fixedExecutionContext: ExecutionContext =
+    ExecutionContext.fromExecutorService(Executors.newCachedThreadPool.nn)
+
   /**
    * Validates cache of lazy sequence after access operations.
    *
@@ -96,15 +99,12 @@ trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
   ): Unit =
     samples.foreach { sample =>
 
-      val tasksNum = 3
+      val tasksNum = 10
       val timeout = Duration(5, TimeUnit.SECONDS)
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
       implicit val valueHash: Hash[V] = sample.valueOps.valueHash
       implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
-
-      implicit val fixedExecutionContext: ExecutionContext =
-        ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(tasksNum).nn)
 
       it(s"should have valid state of $sample after concurrent random access") {
 
