@@ -11,6 +11,7 @@ import ordset.core.value.ValueOps
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
 import ordset.test.core.implementations.domain.BoundSelector
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Implementation of [[AbstractLazyTreapSegmentSeq]] for tests. It provides:
@@ -27,10 +28,10 @@ class LazyTreapSegmentSeq[E, D <: Domain[E], V] protected (
 ) extends AbstractLazyTreapSegmentSeq[E, D, V]
   with OrderedMapCommons[E, D, V, LazySegmentBase[E, D, V]] {
 
-  // Initialization ----------------------------------------------------------- //
-  zippedSeq = initZippedSeq
-
   // Protected section -------------------------------------------------------- //
+  protected final override val zippedSeqRef: AtomicReference[ZSegmentSeq[E, D, V]] = 
+    new AtomicReference(initZippedSeq)
+
   protected final override def consUniform(value: V): LazySegmentSeq[E, D, V] =
     new LazyTreapSegmentSeq(
       makeZippedSeq(

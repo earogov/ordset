@@ -9,6 +9,7 @@ import ordset.core.*
 import ordset.core.map.OrderedMap
 import ordset.random.RngManager
 import ordset.core.internal.lazySeq.ZSegmentSeqBuilder
+import java.util.concurrent.atomic.AtomicReference
 
 class LazyTreapOrderedSet[E, D <: Domain[E]] protected (
   initZippedSeq: ZSegmentSeq[E, D, Boolean]
@@ -19,10 +20,10 @@ class LazyTreapOrderedSet[E, D <: Domain[E]] protected (
 ) extends AbstractLazyTreapSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D, LazySetSegmentBase[E, D]] {
 
-  // Initialization ----------------------------------------------------------- //
-  zippedSeq = initZippedSeq
-
   // Protected section -------------------------------------------------------- //
+  protected final override val zippedSeqRef: AtomicReference[ZSegmentSeq[E, D, Boolean]] = 
+    new AtomicReference(initZippedSeq)
+
   @inline
   protected final override def consUniform(value: Boolean): LazyOrderedSet[E, D] =
     new LazyTreapOrderedSet(

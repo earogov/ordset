@@ -76,14 +76,15 @@ protected[ordset] object ControlValue {
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          val r = result
+          var r = result
           if (!lock.eq(r)) r.asInstanceOf
           else lock.synchronized {
+            r = result
             if (!lock.eq(r)) r.asInstanceOf
             else {
               val r = func().takeAboveExtended(domain.lowerExtendedBound).takeBelowExtended(domain.upperExtendedBound)
               result = r
-              // Value is computed, and we will never need `seqFunc` anymore => drop it to free memory.
+              // Value is computed, and we will never need `func` anymore => drop it to free memory.
               func = dummyFunc
               r
             }
@@ -132,9 +133,10 @@ protected[ordset] object ControlValue {
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          val r = result
+          var r = result
           if (!lock.eq(r)) r.asInstanceOf
           else lock.synchronized {
+            r = result
             if (!lock.eq(r)) r.asInstanceOf
             else {
               val r = lazyValue.compute.takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
@@ -195,9 +197,10 @@ protected[ordset] object ControlValue {
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          val r = result
+          var r = result
           if (!lock.eq(r)) r.asInstanceOf
           else lock.synchronized {
+            r = result
             if (!lock.eq(r)) r.asInstanceOf
             else {
               val seq = lazyValue.compute

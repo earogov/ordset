@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.{Hash, util}
+import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.{NonuniformTreapOrderedMap, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
@@ -21,7 +21,7 @@ import ordset.util.HashUtil.product1Hash
 import ordset.util.types.Tag
 
 import scala.annotation.tailrec
-import cats.instances.seq
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Segment sequence that may contain lazy segments - value of such segment is a function that returns some new segment
@@ -115,7 +115,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * Warning! When segments are accessed state of lazy sequence is modified. So different calls of method may return
    * different instances of zipped sequence.
    */ 
-  final def getZippedSeq: ZSegmentSeq[E, D, V] = zippedSeq
+  final def getZippedSeq: ZSegmentSeq[E, D, V] = zippedSeqRef.get.nn
 
   final override def isEmpty: Boolean = isUniform && !isValueIncluded(firstSegment.value)
 
@@ -129,7 +129,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
   final override def includesElement(element: E): Boolean = super.includesElement(element)
 
-  final override def toString: String = zippedSeq.toString
+  final override def toString: String = getZippedSeq.toString
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
@@ -147,7 +147,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   final override def lastSegment: LazyLastSegment[E, D, V] = makeLastSegment
 
   final override def getSegmentForBound(bound: Bound[E]): LazySegment[E, D, V] =
-    makeSegment(zippedSeq.getSegmentForBound(bound).truncation(bound))
+    makeSegment(getZippedSeq.getSegmentForBound(bound).truncation(bound))
 
   final override def getSegmentForExtended(bound: ExtendedBound[E]): LazySegment[E, D, V] =
     super.getSegmentForExtended(bound)
@@ -156,29 +156,29 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     super.getSegmentForElement(element)
 
   final override def getValueForBound(bound: Bound[E]): V =
-    cacheEager(zippedSeq.getSegmentForBound(bound).truncation(bound)).value._1
+    cacheEager(getZippedSeq.getSegmentForBound(bound).truncation(bound)).value._1
 
   final override def getValueForExtended(bound: ExtendedBound[E]): V =
-    cacheEager(zippedSeq.getSegmentForExtended(bound).truncation(bound)).value._1
+    cacheEager(getZippedSeq.getSegmentForExtended(bound).truncation(bound)).value._1
 
   final override def getValueForElement(element: E): V =
     super.getValueForElement(element)
 
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): LazySegmentSeq[E, D, V] =
-    takeAboveBoundInternal(bound, zippedSeq.getSegmentForBound(bound))
+    takeAboveBoundInternal(bound, getZippedSeq.getSegmentForBound(bound))
 
   final override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] =
     super.takeAboveExtended(bound)
 
   final override def takeBelowBound(bound: Bound[E]): LazySegmentSeq[E, D, V] =
-    takeBelowBoundInternal(bound, zippedSeq.getSegmentForBound(bound))
+    takeBelowBoundInternal(bound, getZippedSeq.getSegmentForBound(bound))
 
   final override def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] =
     super.takeBelowExtended(bound)
 
   final override def sliceAtBound(bound: Bound[E]): (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = {
-    val zsegment = zippedSeq.getSegmentForBound(bound)
+    val zsegment = getZippedSeq.getSegmentForBound(bound)
     (takeBelowBoundInternal(bound, zsegment), takeAboveBoundInternal(bound, zsegment))
   }
 
@@ -189,7 +189,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     prependBelowExtended(firstSegment.upper, other)
 
   final override def prependBelowBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
-    prependBelowBoundInternal(bound, zippedSeq.getSegmentForBound(bound.provideLower), other)
+    prependBelowBoundInternal(bound, getZippedSeq.getSegmentForBound(bound.provideLower), other)
 
   final override def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.prependBelowExtended(bound, other)
@@ -198,7 +198,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     appendAboveExtended(lastSegment.lower, other)
 
   final override def appendAboveBound(bound: Bound[E], other: SegmentSeq[E, D, V]): LazySegmentSeq[E, D, V] =
-    appendAboveBoundInternal(bound, zippedSeq.getSegmentForBound(bound.provideUpper), other)
+    appendAboveBoundInternal(bound, getZippedSeq.getSegmentForBound(bound.provideUpper), other)
 
   final override def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
     super.appendAboveExtended(bound, other)
@@ -210,7 +210,10 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   protected final override type SegmentInternal = ZSegment[E, D, V]
 
   /**
-   * Zipped sequence which joins `baseSeq` and `controlSeq`.
+   * Reference to zipped sequence which joins `baseSeq` and `controlSeq`. 
+   * <tr>`baseSeq` - is a cache with already computed values.</tr>
+   * <tr>`controlSeq` - contains lazy values, that hadn't been computed yet.</tr>
+   * 
    * <h3>Note</h3>
    *
    * To construct `zippedSeq` from `baseSeq` and `controlSeq` we use type equality:
@@ -223,10 +226,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr>S1 == [[TreapSegmentBase]]</tr>
    * <tr>S2 == [[UniformSingleSegment]]</tr>
    */
-  @volatile
-  protected var zippedSeq: ZSegmentSeq[E, D, V] = _
-
-  protected final val lock = new Object()
+  protected val zippedSeqRef: AtomicReference[ZSegmentSeq[E, D, V]]
 
   protected override def isValueIncluded(value: V): Boolean
 
@@ -241,33 +241,38 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * <tr>1. If segment of input `ztruncation` is stable then returns it.</tr>
    * <tr>2. Otherwise:</tr>
    * <tr>
-   *   2.1. Applies [[provideStableSegment]] to input segment to build new zipped sequence Z with stable segment
+   *   2.1. Applies [[provideStableSegment]] to input truncation to build new zipped sequence Z with stable segment
    *   at bound `ztruncation.bound`.
    * </tr>
    * <tr>
-   *   2.2. Saves new sequence Z into field `zippedSeq`.
+   *   2.2. Saves new sequence Z into `zippedSeqRef`.
    * </tr>
    * <tr>
    *   2.3. Returns segment of new sequence Z at bound `ztruncation.bound`.
    * </tr>
    * <tr></tr>
-   * Steps 2.1 - 2.3 are performed with synchronization on field `lock`.
    */
-  protected final def cacheStable(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] =
-    lock.synchronized {
-      // Input `ztruncation` can be out of date, due to `zippedSeq` (i.e. our cache) was modified.
-      // If this is the case receive new `ztruncation` from latest version of cache sequence.
-      val refreshedTruncation = provideZtruncation(ztruncation, zippedSeq)
-      val refreshedZsegment = refreshedTruncation.segment
-      if (refreshedZsegment.value._2.isStable) Stable.unsafe(refreshedZsegment)
-      else {
-        // Compute lazy values and update cache.
-        val stableZsegment = provideStableSegment(refreshedTruncation)
-        zippedSeq = stableZsegment.self.sequence
-        stableZsegment
+  protected final def cacheStable(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] = {
+    import scala.language.unsafeNulls
+    // Input `ztruncation` can be out of date, due to cache was modified (i.e. zipped sequence inside `zippedSeqRef`).
+    // Check it and refresh if needed.
+    var zt = provideActualZtruncation(ztruncation, getZippedSeq)
+    // If segment of `ztruncation` is already stable, then just return it.
+    if (zt.segment.value._2.isStable) Stable.unsafe(zt.segment)
+    // Otherwise compute lazy values and update cache.
+    else {
+      var zs = zt.segment
+      var success = false
+      while (!success) {
+        val seq = getZippedSeq
+        zt = provideActualZtruncation(zt, seq)
+        zs = provideStableSegment(zt)
+        success = zippedSeqRef.compareAndSet(seq, zs.self.sequence)
       }
+      Stable.unsafe(zs)
     }
-
+  }
+  
   /**
    * <tr>1. If segment of input `ztruncation` is eager then returns it.</tr>
    * <tr>2. Otherwise:</tr>
@@ -276,29 +281,34 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    *   between bounds of `ztruncation.segment`.
    * </tr>
    * <tr>
-   *   2.2. Saves new sequence Z into field `zippedSeq`.
+   *   2.2. Saves new sequence Z into `zippedSeqRef`.
    * </tr>
    * <tr>
    *   2.3. Returns segment of new sequence Z at bound `ztruncation.bound`.
    * </tr>
    * <tr></tr>
-   * Steps 2.1 - 2.3 are performed with synchronization on field `lock`.
    */
-  protected final def cacheEager(ztruncation: ZTruncation[E, D, V]): Eager.ZSegment[E, D, V] =
-    lock.synchronized {
-      // Input `ztruncation` can be out of date, due to `zippedSeq` (i.e. our cache) was modified.
-      // If this is the case receive new `ztruncation` from latest version of cache sequence.
-      val refreshedTruncation = provideZtruncation(ztruncation, zippedSeq)
-      val refreshedZsegment = refreshedTruncation.segment
-      if (refreshedZsegment.value._2.isEager) Eager.unsafe(refreshedZsegment)
-      else {
-        // Compute lazy values and update cache.
-        val newZippedSeq = provideEagerSeq(refreshedZsegment)
-        val eagerZsegment = Eager.assert(newZippedSeq.getSegmentForExtended(refreshedTruncation.bound))
-        zippedSeq = newZippedSeq
-        eagerZsegment
+  protected final def cacheEager(ztruncation: ZTruncation[E, D, V]): Eager.ZSegment[E, D, V] = {
+    import scala.language.unsafeNulls
+    // Input `ztruncation` can be out of date, due to cache was modified (i.e. zipped sequence inside `zippedSeqRef`).
+    // Check it and refresh if needed.
+    var seq = getZippedSeq
+    var zt = provideActualZtruncation(ztruncation, seq)
+    // If segment of `ztruncation` is already eager, then just return it.
+    if (zt.segment.value._2.isEager) Eager.unsafe(zt.segment)
+    // Otherwise compute lazy values and update cache.
+    else {
+      var newSeq = seq
+      var success = false
+      while (!success) {
+        seq = getZippedSeq
+        zt = provideActualZtruncation(zt, seq)
+        newSeq = provideEagerSeq(zt.segment)
+        success = zippedSeqRef.compareAndSet(seq, newSeq)
       }
+      Eager.assert(newSeq.getSegmentForExtended(ztruncation.bound))
     }
+  }
 
   /**
    * Builds new zipped sequence (if required) with stable segment at bound `ztruncation.bound` and returns this
@@ -415,7 +425,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
     val zsegment = ztruncation.segment
     if (zsegment.value._2.isStable) Stable.unsafe(zsegment.self)
     else {
-      val zsegment1 = provideZsegment(zsegment, bound, provideEagerSeq(zsegment))
+      val zsegment1 = provideActualZsegment(zsegment, bound, provideEagerSeq(zsegment))
       if (zsegment1.value._2.isStable) Stable.unsafe(zsegment1.self)
       else {
         val zsegment2 = stabilizeLowerBound(zsegment1, bound)
@@ -454,7 +464,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * Returns input `zsegment`, if it belongs to specified `zippedSeq`, otherwise returns segment of `zippedSeq`
    * at specified `bound`.
    */
-  protected inline def provideZsegment(
+  protected inline def provideActualZsegment(
     zsegment: ZSegment[E, D, V],
     bound: ExtendedBound[E],
     zippedSeq: ZSegmentSeq[E, D, V],
@@ -466,7 +476,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * Returns input `ztruncation`, if it belongs to specified `zippedSeq`, otherwise returns truncation of `zippedSeq`
    * at the same bound as input `ztruncation`.
    */
-  protected inline def provideZtruncation(
+  protected inline def provideActualZtruncation(
     ztruncation: ZTruncation[E, D, V],
     zippedSeq: ZSegmentSeq[E, D, V],
   ): ZTruncation[E, D, V] =
@@ -752,7 +762,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
       ZValue.controlInvariant
     )(
       domainOps,
-      zippedSeq.valueOps,
+      getZippedSeq.valueOps,
       rngManager
     )
 
@@ -776,7 +786,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
   protected final def makeZippedSeqForTransformation(other: SegmentSeq[E, D, V]): ZSegmentSeq[E, D, V] =
     other match {
       case other: AbstractLazyTreapSegmentSeq[E, D, V] =>
-        other.zippedSeq
+        other.getZippedSeq
       case other: TreapSegmentSeq[E, D, V] =>
         makeZippedSeq(other, makeUniformControlSeq(EagerValue.stable))
       case _ =>
@@ -1661,7 +1671,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * @see [[makeSegment]].
    */
   protected final def makeFirstSegment: LazyFirstSegment[E, D, V] =
-    cacheStable(zippedSeq.firstSegment.lowerTruncation) match {
+    cacheStable(getZippedSeq.firstSegment.lowerTruncation) match {
       case s: ZSegmentInitial[E, D, V] @unchecked => LazyInitialSegment(this, s)
       case s: ZSegmentSingle[E, D, V] @unchecked => LazySingleSegment(this, s)
       case s => throwSegmentMustBeInitialOrSingle(s) // just to remove warning
@@ -1673,7 +1683,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
    * @see [[makeSegment]].
    */
   protected final def makeLastSegment: LazyLastSegment[E, D, V] =
-    cacheStable(zippedSeq.lastSegment.upperTruncation) match {
+    cacheStable(getZippedSeq.lastSegment.upperTruncation) match {
       case s: ZSegmentTerminal[E, D, V] @unchecked => LazyTerminalSegment(this, s)
       case s: ZSegmentSingle[E, D, V] @unchecked => LazySingleSegment(this, s)
       case s => throwSegmentMustBeTerminalOrSingle(s) // just to remove warning
@@ -1872,74 +1882,88 @@ object AbstractLazyTreapSegmentSeq { outer =>
     final override protected val segmentMapFunc: Segment[E, D, ZValue[E, D, V]] => V = s => s.value._1
 
     /**
-     * `this.sequence` - is the lazy sequence that the current segment belongs to.
+     * `this.sequence` - is the lazy sequence, that the current segment belongs to.
      * 
-     * `this.sequence.zippedSeq` - is a cache with computed values of lazy sequence.
+     * `this.sequence.zippedSeqRef` - is a reference to zipped sequence, that is a cache with computed values of 
+     *                                lazy sequence.
      * 
-     * `this.zsegment` - is the segment of cache sequence (`this.sequence.zippedSeq`).
+     * `this.zsegmentRef` - is the reference to segment of cache sequence (zipped sequence inside 
+     *                      `this.sequence.zippedSeqRef`).
      * 
-     * Current segment wraps `zsegment` and provides client api for lazy sequence.
+     * Current segment wraps `zsegment` and provides client api for lazy sequence. `this.original` method is intended
+     * to give convenient access to `zsegment`. 
      * 
-     * There several points to note:
+     * There are several points to note:
      * 
-     * 1. `this.sequence.zippedSeq` - is a mutable reference to store updated versions of cache sequence 
-     * (zipped sequence itself is immutable). It's possible that at some point in time `this.sequence.zippedSeq`
-     * will be updated, but `this.zsegment` will remain the part of old zipped sequence.
+     * 1. `this.sequence.zippedSeqRef` - is a reference to store updated versions of cache sequence (zipped sequence
+     * itself is immutable). It's possible that at some point in time `this.sequence.zippedSeqRef` will be updated,
+     * but `this.zsegmentRef` will remain the same. It will reference to `zsegment`, that is a part of old cache
+     * sequence.
      * 
-     * Outdated `zsegment` will not impact the correctness: it can't leak outside of `this` instance and 
-     * is passed only into methods of `this.sequence`. These methods can handle such cases properly - 
-     * they compare cache version of `zsegment` with the latest one and receive new `zsegment` if needed.
+     * Outdated `zsegment` will not impact the correctness: it can't leak outside of `this` instance and is passed
+     * only into methods of `this.sequence`. These methods can handle such cases properly: they compare sequence
+     * of `zsegment` with the actual one and obtain new `zsegment` if needed.
      * 
-     * On the other hand we must get rid of irrelevant cache as soon as possible to optimize memory usage.
-     * So we still need actualize `this.zsegment` reference (see `this.getZsegment`).
+     * On the other hand outdated `this.zsegmentRef` prevents from garbage collecting the whole outdated version
+     * of cache sequence. So we should get rid of it as soon as possible to optimize memory usage. Actualization
+     * of `this.zsegmentRef` is performed in method `this.getZsegment`, and implementations of `this.original` in
+     * subclasses should always use it instead of direct access to `this.zsegmentRef`.
      *  
-     * 2. Types of `this.zsegment` and current segment are related: if `this.zsegment` is initial, then `this` is
-     * also is initial, etc. Subtypes of `LazySegmentBase` can redefine type of `this.original` in the following way:
+     * 2. Types of current segment and `zsegment` inside `this.zsegmentRef` are related: if `zsegment` is initial,
+     * then `this` is also is initial, etc. Subtypes of `LazySegmentBase` can redefine type of `this.original
+     * in the following way:
      * <tr>
-     *  - subtype of `LazySegmentBase` declares constructor parameter of some type `T <: Stable.ZSegment[E, D, V];
+     *  - subtype of `LazySegmentBase` declares constructor parameter for `zsegment` of some type
+     *    `T <: Stable.ZSegment[E, D, V];
      * </tr>  
      * <tr>
-     *  - `this.zsegment` is initialized with specified constructor parameter;
+     *  - `this.zsegmentRef` is initialized with specified constructor parameter (we can't redefine type of
+     *    `this.zsegmentRef` due to invariance of atomic reference on its type parameter, so type of `zsegment`
+     *    is widened in this moment);
      * </tr>
      * <tr>
-     *  - subtype of `LazySegmentBase` overrides `this.original` with type `T` and can safely cast `this.getZsegment`
-     * into type `T` to provide its implementation.
+     *  - subtype of `LazySegmentBase` overrides `this.original` with type `T` and can safely cast output of
+     *    `this.getZsegment` into type `T` to provide its implementation.
      * </tr>
      */
     override protected def original: Stable.ZSegment[E, D, V]
 
     /**
-     * Mutable reference to segment of cache sequence (`this.sequence.zippedSeq`).
+     * Reference to segment of cache sequence (`this.sequence.zippedSeqRef`).
      * 
-     * Warning! Don't use it directly in subclassed, use `getZsegment` instead. Otherwise you can get out of date
-     * version of cache (see comments to `original` method).
+     * Warning! Don't use it directly in subclasses, use `this.getZsegment` instead. Otherwise you can get out of date
+     * version of cache (see comments to `this.original`).
      */
-    @volatile 
-    protected var zsegment: Stable.ZSegment[E, D, V]
+    protected val zsegmentRef: AtomicReference[Stable.ZSegment[E, D, V]]
 
     /**
-     * Returns actualized segment of cache sequence (`this.sequence.zippedSeq`).
+     * Returns actualized segment of cache sequence (`this.sequence.zippedSeqRef`).
      * 
-     * If new version of cache sequence is available, then:
-     * <tr>- new segment is read from cache sequence `this.sequence.zippedSeq`;</tr>
-     * <tr>- received segment is saved into `this.zsegment` and returned.</tr>
+     * If segment in `this.zsegmentRef` doesn't belong to cache sequence inside `this.sequence.zippedSeqRef`, then
+     * new version of cache is available. In that case method receive new segment from  `this.sequence.zippedSeqRef`,
+     * updates `this.zsegmentRef` and returns new segment. Otherwise, it just returns segment from `this.zsegmentRef`.
      * 
-     * Otherwise `this.zsegment` is returned.
-     * 
-     * Update of `this.zsegment` is synchronized on `this.segmentMapFunc` instance.
+     * During check or update of `this.zsegmentRef` cache sequence in `this.sequence.zippedSeqRef` can be updated
+     * itself. So there is a chance, that we end up with still outdated version of `zsegment`. However, this scenario
+     * doesn't impact the correctness (see p.1 of comments to `this.original`). Outdated version of `zsegment` is
+     * treated as a normal behavior, but should be updated as soon as possible.
      */
-    final protected def getZsegment: Stable.ZSegment[E, D, V] =
-      // Synchronization is relaxed here as performance trade off: 
-      // check of cache up-to-date is moved out from synchronized block.
-      // Outdated `this.zsegment` reference is not impact the correctness (see p.1 of comments to `this.original`).
-      val zs = zsegment
-      if (zs.sequence.eq(sequence.zippedSeq)) zs
-      else {
-        segmentMapFunc.synchronized {
-          zsegment = Stable.assert(sequence.zippedSeq.getSegmentForExtended(zsegment.upper))
-          zsegment
+    final protected def getZsegment: Stable.ZSegment[E, D, V] = {
+      import scala.language.unsafeNulls
+      var zs: Stable.ZSegment[E, D, V] = null
+      var success = false
+      while (!success) {
+        val seq = sequence.getZippedSeq
+        zs = zsegmentRef.get.nn
+        success = zs.sequence.eq(seq)
+        if (!success) {
+          val oldZs = zs
+          zs = Stable.assert(seq.getSegmentForExtended(oldZs.upper))
+          success = zsegmentRef.compareAndSet(oldZs, zs)
         }
       }
+      zs
+    }
   }
 
   object LazySegmentBase {
@@ -2014,7 +2038,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
-    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+    override protected val zsegmentRef: AtomicReference[Stable.ZSegment[E, D, V]]
   ) extends LazySegmentBase[E, D, V]
     with MappedSegmentT.Initial[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentWithNext[E, D, V] {
@@ -2055,7 +2079,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentInitial[E, D, V]
     ): LazyInitialSegment[E, D, V] = 
-      new LazyInitialSegment(sequence, zsegment)
+      new LazyInitialSegment(sequence, new AtomicReference(zsegment))
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazyInitialSegment[E, D, V]](
       override val segment: Seg,
@@ -2073,7 +2097,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
-    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+    override protected val zsegmentRef: AtomicReference[Stable.ZSegment[E, D, V]]
   ) extends LazySegmentBase[E, D, V]
     with MappedSegmentT.Terminal[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentWithPrev[E, D, V] {
@@ -2114,7 +2138,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentTerminal[E, D, V]
     ): LazyTerminalSegment[E, D, V] = 
-      new LazyTerminalSegment(sequence, zsegment)
+      new LazyTerminalSegment(sequence, new AtomicReference(zsegment))
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazyTerminalSegment[E, D, V]](
       override val segment: Seg,
@@ -2132,7 +2156,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
-    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+    override protected val zsegmentRef: AtomicReference[Stable.ZSegment[E, D, V]]
   ) extends LazySegmentBase[E, D, V]
     with MappedSegmentT.Inner[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentWithPrev[E, D, V]
@@ -2178,7 +2202,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentInner[E, D, V]
     ): LazyInnerSegment[E, D, V] = 
-      new LazyInnerSegment(sequence, zsegment)
+      new LazyInnerSegment(sequence, new AtomicReference(zsegment))
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazyInnerSegment[E, D, V]](
       override val segment: Seg,
@@ -2196,7 +2220,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
-    @volatile protected var zsegment: Stable.ZSegment[E, D, V]
+    override protected val zsegmentRef: AtomicReference[Stable.ZSegment[E, D, V]]
   ) extends LazySegmentBase[E, D, V]
     with MappedSegmentT.Single[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] {
 
@@ -2244,7 +2268,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentSingle[E, D, V]
     ): LazySingleSegment[E, D, V] = 
-      new LazySingleSegment(sequence, zsegment)
+      new LazySingleSegment(sequence, new AtomicReference(zsegment))
 
     final class Truncation[E, D <: Domain[E], V, +Seg <: LazySingleSegment[E, D, V]](
       override val segment: Seg,

@@ -257,5 +257,7 @@ object FlatmapExample {
 
     println()
     println("Note, that first lazy value printed as `computed`, because it was calculated earlier and cached.")
+    println("Nevertheless, lazy segment sequence is effectively immutable, because it always returns same values")
+    println("to the client.")
   }
 }
