@@ -6,13 +6,15 @@ import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
+import ordset.test.core.behaviors.segmentSeq.LazyEvalProperties
 import ordset.test.core.samples.segmentSeq.uniformOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class UniformOrderedSetSpec extends AnyFunSpec
   with InspectionBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with NavigationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean] {
+  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
+  with LazyEvalProperties[Int, Domain.ContinuousUnbounded[Int], Boolean] {
 
   import ordset.givens.boolean._
   import ordset.givens.int._
@@ -59,5 +61,10 @@ class UniformOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeSliced(testSuite)
 
     it should behave like segmentCanBePatched(testSuite)
+  }
+
+  describe("Uniform ordered set lazy operations:") {
+
+    it should behave like sequenceCallsFunctionToComputeLazyValueOnlyOnce(testSuite, Vector(true, false))
   }
 }

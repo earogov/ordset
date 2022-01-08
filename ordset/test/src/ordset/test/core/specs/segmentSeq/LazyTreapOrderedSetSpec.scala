@@ -7,6 +7,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatestplus.junit.JUnitRunner
 import ordset.test.core.behaviors.lazyTreapSeq.LazyTreapSeqBehaviors
 import ordset.test.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
+import ordset.test.core.behaviors.segmentSeq.LazyEvalProperties
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSeqUtil
 import ordset.test.core.samples.segmentSeq.lazyTreapOrderedSet.*
@@ -17,7 +18,8 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
   with LazyTreapSeqBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with InspectionBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with NavigationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]{
+  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
+  with LazyEvalProperties[Int, Domain.ContinuousUnbounded[Int], Boolean] {
 
   import ordset.givens.boolean._
   import ordset.givens.int._
@@ -99,5 +101,10 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
     it should behave like sequenceHasValidStateAfterSequentialRandomAccess(accessSuite)
 
     it should behave like sequenceHasValidStateAfterConcurrentRandomAccess(accessSuite)
+  }
+
+  describe("Lazy treap ordered set lazy operations:") {
+
+    it should behave like sequenceCallsFunctionToComputeLazyValueOnlyOnce(defaultSuite, Vector(true, false))
   }
 }

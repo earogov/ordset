@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
+import ordset.test.core.behaviors.segmentSeq.LazyEvalProperties
 import ordset.test.core.behaviors.zippedSeq.ZippedSeqBehaviors
 import ordset.test.core.samples.segmentSeq.zippedOrderedSet._
 
@@ -14,7 +15,8 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   with InspectionBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with NavigationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with ZippedSeqBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean, Boolean, Boolean] {
+  with ZippedSeqBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean, Boolean, Boolean]
+  with LazyEvalProperties[Int, Domain.ContinuousUnbounded[Int], Boolean] {
 
   import ordset.givens.boolean._
   import ordset.givens.int._
@@ -82,5 +84,10 @@ class ZippedOrderedSetSpec extends AnyFunSpec
   describe("Zipped ordered set specific operations:") {
 
     it should behave like segmentCanPatchOriginalSeq(zippedSuit)
+  }
+
+  describe("Zipped ordered set lazy operations:") {
+
+    it should behave like sequenceCallsFunctionToComputeLazyValueOnlyOnce(testSuite, Vector(true, false))
   }
 }
