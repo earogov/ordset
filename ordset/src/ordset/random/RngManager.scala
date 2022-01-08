@@ -16,14 +16,14 @@ package ordset.random
  * requests new random generator from manager. Instance of [[RngManager]] may be passed further if needed.
  * </tr>
  * <tr>
- * Proper implementation of [[RngManager]] must provide next guarantee^*^:
+ * Proper implementation of [[RngManager]] must provide next guarantee^*1^:
  * </tr>
  * <tr>
  * - all returned instances of [[UnsafeUniformRng]] must have new unique state no matter they were requested
  *   sequentially by one thread or concurrently.
  * </tr>
  * <tr>
- * * for sоme reasonably high amount of requests.
+ * *1 for some reasonably high amount of requests.
  * </tr>
  */
 trait RngManager {

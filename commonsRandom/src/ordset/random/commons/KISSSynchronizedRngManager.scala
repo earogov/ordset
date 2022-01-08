@@ -12,6 +12,7 @@ final class KISSSynchronizedRngManager(seed1: Long, seed2: Long) extends RngMana
   override def newUnsafeUniformRng(): UnsafeUniformRng = {
     var seed1 = 0L
     var seed2 = 0L
+    // Acquire lock to modify internal state of `seedRng`.
     lock.synchronized {
       seed1 = seedRng.nextLong()
       seed2 = seedRng.nextLong()

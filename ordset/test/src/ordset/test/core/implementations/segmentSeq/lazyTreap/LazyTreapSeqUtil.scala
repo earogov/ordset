@@ -1,14 +1,16 @@
 package ordset.test.core.implementations.segmentSeq.lazyTreap
 
-import ordset.core.domain.Domain
-import ordset.core.{Bound, ExtendedBound, LazySegmentSeq, SegmentSeq}
-import ordset.random.RngManager
+import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
+import ordset.core.{Bound, ExtendedBound, LazySegmentSeq, TreapSegmentSeq, SegmentSeq}
+import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.test.core.RandomUtil
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
+import ordset.core.map.TreapOrderedMap
 
 object LazyTreapSeqUtil {
 
@@ -49,29 +51,6 @@ object LazyTreapSeqUtil {
     rngManager: RngManager
   ): LazyTreapSegmentSeq[E, D, V] = {
 
-    def split(lower: ExtendedBound[E], upper: ExtendedBound[E]): Seq[ExtendedBound[E]] = {
-      val ord = seq.domainOps.extendedOrd
-      val midOpt = boundSelector.between(lower, upper)(ord)
-        // Convert bound into upper and keep it only if it's steel between input bounds.
-        .map(_.provideUpper)
-        .filter(b => ord.gt(b, lower) && ord.lt(b, upper))
-      if (midOpt.isDefined) Seq(lower, midOpt.get)
-      else Seq(lower)
-    }
-
-    @tailrec
-    def splitN(bounds: Seq[ExtendedBound[E]], steps: Int): Seq[ExtendedBound[E]] =
-      if (steps <= 0) bounds
-      else {
-        val newBounds = bounds.iterator
-          .sliding(2, 1).withPartial(false)
-          .flatMap(boundsPair => split(boundsPair.head, boundsPair(1)))
-          .toSeq
-          .appended(ExtendedBound.AboveAll)
-
-        splitN(newBounds, steps - 1)
-      }
-
     @tailrec
     def buildControlSeq(
       bounds: Array[ExtendedBound.Upper[E]],
@@ -106,10 +85,10 @@ object LazyTreapSeqUtil {
 
     // Value from 0 to maxSplitSteps.
     val splitSteps = rng.nextInt(maxSplitSteps + 1)
-    val splittedBounds = splitN(initBounds, splitSteps)
+    val splittedBounds = splitBounds(initBounds, splitSteps)(seq.domainOps.domain, boundSelector)
       .tail // drop `BelowAll` bound
       .map {
-        // `split` operation leaves only upper bounds in sequence and also `BelowAll` bound.
+        // `split` operation has left only upper bounds in sequence and also `BelowAll` bound.
         // `BelowAll` was dropped above => all remaining bounds are upper.
         case bound: ExtendedBound.Upper[E] => bound
         case bound => throw new AssertionError(s"Expected upper bound, but got $bound")
@@ -140,5 +119,113 @@ object LazyTreapSeqUtil {
     val controlSeq = buildControlSeq(splittedBounds, boundsIndexList, List.empty)
 
     LazyTreapSegmentSeq.totallyLazy(controlSeq)(seq.domainOps, seq.valueOps, seq.rngManager)
+  }
+
+  /**
+   * Builds random treap segment sequence.
+   *
+   * Each upper bound of sequence satisfies the condition:
+   *
+   * `lower` `<` bound `<` `upper`
+   * 
+   * Each value of sequence belongs to input `values` set.
+   */
+  def makeRandomTreapSeq[E, D <: Domain[E], V](
+    lower: ExtendedBound.Lower[E],
+    upper: ExtendedBound.Upper[E],
+    values: IndexedSeq[V]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V],
+    rngManager: RngManager,
+    boundSelector: BoundSelector[E],
+  ): TreapSegmentSeq[E, D, V] = {
+
+    @tailrec
+    def generateValues(
+      bounds: Vector[ExtendedBound.Upper[E]], 
+      prevValue: Option[V],
+      acc: Vector[(ExtendedBound.Upper[E], V)],
+      rng: UnsafeUniformRng
+    ): Vector[(ExtendedBound.Upper[E], V)] = 
+      if (bounds.isEmpty) acc
+      else {
+        val bound = bounds(0)
+        val availableValues = prevValue
+          .map(pv => values.filter(v => valueOps.neqv(v, pv)))
+          .getOrElse(values)
+
+        val value = RandomUtil.randomPick(availableValues, rng.nextInt())
+          .getOrElse(throw new AssertionError("Expected non empty available values"))
+
+        val newAcc = acc.appended((bound, value))
+        generateValues(bounds.tail, Some(value), newAcc, rng)
+      }
+
+    val seqFactory = TreapOrderedMap.getFactory[E, D, V]
+
+    if (values.isEmpty) seqFactory.buildUniform(valueOps.unit, domainOps, valueOps)
+    else if (values.size == 1) seqFactory.buildUniform(values(0), domainOps, valueOps)
+    else {
+      val rng = rngManager.newUnsafeUniformRng()
+
+      val maxSplitSteps = 3
+      // Value from 0 to maxSplitSteps.
+      val splitSteps = rng.nextInt(maxSplitSteps + 1)
+
+      val initBounds = List(lower, upper)
+      val splittedBounds = splitBounds(initBounds, splitSteps)(domainOps.domain, boundSelector)
+        .drop(1)       // drop first lower bound
+        .dropRight(1)  // drop last upper bound
+        .appended(ExtendedBound.AboveAll)
+        .map {
+          // `split` operation has left only upper bounds in sequence and also first lower bound.
+          // First lower bound was dropped above => all remaining bounds are upper.
+          case bound: ExtendedBound.Upper[E] => bound
+          case bound => throw new AssertionError(s"Expected upper bound, but got $bound")
+        }
+        .toVector
+
+      val boundsWithValues = generateValues(splittedBounds, None, Vector.empty, rng)
+
+      seqFactory.unsafeBuildAsc(boundsWithValues, domainOps, valueOps)()
+    }  
+  }
+
+  /**
+   * Adds new upper bound (if possible) between each pair of bounds of input collection.
+   * Operation is repeated `iterations` times.
+   */
+  @tailrec
+  def splitBounds[E](
+    bounds: Seq[ExtendedBound[E]],
+    iterations: Int
+  )(
+    implicit
+    domain: Domain[E],
+    boundSelector: BoundSelector[E]
+  ): Seq[ExtendedBound[E]] = {
+
+    def split(lower: ExtendedBound[E], upper: ExtendedBound[E]): Seq[ExtendedBound[E]] = {
+      val ord = domain.extendedOrd
+      val midOpt = boundSelector.between(lower, upper)(ord)
+        // Convert bound into upper and keep it only if it's steel between input bounds.
+        .map(_.provideUpper)
+        .filter(b => ord.gt(b, lower) && ord.lt(b, upper))
+      if (midOpt.isDefined) Seq(lower, midOpt.get)
+      else Seq(lower)
+    }
+
+    if (iterations <= 0 || bounds.isEmpty) bounds
+    else {
+      val newBounds = bounds.iterator
+        .sliding(2, 1).withPartial(false)
+        .flatMap(boundsPair => split(boundsPair.head, boundsPair(1)))
+        .toSeq
+        .appended(bounds(bounds.size - 1))
+
+      splitBounds(newBounds, iterations - 1)
+    }
   }
 }

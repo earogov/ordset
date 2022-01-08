@@ -13,6 +13,6 @@ If s for example a treap sequence then first step converts into treap a part of 
 
 It will allows to optimize computation of lazy values when only part of sequence required. For example if lazy segment becomes shorter, we can return smaller part of sequence.
 
-3. Fix stack unsafe implementation of takeAboveBound and takeBelowBound in LazyTreapSegmentSeq.
+3. [Closed] Fix stack unsafe implementation of takeAboveBound and takeBelowBound in LazyTreapSegmentSeq.
 
 If there is a lazy segment at specified bound then we create new lazy value. New function takes old one and modifies its result. Multiple calls of takeAboveBound/takeAboveBound methods with the same bound can produce function that causes stack overflow.

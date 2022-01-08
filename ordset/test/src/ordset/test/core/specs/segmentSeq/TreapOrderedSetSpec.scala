@@ -6,13 +6,15 @@ import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.behaviors.segmentSeq.{InspectionBehaviors, NavigationBehaviors, TransformationBehaviors}
+import ordset.test.core.behaviors.segmentSeq.LazyEvalProperties
 import ordset.test.core.samples.segmentSeq.treapOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class TreapOrderedSetSpec extends AnyFunSpec
   with InspectionBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
   with NavigationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean] {
+  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
+  with LazyEvalProperties[Int, Domain.ContinuousUnbounded[Int], Boolean] {
 
   import ordset.givens.boolean._
   import ordset.givens.int._
@@ -37,6 +39,15 @@ class TreapOrderedSetSpec extends AnyFunSpec
       )
     }
   ).flatten
+
+  private val lazyPropertiesSuite = List(
+    new EmptySetSample1[Dom](100),
+    new UniversalSetSample1[Dom](100),
+    new SingleBoundedSetSample1[Dom](100),
+    new MultiBoundedSetSample1[Dom](100),
+    new MultiBoundedSetSample3[Dom](100),
+    new DegenerateSetSample1[Dom](100)
+  )
 
   describe("Treap based ordered set inspection operations:") {
 
@@ -71,5 +82,10 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeSliced(testSuite)
 
     it should behave like segmentCanBePatched(testSuite)
+  }
+
+  describe("Treap based ordered set lazy operations:") {
+
+    it should behave like sequenceCallsFunctionToComputeLazyValueOnlyOnce(lazyPropertiesSuite, Vector(true, false))
   }
 }

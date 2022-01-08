@@ -19,7 +19,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
   this: AnyFunSpec =>
 
-  implicit lazy val fixedExecutionContext: ExecutionContext =
+  implicit private lazy val fixedExecutionContext: ExecutionContext =
     ExecutionContext.fromExecutorService(Executors.newCachedThreadPool.nn)
 
   /**
