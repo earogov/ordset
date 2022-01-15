@@ -1,5 +1,7 @@
 package ordset.core.range
 
+import ordset.{Eq, Hash, Show}
+
 /**
  * Range of elements (empty or non-empty).
  * 
@@ -18,9 +20,21 @@ trait Range[+E] {
    * Returns `true` if range is non-empty. 
    */
   def isNonEmpty: Boolean
+
+  override def toString(): String = Range.defaultShowInstance.show(this)
 }
 
 object Range {
+
+  /**
+   * Returns default [[Hash]] and [[Eq]] implementation for range.
+   */
+  implicit def defaultHash[E](implicit elementHash: Hash[E]): Hash[Range[E]] = new DefaultHash(elementHash)
+
+  /**
+   * Returns default [[Show]] implementation for range.
+   */
+  implicit def defaultShow[E](implicit elementShow: Show[E]): Show[Range[E]] = new DefaultShow(elementShow)
 
   /**
    * Empty range. Doesn't include any elements.
@@ -53,4 +67,65 @@ object Range {
 
     final override def isNonEmpty: Boolean = true
   }
+
+  /**
+   * Default [[Hash]] and [[Eq]] implementation for range.
+   */
+  class DefaultHash[E, R <: Range[E]](val elementHash: Hash[E]) extends Hash[R] {
+
+    import ordset.util.HashUtil._
+
+    private val hashConst: Int = 0x97C30FE5
+
+    override def eqv(x: R, y: R): Boolean = 
+      x match {
+        case x: Range.NonEmpty[E] =>
+          y match {
+            case y: Range.NonEmpty[E] =>
+              elementHash.eqv(x.lower, y.lower) && elementHash.eqv(x.upper, y.upper)
+            case _ =>
+              false
+          }
+        case _ => 
+          y.isEmpty
+      }
+
+    override def hash(x: R): Int = 
+      x match {
+        case x: Range.NonEmpty[E] => product2Hash(elementHash.hash(x.lower), elementHash.hash(x.upper))
+        case _ => hashConst
+      }
+  }
+
+  /**
+   * Default [[Show]] implementation for range.
+   */
+  class DefaultShow[E, R <: Range[E]](val elementShow: Show[E]) extends Show[R] {
+
+    import DefaultShow.*
+
+    override def show(x: R): String = 
+      x match {
+        case x: Range.NonEmpty[E] =>
+          val lowerStr = elementShow.show(x.lower)
+          val upperStr = elementShow.show(x.upper)
+          s"$rangeBegin$lowerStr$separator$upperStr"
+        case _ => 
+          emptyRange
+      }
+  }
+
+  object DefaultShow {
+
+    val emptyRange: String = "{}"
+
+    val rangeBegin: String = "["
+
+    val rangeEnd: String = "]"
+
+    val separator: String = ", "
+  }
+
+  // Private section ---------------------------------------------------------- //
+  private val defaultShowInstance: DefaultShow[Any, Range[Any]] = new DefaultShow(Show.fromToString)
 }

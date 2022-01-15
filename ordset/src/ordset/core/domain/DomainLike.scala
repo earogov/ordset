@@ -2,7 +2,7 @@ package ordset.core.domain
 
 import ordset.{Order, Hash}
 import ordset.core.{Bound, ExtendedBound}
-import ordset.core.range.{SimpleRangeFactory, RangeAlgebra}
+import ordset.core.range.{SimpleRange, SimpleRangeFactory, RangeAlgebra}
 
 trait DomainLike[E] {
 
@@ -16,9 +16,11 @@ trait DomainLike[E] {
 
   implicit def rangeAlgebra: RangeAlgebra[ExtendedBound[E]]
 
-  def lowerExtendedBound: ExtendedBound[E] = extendedOrd.lowerBound
+  //def boundsRange: SimpleRange[ExtendedBound[E]]
 
-  def upperExtendedBound: ExtendedBound[E] = extendedOrd.upperBound
+  def lowerBound: ExtendedBound[E] = extendedOrd.lowerBound
+
+  def upperBound: ExtendedBound[E] = extendedOrd.upperBound
 
   def isContinuous: Boolean
 
@@ -49,9 +51,11 @@ object DomainLike {
 
     override implicit def rangeAlgebra: RangeAlgebra[ExtendedBound[E]] = domain.rangeAlgebra
 
-    override def lowerExtendedBound: ExtendedBound[E] = domain.lowerExtendedBound
+    //override def boundsRange: SimpleRange[ExtendedBound[E]] = domain.boundsRange
 
-    override def upperExtendedBound: ExtendedBound[E] = domain.upperExtendedBound
+    override def lowerBound: ExtendedBound[E] = domain.lowerBound
+
+    override def upperBound: ExtendedBound[E] = domain.upperBound
 
     override def isContinuous: Boolean = domain.isContinuous
 

@@ -16,3 +16,5 @@ It will allows to optimize computation of lazy values when only part of sequence
 3. [Closed] Fix stack unsafe implementation of takeAboveBound and takeBelowBound in LazyTreapSegmentSeq.
 
 If there is a lazy segment at specified bound then we create new lazy value. New function takes old one and modifies its result. Multiple calls of takeAboveBound/takeAboveBound methods with the same bound can produce function that causes stack overflow.
+
+4. Add `span` method to IntervalAlgebra (see RangeAlgebra).

@@ -34,7 +34,7 @@ object implementations {
       with Discrete
       with NaturalBounds {
 
-      override def reversed: DiscreteOrder.Finite[Unit, Unit, Unit] = this
+      override val reversed: DiscreteOrder.Finite[Unit, Unit, Unit] = this
     }
   }
 

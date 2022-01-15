@@ -2,7 +2,7 @@ package ordset.core.domain
 
 import ordset.{BoundedOrder, DiscreteOrder, Order, Hash}
 import ordset.core.{Bound, ExtendedBound}
-import ordset.core.range.{SimpleRangeFactory, RangeAlgebra}
+import ordset.core.range.{SimpleRange, SimpleRangeFactory, RangeAlgebra}
 
 sealed trait Domain[E] extends DomainLike[E] {
 
@@ -19,9 +19,9 @@ object Domain {
 
     override implicit def extendedOrd: ExtendedBound.UnboundedOrder[E]
 
-    override def lowerExtendedBound: ExtendedBound.BelowAll.type = extendedOrd.lowerBound
+    override def lowerBound: ExtendedBound.BelowAll.type = extendedOrd.lowerBound
 
-    override def upperExtendedBound: ExtendedBound.AboveAll.type = extendedOrd.upperBound
+    override def upperBound: ExtendedBound.AboveAll.type = extendedOrd.upperBound
 
     final override val isUnbounded: Boolean = true
 
@@ -40,9 +40,9 @@ object Domain {
 
     override implicit def extendedOrd: ExtendedBound.BoundedBelowOrder[E]
 
-    override def lowerExtendedBound: Bound.Lower[E] = extendedOrd.lowerBound
+    override def lowerBound: Bound.Lower[E] = extendedOrd.lowerBound
 
-    override def upperExtendedBound: ExtendedBound.AboveAll.type = extendedOrd.upperBound
+    override def upperBound: ExtendedBound.AboveAll.type = extendedOrd.upperBound
 
     final override val isUnbounded: Boolean = false
 
@@ -61,9 +61,9 @@ object Domain {
 
     override implicit def extendedOrd: ExtendedBound.BoundedAboveOrder[E]
 
-    override def lowerExtendedBound: ExtendedBound.BelowAll.type = extendedOrd.lowerBound
+    override def lowerBound: ExtendedBound.BelowAll.type = extendedOrd.lowerBound
 
-    override def upperExtendedBound: Bound.Upper[E] = extendedOrd.upperBound
+    override def upperBound: Bound.Upper[E] = extendedOrd.upperBound
 
     final override val isUnbounded: Boolean = false
 
@@ -82,9 +82,9 @@ object Domain {
 
     override implicit def extendedOrd: ExtendedBound.BoundedOrder[E]
 
-    override def lowerExtendedBound: Bound.Lower[E] = extendedOrd.lowerBound
+    override def lowerBound: Bound.Lower[E] = extendedOrd.lowerBound
 
-    override def upperExtendedBound: Bound.Upper[E] = extendedOrd.upperBound
+    override def upperBound: Bound.Upper[E] = extendedOrd.upperBound
 
     final override val isUnbounded: Boolean = false
 
@@ -137,6 +137,9 @@ object Domain {
 
       override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = 
         SimpleRangeFactory.unbounded(extendedOrd)
+
+      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+      //   rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -162,6 +165,9 @@ object Domain {
 
       override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = 
         SimpleRangeFactory.boundedBelow(extendedOrd)
+
+      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+      //   rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -187,6 +193,9 @@ object Domain {
 
       override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = 
         SimpleRangeFactory.boundedAbove(extendedOrd)
+
+      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+      //   rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -212,6 +221,9 @@ object Domain {
 
       override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = 
         SimpleRangeFactory.bounded(extendedOrd)
+
+      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+      //   rangeFactory.between(lowerBound, upperBound)
     }
   }
 

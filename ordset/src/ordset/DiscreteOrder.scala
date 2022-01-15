@@ -204,7 +204,7 @@ object DiscreteOrder {
   /**
    * [[DiscreteOrder]] typeclass received by reverting another [[DiscreteOrder]] instance.
    */
-  trait Reversed[E] extends Additional.Order.Reversed[E] with Discrete.Reversed[E] with DiscreteOrder[E]
+  trait Reversed[E] extends OrderExtensions.Reversed[E] with Discrete.Reversed[E] with DiscreteOrder[E]
 
   class ReversedImpl[E](original: DiscreteOrder[E]) extends Reversed[E] {
 

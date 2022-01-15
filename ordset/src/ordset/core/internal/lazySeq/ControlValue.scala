@@ -64,7 +64,7 @@ protected[ordset] object ControlValue {
       protected def isComputed: Boolean = !lock.eq(result)
 
       protected def computedSeqToString[E, D <: Domain[E], V]: String =
-        StringUtil.minify(StringUtil.collapse(result.toString), 50)
+        StringUtil.limit(StringUtil.collapse(result.toString), 50)
     }
 
     object LazyValue {
@@ -82,7 +82,7 @@ protected[ordset] object ControlValue {
             r = result
             if (!lock.eq(r)) r.asInstanceOf
             else {
-              val r = func().takeAboveExtended(domain.lowerExtendedBound).takeBelowExtended(domain.upperExtendedBound)
+              val r = func().takeAboveExtended(domain.lowerBound).takeBelowExtended(domain.upperBound)
               result = r
               // Value is computed, and we will never need `func` anymore => drop it to free memory.
               func = dummyFunc
@@ -92,7 +92,7 @@ protected[ordset] object ControlValue {
         }
 
         override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] =
-          (domain.rangeFactory.between(bound, domain.upperExtendedBound): Range[ExtendedBound[E]]) match {
+          (domain.rangeFactory.between(bound, domain.upperBound): Range[ExtendedBound[E]]) match {
             //                  domain
             //        [------------------------]
             //               [///////////////////////////
@@ -102,11 +102,11 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             //                                     [/////
             //                                   bound
-            case _ => new LazyValue.Single(this, domain.upperExtendedBound)
+            case _ => new LazyValue.Single(this, domain.upperBound)
           }
 
         override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] =
-          (domain.rangeFactory.between(domain.lowerExtendedBound, bound): Range[ExtendedBound[E]]) match {
+          (domain.rangeFactory.between(domain.lowerBound, bound): Range[ExtendedBound[E]]) match {
             //                  domain
             //        [------------------------]
             // ////////////////////////)
@@ -116,7 +116,7 @@ protected[ordset] object ControlValue {
             //        [------------------------]
             // /////)
             //     bound
-            case _ => new LazyValue.Single(this, domain.lowerExtendedBound)
+            case _ => new LazyValue.Single(this, domain.lowerBound)
           }
 
         override def toString(): String = {
@@ -147,7 +147,7 @@ protected[ordset] object ControlValue {
         }
 
         override def takeAboveBound(bound: Bound[E]): LazyValue[E, D, V] = {
-          val requestedRange= domain.rangeFactory.between(bound, domain.upperExtendedBound)
+          val requestedRange= domain.rangeFactory.between(bound, domain.upperBound)
           val newRange: Range[ExtendedBound[E]] = domain.rangeAlgebra.cross(requestedRange, bounds)(domain.rangeFactory)
           newRange match {
             //                  bounds
@@ -164,7 +164,7 @@ protected[ordset] object ControlValue {
         }
 
         override def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V] = {
-          val requestedRange = domain.rangeFactory.between(domain.lowerExtendedBound, bound)
+          val requestedRange = domain.rangeFactory.between(domain.lowerBound, bound)
           val newRange: Range[ExtendedBound[E]] = domain.rangeAlgebra.cross(requestedRange, bounds)(domain.rangeFactory)
           newRange match {
             //                  bounds
