@@ -52,6 +52,16 @@ object Bounded {
 
         override val reversed: Above.Including[L] = original
       }
+
+      /**
+       * [[Bounded.Below.Including]] implementation delegating to another [[Bounded.Below.Including]] instance.
+       */
+      trait Proxy[+L] extends Including[L] {
+
+        protected def original: Including[L]
+
+        def lowerBound: L = original.lowerBound
+      }
     }
 
     /**
@@ -67,6 +77,18 @@ object Bounded {
     class ReversedImpl[+L](original: Above[L]) extends Reversed[L] {
 
       override val reversed: Above[L] = original
+    }
+
+    /**
+     * [[Bounded.Below]] implementation delegating to another [[Bounded.Below]] instance.
+     */
+    trait Proxy[+L] extends Below[L] {
+
+      protected def original: Below[L]
+
+      def lowerBound: L = original.lowerBound
+
+      def lowerBoundIncluded: Boolean = original.lowerBoundIncluded
     }
   }
 
@@ -112,6 +134,16 @@ object Bounded {
 
         override val reversed: Below.Including[U] = original
       }
+
+      /**
+       * [[Bounded.Above.Including]] implementation delegating to another [[Bounded.Above.Including]] instance.
+       */
+      trait Proxy[+U] extends Including[U] {
+
+        protected def original: Including[U]
+
+        def upperBound: U = original.upperBound
+      }
     }
 
     /**
@@ -127,6 +159,18 @@ object Bounded {
     class ReversedImpl[+U](original: Below[U]) extends Reversed[U] {
 
       override val reversed: Below[U] = original
+    }
+
+    /**
+     * [[Bounded.Above]] implementation delegating to another [[Bounded.Above]] instance.
+     */
+    trait Proxy[+U] extends Above[U] {
+
+      protected def original: Above[U]
+
+      def upperBound: U = original.upperBound
+
+      def upperBoundIncluded: Boolean = original.upperBoundIncluded
     }
   }
 
@@ -157,6 +201,17 @@ object Bounded {
 
       override val reversed: Bounded.Including[U, L] = original
     }
+
+    /**
+     * [[Bounded.Including]] implementation delegating to another [[Bounded.Including]] instance.
+     */
+    trait Proxy[+L, +U] 
+      extends Below.Including.Proxy[L] 
+      with Above.Including.Proxy[U] 
+      with Including[L, U] {
+
+      override protected def original: Bounded.Including[L, U]
+    }
   }
 
   /**
@@ -167,5 +222,13 @@ object Bounded {
   class ReversedImpl[+L, +U](original: Bounded[U, L]) extends Reversed[L, U] {
 
     override val reversed: Bounded[U, L] = original
+  }
+
+  /**
+   * [[Bounded]] implementation delegating to another [[Bounded]] instance.
+   */
+  trait Proxy[+L, +U] extends Below.Proxy[L] with Above.Proxy[U] with Bounded[L, U] {
+
+    override protected def original: Bounded[L, U]
   }
 }

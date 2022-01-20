@@ -37,7 +37,7 @@ object ContravariantHash {
    */
   trait Proxy[-E, EE >: E] extends ContravariantHash[E] with ContravariantEq.Proxy[E, EE] { 
 
-    override protected val original: Hash[EE]
+    override protected def original: Hash[EE]
 
     override def  hash(x: E): Int = 
       original.hash(x)

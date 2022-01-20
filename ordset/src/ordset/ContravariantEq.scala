@@ -38,7 +38,7 @@ object ContravariantEq {
    */
   trait Proxy[-E, EE >: E] extends ContravariantEq[E] { 
 
-    protected val original: Eq[EE]
+    protected def original: Eq[EE]
 
     override def eqv(x: E, y: E): Boolean =
       original.eqv(x, y)

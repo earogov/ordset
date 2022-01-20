@@ -1,6 +1,7 @@
 package ordset.core.interval
 
-import ordset.Order
+import ordset.ContravariantOrder
+import ordset.OrderExtensions.*
 import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.Domain
 import ordset.core.range
@@ -423,7 +424,7 @@ object IntervalFactory {
     val intervalFactory: IntervalFactory[E, D]
   ) extends range.RangeFactory[ExtendedBound[E], Interval[E, D]] {
 
-    override val order: Order[ExtendedBound[E]] = intervalFactory.domain.extendedOrd
+    override val order: ContravariantOrder[ExtendedBound[E]] = intervalFactory.domain.extendedOrd.contravariant
 
     override def empty: Interval.Empty[E, D] = Interval.Empty(intervalFactory.domain)
 

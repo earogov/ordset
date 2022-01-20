@@ -23,6 +23,8 @@ trait BoundedOrder[E, +L <: E, +U <: E]
   override def includes(x: E): Boolean = aboveLowerBound(x) && belowUpperBound(x)
 
   override def reversed: BoundedOrder[E, U, L] = new BoundedOrder.ReversedImpl(this)
+
+  override def contravariant: ContravariantBoundedOrder[E, L, U] = new ContravariantBoundedOrder.ProxyImpl(this)
 }
 
 object BoundedOrder {
@@ -79,6 +81,11 @@ object BoundedOrder {
       else gt(x, lowerBound)
 
     override def reversed: Above[E, L] = new Above.ReversedImpl(this)
+
+    /**
+     * Returns contravariant version of current order.
+     */
+    def contravariant: ContravariantBoundedOrder.Below[E, L] = new ContravariantBoundedOrder.Below.ProxyImpl(this)
   }
 
   object Below {
@@ -104,6 +111,9 @@ object BoundedOrder {
       def restrict(x: E): E = if belowLowerBound(x) then lowerBound else x
 
       override def reversed: Above.Including[E, L] = new Above.Including.ReversedImpl(this)
+
+      override def contravariant: ContravariantBoundedOrder.Below.Including[E, L] = 
+        new ContravariantBoundedOrder.Below.Including.ProxyImpl(this)
     }
 
     object Including {
@@ -173,6 +183,11 @@ object BoundedOrder {
       else gteqv(x, upperBound)
 
     override def reversed: Below[E, U] = new Below.ReversedImpl(this)
+
+    /**
+     * Returns contravariant version of current order.
+     */
+    def contravariant: ContravariantBoundedOrder.Above[E, U] = new ContravariantBoundedOrder.Above.ProxyImpl(this)
   }
 
   object Above {
@@ -198,6 +213,9 @@ object BoundedOrder {
       def restrict(x: E): E = if aboveUpperBound(x) then upperBound else x
 
       override def reversed: Below.Including[E, U] = new Below.Including.ReversedImpl(this)
+
+      override def contravariant: ContravariantBoundedOrder.Above.Including[E, U] = 
+        new ContravariantBoundedOrder.Above.Including.ProxyImpl(this)
     }
 
     object Including {
@@ -249,6 +267,9 @@ object BoundedOrder {
       else x
 
     override def reversed: Including[E, U, L] = new Including.ReversedImpl(this)
+
+    override def contravariant: ContravariantBoundedOrder.Including[E, L, U] = 
+      new ContravariantBoundedOrder.Including.ProxyImpl(this)
   }
 
   object Including {

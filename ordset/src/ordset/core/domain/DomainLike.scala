@@ -2,7 +2,7 @@ package ordset.core.domain
 
 import ordset.{Order, Hash}
 import ordset.core.{Bound, ExtendedBound}
-import ordset.core.range.{SimpleRange, SimpleRangeFactory, RangeAlgebra}
+import ordset.core.range.{SimpleRange, RangeFactory, RangeAlgebra}
 
 trait DomainLike[E] {
 
@@ -12,11 +12,13 @@ trait DomainLike[E] {
 
   implicit def extendedOrd: ExtendedBound.DefaultOrder[E]
 
-  implicit def rangeFactory: SimpleRangeFactory[ExtendedBound[E]]
+  implicit def rangeFactory: RangeFactory[ExtendedBound[E], SimpleRange]
+
+  def zzz: RangeFactory[Bound[E], SimpleRange] = rangeFactory
 
   implicit def rangeAlgebra: RangeAlgebra[ExtendedBound[E]]
 
-  //def boundsRange: SimpleRange[ExtendedBound[E]]
+  def boundsRange: SimpleRange[ExtendedBound[E]]
 
   def lowerBound: ExtendedBound[E] = extendedOrd.lowerBound
 
@@ -47,11 +49,12 @@ object DomainLike {
 
     override implicit def extendedOrd: ExtendedBound.DefaultOrder[E] = domain.extendedOrd
 
-    override implicit def rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = domain.rangeFactory
+    override implicit def rangeFactory: RangeFactory[ExtendedBound[E], SimpleRange] = 
+      domain.rangeFactory
 
     override implicit def rangeAlgebra: RangeAlgebra[ExtendedBound[E]] = domain.rangeAlgebra
 
-    //override def boundsRange: SimpleRange[ExtendedBound[E]] = domain.boundsRange
+    override def boundsRange: SimpleRange[ExtendedBound[E]] = domain.boundsRange
 
     override def lowerBound: ExtendedBound[E] = domain.lowerBound
 

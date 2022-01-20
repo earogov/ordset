@@ -79,7 +79,10 @@ import scala.annotation.unchecked.uncheckedVariance
  * 
  * Methods `min`, `max` and `toOrdering` are marked as `final`, so contravariance can't be broken in subtypes.
  */
-trait ContravariantOrder[-E] extends ContravariantEq[E] with Order[E @uncheckedVariance] {
+trait ContravariantOrder[-E] 
+  extends ContravariantEq[E] 
+  with Order[E @uncheckedVariance] 
+  with Reversible[ContravariantOrder[E], ContravariantOrder[E]]{
   
   override def compare(x: E, y: E): Int
 
@@ -113,6 +116,8 @@ trait ContravariantOrder[-E] extends ContravariantEq[E] with Order[E @uncheckedV
 
   final override def toOrdering: Ordering[E @uncheckedVariance] =
     Ordering.fromLessThan(lt)
+
+  override def reversed: ContravariantOrder[E] = new ContravariantOrder.ReversedImpl(this)
 }
 
 object ContravariantOrder {
@@ -135,11 +140,59 @@ object ContravariantOrder {
     }
 
   /**
+   * [[ContravariantOrder]] typeclass received by reversing another [[ContravariantOrder]] instance.
+   */
+  trait Reversed[-E] extends ContravariantOrder[E] {
+
+    def reversed: ContravariantOrder[E]
+
+    final override def compare(x: E, y: E): Int = reversed.compare(y, x)
+
+    final override def comparison(x: E, y: E): Comparison =
+      // Implementation of `reversed` order may use type specific operators like `>` and `<` instead of `compare`.
+      // In that case will get wrong behavior. We should redefine implementation to guarantee correctness.
+      Comparison.fromInt(compare(x, y))
+
+    final override def partialCompare(x: E, y: E): Double = 
+      // See comments in `comparison`.
+      compare(x, y).toDouble
+
+    final override def eqv(x: E, y: E): Boolean =
+      // See comments in `comparison`.
+      compare(x, y) == 0
+
+    final override def neqv(x: E, y: E): Boolean = 
+      // See comments in `comparison`.
+      compare(x, y) != 0
+
+    final override def lteqv(x: E, y: E): Boolean =
+      // See comments in `comparison`.
+      compare(x, y) <= 0
+
+    final override def lt(x: E, y: E): Boolean = 
+      // See comments in `comparison`.
+      compare(x, y) < 0
+
+    final override def gteqv(x: E, y: E): Boolean =
+      // See comments in `comparison`.
+      compare(x, y) >= 0
+
+    final override def gt(x: E, y: E): Boolean = 
+      // See comments in `comparison`.
+      compare(x, y) > 0
+  }
+
+  class ReversedImpl[E](original: ContravariantOrder[E]) extends Reversed[E] {
+
+    override val reversed: ContravariantOrder[E] = original
+  }
+
+  /**
    * [[ContravariantOrder]] implementation delegating to another [[Order]] instance.
    */
   trait Proxy[-E, EE >: E] extends ContravariantOrder[E] with ContravariantEq.Proxy[E, EE] { 
 
-    override protected val original: Order[EE]
+    override protected def original: Order[EE]
 
     override def compare(x: E, y: E): Int = 
       original.compare(y, x)
@@ -164,4 +217,5 @@ object ContravariantOrder {
   }
 
   class ProxyImpl[-E, EE >: E](override val original: Order[EE]) extends Proxy[E, EE]
+
 }
