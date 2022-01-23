@@ -7,7 +7,7 @@ import ordset.core.domain.Domain
 import ordset.util.label.Label
 import ordset.test.core.behaviors.{TestPackageBase, TestShowUtil}
 
-trait LazyTreapSeqCacheTest[E, D <: Domain[E], V] {
+trait LazyTreapSeqCacheTest[E, D[X] <: Domain[X], V] {
 
   /**
    * Preconditions: 
@@ -19,7 +19,7 @@ trait LazyTreapSeqCacheTest[E, D <: Domain[E], V] {
 
 object LazyTreapSeqCacheTest {
 
-  sealed trait TestCase[E, D <: Domain[E], V] {
+  sealed trait TestCase[E, D[X] <: Domain[X], V] {
 
     def bound: ExtendedBound[E]
 
@@ -28,19 +28,19 @@ object LazyTreapSeqCacheTest {
     override def toString: String = TestShowUtil.caseWithBoundToString(bound)
   }
 
-  case class SegmentTestCase[E, D <: Domain[E], V](
+  case class SegmentTestCase[E, D[X] <: Domain[X], V](
     override val bound: ExtendedBound[E],
     expectedSegment: IntervalRelation[E, D, V],
     override val expectedState: Seq[IntervalRelation[E, D, ZValue[E, D, V]]]
   ) extends TestCase[E, D, V]
 
-  case class ValueTestCase[E, D <: Domain[E], V](
+  case class ValueTestCase[E, D[X] <: Domain[X], V](
     override val bound: ExtendedBound[E],
     expectedValue: V,
     override val expectedState: Seq[IntervalRelation[E, D, ZValue[E, D, V]]]
   ) extends TestCase[E, D, V]
 
-  case class TestPackage[E, D <: Domain[E], V](
+  case class TestPackage[E, D[X] <: Domain[X], V](
     override val labels: Set[Label],
     cases: Iterable[TestCase[E, D, V]]
   ) extends TestPackageBase(labels)

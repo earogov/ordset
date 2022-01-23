@@ -9,7 +9,7 @@ import ordset.core.map.MappedOrderedMap
 import ordset.core.value.ValueOps
 import ordset.util.BooleanUtil
 
-class MappedOrderedSet[E, D <: Domain[E], S] protected (
+class MappedOrderedSet[E, D[X] <: Domain[X], S] protected (
   override final val originalSeq: OrderedSetT[E, D, S],
   override final val segmentMapFunc: SetSegment[E, D] => Boolean
 )(
@@ -36,7 +36,7 @@ class MappedOrderedSet[E, D <: Domain[E], S] protected (
 
 object MappedOrderedSet {
 
-  def apply[E, D <: Domain[E], S](
+  def apply[E, D[X] <: Domain[X], S](
     original: OrderedSetT[E, D, S],
     segmentMapFunc: SetSegment[E, D] => Boolean
   )(
@@ -46,7 +46,7 @@ object MappedOrderedSet {
   ): MappedOrderedSet[E, D, S] =
     new MappedOrderedSet(original, segmentMapFunc)
 
-  def mapSegment[E, D <: Domain[E], S](
+  def mapSegment[E, D[X] <: Domain[X], S](
     originalSegment: SetSegmentT[E, D, S],
     segmentMapFunc: SetSegment[E, D] => Boolean
   )(
@@ -56,7 +56,7 @@ object MappedOrderedSet {
   ): MappedSetSegment[E, D, S] =
     apply(originalSegment.sequence, segmentMapFunc).mapSegment(originalSegment)
   
-  def mapTruncation[E, D <: Domain[E], S](
+  def mapTruncation[E, D[X] <: Domain[X], S](
     originalTruncation: SegmentTruncationT[E, D, Boolean, S, SetSegmentT[E, D, S]],
     segmentMapFunc: SetSegment[E, D] => Boolean
   )(

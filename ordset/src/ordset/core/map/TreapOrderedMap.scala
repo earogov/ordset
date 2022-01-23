@@ -25,7 +25,7 @@ object TreapOrderedMap {
    * @param valueOps   value specific typeclasses: equality, set inclusion function, etc.
    * @param rngManager generator of random sequences.
    */
-  def unchecked[E, D <: Domain[E], V](
+  def unchecked[E, D[X] <: Domain[X], V](
     root: ImmutableTreap[Bound.Upper[E], V],
     lastValue: V
   )(
@@ -42,13 +42,13 @@ object TreapOrderedMap {
   /**
    * Returns ordered set factory.
    */
-  def getFactory[E, D <: Domain[E], V]: OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] =
+  def getFactory[E, D[X] <: Domain[X], V]: OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] =
     factoryInstance.asInstanceOf[OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]]]
 
   // Private section ---------------------------------------------------------- //
-  private lazy val factoryInstance: Factory[Any, Domain[Any], Any] = new Factory()
+  private lazy val factoryInstance: Factory[Any, Domain, Any] = new Factory()
 
-  private class Factory[E, D <: Domain[E], V] extends OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] {
+  private class Factory[E, D[X] <: Domain[X], V] extends OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     def unsafeBuildAsc(

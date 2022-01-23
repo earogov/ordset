@@ -350,7 +350,7 @@ class IntervalFactorySpec extends AnyFunSpec {
     validateRangeFactoryBetween(Interval.Empty(d), x > 10, BelowAll)
   }
 
-  private def validateBelow[E, D <: Domain[E]](
+  private def validateBelow[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     upper: ExtendedBound.Upper[E]
   )(
@@ -367,7 +367,7 @@ class IntervalFactorySpec extends AnyFunSpec {
     }
   }
 
-  private def validateAbove[E, D <: Domain[E]](
+  private def validateAbove[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     lower: ExtendedBound.Lower[E]
   )(
@@ -384,7 +384,7 @@ class IntervalFactorySpec extends AnyFunSpec {
     }
   }
 
-  private def validateBetween[E, D <: Domain[E]](
+  private def validateBetween[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     lower: ExtendedBound.Lower[E],
     upper: ExtendedBound.Upper[E]
@@ -408,7 +408,7 @@ class IntervalFactorySpec extends AnyFunSpec {
     }
   }
 
-  private def validateRangeFactoryBetween[E, D <: Domain[E]](
+  private def validateRangeFactoryBetween[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     lower: ExtendedBound[E],
     upper: ExtendedBound[E]

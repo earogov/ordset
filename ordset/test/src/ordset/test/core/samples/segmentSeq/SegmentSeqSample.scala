@@ -12,7 +12,7 @@ import ordset.util.label.Label
 import ordset.test.core.Labels
 import ordset.test.core.implementations.domain.BoundSelector
 
-abstract class SegmentSeqSample[E, D <: Domain[E], V, +SSeq <: SegmentSeq[E, D, V]](
+abstract class SegmentSeqSample[E, D[X] <: Domain[X], V, +SSeq <: SegmentSeq[E, D, V]](
   implicit
   val domainOps: DomainOps[E, D],
   val rngManager: RngManager,

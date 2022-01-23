@@ -13,7 +13,7 @@ import ordset.util.ValueHolder
 import java.util.NoSuchElementException
 import scala.util.control.NonFatal
 
-class NonuniformTreapOrderedMap[E, D <: Domain[E], V] protected (
+class NonuniformTreapOrderedMap[E, D[X] <: Domain[X], V] protected (
   final override val root: ImmutableTreap.Node[Bound.Upper[E], V],
   final override val lastValue: V
 )(
@@ -52,7 +52,7 @@ object NonuniformTreapOrderedMap {
    * @param valueOps value specific typeclasses: equality, set inclusion function, etc. 
    * @param rngManager generator of random sequences.
    */
-  def unchecked[E, D <: Domain[E], V](
+  def unchecked[E, D[X] <: Domain[X], V](
     root: ImmutableTreap.Node[Bound.Upper[E], V],
     lastValue: V
   )(

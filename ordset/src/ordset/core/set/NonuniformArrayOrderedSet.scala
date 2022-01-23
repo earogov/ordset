@@ -10,7 +10,7 @@ import ordset.random.RngManager
 
 import scala.collection.immutable.ArraySeq
 
-class NonuniformArrayOrderedSet[E, D <: Domain[E]] protected (
+class NonuniformArrayOrderedSet[E, D[X] <: Domain[X]] protected (
   final val bounds: ArraySeq[Bound.Upper[E]],
   final val complementary: Boolean
 )(
@@ -209,7 +209,7 @@ object NonuniformArrayOrderedSet {
    * @param rngManager generator of random sequences.
    */
   @throws[SegmentSeqException]("if bounds sequence is empty")
-  def unsafeUnchecked[E, D <: Domain[E]](
+  def unsafeUnchecked[E, D[X] <: Domain[X]](
     bounds: ArraySeq[Bound.Upper[E]],
     complementary: Boolean
   )(
@@ -220,7 +220,7 @@ object NonuniformArrayOrderedSet {
     new NonuniformArrayOrderedSet(bounds, complementary)
   
   // Protected section -------------------------------------------------------- //
-  protected sealed trait BoundsProvider[E, D <: Domain[E]]() {
+  protected sealed trait BoundsProvider[E, D[X] <: Domain[X]]() {
 
     val boundSegment: Segment[E, D, Boolean]
 
@@ -231,20 +231,20 @@ object NonuniformArrayOrderedSet {
 
   protected object BoundsProvider {
 
-    def forward[E, D <: Domain[E]](segmentSeq: OrderedSet[E, D], bound: Bound[E]): BoundsProvider[E, D] =
+    def forward[E, D[X] <: Domain[X]](segmentSeq: OrderedSet[E, D], bound: Bound[E]): BoundsProvider[E, D] =
       segmentSeq match {
         case segmentSeq: NonuniformArrayOrderedSet[E, D] => ArraySetForwardProvider(segmentSeq, bound)
         case _ => GeneralBoundsProvider(segmentSeq, bound, forward = true)
       }
 
-    def backward[E, D <: Domain[E]](segmentSeq: OrderedSet[E, D], bound: Bound[E]): BoundsProvider[E, D] =
+    def backward[E, D[X] <: Domain[X]](segmentSeq: OrderedSet[E, D], bound: Bound[E]): BoundsProvider[E, D] =
       segmentSeq match {
         case segmentSeq: NonuniformArrayOrderedSet[E, D] => ArraySetBackwardProvider(segmentSeq, bound)
         case _ => GeneralBoundsProvider(segmentSeq, bound, forward = false)
       }
   }
 
-  protected final case class ArraySetForwardProvider[E, D <: Domain[E]](
+  protected final case class ArraySetForwardProvider[E, D[X] <: Domain[X]](
     segmentSeq: NonuniformArrayOrderedSet[E, D],
     bound: Bound[E]
   ) extends BoundsProvider[E, D] {
@@ -257,7 +257,7 @@ object NonuniformArrayOrderedSet {
       if (copyLen > 0) Array.copy(segmentSeq.bounds.unsafeArray, boundSegment.index, arr, start, copyLen)
   }
 
-  protected final case class ArraySetBackwardProvider[E, D <: Domain[E]](
+  protected final case class ArraySetBackwardProvider[E, D[X] <: Domain[X]](
     segmentSeq: NonuniformArrayOrderedSet[E, D],
     bound: Bound[E]
   ) extends BoundsProvider[E, D] {
@@ -270,7 +270,7 @@ object NonuniformArrayOrderedSet {
       if (copyLen > 0) Array.copy(segmentSeq.bounds.unsafeArray, 0, arr, start, copyLen)
   }
 
-  protected final case class GeneralBoundsProvider[E, D <: Domain[E]](
+  protected final case class GeneralBoundsProvider[E, D[X] <: Domain[X]](
     segmentSeq: OrderedSet[E, D],
     bound: Bound[E],
     forward: Boolean

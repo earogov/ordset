@@ -12,7 +12,7 @@ import scala.util.Try
 /**
  * Unified interface to build ordered maps from collection of upper bounds and values.
  */
-trait OrderedMapFactory[E, D <: Domain[E], V, +SSeq <: OrderedMap[E, D, V]] {
+trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   factory =>
 
   /**

@@ -5,20 +5,21 @@ import ordset.{ContravariantOrder, ContravariantBoundedOrder}
 /**
  * Typeclass with capability to construct ranges.
  * 
- * @tparam E type of range elements.
+ * @tparam E1 lower type bound of range elements.
+ * @tparam E2 upper type bound of range elements.
  * @tparam R type of range.
  */
-trait RangeFactory[-E, +R[_] <: Range[_]] {
+trait RangeFactory[+E1 <: E2, -E2, +R[+X] <: Range[_]] {
 
   /**
    * Order typeclass for elements.
    */
-  def order: ContravariantOrder[E]
+  def order: ContravariantOrder[E2]
 
   /** 
    * Returns empty range.
    */
-  def empty[EE <: E]: R[EE] & Range.Empty
+  def empty: R[Nothing] & Range.Empty
 
   /** 
    * Returns range of elements between `lower` (including) and `upper` (including).
@@ -26,8 +27,10 @@ trait RangeFactory[-E, +R[_] <: Range[_]] {
    * Returns [[Range.Empty]], if there is no element `e` in domain that satisfies condition:
    * 
    * `lower ≤ e ≤ upper`
+   * 
+   * @tparam E type of range elements.
    */
-  def between[EE <: E](lower: EE, upper: EE): R[EE]
+  def between[E >: E1 <: E2](lower: E, upper: E): R[E]
 
   /** 
    * Returns range of elements between lower bound of range `r` (including) and upper bound of `r` (including).
@@ -35,10 +38,12 @@ trait RangeFactory[-E, +R[_] <: Range[_]] {
    * Returns [[Range.Empty]], if there is no element `e` in domain that satisfies condition:
    * 
    * `r.lower ≤ e ≤ r.upper`
+   * 
+   * @tparam E type of range elements.
    */
-  def like[EE <: E](r: Range[EE]): R[EE] = 
+  def like[E >: E1 <: E2](r: Range[E]): R[E] = 
     r match {
-      case r: Range.NonEmpty[EE] => likeNE(r)
+      case r: Range.NonEmpty[E] => likeNE(r)
       case _ => empty
     }
 
@@ -48,8 +53,10 @@ trait RangeFactory[-E, +R[_] <: Range[_]] {
    * Returns [[Range.Empty]], if there is no element `e` in domain that satisfies condition:
    * 
    * `r.lower ≤ e ≤ r.upper`
+   * 
+   * @tparam E type of range elements.
    */
-  def likeNE[EE <: E](r: Range.NonEmpty[EE]): R[EE] = between(r.lower, r.upper)
+  def likeNE[E >: E1 <: E2](r: Range.NonEmpty[E]): R[E] = between(r.lower, r.upper)
 }
 
 object RangeFactory {
@@ -57,12 +64,13 @@ object RangeFactory {
   /**
    * Typeclass with capability to construct ranges on unbounded domain.
    * 
-   * @tparam E type of range elements.
+   * @tparam E1 lower type bound of range elements.
+   * @tparam E2 upper type bound of range elements.
    * @tparam R type of range.
    */
-  trait Unbounded[-E, +R[_] <: Range[_]] extends RangeFactory[E, R] {
+  trait Unbounded[+E1 <: E2, -E2, +R[+X] <: Range[_]] extends RangeFactory[E1, E2, R] {
 
-    override def between[EE <: E](lower: EE, upper: EE): R[EE] =
+    override def between[E >: E1 <: E2](lower: E, upper: E): R[E] =
       if order.lteqv(lower, upper) then cons(lower, upper)
       else empty
 
@@ -71,22 +79,24 @@ object RangeFactory {
      * 
      * Preconditions:
      * <tr>1. `lower ≤ upper`</tr>
+     * 
+     * @tparam E type of range elements.
      */
-    protected def cons[EE <: E](lower: EE, upper: EE): R[EE] & Range.NonEmpty[EE]
+    protected def cons[E >: E1 <: E2](lower: E, upper: E): R[E] & Range.NonEmpty[E]
   }
 
   /**
    * Typeclass with capability to construct ranges on bounded from below domain.
    * 
-   * @tparam E type of range elements.
-   * @tparam L type of lower bound of domain.
+   * @tparam E1 lower type bound of range elements.
+   * @tparam E2 upper type bound of range elements.
    * @tparam R type of range.
    */
-  trait BoundedBelow[-E, +L <: E, +R[_] <: Range[_]] extends RangeFactory[E, R] {
+  trait BoundedBelow[+E1 <: E2, -E2, +R[+X] <: Range[_]] extends RangeFactory[E1, E2, R] {
 
-    override def order: ContravariantBoundedOrder.Below[E, L]
+    override def order: ContravariantBoundedOrder.Below[E2, E1]
 
-    override def between[EE >: L <: E](lower: EE, upper: EE): R[EE] = {
+    override def between[E >: E1 <: E2](lower: E, upper: E): R[E] = {
       val lb = order.lowerBound
       if order.lteqv(lower, upper) then
         //               lower  upper
@@ -114,22 +124,24 @@ object RangeFactory {
      * <tr>1. `lower ≤ upper`</tr>
      * <tr>2. `order.lowerBound ≤ lower`</tr>
      * <tr>3. `order.lowerBound ≤ upper`</tr>
+     * 
+     * @tparam E type of range elements.
      */
-    protected def cons[EE <: E](lower: EE, upper: EE): R[EE] & Range.NonEmpty[EE]
+    protected def cons[E >: E1 <: E2](lower: E, upper: E): R[E] & Range.NonEmpty[E]
   }
 
   /**
    * Typeclass with capability to construct ranges on bounded from above domain.
    * 
-   * @tparam E type of range elements.
-   * @tparam U type of upper bound of domain.
+   * @tparam E1 lower type bound of range elements.
+   * @tparam E2 upper type bound of range elements.
    * @tparam R type of range.
    */
-  trait BoundedAbove[-E, +U <: E, +R[_] <: Range[_]] extends RangeFactory[E, R] {
+  trait BoundedAbove[+E1 <: E2, -E2, +R[+X] <: Range[_]] extends RangeFactory[E1, E2, R] {
 
-    override def order: ContravariantBoundedOrder.Above[E, U]
+    override def order: ContravariantBoundedOrder.Above[E2, E1]
 
-    override def between[EE >: U <: E](lower: EE, upper: EE): R[EE] = {
+    override def between[E >: E1 <: E2](lower: E, upper: E): R[E] = {
       val ub = order.upperBound
       if order.lteqv(lower, upper) then
         //              lower   upper
@@ -157,23 +169,24 @@ object RangeFactory {
      * <tr>1. `lower ≤ upper`</tr>
      * <tr>2. `lower ≤ order.upperBound`</tr>
      * <tr>3. `upper ≤ order.upperBound`</tr>
+     * 
+     * @tparam E type of range elements.
      */
-    protected def cons[EE <: E](lower: EE, upper: EE): R[EE] & Range.NonEmpty[EE]
+    protected def cons[E >: E1 <: E2](lower: E, upper: E): R[E] & Range.NonEmpty[E]
   }
 
   /**
    * Typeclass with capability to construct ranges on bounded domain.
    * 
-   * @tparam E type of range elements.
-   * @tparam L type of lower bound of domain.
-   * @tparam U type of upper bound of domain.
+   * @tparam E1 lower type bound of range elements.
+   * @tparam E2 upper type bound of range elements.
    * @tparam R type of range.
    */
-  trait Bounded[-E, +L <: E, +U <: E, +R[_] <: Range[_]] extends RangeFactory[E, R] {
+  trait Bounded[+E1 <: E2, -E2, +R[+X] <: Range[_]] extends RangeFactory[E1, E2, R] {
 
-    override def order: ContravariantBoundedOrder[E, L, U]
+    override def order: ContravariantBoundedOrder[E2, E1, E1]
 
-    override def between[EE >: L | U <: E](lower: EE, upper: EE): R[EE] = {
+    override def between[E >: E1 <: E2](lower: E, upper: E): R[E] = {
       val lb = order.lowerBound
       val ub = order.upperBound
       if order.lteqv(lower, upper) then
@@ -220,7 +233,9 @@ object RangeFactory {
      * <tr>1. `lower ≤ upper`</tr>
      * <tr>2. `order.lowerBound ≤ lower ≤ order.upperBound`</tr>
      * <tr>3. `order.lowerBound ≤ upper ≤ order.upperBound`</tr>
+     * 
+     * @tparam E type of range elements.
      */
-    protected def cons[EE <: E](lower: EE, upper: EE): R[EE] & Range.NonEmpty[EE]
+    protected def cons[E >: E1 <: E2](lower: E, upper: E): R[E] & Range.NonEmpty[E]
   }
 }

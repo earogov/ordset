@@ -7,7 +7,7 @@ import ordset.util.label.Label
 import ordset.test.core.Labels
 import ordset.test.core.implementations.domain.BoundSelector
 
-abstract class TreapSeqSample[E, D <: Domain[E], V](
+abstract class TreapSeqSample[E, D[X] <: Domain[X], V](
   seed: Long
 )(
   implicit

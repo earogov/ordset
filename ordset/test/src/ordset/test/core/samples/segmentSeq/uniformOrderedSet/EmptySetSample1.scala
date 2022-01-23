@@ -9,7 +9,7 @@ import ordset.test.core.Labels
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.UniformSeqSample
 
-class EmptySetSample1[D <: Domain[Int]](
+class EmptySetSample1[D[X] <: Domain[X]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager,

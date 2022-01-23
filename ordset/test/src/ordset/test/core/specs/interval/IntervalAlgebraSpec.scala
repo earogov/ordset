@@ -17,13 +17,13 @@ class IntervalAlgebraSpec extends AnyFunSpec {
 
   import scala.language.postfixOps
 
-  type Dom = Domain.ContinuousUnbounded[Int]
+  type Dom[X] = Domain.ContinuousUnbounded[X]
 
   val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
   val ops: DomainOps[Int, Dom] = DomainOps.default
   val interval: IntervalFactory[Int, Dom] = ops.intervals.factory
 
-  private implicit def toAssertOps[E, D <: Domain[E]](interval: Interval[E, D]): AssertOps[E, D] =
+  private implicit def toAssertOps[E, D[X] <: Domain[X]](interval: Interval[E, D]): AssertOps[E, D] =
     new AssertOps[E, D](interval)
 
   it("should support `cross` operation") {
@@ -252,7 +252,7 @@ class IntervalAlgebraSpec extends AnyFunSpec {
     interval.empty.isTakeBelow(-1`)`, x >= 0 & x <= 2)
   }
 
-  private class AssertOps[E, D <: Domain[E]](interval: Interval[E, D]) {
+  private class AssertOps[E, D[X] <: Domain[X]](interval: Interval[E, D]) {
 
     def isCrossOf(x: Interval[E, D], y: Interval[E, D])(implicit ops: DomainOps[E, D]): Unit = {
       assertSameIntervals(interval, ops.intervals.alg.cross(x, y))

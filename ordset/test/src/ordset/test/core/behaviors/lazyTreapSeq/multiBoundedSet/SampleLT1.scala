@@ -17,7 +17,7 @@ import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
-trait SampleLT1[D <: Domain[Int]]
+trait SampleLT1[D[X] <: Domain[X]]
   extends LazyTreapSeqCacheTest[Int, D, Boolean]
   with LazyTreapSeqMultipleTakeTest[Int, D, Boolean] {
   self: LazyTreapSeqSample.Fixed[Int, D, Boolean] =>

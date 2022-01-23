@@ -89,19 +89,19 @@ object SetBuilderFormat { format =>
 
   val unboundedInterval: String = s"$setBegin$variable$setEnd"
 
-  def lowerBoundedInterval[E, D <: Domain[E]](
+  def lowerBoundedInterval[E, D[X] <: Domain[X]](
     interval: Interval.Greater[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String =
     s"$setBegin${format.lowerBound(interval.lower, elementToStr)}$setEnd"
 
-  def upperBoundedInterval[E, D <: Domain[E]](
+  def upperBoundedInterval[E, D[X] <: Domain[X]](
     interval: Interval.Less[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String =
     s"$setBegin${format.upperBound(interval.upper, elementToStr)}$setEnd"
 
-  def boundedInterval[E, D <: Domain[E]](
+  def boundedInterval[E, D[X] <: Domain[X]](
     interval: Interval.Between[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String = {
@@ -111,7 +111,7 @@ object SetBuilderFormat { format =>
       s"$variable ${lessSign(upperBound.isIncluding)} ${elementToStr(upperBound.element)}$setEnd"
   }
 
-  def interval[E, D <: Domain[E]](
+  def interval[E, D[X] <: Domain[X]](
     interval: Interval[E, D],
     elementToStr: E => String = toStringFunc[E]
   ): String = interval match {
@@ -122,23 +122,23 @@ object SetBuilderFormat { format =>
     case i: Interval.Between[e, d] => format.boundedInterval(i, elementToStr)
   }
 
-  def intervalShow[E, D <: Domain[E]](elementShow: Show[? >: E]): Show[Interval[E, D]] =
+  def intervalShow[E, D[X] <: Domain[X]](elementShow: Show[? >: E]): Show[Interval[E, D]] =
     Show.show(i => format.interval(i, elementShow.show))
 
   // Interval relations ------------------------------------------------------- //
-  def emptyIntervalRelation[E, D <: Domain[E], V](
+  def emptyIntervalRelation[E, D[X] <: Domain[X], V](
     value: V,
     valueToStr: V => String = toStringFunc[V]
   ): String =
     s"${format.emptyInterval} $relationSeparator ${valueToStr(value)}"
 
-  def universalIntervalRelation[E, D <: Domain[E], V](
+  def universalIntervalRelation[E, D[X] <: Domain[X], V](
     value: V,
     valueToStr: V => String = toStringFunc[V]
   ): String =
     s"${format.unboundedInterval} $relationSeparator ${valueToStr(value)}"
 
-  def lowerBoundedIntervalRelation[E, D <: Domain[E], V](
+  def lowerBoundedIntervalRelation[E, D[X] <: Domain[X], V](
     interval: Interval.Greater[E, D],
     value: V,
     elementToStr: E => String = toStringFunc[E],
@@ -146,7 +146,7 @@ object SetBuilderFormat { format =>
   ): String =
     s"${format.lowerBoundedInterval(interval, elementToStr)} $relationSeparator ${valueToStr(value)}"
 
-  def upperBoundedIntervalRelation[E, D <: Domain[E], V](
+  def upperBoundedIntervalRelation[E, D[X] <: Domain[X], V](
     interval: Interval.Less[E, D],
     value: V,
     elementToStr: E => String = toStringFunc[E],
@@ -154,7 +154,7 @@ object SetBuilderFormat { format =>
   ): String =
     s"${format.upperBoundedInterval(interval, elementToStr)} $relationSeparator ${valueToStr(value)}"
 
-  def boundedIntervalRelation[E, D <: Domain[E], V](
+  def boundedIntervalRelation[E, D[X] <: Domain[X], V](
     interval: Interval.Between[E, D],
     value: V,
     elementToStr: E => String = toStringFunc[E],
@@ -162,7 +162,7 @@ object SetBuilderFormat { format =>
   ): String =
     s"${format.boundedInterval(interval, elementToStr)} $relationSeparator ${valueToStr(value)}"
 
-  def intervalRelation[E, D <: Domain[E], V](
+  def intervalRelation[E, D[X] <: Domain[X], V](
     interval: Interval[E, D],
     value: V,
     elementToStr: E => String = toStringFunc[E],
@@ -170,41 +170,41 @@ object SetBuilderFormat { format =>
   ): String =
     s"${format.interval(interval, elementToStr)} $relationSeparator ${valueToStr(value)}"
 
-  def intervalRelationShow[E, D <: Domain[E], V](
+  def intervalRelationShow[E, D[X] <: Domain[X], V](
     elementShow: Show[? >: E],
     valueShow: Show[V]
   ): Show[IntervalRelation[E, D, V]] =
     Show.show(r => format.intervalRelation(r.interval, r.value, elementShow.show, valueShow.show))
 
   // Segments ----------------------------------------------------------------- //
-  def singleSegment[E, D <: Domain[E], V](
+  def singleSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Single[E, D, ? <: V],
     valueToStr: V => String = toStringFunc[V]
   ): String =
     s"Segment.Single(${format.universalIntervalRelation(segment.value, valueToStr)})"
 
-  def initialSegment[E, D <: Domain[E], V](
+  def initialSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Initial[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
   ): String =
     s"Segment.Initial(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
 
-  def terminalSegment[E, D <: Domain[E], V](
+  def terminalSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Terminal[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
   ): String =
     s"Segment.Terminal(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
 
-  def innerSegment[E, D <: Domain[E], V](
+  def innerSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Inner[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
   ): String =
     s"Segment.Inner(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
 
-  def segment[E, D <: Domain[E], V](
+  def segment[E, D[X] <: Domain[X], V](
     segment: Segment[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
@@ -217,14 +217,14 @@ object SetBuilderFormat { format =>
       case _ => s"Segment(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
     }
 
-  def segmentShow[E, D <: Domain[E], V](
+  def segmentShow[E, D[X] <: Domain[X], V](
     elementShow: Show[? >: E],
     valueShow: Show[? >: V]
   ): Show[Segment[E, D, V]] =
     Show.show(s => format.segment(s, elementShow.show, valueShow.show))
 
   // Segment sequence --------------------------------------------------------- //
-  def segmentSeq[E, D <: Domain[E], V](
+  def segmentSeq[E, D[X] <: Domain[X], V](
     segmentSeq: SegmentSeq[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
@@ -235,7 +235,7 @@ object SetBuilderFormat { format =>
       valueToStr
     )
 
-  def segmentIterable[E, D <: Domain[E], V](
+  def segmentIterable[E, D[X] <: Domain[X], V](
     segmentIterable: Iterable[Segment[E, D, ? <: V]],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
@@ -260,13 +260,13 @@ object SetBuilderFormat { format =>
     b.result()
   }
 
-  def segmentSeqShow[E, D <: Domain[E], V](
+  def segmentSeqShow[E, D[X] <: Domain[X], V](
     elementShow: Show[E],
     valueShow: Show[V]
   ): Show[SegmentSeq[E, D, V]] =
     Show.show(s => format.segmentSeq(s, elementShow.show, valueShow.show))
 
-  def segmentIterableShow[E, D <: Domain[E], V](
+  def segmentIterableShow[E, D[X] <: Domain[X], V](
     elementShow: Show[E],
     valueShow: Show[V]
   ): Show[Iterable[Segment[E, D, V]]] =

@@ -35,7 +35,7 @@ protected[ordset] object ZValue {
    *
    * Zipped sequence v2 was received with current `operator` and has no such disadvantage.
    */
-  def operator[E, D <: Domain[E], V](
+  def operator[E, D[X] <: Domain[X], V](
     valueOps: ValueOps[V]
   ): (V, ControlValue[E, D, V]) => ZValue[E, D, V] =
     (v, c) => if (c.isLazy) (valueOps.unit, c) else (v, c)
@@ -50,16 +50,16 @@ protected[ordset] object ZValue {
    * Returns function that check whether control value is invariant for [[operator]]
    * (see [[SegmentSeqT.zipOptimized]]).
    */
-  def controlInvariant[E, D <: Domain[E], V]: ControlValue[E, D, V] => Boolean =
+  def controlInvariant[E, D[X] <: Domain[X], V]: ControlValue[E, D, V] => Boolean =
     controlInvariantInstance.asInstanceOf
 
   // Private section ---------------------------------------------------------- //
-  private lazy val controlInvariantInstance: ControlValue[Any, Domain[Any], Any] => Boolean = _.isLazy
+  private lazy val controlInvariantInstance: ControlValue[Any, Domain, Any] => Boolean = _.isLazy
 }
 
 object ZValueOps {
 
-  def get[E, D <: Domain[E], V](valueOps: ValueOps[V]): ValueOps[ZValue[E, D, V]] =
+  def get[E, D[X] <: Domain[X], V](valueOps: ValueOps[V]): ValueOps[ZValue[E, D, V]] =
     new ValueOps.Tuple2Impl[V, ControlValue[E, D, V]](
       InclusionPredicate.alwaysIncluded,
       valueOps,

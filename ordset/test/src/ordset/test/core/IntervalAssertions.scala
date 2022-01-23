@@ -10,7 +10,7 @@ object IntervalAssertions {
   import ordset.test.AssertionsUtil.debugInfo
   import org.scalatest.Assertions._
 
-  def assertEqvIntervals[E, D <: Domain[E]](
+  def assertEqvIntervals[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     actual: Interval[E, D],
     info: String = ""
@@ -22,7 +22,7 @@ object IntervalAssertions {
       debugInfo(expected, actual, info)
     ) 
 
-  def assertSameIntervals[E, D <: Domain[E]](
+  def assertSameIntervals[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     actual: Interval[E, D],
     info: String = ""
@@ -31,7 +31,7 @@ object IntervalAssertions {
   ): Unit = 
     assertEqvIntervals(expected, actual, info)(domainOps.intervals.hash)
 
-  def assertSameIntervalRelations[E, D <: Domain[E], V](
+  def assertSameIntervalRelations[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
     actual: IntervalRelation[E, D, V],
     info: String = ""
@@ -45,7 +45,7 @@ object IntervalAssertions {
       debugInfo(expected, actual, info)
     ) 
 
-  def assertSameRelationSeq[E, D <: Domain[E], V](
+  def assertSameRelationSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[IntervalRelation[E, D, V]],
     actual: Iterable[IntervalRelation[E, D, V]],
     info: String = ""

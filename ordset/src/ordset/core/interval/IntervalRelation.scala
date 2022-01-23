@@ -6,7 +6,7 @@ import ordset.{Hash, Show, util}
 
 import scala.{specialized => sp}
 
-case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
+case class IntervalRelation[E, D[X] <: Domain[X], @sp(Boolean) +V](
     val interval: Interval[E, D], 
     val value: V
 ) {
@@ -29,21 +29,21 @@ case class IntervalRelation[E, D <: Domain[E], @sp(Boolean) +V](
 
 object IntervalRelation {
 
-  implicit def defaultHash[E, D <: Domain[E], V](
+  implicit def defaultHash[E, D[X] <: Domain[X], V](
     implicit 
     intervalHash: Hash[Interval[E, D]], 
     valueHash: Hash[V]
   ): DefaultHash[E, D, V] =
     new DefaultHashImpl(intervalHash, valueHash)
 
-  implicit def defaultShow[E, D <: Domain[E], V](
+  implicit def defaultShow[E, D[X] <: Domain[X], V](
     implicit  
     elementShow: Show[E], 
     valueShow: Show[V]
   ): Show[IntervalRelation[E, D, V]] =
     SetBuilderFormat.intervalRelationShow(elementShow, valueShow)
 
-  trait DefaultHash[E, D <: Domain[E], V] extends Hash[IntervalRelation[E, D, V]] {
+  trait DefaultHash[E, D[X] <: Domain[X], V] extends Hash[IntervalRelation[E, D, V]] {
 
     import util.HashUtil._
 
@@ -58,7 +58,7 @@ object IntervalRelation {
       intervalHash.eqv(x.interval, y.interval) && valueHash.eqv(x.value, y.value)
   }
 
-  case class DefaultHashImpl[E, D <: Domain[E], V](
+  case class DefaultHashImpl[E, D[X] <: Domain[X], V](
     override val intervalHash: Hash[Interval[E, D]],
     override val valueHash: Hash[V]
   ) extends DefaultHash[E, D, V]

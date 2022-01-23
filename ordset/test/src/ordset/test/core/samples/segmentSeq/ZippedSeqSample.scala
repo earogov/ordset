@@ -6,7 +6,7 @@ import ordset.core.SegmentSeq
 import ordset.random.RngManager
 import ordset.test.core.implementations.domain.BoundSelector
 
-abstract class ZippedSeqSample[E, D <: Domain[E], U1, U2, V](
+abstract class ZippedSeqSample[E, D[X] <: Domain[X], U1, U2, V](
   implicit
   override val domainOps: DomainOps[E, D],
   override val rngManager: RngManager,

@@ -22,7 +22,7 @@
 //     InvalidElementException(msg)
 //   }
 
-//   def outOfDomainElement[E](element: E, domain: Domain[E])(implicit elementShow: Show[E]): InvalidElementException = {
+//   def outOfDomainElement[E](element: E, domain: D[E]omain[E])(implicit elementShow: Show[E]): InvalidElementException = {
 //     val boundsStr = Range.defaultShow(elementShow).show(domain.)
 //     invalidElement(elementStr, s"element doesn't belong to domain with bounds ${domain.]")
 //   }

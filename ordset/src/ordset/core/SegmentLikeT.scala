@@ -20,7 +20,7 @@ import scala.specialized as sp
  * @tparam V type of new value assigned to interval of elements
  * @tparam S type of additional segment state
  */
-trait SegmentLikeT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] extends Range.NonEmpty[ExtendedBound[E]] {
+trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends Range.NonEmpty[ExtendedBound[E]] {
 
   // Inspection --------------------------------------------------------------- //
   /** Domain operations. */

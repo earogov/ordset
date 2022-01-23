@@ -15,7 +15,7 @@ import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSeqUtil
 import scala.jdk.CollectionConverters.*
 import ordset.test.AssertionsUtil
 
-trait LazyEvalProperties[E, D <: Domain[E], V] {
+trait LazyEvalProperties[E, D[X] <: Domain[X], V] {
   this: AnyFunSpec =>
 
   implicit private lazy val fixedExecutionContext: ExecutionContext =

@@ -7,7 +7,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
 
-class MappedValueOrderedSet[E, D <: Domain[E], S] protected (
+class MappedValueOrderedSet[E, D[X] <: Domain[X], S] protected (
   override final val originalSeq: OrderedSetT[E, D, S],
   override final val valueMapFunc: Boolean => Boolean
 )(
@@ -34,7 +34,7 @@ class MappedValueOrderedSet[E, D <: Domain[E], S] protected (
 
 object MappedValueOrderedSet {
 
-  def apply[E, D <: Domain[E], S](
+  def apply[E, D[X] <: Domain[X], S](
     original: OrderedSetT[E, D, S],
     valueMapFunc: Boolean => Boolean
   )(
@@ -44,7 +44,7 @@ object MappedValueOrderedSet {
   ): MappedValueOrderedSet[E, D, S] =
     new MappedValueOrderedSet(original, valueMapFunc)
 
-  def mapSegment[E, D <: Domain[E], S](
+  def mapSegment[E, D[X] <: Domain[X], S](
     originalSegment: SetSegmentT[E, D, S],
     valueMapFunc: Boolean => Boolean
   )(
@@ -54,7 +54,7 @@ object MappedValueOrderedSet {
   ): MappedSetSegment[E, D, S] =
     apply(originalSegment.sequence, valueMapFunc).mapSegment(originalSegment)
 
-  def mapTruncation[E, D <: Domain[E], S](
+  def mapTruncation[E, D[X] <: Domain[X], S](
     originalTruncation: SetSegmentTruncationT[E, D, S],
     valueMapFunc: Boolean => Boolean
   )(
@@ -64,7 +64,7 @@ object MappedValueOrderedSet {
   ): MappedSetTruncation[E, D, S] =
     apply(originalTruncation.sequence, valueMapFunc).mapTruncation(originalTruncation)
 
-  def identity[E, D <: Domain[E], S](
+  def identity[E, D[X] <: Domain[X], S](
     original: OrderedSetT[E, D, S]
   )(
     implicit
@@ -73,7 +73,7 @@ object MappedValueOrderedSet {
   ): MappedValueOrderedSet[E, D, S] =
     new MappedValueOrderedSet(original, BooleanUtil.identityOperator1)
 
-  def inversion[E, D <: Domain[E], S](
+  def inversion[E, D[X] <: Domain[X], S](
     original: OrderedSetT[E, D, S]
   )(
     implicit

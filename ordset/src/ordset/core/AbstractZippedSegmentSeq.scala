@@ -8,7 +8,7 @@ import ordset.core.internal.SegmentSeqExceptionUtil.*
 import AbstractZippedSegmentSeq.*
 
 // TODO: class description.
-abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
+abstract class AbstractZippedSegmentSeq[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
   extends AbstractSegmentSeq[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] {
   
   // Inspection --------------------------------------------------------------- //
@@ -729,16 +729,16 @@ abstract class AbstractZippedSegmentSeq[E, D <: Domain[E], U1, U2, V, S1, S2]
 
 object AbstractZippedSegmentSeq {
 
-  type ZippedSegment[E, D <: Domain[E], U1, U2, V, S1, S2] =
+  type ZippedSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2] =
     SegmentT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] with ZippedSegmentBase[E, D, U1, U2, V, S1, S2]
 
-  type ZippedFirstSegment[E, D <: Domain[E], U1, U2, V, S1, S2] =
+  type ZippedFirstSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2] =
     SegmentT.First[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] with ZippedSegmentBase[E, D, U1, U2, V, S1, S2]
 
-  type ZippedLastSegment[E, D <: Domain[E], U1, U2, V, S1, S2] =
+  type ZippedLastSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2] =
     SegmentT.Last[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] with ZippedSegmentBase[E, D, U1, U2, V, S1, S2]
 
-  type ZippedTruncation[E, D <: Domain[E], U1, U2, V, S1, S2] =
+  type ZippedTruncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2] =
     SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], ZippedSegment[E, D, U1, U2, V, S1, S2]]
 
   /**
@@ -749,7 +749,7 @@ object AbstractZippedSegmentSeq {
    * 1. `left` segment belongs to `firstSeq` or `secondSeq` sequence.
    *    `right` segment belongs to `firstSeq` or `secondSeq` sequence other then sequence of `left`.
    */
-  sealed trait ZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2] {
+  sealed trait ZippedTuple[E, D[X] <: Domain[X], U1, U2, V, S1, S2] {
 
     /**
      * Value of zipped sequence.
@@ -830,7 +830,7 @@ object AbstractZippedSegmentSeq {
   /**
    * Default implementation of [[ZippedTuple]] (see preconditions).
    */
-  final case class DefaultZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2](
+  final case class DefaultZippedTuple[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
     override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -841,7 +841,7 @@ object AbstractZippedSegmentSeq {
     /**
      * Creates [[Zipper]] function.
      */
-    def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
+    def zipper[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
       sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
     ): Zipper[E, D, U1, U2, V, S1, S2, DefaultZippedTuple[E, D, U1, U2, V, S1, S2]] =
       (left, right) => new DefaultZippedTuple[E, D, U1, U2, V, S1, S2](sequence, left, right)
@@ -853,7 +853,7 @@ object AbstractZippedSegmentSeq {
    *
    * `backward` `≤` `forward`
    */
-  sealed trait OrderedZippedTuple[E, D <: Domain[E], U1, U2, V, S1, S2]
+  sealed trait OrderedZippedTuple[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
     extends ZippedTuple[E, D, U1, U2, V, S1, S2] {
 
     def backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -870,7 +870,7 @@ object AbstractZippedSegmentSeq {
     /**
      * @return `true` if `backward` and `forward` segments are ordered according to specified `order`.
      */
-    def isValidOrder[E, D <: Domain[E], U1, U2, V, S1, S2](
+    def isValidOrder[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
       order: Order[Segment[E, D, ?]],
       backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
       forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -880,7 +880,7 @@ object AbstractZippedSegmentSeq {
     /**
      * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segments.upperOrd]]:
      */
-    trait ByUpperBound[E, D <: Domain[E], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
+    trait ByUpperBound[E, D[X] <: Domain[X], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
 
     object ByUpperBound {
 
@@ -889,7 +889,7 @@ object AbstractZippedSegmentSeq {
        *
        * @see preconditions of [[ZippedTuple]].
        */
-      def apply[E, D <: Domain[E], U1, U2, V, S1, S2](
+      def apply[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
         sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
         left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -908,7 +908,7 @@ object AbstractZippedSegmentSeq {
        *
        * @see preconditions of [[ZippedTuple]].
        */
-      def unsafe[E, D <: Domain[E], U1, U2, V, S1, S2](
+      def unsafe[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
         sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
         backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -918,7 +918,7 @@ object AbstractZippedSegmentSeq {
       /**
        * Creates [[Zipper]] function.
        */
-      def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
+      def zipper[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
         sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
       ): Zipper[E, D, U1, U2, V, S1, S2, ByUpperBound[E, D, U1, U2, V, S1, S2]] =
         (left, right) => apply(sequence, left, right)
@@ -927,7 +927,7 @@ object AbstractZippedSegmentSeq {
       /**
        * Implementation of [[ByUpperBound]].
        */
-      private final case class DefaultImpl[E, D <: Domain[E], U1, U2, V, S1, S2] (
+      private final case class DefaultImpl[E, D[X] <: Domain[X], U1, U2, V, S1, S2] (
         override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
         override val backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         override val forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -937,7 +937,7 @@ object AbstractZippedSegmentSeq {
     /**
      * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segments.lowerOrd]]:
      */
-    trait ByLowerBound[E, D <: Domain[E], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
+    trait ByLowerBound[E, D[X] <: Domain[X], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
 
     object ByLowerBound {
 
@@ -946,7 +946,7 @@ object AbstractZippedSegmentSeq {
        *
        * @see preconditions of [[ZippedTuple]].
        */
-      def apply[E, D <: Domain[E], U1, U2, V, S1, S2](
+      def apply[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
         sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
         left: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         right: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -965,7 +965,7 @@ object AbstractZippedSegmentSeq {
        *
        * @see preconditions of [[ZippedTuple]].
        */
-      def unsafe[E, D <: Domain[E], U1, U2, V, S1, S2](
+      def unsafe[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
         sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
         backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -975,7 +975,7 @@ object AbstractZippedSegmentSeq {
       /**
        * Creates [[Zipper]] function.
        */
-      def zipper[E, D <: Domain[E], U1, U2, V, S1, S2](
+      def zipper[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
         sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2]
       ): Zipper[E, D, U1, U2, V, S1, S2, ByLowerBound[E, D, U1, U2, V, S1, S2]] =
         (left, right) => apply(sequence, left, right)
@@ -984,7 +984,7 @@ object AbstractZippedSegmentSeq {
       /**
        * Implementation of [[ByLowerBound]].
        */
-      private final case class DefaultImpl[E, D <: Domain[E], U1, U2, V, S1, S2] (
+      private final case class DefaultImpl[E, D[X] <: Domain[X], U1, U2, V, S1, S2] (
         override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
         override val backward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2],
         override val forward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1017,7 +1017,7 @@ object AbstractZippedSegmentSeq {
    *                lower bound                upper bound
    * }}}
    */
-  sealed trait ZippedSegmentBase[E, D <: Domain[E], U1, U2, V, S1, S2]
+  sealed trait ZippedSegmentBase[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
     extends SegmentLikeT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]
       with OrderedZippedTuple.ByUpperBound[E, D, U1, U2, V, S1, S2] {
 
@@ -1274,7 +1274,7 @@ object AbstractZippedSegmentSeq {
 
   object ZippedSegmentBase {
 
-    trait TruncationBase[E, D <: Domain[E], U1, U2, V, S1, S2] {
+    trait TruncationBase[E, D[X] <: Domain[X], U1, U2, V, S1, S2] {
       self: SegmentTruncationT[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], ZippedSegment[E, D, U1, U2, V, S1, S2]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -1292,7 +1292,7 @@ object AbstractZippedSegmentSeq {
    * that corresponds to the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments
    * which are ordered by their upper bound.
    */
-  sealed trait ZippedSegmentWithNext[E, D <: Domain[E], U1, U2, V, S1, S2]
+  sealed trait ZippedSegmentWithNext[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
     extends SegmentT.WithNext[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
@@ -1362,7 +1362,7 @@ object AbstractZippedSegmentSeq {
    * 1. 'backForward' subsegment must have previous segment.
    *    This condition is equivalent to: zipped segment has previous segment.
    */
-  sealed trait ZippedSegmentWithPrev[E, D <: Domain[E], U1, U2, V, S1, S2]
+  sealed trait ZippedSegmentWithPrev[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
     extends SegmentT.WithPrev[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]]
       with ZippedSegmentBase[E, D, U1, U2, V, S1, S2] {
 
@@ -1402,7 +1402,7 @@ object AbstractZippedSegmentSeq {
    * that corresponds to the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments
    * which are ordered by their upper bound.
    */
-  final case class ZippedInitialSegment[E, D <: Domain[E], U1, U2, V, S1, S2] (
+  final case class ZippedInitialSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2] (
     override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val frontBackward: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val frontForward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1451,7 +1451,7 @@ object AbstractZippedSegmentSeq {
 
   object ZippedInitialSegment {
 
-    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedInitialSegment[E, D, U1, U2, V, S1, S2]](
+    final class Truncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2, +Seg <: ZippedInitialSegment[E, D, U1, U2, V, S1, S2]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Initial.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
@@ -1466,7 +1466,7 @@ object AbstractZippedSegmentSeq {
    * Segment is specified by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]])
    * that must be the last segments of original sequences.
    */
-  final case class ZippedTerminalSegment[E, D <: Domain[E], U1, U2, V, S1, S2] (
+  final case class ZippedTerminalSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2] (
     override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1518,7 +1518,7 @@ object AbstractZippedSegmentSeq {
 
   object ZippedTerminalSegment {
 
-    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2]](
+    final class Truncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2, +Seg <: ZippedTerminalSegment[E, D, U1, U2, V, S1, S2]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Terminal.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
@@ -1534,7 +1534,7 @@ object AbstractZippedSegmentSeq {
    * that corresponds to the upper bound. 'frontBackward' and 'frontForward' are the same two subsegments
    * which are ordered by their upper bound.
    */
-  final case class ZippedInnerSegment[E, D <: Domain[E], U1, U2, V, S1, S2](
+  final case class ZippedInnerSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
     override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val frontBackward: SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val frontForward: SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1585,7 +1585,7 @@ object AbstractZippedSegmentSeq {
 
   object ZippedInnerSegment {
 
-    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedInnerSegment[E, D, U1, U2, V, S1, S2]](
+    final class Truncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2, +Seg <: ZippedInnerSegment[E, D, U1, U2, V, S1, S2]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Inner.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
@@ -1600,7 +1600,7 @@ object AbstractZippedSegmentSeq {
    * Segment is specified by 'left' and 'right' subsegments (see preconditions of [[ZippedTuple]])
    * that must be the last segments of original sequences.
    */
-  final case class ZippedSingleSegment[E, D <: Domain[E], U1, U2, V, S1, S2](
+  final case class ZippedSingleSegment[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
     override val sequence: ZippedSegmentSeq[E, D, U1, U2, V, S1, S2],
     override val left: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2],
     override val right: SegmentT.Last[E, D, ? <: U1 | U2, ? <: S1 | S2]
@@ -1659,7 +1659,7 @@ object AbstractZippedSegmentSeq {
 
   object ZippedSingleSegment {
 
-    final class Truncation[E, D <: Domain[E], U1, U2, V, S1, S2, +Seg <: ZippedSingleSegment[E, D, U1, U2, V, S1, S2]](
+    final class Truncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2, +Seg <: ZippedSingleSegment[E, D, U1, U2, V, S1, S2]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Single.Truncation[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2], Seg](
@@ -1669,12 +1669,12 @@ object AbstractZippedSegmentSeq {
   }
 
   // Protected section -------------------------------------------------------- //
-  protected type Zipper[E, D <: Domain[E], U1, U2, V, S1, S2, +R <: ZippedTuple[E, D, U1, U2, V, S1, S2]] =
+  protected type Zipper[E, D[X] <: Domain[X], U1, U2, V, S1, S2, +R <: ZippedTuple[E, D, U1, U2, V, S1, S2]] =
     (SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2], SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]) => R
 
-  protected type NextGenZipper[E, D <: Domain[E], U1, U2, V, S1, S2, +R <: ZippedTuple[E, D, U1, U2, V, S1, S2]] =
+  protected type NextGenZipper[E, D[X] <: Domain[X], U1, U2, V, S1, S2, +R <: ZippedTuple[E, D, U1, U2, V, S1, S2]] =
     (SegmentT.WithNext[E, D, ? <: U1 | U2, ? <: S1 | S2], SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]) => R
 
-  protected type ComposedZipper[E, D <: Domain[E], U1, U2, V, S1, S2, R <: ZippedTuple[E, D, U1, U2, V, S1, S2]] =
+  protected type ComposedZipper[E, D[X] <: Domain[X], U1, U2, V, S1, S2, R <: ZippedTuple[E, D, U1, U2, V, S1, S2]] =
     (Zipper[E, D, U1, U2, V, S1, S2, R], SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2], SegmentT[E, D, ? <: U1 | U2, ? <: S1 | S2]) => R
 }

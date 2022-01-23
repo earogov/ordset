@@ -17,7 +17,7 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * @tparam S1 type of additional state of original segment
  * @tparam S2 type of additional state of current segment
  */
-protected[ordset] trait MappedSegmentLikeT[E, D <: Domain[E], U, V, S1, +S2]
+protected[ordset] trait MappedSegmentLikeT[E, D[X] <: Domain[X], U, V, S1, +S2]
   extends SegmentLikeT[E, D, V, S2]  {
 
   // Inspection --------------------------------------------------------------- //

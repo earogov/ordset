@@ -14,7 +14,7 @@ import AbstractTreapSegmentSeq.*
 import ordset.core.util.TreapSegmentSeqUtil
 
 // TODO: class description.
-abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
+abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
   extends AbstractSegmentSeq[E, D, V, TreapSegmentBase[E, D, V]] {
   
   // Inspection --------------------------------------------------------------- //
@@ -525,16 +525,16 @@ abstract class AbstractTreapSegmentSeq[E, D <: Domain[E],  V]
 
 object AbstractTreapSegmentSeq {
 
-  type TreapSegment[E, D <: Domain[E], V] = 
+  type TreapSegment[E, D[X] <: Domain[X], V] = 
     SegmentT[E, D, V, TreapSegmentBase[E, D, V]] with TreapSegmentBase[E, D, V]
 
-  type TreapTruncation[E, D <: Domain[E], V] = 
+  type TreapTruncation[E, D[X] <: Domain[X], V] = 
     SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], TreapSegment[E, D, V]]
   
   /**
    * Base trait for non single segments. It has either previous segment or next.
    */
-  sealed trait TreapSegmentBase[E, D <: Domain[E], V]
+  sealed trait TreapSegmentBase[E, D[X] <: Domain[X], V]
     extends SegmentLikeT[E, D, V, TreapSegmentBase[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
@@ -583,7 +583,7 @@ object AbstractTreapSegmentSeq {
 
   object TreapSegmentBase {
 
-    trait TruncationBase[E, D <: Domain[E], V] {
+    trait TruncationBase[E, D[X] <: Domain[X], V] {
       self: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], TreapSegment[E, D, V]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -597,7 +597,7 @@ object AbstractTreapSegmentSeq {
   /**
    * Segment which has next segment.
    */
-  sealed trait TreapSegmentWithNext[E, D <: Domain[E], V]
+  sealed trait TreapSegmentWithNext[E, D[X] <: Domain[X], V]
     extends SegmentT.WithNext[E, D, V, TreapSegmentBase[E, D, V]]
       with TreapSegmentBase[E, D, V] {
 
@@ -621,7 +621,7 @@ object AbstractTreapSegmentSeq {
   /**
    * Segment which has previous segment.
    */
-  sealed trait TreapSegmentWithPrev[E, D <: Domain[E], V]
+  sealed trait TreapSegmentWithPrev[E, D[X] <: Domain[X], V]
     extends SegmentT.WithPrev[E, D, V, TreapSegmentBase[E, D, V]]
       with TreapSegmentBase[E, D, V] {
 
@@ -662,7 +662,7 @@ object AbstractTreapSegmentSeq {
    * @param node treap node defining segment upper bound.
    * @param context path from treap root to `node`.
    */
-  final case class TreapInitialSegment[E, D <: Domain[E], V] (
+  final case class TreapInitialSegment[E, D[X] <: Domain[X], V] (
     override val sequence: NonuniformTreapSegmentSeq[E, D, V],
     override val node: ImmutableTreap.Node[Bound.Upper[E], V],
     override val context: NodeVisitContext[Bound.Upper[E], V]
@@ -699,7 +699,7 @@ object AbstractTreapSegmentSeq {
 
   object TreapInitialSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: TreapInitialSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: TreapInitialSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Initial.Truncation[E, D, V, TreapSegmentBase[E, D, V], Seg](
@@ -715,7 +715,7 @@ object AbstractTreapSegmentSeq {
    * @param node treap node defining segment <u>lower</u> bound.
    * @param context path from treap root to `node`.
    */
-  final case class TreapTerminalSegment[E, D <: Domain[E], V](
+  final case class TreapTerminalSegment[E, D[X] <: Domain[X], V](
     override val sequence: NonuniformTreapSegmentSeq[E, D, V],
     override val node: ImmutableTreap.Node[Bound.Upper[E], V],
     override val context: NodeVisitContext[Bound.Upper[E], V]
@@ -760,7 +760,7 @@ object AbstractTreapSegmentSeq {
 
   object TreapTerminalSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: TreapTerminalSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: TreapTerminalSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Terminal.Truncation[E, D, V, TreapSegmentBase[E, D, V], Seg](
@@ -776,7 +776,7 @@ object AbstractTreapSegmentSeq {
    * @param node treap node defining segment upper bound.
    * @param context path from treap root to `node`.
    */
-  final case class TreapInnerSegment[E, D <: Domain[E], V](
+  final case class TreapInnerSegment[E, D[X] <: Domain[X], V](
     override val sequence: NonuniformTreapSegmentSeq[E, D, V],
     override val node: ImmutableTreap.Node[Bound.Upper[E], V],
     override val context: NodeVisitContext[Bound.Upper[E], V]
@@ -868,7 +868,7 @@ object AbstractTreapSegmentSeq {
 
   object TreapInnerSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: TreapInnerSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: TreapInnerSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Inner.Truncation[E, D, V, TreapSegmentBase[E, D, V], Seg](

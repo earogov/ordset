@@ -12,17 +12,17 @@ import ordset.test.core.samples.segmentSeq.zippedOrderedSet._
 
 @RunWith(classOf[JUnitRunner])
 class ZippedOrderedSetSpec extends AnyFunSpec
-  with InspectionBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with NavigationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with TransformationBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean]
-  with ZippedSeqBehaviors[Int, Domain.ContinuousUnbounded[Int], Boolean, Boolean, Boolean]
-  with LazyEvalProperties[Int, Domain.ContinuousUnbounded[Int], Boolean] {
+  with InspectionBehaviors[Int, Domain.ContinuousUnbounded, Boolean]
+  with NavigationBehaviors[Int, Domain.ContinuousUnbounded, Boolean]
+  with TransformationBehaviors[Int, Domain.ContinuousUnbounded, Boolean]
+  with ZippedSeqBehaviors[Int, Domain.ContinuousUnbounded, Boolean, Boolean, Boolean]
+  with LazyEvalProperties[Int, Domain.ContinuousUnbounded, Boolean] {
 
   import ordset.givens.boolean._
   import ordset.givens.int._
   import ordset.test.core.TestRngUtil.Implicits._
 
-  type Dom = Domain.ContinuousUnbounded[Int]
+  type Dom[X] = Domain.ContinuousUnbounded[X]
   type SegmentSeq = OrderedSet[Int, Dom]
 
   private val testSuite = List(

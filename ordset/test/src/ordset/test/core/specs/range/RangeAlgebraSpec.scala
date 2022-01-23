@@ -16,7 +16,7 @@ class RangeAlgebraSpec extends AnyFunSpec {
 
   private val alg: RangeAlgebra[Int] = implicitly
   private val eq: Eq[SimpleRange[Int]] = implicitly
-  private val range: SimpleRangeFactory[Int] = implicitly
+  private val range: SimpleRangeFactory[Nothing, Int] = implicitly
 
   it("should support `isValid` check") {
     // Non-empty range

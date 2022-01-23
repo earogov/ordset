@@ -8,7 +8,7 @@ import ordset.util.BooleanUtil
 /**
  * Captures segment and bound to perform further operations.
  */
-abstract class SegmentTruncationT[E, D <: Domain[E], V, +S, +Seg <: SegmentT[E, D, V, S]](
+abstract class SegmentTruncationT[E, D[X] <: Domain[X], V, +S, +Seg <: SegmentT[E, D, V, S]](
   val segment: Seg,
   inputBound: ExtendedBound[E],
 ) {
@@ -326,7 +326,7 @@ object SegmentTruncationT {
    * has next segment.
    */
   @inline
-  protected [ordset] final def getSegmentForPrependingCaseSegmentWithNext[E, D <: Domain[E], V, S](
+  protected [ordset] final def getSegmentForPrependingCaseSegmentWithNext[E, D[X] <: Domain[X], V, S](
     bound: ExtendedBound[E], 
     segment: SegmentT.WithNext[E, D, V, S] with S
   ): SegmentT[E, D, V, S] with S =
@@ -340,7 +340,7 @@ object SegmentTruncationT {
    * has previous segment.
    */
   @inline
-  protected [ordset] final def getSegmentForAppendingCaseSegmentWithPrev[E, D <: Domain[E], V, S](
+  protected [ordset] final def getSegmentForAppendingCaseSegmentWithPrev[E, D[X] <: Domain[X], V, S](
     bound: ExtendedBound[E],
     segment: SegmentT.WithPrev[E, D, V, S] with S 
   ): SegmentT[E, D, V, S] with S =
@@ -353,7 +353,7 @@ object SegmentTruncationT {
    * Implementation of [[SegmentT.lowerTruncation]].
    */
   @inline
-  protected [ordset] final def lowerTruncation[E, D <: Domain[E], V, S](
+  protected [ordset] final def lowerTruncation[E, D[X] <: Domain[X], V, S](
     segment: SegmentT[E, D, V, S]
   ): SegmentTruncationT[E, D, V, S, segment.type] =
     segment.truncation(segment.lower)
@@ -362,7 +362,7 @@ object SegmentTruncationT {
    * Implementation of [[SegmentT.upperTruncation]].
    */
   @inline
-  protected [ordset] final def upperTruncation[E, D <: Domain[E], V, S](
+  protected [ordset] final def upperTruncation[E, D[X] <: Domain[X], V, S](
     segment: SegmentT[E, D, V, S]
   ): SegmentTruncationT[E, D, V, S, segment.type] =
     segment.truncation(segment.upper)

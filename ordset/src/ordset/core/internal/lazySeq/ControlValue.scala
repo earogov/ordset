@@ -9,7 +9,7 @@ import ordset.core.range.Range
 import ordset.core.map.UniformOrderedMap
 import ordset.util.StringUtil
 
-protected[ordset] sealed trait ControlValue[E, D <: Domain[E], V] {
+protected[ordset] sealed trait ControlValue[E, D[X] <: Domain[X], V] {
 
   def isStable: Boolean
 
@@ -26,7 +26,7 @@ protected[ordset] sealed trait ControlValue[E, D <: Domain[E], V] {
 
 protected[ordset] object ControlValue {
 
-    sealed trait LazyValue[E, D <: Domain[E], V] extends ControlValue[E, D, V] {
+    sealed trait LazyValue[E, D[X] <: Domain[X], V] extends ControlValue[E, D, V] {
 
       import LazyValue.Dummy
 
@@ -63,16 +63,16 @@ protected[ordset] object ControlValue {
 
       protected def isComputed: Boolean = !lock.eq(result)
 
-      protected def computedSeqToString[E, D <: Domain[E], V]: String =
+      protected def computedSeqToString[E, D[X] <: Domain[X], V]: String =
         StringUtil.limit(StringUtil.collapse(result.toString), 50)
     }
 
     object LazyValue {
 
-      final case class Default[E, D <: Domain[E], V](
+      final case class Default[E, D[X] <: Domain[X], V](
         @volatile private var func: () => SegmentSeq[E, D, V]
       )(
-        implicit val domain: Domain[E]
+        implicit val domain: D[E]
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
@@ -125,11 +125,11 @@ protected[ordset] object ControlValue {
         }
       }
 
-      final case class Bounded[E, D <: Domain[E], V](
+      final case class Bounded[E, D[X] <: Domain[X], V](
         val lazyValue: LazyValue.Default[E, D, V],
         val bounds: Range.NonEmpty[ExtendedBound[E]]
       )(
-        implicit val domain: Domain[E]
+        implicit val domain: D[E]
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
@@ -189,11 +189,11 @@ protected[ordset] object ControlValue {
         }
       }
       
-      final case class Single[E, D <: Domain[E], V](
+      final case class Single[E, D[X] <: Domain[X], V](
         val lazyValue: LazyValue.Default[E, D, V],
         val bound: ExtendedBound[E]
       )(
-        implicit val domain: Domain[E]
+        implicit val domain: D[E]
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
@@ -236,7 +236,7 @@ protected[ordset] object ControlValue {
         () => throw UnsupportedOperationException("Function should never be called.")
     }
 
-    final case class EagerValue[E, D <: Domain[E], V] private (
+    final case class EagerValue[E, D[X] <: Domain[X], V] private (
       private val stable: Boolean
     ) extends ControlValue[E, D, V] {
 
@@ -257,19 +257,19 @@ protected[ordset] object ControlValue {
 
     object EagerValue {
 
-      def cons[E, D <: Domain[E], V](isStable: Boolean): EagerValue[E, D, V] = if (isStable) stable else unstable
+      def cons[E, D[X] <: Domain[X], V](isStable: Boolean): EagerValue[E, D, V] = if (isStable) stable else unstable
 
-      def stable[E, D <: Domain[E], V]: EagerValue[E, D, V] = stableInstance.asInstanceOf
+      def stable[E, D[X] <: Domain[X], V]: EagerValue[E, D, V] = stableInstance.asInstanceOf
 
-      def unstable[E, D <: Domain[E], V]: EagerValue[E, D, V] = unstableInstance.asInstanceOf
+      def unstable[E, D[X] <: Domain[X], V]: EagerValue[E, D, V] = unstableInstance.asInstanceOf
 
       // Private section ---------------------------------------------------------- //
-      private lazy val stableInstance: EagerValue[Any, Domain[Any], Any] = new EagerValue(true)
+      private lazy val stableInstance: EagerValue[Any, Domain, Any] = new EagerValue(true)
 
-      private lazy val unstableInstance: EagerValue[Any, Domain[Any], Any] = new EagerValue(false)
+      private lazy val unstableInstance: EagerValue[Any, Domain, Any] = new EagerValue(false)
     }
 
-    final class ControlValueHash[E, D <: Domain[E], V]
+    final class ControlValueHash[E, D[X] <: Domain[X], V]
       extends Hash[ControlValue[E, D, V]] {
 
       import ordset.util.HashUtil._
@@ -285,23 +285,27 @@ protected[ordset] object ControlValue {
 
     object ControlValueHash {
 
-      def get[E, D <: Domain[E], V]: Hash[ControlValue[E, D, V]] = instance.asInstanceOf
+      def get[E, D[X] <: Domain[X], V]: Hash[ControlValue[E, D, V]] = instance.asInstanceOf
 
       // Private section ---------------------------------------------------------- //
-      private lazy val instance: ControlValueHash[Any, Domain[Any], Any] = new ControlValueHash
+      private lazy val instance: ControlValueHash[Any, Domain, Any] = new ControlValueHash()
     }
 
-    final class ControlValueOps[E, D <: Domain[E], V](
-      override val unit: ControlValue[E, D, V] = EagerValue.stable[E, D, V],
-      override val valueHash: Hash[ControlValue[E, D, V]] = ControlValueHash.get[E, D, V],
+    final class ControlValueOps[E, D[X] <: Domain[X], V] 
+      extends ValueOps[ControlValue[E, D, V]] {
+
+      override val unit: ControlValue[E, D, V] = EagerValue.stable
+
+      override val valueHash: Hash[ControlValue[E, D, V]] = ControlValueHash.get
+
       override val valueIncl: InclusionPredicate[ControlValue[E, D, V]] = InclusionPredicate.alwaysIncluded
-    ) extends ValueOps[ControlValue[E, D, V]]
+    }
 
     object ControlValueOps {
 
-      def get[E, D <: Domain[E], V]: ValueOps[ControlValue[E, D, V]] = instance.asInstanceOf
+      def get[E, D[X] <: Domain[X], V]: ValueOps[ControlValue[E, D, V]] = instance.asInstanceOf
 
       // Private section ---------------------------------------------------------- //
-      private lazy val instance: ControlValueOps[Any, Domain[Any], Any] = new ControlValueOps()
+      private lazy val instance: ControlValueOps[Any, Domain, Any] = new ControlValueOps()
     }
 }

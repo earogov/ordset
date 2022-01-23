@@ -6,7 +6,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
 
-class UniformOrderedSet[E, D <: Domain[E]] protected (
+class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
   final override val value: Boolean,
   final val setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
 )(
@@ -49,7 +49,7 @@ class UniformOrderedSet[E, D <: Domain[E]] protected (
 
 object UniformOrderedSet {
 
-  def apply[E, D <: Domain[E]](
+  def apply[E, D[X] <: Domain[X]](
     value: Boolean,
     setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
   )(
@@ -59,7 +59,7 @@ object UniformOrderedSet {
   ): UniformOrderedSet[E, D] =
     new UniformOrderedSet(value, setFactory)
 
-  def empty[E, D <: Domain[E]](
+  def empty[E, D[X] <: Domain[X]](
     setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
   )(
     implicit
@@ -68,7 +68,7 @@ object UniformOrderedSet {
   ): UniformOrderedSet[E, D] =
     new UniformOrderedSet(false, setFactory)
 
-  def universal[E, D <: Domain[E]](
+  def universal[E, D[X] <: Domain[X]](
     setFactory: OrderedSetFactory[E, D, OrderedSet[E, D]]
   )(
     implicit
@@ -77,7 +77,7 @@ object UniformOrderedSet {
   ): UniformOrderedSet[E, D] =
     new UniformOrderedSet(true, setFactory)
 
-  def default[E, D <: Domain[E]](
+  def default[E, D[X] <: Domain[X]](
     value: Boolean
   )(
     implicit
@@ -86,21 +86,21 @@ object UniformOrderedSet {
   ): UniformOrderedSet[E, D] =
     new UniformOrderedSet(value, TreapOrderedSet.getFactory)
 
-  def defaultUnit[E, D <: Domain[E]](
+  def defaultUnit[E, D[X] <: Domain[X]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
     default(ValueOps.booleanValueOps.unit)
 
-  def defaultEmpty[E, D <: Domain[E]](
+  def defaultEmpty[E, D[X] <: Domain[X]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): UniformOrderedSet[E, D] =
     default(false)
 
-  def defaultUniversal[E, D <: Domain[E]](
+  def defaultUniversal[E, D[X] <: Domain[X]](
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager

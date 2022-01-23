@@ -8,7 +8,7 @@ import ordset.test.core.SegmentSeqAssertions._
 import ordset.test.core.behaviors.SegmentSeqValidator
 import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 
-trait TransformationBehaviors[E, D <: Domain[E], V] {
+trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
   this: AnyFunSpec =>
 
   def segmentSeqCanBePrepended(

@@ -12,9 +12,7 @@ trait DomainLike[E] {
 
   implicit def extendedOrd: ExtendedBound.DefaultOrder[E]
 
-  implicit def rangeFactory: RangeFactory[ExtendedBound[E], SimpleRange]
-
-  def zzz: RangeFactory[Bound[E], SimpleRange] = rangeFactory
+  implicit def rangeFactory: RangeFactory[ExtendedBound[E], ExtendedBound[E], SimpleRange]
 
   implicit def rangeAlgebra: RangeAlgebra[ExtendedBound[E]]
 
@@ -39,9 +37,9 @@ trait DomainLike[E] {
 
 object DomainLike {
 
-  trait Proxy[E, D <: Domain[E]] extends DomainLike[E] {
+  trait Proxy[E, D[X] <: Domain[X]] extends DomainLike[E] {
 
-    def domain: D
+    def domain: D[E]
 
     override implicit def elementOrd: Order[E] with Hash[E] = domain.elementOrd
 
@@ -49,7 +47,7 @@ object DomainLike {
 
     override implicit def extendedOrd: ExtendedBound.DefaultOrder[E] = domain.extendedOrd
 
-    override implicit def rangeFactory: RangeFactory[ExtendedBound[E], SimpleRange] = 
+    override implicit def rangeFactory: RangeFactory[ExtendedBound[E], ExtendedBound[E], SimpleRange] = 
       domain.rangeFactory
 
     override implicit def rangeAlgebra: RangeAlgebra[ExtendedBound[E]] = domain.rangeAlgebra
@@ -73,5 +71,5 @@ object DomainLike {
     override def isUnbounded: Boolean = domain.isUnbounded
   }
 
-  final case class ProxyImpl[E, D <: Domain[E]](override val domain: D) extends Proxy[E, D]
+  final case class ProxyImpl[E, D[X] <: Domain[X]](override val domain: D[E]) extends Proxy[E, D]
 }

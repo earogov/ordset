@@ -49,7 +49,7 @@ protected[ordset] object ZSegmentSeqBuilder {
    *                                               lazy value computation
    * }}}
    */
-  final def build[E, D <: Domain[E], V](
+  final def build[E, D[X] <: Domain[X], V](
     baseSeq: SegmentSeq[E, D, V],
     supplierSeq: SupplierSegmentSeq[E, D, V]
   )(
@@ -67,7 +67,7 @@ protected[ordset] object ZSegmentSeqBuilder {
    * Prepends lazy sequence `leftSeq` to lazy sequence `rightZtruncation.sequence` before bound `rightZtruncation.bound`
    * (see [[SegmentSeqT.prependBeforeBound]]). 
    */ 
-  final def prependZippedSeq[E, D <: Domain[E], V](
+  final def prependZippedSeq[E, D[X] <: Domain[X], V](
     rightZtruncation: ZTruncation[E, D, V],
     leftSeq: ZSegmentSeq[E, D, V]
   )(
@@ -90,7 +90,7 @@ protected[ordset] object ZSegmentSeqBuilder {
    * Appends lazy sequence `rightSeq` to lazy sequence `leftZtruncation.sequence` above bound `leftZtruncation.bound`
    * (see [[SegmentSeqT.appendAboveBound]]). 
    */ 
-  final def appendZippedSeq[E, D <: Domain[E], V](
+  final def appendZippedSeq[E, D[X] <: Domain[X], V](
     leftZtruncation: ZTruncation[E, D, V],
     rightSeq: ZSegmentSeq[E, D, V]
   )(
@@ -150,7 +150,7 @@ protected[ordset] object ZSegmentSeqBuilder {
    *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
    * }}}
    */
-  final def appendZippedSegment[E, D <: Domain[E], V](
+  final def appendZippedSegment[E, D[X] <: Domain[X], V](
     bound: Bound[E],
     leftZsegment: ZSegment[E, D, V],
     rightZsegment: ZSegment[E, D, V]
@@ -372,31 +372,31 @@ protected[ordset] object ZSegmentSeqBuilder {
   }
 
   // Private section ---------------------------------------------------------- //
-  private type ControlBuffer[E, D <: Domain[E], V] = List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]]
+  private type ControlBuffer[E, D[X] <: Domain[X], V] = List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]]
 
-  private type ControlSeqBuilder[E, D <: Domain[E], V] = TreapSegmentSeqBuilder.Mutable[E, D, ControlValue[E, D, V]]
-
-
-  private type ControlGenSegment[E, D <: Domain[E], V] = Segment[E, D, ControlValue[E, D, V]]
-
-  private type ControlGenSegmentWithNext[E, D <: Domain[E], V] = Segment.WithNext[E, D, ControlValue[E, D, V]]
-
-  private type ControlGenSegmentWithPrev[E, D <: Domain[E], V] = Segment.WithPrev[E, D, ControlValue[E, D, V]]
-
-  private type ControlGenSegmentSeq[E, D <: Domain[E], V] = SegmentSeq[E, D, ControlValue[E, D, V]]
+  private type ControlSeqBuilder[E, D[X] <: Domain[X], V] = TreapSegmentSeqBuilder.Mutable[E, D, ControlValue[E, D, V]]
 
 
-  private type LazyMaskSegment[E, D <: Domain[E], V] =
+  private type ControlGenSegment[E, D[X] <: Domain[X], V] = Segment[E, D, ControlValue[E, D, V]]
+
+  private type ControlGenSegmentWithNext[E, D[X] <: Domain[X], V] = Segment.WithNext[E, D, ControlValue[E, D, V]]
+
+  private type ControlGenSegmentWithPrev[E, D[X] <: Domain[X], V] = Segment.WithPrev[E, D, ControlValue[E, D, V]]
+
+  private type ControlGenSegmentSeq[E, D[X] <: Domain[X], V] = SegmentSeq[E, D, ControlValue[E, D, V]]
+
+
+  private type LazyMaskSegment[E, D[X] <: Domain[X], V] =
     MappedSegment[E, D, SeqSupplier[E, D, V], Boolean, Any]
 
-  private type LazyMaskSegmentWithPrev[E, D <: Domain[E], V] =
+  private type LazyMaskSegmentWithPrev[E, D[X] <: Domain[X], V] =
     MappedSegmentWithPrev[E, D, SeqSupplier[E, D, V], Boolean, Any]
 
-  private type LazyMaskSegmentWithNext[E, D <: Domain[E], V] =
+  private type LazyMaskSegmentWithNext[E, D[X] <: Domain[X], V] =
     MappedSegmentWithNext[E, D, SeqSupplier[E, D, V], Boolean, Any]
 
 
-  private type InitialZSegmentWithPrev[E, D <: Domain[E], V] =
+  private type InitialZSegmentWithPrev[E, D[X] <: Domain[X], V] =
     ZippedTupleSegmentWithPrev[
       E,
       D,
@@ -406,7 +406,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       Any
     ]
 
-  private type InitialZSegmentWithNext[E, D <: Domain[E], V] =
+  private type InitialZSegmentWithNext[E, D[X] <: Domain[X], V] =
     ZippedTupleSegmentWithNext[
       E,
       D,
@@ -416,7 +416,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       Any
     ]
 
-  private final def buildFromNonLazyBaseSeq[E, D <: Domain[E], V](
+  private final def buildFromNonLazyBaseSeq[E, D[X] <: Domain[X], V](
     baseSeq: SegmentSeq[E, D, V],
     supplierSeq: SupplierSegmentSeq[E, D, V]
   )(
@@ -567,7 +567,7 @@ protected[ordset] object ZSegmentSeqBuilder {
     makeZippedSeq(TreapOrderedMap.getFactory.convertMap(baseSeq), controlSeq)
   }
 
-  private final def buildFromLazyBaseSeq[E, D <: Domain[E], V](
+  private final def buildFromLazyBaseSeq[E, D[X] <: Domain[X], V](
     baseSeq: LazySegmentSeq[E, D, V],
     supplierSeq: SupplierSegmentSeq[E, D, V]
   )(
@@ -786,7 +786,7 @@ protected[ordset] object ZSegmentSeqBuilder {
   /**
    * Creates uniform base sequence with value [[ValueOps.unit]].
    */ 
-  protected final def makeUniformBaseSeq[E, D <: Domain[E], V](
+  protected final def makeUniformBaseSeq[E, D[X] <: Domain[X], V](
     implicit
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
@@ -801,7 +801,7 @@ protected[ordset] object ZSegmentSeqBuilder {
   /**
    * Creates uniform control sequence with specified `value`.
    */ 
-  protected final def makeUniformControlSeq[E, D <: Domain[E], V](
+  protected final def makeUniformControlSeq[E, D[X] <: Domain[X], V](
     value: ControlValue[E, D, V]
   )(
     implicit
@@ -818,7 +818,7 @@ protected[ordset] object ZSegmentSeqBuilder {
   /**
    * Creates zipped segment sequence with specified sequences.
    */ 
-  protected final def makeZippedSeq[E, D <: Domain[E], V](
+  protected final def makeZippedSeq[E, D[X] <: Domain[X], V](
     baseSeq: BaseSegmentSeq[E, D, V],
     controlSeq: ControlSegmentSeq[E, D, V]
   )(

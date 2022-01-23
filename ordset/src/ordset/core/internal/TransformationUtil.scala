@@ -30,7 +30,7 @@ protected[ordset] object TransformationUtil {
    *   1. `back` must define lower bound of some composed segment and `front` - upper bound of the same segment.
    * </tr>
    */ 
-  def sliceComposedSegment[E, D <: Domain[E], V](
+  def sliceComposedSegment[E, D[X] <: Domain[X], V](
       back: Segment[E, D, V],
       front: Segment[E, D, V]
   ): (SegmentSeq[E, D, V], SegmentSeq[E, D, V]) =

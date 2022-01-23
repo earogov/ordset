@@ -10,7 +10,7 @@ protected[ordset] object MappedSegmentT {
    *
    * @see [[MappedSegmentLikeT]]
    */
-  trait WithNext[E, D <: Domain[E], U, V, S1, +S2]
+  trait WithNext[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.WithNext[E, D, V, S2]
       with MappedSegmentLikeT[E, D, U, V, S1, S2] {
 
@@ -26,7 +26,7 @@ protected[ordset] object MappedSegmentT {
    *
    * @see [[MappedSegmentLikeT]]
    */
-  trait WithPrev[E, D <: Domain[E], U, V, S1, +S2]
+  trait WithPrev[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.WithPrev[E, D, V, S2]
       with MappedSegmentLikeT[E, D, U, V, S1, S2] {
 
@@ -43,7 +43,7 @@ protected[ordset] object MappedSegmentT {
    *
    * @see [[MappedSegmentLikeT]]
    */
-  trait First[E, D <: Domain[E], U, V, S1, +S2]
+  trait First[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.First[E, D, V, S2]
       with MappedSegmentLikeT[E, D, U, V, S1, S2] {
 
@@ -56,7 +56,7 @@ protected[ordset] object MappedSegmentT {
    *
    * @see [[Segment]]
    */
-  trait Last[E, D <: Domain[E], U, V, S1, +S2]
+  trait Last[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.Last[E, D, V, S2]
       with MappedSegmentLikeT[E, D, U, V, S1, S2] {
 
@@ -71,7 +71,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>                                 </tr>
    * @see [[MappedSegmentLikeT]]
    */
-  trait Single[E, D <: Domain[E], U, V, S1, +S2]
+  trait Single[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.Single[E, D, V, S2]
       with MappedSegmentT.First[E, D, U, V, S1, S2]
       with MappedSegmentT.Last[E, D, U, V, S1, S2] {
@@ -87,7 +87,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>                                 </tr>
    * @see [[MappedSegmentLikeT]]
    */
-  trait Initial[E, D <: Domain[E], U, V, S1, +S2]
+  trait Initial[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.Initial[E, D, V, S2]
       with MappedSegmentT.WithNext[E, D, U, V, S1, S2]
       with MappedSegmentT.First[E, D, U, V, S1, S2] {
@@ -103,7 +103,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>                               </tr>
    * @see [[MappedSegmentLikeT]]
    */
-  trait Terminal[E, D <: Domain[E], U, V, S1, +S2]
+  trait Terminal[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.Terminal[E, D, V, S2]
       with MappedSegmentT.WithPrev[E, D, U, V, S1, S2]
       with MappedSegmentT.Last[E, D, U, V, S1, S2] {
@@ -119,7 +119,7 @@ protected[ordset] object MappedSegmentT {
    * <tr>                               </tr>
    * @see [[MappedSegmentLikeT]]
    */
-  trait Inner[E, D <: Domain[E], U, V, S1, +S2]
+  trait Inner[E, D[X] <: Domain[X], U, V, S1, +S2]
     extends SegmentT.Inner[E, D, V, S2]
       with MappedSegmentT.WithNext[E, D, U, V, S1, S2]
       with MappedSegmentT.WithPrev[E, D, U, V, S1, S2] {

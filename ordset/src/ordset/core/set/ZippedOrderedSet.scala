@@ -6,7 +6,7 @@ import ordset.core.AbstractZippedSegmentSeq.{ZippedSegmentBase, ZippedTruncation
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
 
-class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
+class ZippedOrderedSet[E, D[X] <: Domain[X], S1, S2] protected (
   override final val firstSeq: OrderedSetT[E, D, S1],
   override final val secondSeq: OrderedSetT[E, D, S2],
   final val operatorFunc: (Boolean, Boolean) => Boolean,
@@ -52,7 +52,7 @@ class ZippedOrderedSet[E, D <: Domain[E], S1, S2] protected (
 
 object ZippedOrderedSet {
 
-  def apply[E, D <: Domain[E], S1, S2](
+  def apply[E, D[X] <: Domain[X], S1, S2](
     first: OrderedSetT[E, D, S1],
     second: OrderedSetT[E, D, S2],
     operatorFunc: (Boolean, Boolean) => Boolean,
@@ -64,7 +64,7 @@ object ZippedOrderedSet {
   ): ZippedOrderedSet[E, D, S1, S2] =
     new ZippedOrderedSet(first, second, operatorFunc, invariantFunc)
 
-  def union[E, D <: Domain[E], S1, S2](
+  def union[E, D[X] <: Domain[X], S1, S2](
     first: OrderedSetT[E, D, S1],
     second: OrderedSetT[E, D, S2]
   )(
@@ -74,7 +74,7 @@ object ZippedOrderedSet {
   ): ZippedOrderedSet[E, D, S1, S2] =
     new ZippedOrderedSet(first, second, BooleanUtil.orOperator2, BooleanUtil.identityOperator1)
 
-  def intersection[E, D <: Domain[E], S1, S2](
+  def intersection[E, D[X] <: Domain[X], S1, S2](
     first: OrderedSetT[E, D, S1],
     second: OrderedSetT[E, D, S2]
   )(
@@ -84,7 +84,7 @@ object ZippedOrderedSet {
   ): ZippedOrderedSet[E, D, S1, S2] =
     new ZippedOrderedSet(first, second, BooleanUtil.andOperator2, BooleanUtil.inversionOperator1)
 
-  def zipFirstSetTruncation[E, D <: Domain[E], S1, S2](
+  def zipFirstSetTruncation[E, D[X] <: Domain[X], S1, S2](
     firstTruncation:  SegmentTruncationT[E, D, Boolean, S1, SegmentT[E, D, Boolean, S1]],
     secondSet: OrderedSetT[E, D, S2],
     operatorFunc: (Boolean, Boolean) => Boolean,
@@ -103,7 +103,7 @@ object ZippedOrderedSet {
     zippedSeq.zipFirstSeqTruncation(firstTruncation)
   }
 
-  def zipSecondSetTruncation[E, D <: Domain[E], S1, S2](
+  def zipSecondSetTruncation[E, D[X] <: Domain[X], S1, S2](
     secondTruncation:  SegmentTruncationT[E, D, Boolean, S2, SegmentT[E, D, Boolean, S2]],
     firstSet: OrderedSetT[E, D, S1],
     operatorFunc: (Boolean, Boolean) => Boolean,

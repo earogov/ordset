@@ -11,7 +11,7 @@ object SegmentSeqAssertions {
   import ordset.test.AssertionsUtil.debugInfo
   import org.scalatest.Assertions._
 
-  def assertSameSegment[E, D <: Domain[E], V](
+  def assertSameSegment[E, D[X] <: Domain[X], V](
     expected: Segment[E, D, V],
     actual: Segment[E, D, V],
     info: String = ""
@@ -29,7 +29,7 @@ object SegmentSeqAssertions {
     assertSameRelation(expected.intervalRelation, actual.intervalRelation, info)
   }
 
-  def assertSameRelationAndSegment[E, D <: Domain[E], V](
+  def assertSameRelationAndSegment[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
     actual: Segment[E, D, V],
     info: String = ""
@@ -40,7 +40,7 @@ object SegmentSeqAssertions {
   ): Unit =
     assertSameRelation(expected, actual.intervalRelation, info)
 
-  def assertSameRelation[E, D <: Domain[E], V](
+  def assertSameRelation[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
     actual: IntervalRelation[E, D, V],
     info: String = ""
@@ -54,7 +54,7 @@ object SegmentSeqAssertions {
       debugInfo(expected, actual, info)
     )
 
-  def assertSameSegmentSeq[E, D <: Domain[E], V](
+  def assertSameSegmentSeq[E, D[X] <: Domain[X], V](
     expected: SegmentSeq[E, D, V],
     actual: SegmentSeq[E, D, V],
     info: String = ""
@@ -76,7 +76,7 @@ object SegmentSeqAssertions {
     )
   }
 
-  def assertSameRelationAndSegmentSeq[E, D <: Domain[E], V](
+  def assertSameRelationAndSegmentSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[IntervalRelation[E, D, V]],
     actual: SegmentSeq[E, D, V],
     info: String = ""
@@ -91,7 +91,7 @@ object SegmentSeqAssertions {
       info
     )
 
-  def assertSameBoundValueIterable[E, D <: Domain[E], V](
+  def assertSameBoundValueIterable[E, D[X] <: Domain[X], V](
     expected: Iterable[(ExtendedBound.Upper[E], V)],
     actual: Iterable[(ExtendedBound.Upper[E], V)],
     info: String = ""

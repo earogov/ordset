@@ -11,7 +11,7 @@ import ordset.random.RngManager
 import ordset.core.internal.lazySeq.ZSegmentSeqBuilder
 import java.util.concurrent.atomic.AtomicReference
 
-class LazyTreapOrderedSet[E, D <: Domain[E]] protected (
+class LazyTreapOrderedSet[E, D[X] <: Domain[X]] protected (
   initZippedSeq: ZSegmentSeq[E, D, Boolean]
 )(
   implicit
@@ -75,7 +75,7 @@ object LazyTreapOrderedSet {
    * @param domainOps   domain specific typeclasses: elements ordering, etc.
    * @param rngManager  generator of random sequences.
    */
-  def apply[E, D <: Domain[E], V](
+  def apply[E, D[X] <: Domain[X], V](
     baseSet: OrderedSet[E, D],
     supplierMap: SetSupplierOrderedMap[E, D]
   )(
@@ -93,7 +93,7 @@ object LazyTreapOrderedSet {
    * 
    * Method is intended to build completely lazy sequences when each segment of `supplierMap` has [[Some]] value.
    */ 
-  def completelyLazy[E, D <: Domain[E]](
+  def completelyLazy[E, D[X] <: Domain[X]](
     supplierMap: SetSupplierOrderedMap[E, D]
   )(
     implicit

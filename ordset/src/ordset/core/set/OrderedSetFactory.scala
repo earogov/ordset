@@ -13,7 +13,7 @@ import scala.util.Try
 /**
  * Unified interface to build ordered sets from collection of upper bounds.
  */
-trait OrderedSetFactory[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]] { 
+trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] { 
   factory =>
 
   /**
@@ -218,7 +218,7 @@ object OrderedSetFactory {
   /**
    * Creates [[OrderedSetFactory]] from specified [[OrderedMapFactory]].
    */
-  def fromMapFactory[E, D <: Domain[E], SSeq <: OrderedSet[E, D]](
+  def fromMapFactory[E, D[X] <: Domain[X], SSeq <: OrderedSet[E, D]](
     mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
   ): OrderedSetFactory[E, D, SSeq] =
     new MapFactoryProxy(mapFactory)
@@ -230,7 +230,7 @@ object OrderedSetFactory {
    *       because we can't pattern match to type `SSeq`. So method should be redefined in classes with
    *       concrete `SSeq` type.
    */
-  class MapFactoryProxy[E, D <: Domain[E], +SSeq <: OrderedSet[E, D]](
+  class MapFactoryProxy[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]](
     mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
   ) extends OrderedSetFactory[E, D, SSeq] {
 

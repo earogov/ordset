@@ -4,7 +4,7 @@ import ordset.core.AbstractIndexedSegmentSeq.IndexedSegment
 import ordset.core.domain.Domain
 import ordset.core.map.LazyTreapOrderedMap
 
-abstract class AbstractSegmentSeq[E, D <: Domain[E], V, +S] extends SegmentSeqT[E, D, V, S] {
+abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSeqT[E, D, V, S] {
 
   // Transformation ----------------------------------------------------------- //
   override def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V] =

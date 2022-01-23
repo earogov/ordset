@@ -11,7 +11,7 @@ object TreapSegmentSeqUtil {
   /**
    * Get treap root node if sequence is non-uniform or empty treap otherwise.
    */
-  def getRoot[E, D <: Domain[E], V](sequence: TreapSegmentSeq[E, D, V]): ImmutableTreap[Bound.Upper[E], V] =
+  def getRoot[E, D[X] <: Domain[X], V](sequence: TreapSegmentSeq[E, D, V]): ImmutableTreap[Bound.Upper[E], V] =
     sequence match {
       case s: NonuniformTreapSegmentSeq[E, D, V] => s.root
       case _: UniformSegmentSeq[E, D, V] => ImmutableTreap.Empty
@@ -22,7 +22,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeBelowSegment[E, D <: Domain[E], V](
+  def takeBelowSegment[E, D[X] <: Domain[X], V](
     segment: TreapSegmentBase[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
@@ -36,7 +36,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeBelowBound[E, D <: Domain[E], V](
+  def takeBelowBound[E, D[X] <: Domain[X], V](
     sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: Bound[E]
   ): TreapSegmentSeq[E, D, V] =
@@ -47,7 +47,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeBelowExtended[E, D <: Domain[E], V](
+  def takeBelowExtended[E, D[X] <: Domain[X], V](
     sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: ExtendedBound[E]
   ): TreapSegmentSeq[E, D, V] =
@@ -58,7 +58,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeAboveSegment[E, D <: Domain[E], V](
+  def takeAboveSegment[E, D[X] <: Domain[X], V](
     segment: TreapSegmentBase[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
@@ -72,7 +72,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeAboveBound[E, D <: Domain[E], V](
+  def takeAboveBound[E, D[X] <: Domain[X], V](
     sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: Bound[E]
   ): TreapSegmentSeq[E, D, V] =
@@ -83,7 +83,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def takeAboveExtended[E, D <: Domain[E], V](
+  def takeAboveExtended[E, D[X] <: Domain[X], V](
     sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: ExtendedBound[E]
   ): TreapSegmentSeq[E, D, V] =
@@ -94,7 +94,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def sliceSegment[E, D <: Domain[E], V](
+  def sliceSegment[E, D[X] <: Domain[X], V](
     segment: TreapSegmentBase[E, D, V]
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
     // We have to pattern match here due to type inference issue.
@@ -108,7 +108,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def sliceAtBound[E, D <: Domain[E], V](
+  def sliceAtBound[E, D[X] <: Domain[X], V](
     sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: Bound[E]
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
@@ -119,7 +119,7 @@ object TreapSegmentSeqUtil {
    *
    * Implementation guaranties that output is also a treap segment sequence.
    */
-  def sliceAtExtended[E, D <: Domain[E], V](
+  def sliceAtExtended[E, D[X] <: Domain[X], V](
     sequence: SegmentSeqT[E, D, V, TreapSegmentBase[E, D, V]],
     bound: ExtendedBound[E]
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
@@ -131,7 +131,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    * Note some performance penalty in case when conversion is required.
    */
-  def prependBelowSegment[E, D <: Domain[E], V](
+  def prependBelowSegment[E, D[X] <: Domain[X], V](
     segment: SegmentT[E, D, V, TreapSegmentBase[E, D, V]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
@@ -146,7 +146,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    * Note some performance penalty in case when conversion is required.
    */
-  def prependBelowTruncation[E, D <: Domain[E], V](
+  def prependBelowTruncation[E, D[X] <: Domain[X], V](
     truncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], SegmentT[E, D, V, TreapSegmentBase[E, D, V]]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
@@ -161,7 +161,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    * Note some performance penalty in case when conversion is required.
    */
-  def appendAboveSegment[E, D <: Domain[E], V](
+  def appendAboveSegment[E, D[X] <: Domain[X], V](
     segment: SegmentT[E, D, V, TreapSegmentBase[E, D, V]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
@@ -176,7 +176,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    * Note some performance penalty in case when conversion is required.
    */
-  def appendAboveTruncation[E, D <: Domain[E], V](
+  def appendAboveTruncation[E, D[X] <: Domain[X], V](
     truncation: SegmentTruncationT[E, D, V, TreapSegmentBase[E, D, V], SegmentT[E, D, V, TreapSegmentBase[E, D, V]]],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
@@ -191,7 +191,7 @@ object TreapSegmentSeqUtil {
    * Implementation guaranties that output is also a treap segment sequence.
    * Note some performance penalty in case when conversion is required.
    */
-  def patchSegment[E, D <: Domain[E], V](
+  def patchSegment[E, D[X] <: Domain[X], V](
     segment: TreapSegmentBase[E, D, V],
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =

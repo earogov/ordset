@@ -2,7 +2,7 @@ package ordset.core.domain
 
 import ordset.core.domain.DomainOpsComponents.*
 
-sealed trait DomainOps[E, D <: Domain[E]] extends DomainLike.Proxy[E, D] {
+sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
 
   def domains: Domains[E, D]
 
@@ -17,27 +17,27 @@ sealed trait DomainOps[E, D <: Domain[E]] extends DomainLike.Proxy[E, D] {
 
 object DomainOps {
 
-  implicit def default[E, D <: Domain[E]](implicit domain: D): DomainOps[E, D] = domain match {
+  implicit def default[E, D[X] <: Domain[X]](implicit domain: D[E]): DomainOps[E, D] = domain match {
     case d: Domain.Unbounded[E] => UnboundedOps.default(d)
     case d: Domain.BoundedBelow[E] => BoundedBelowOps.default(d)
     case d: Domain.BoundedAbove[E] => BoundedAboveOps.default(d)
     case d: Domain.Bounded[E] => BoundedOps.default(d)
   }
 
-  trait UnboundedOps[E, D <: Domain[E]] extends DomainOps[E, D] {
+  trait UnboundedOps[E, D[X] <: Domain[X]] extends DomainOps[E, D] {
 
-    override def domain: D & Domain.Unbounded[E]
+    override def domain: D[E] & Domain.Unbounded[E]
 
     override def intervals: Intervals.Unbounded[E, D]
   }
 
   object UnboundedOps {
 
-    implicit def default[E, D <: Domain[E]](domain: D & Domain.Unbounded[E]): UnboundedOps[E, D] = 
+    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.Unbounded[E]): UnboundedOps[E, D] = 
       new DefaultImpl(domain)
 
-    class DefaultImpl[E, D <: Domain[E]](
-      override val domain: D & Domain.Unbounded[E],
+    class DefaultImpl[E, D[X] <: Domain[X]](
+      override val domain: D[E] & Domain.Unbounded[E],
     ) extends UnboundedOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -52,20 +52,20 @@ object DomainOps {
     }
   }
 
-  trait BoundedBelowOps[E, D <: Domain[E]] extends DomainOps[E, D] {
+  trait BoundedBelowOps[E, D[X] <: Domain[X]] extends DomainOps[E, D] {
 
-    override def domain: D & Domain.BoundedBelow[E]
+    override def domain: D[E] & Domain.BoundedBelow[E]
 
     override def intervals: Intervals.BoundedBelow[E, D]
   }
 
   object BoundedBelowOps {
 
-    implicit def default[E, D <: Domain[E]](domain: D & Domain.BoundedBelow[E]): BoundedBelowOps[E, D] = 
+    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.BoundedBelow[E]): BoundedBelowOps[E, D] = 
       new DefaultImpl(domain)
 
-    class DefaultImpl[E, D <: Domain[E]](
-      override val domain: D & Domain.BoundedBelow[E],
+    class DefaultImpl[E, D[X] <: Domain[X]](
+      override val domain: D[E] & Domain.BoundedBelow[E],
     ) extends BoundedBelowOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -80,20 +80,20 @@ object DomainOps {
     }
   }
 
-  trait BoundedAboveOps[E, D <: Domain[E]] extends DomainOps[E, D] {
+  trait BoundedAboveOps[E, D[X] <: Domain[X]] extends DomainOps[E, D] {
 
-    override def domain: D & Domain.BoundedAbove[E]
+    override def domain: D[E] & Domain.BoundedAbove[E]
 
     override def intervals: Intervals.BoundedAbove[E, D]
   }
 
   object BoundedAboveOps {
 
-    implicit def default[E, D <: Domain[E]](domain: D & Domain.BoundedAbove[E]): BoundedAboveOps[E, D] = 
+    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.BoundedAbove[E]): BoundedAboveOps[E, D] = 
       new DefaultImpl(domain)
 
-    class DefaultImpl[E, D <: Domain[E]](
-      override val domain: D & Domain.BoundedAbove[E],
+    class DefaultImpl[E, D[X] <: Domain[X]](
+      override val domain: D[E] & Domain.BoundedAbove[E],
     ) extends BoundedAboveOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -108,20 +108,20 @@ object DomainOps {
     }
   }
 
-  trait BoundedOps[E, D <: Domain[E]] extends DomainOps[E, D] {
+  trait BoundedOps[E, D[X] <: Domain[X]] extends DomainOps[E, D] {
 
-    override def domain: D & Domain.Bounded[E]
+    override def domain: D[E] & Domain.Bounded[E]
 
     override def intervals: Intervals.Bounded[E, D]
   }
 
   object BoundedOps {
 
-    implicit def default[E, D <: Domain[E]](domain: D & Domain.Bounded[E]): BoundedOps[E, D] = 
+    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.Bounded[E]): BoundedOps[E, D] = 
       new DefaultImpl(domain)
 
-    class DefaultImpl[E, D <: Domain[E]](
-      override val domain: D & Domain.Bounded[E],
+    class DefaultImpl[E, D[X] <: Domain[X]](
+      override val domain: D[E] & Domain.Bounded[E],
     ) extends BoundedOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default

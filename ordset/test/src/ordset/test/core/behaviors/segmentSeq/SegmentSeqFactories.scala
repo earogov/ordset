@@ -10,7 +10,7 @@ import ordset.test.core.{Labels, TestRngUtil}
 
 object SegmentSeqFactories {
 
-  def getOrderedSetFactories[E, D <: Domain[E]](
+  def getOrderedSetFactories[E, D[X] <: Domain[X]](
     implicit
     domainOps: DomainOps[E, D],
     boundSelector: BoundSelector[E]

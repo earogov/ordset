@@ -15,7 +15,7 @@ import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
-class SingleBoundedSetSampleLT1[D <: Domain[Int]](
+class SingleBoundedSetSampleLT1[D[X] <: Domain[X]](
   shuffled: Boolean
 )(
   implicit

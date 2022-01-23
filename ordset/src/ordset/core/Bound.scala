@@ -112,10 +112,10 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 
 object Bound {
 
-  implicit def lowerToInterval[E, D <: Domain[E]](lower: Lower[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
+  implicit def lowerToInterval[E, D[X] <: Domain[X]](lower: Lower[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
     ops.intervals.factory.aboveBound(lower)
 
-  implicit def upperToInterval[E, D <: Domain[E]](upper: Upper[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
+  implicit def upperToInterval[E, D[X] <: Domain[X]](upper: Upper[E])(implicit ops: DomainOps[E, D]): Interval[E, D] =
     ops.intervals.factory.belowBound(upper)
 
   implicit def continuousUnboundedOrder[E](

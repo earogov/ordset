@@ -100,7 +100,7 @@ import scala.specialized as sp
  * @tparam V type of value assigned to interval of elements
  * @tparam S type of additional segment state
  */
-trait SegmentSeqT[@sp(spNum) E, D <: Domain[E], @sp(Boolean) V, +S] {
+trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   // Inspection --------------------------------------------------------------- //
   /** Domain operations. */

@@ -23,7 +23,7 @@ object FlatmapExample {
 
   private val booleanOps: ValueOps[Boolean] = implicitly
   private val stringOps: ValueOps[String] = implicitly
-  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
+  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -84,7 +84,7 @@ object FlatmapExample {
      *           true   false
      * }}}
      */
-    def randomSplit[E, D <: Domain[E], V](
+    def randomSplit[E, D[X] <: Domain[X], V](
       boundSelector: BoundSelector[E],
       valuesGenerator: () => (V, V)
     )(

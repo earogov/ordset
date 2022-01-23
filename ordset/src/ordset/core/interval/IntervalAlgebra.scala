@@ -3,7 +3,7 @@ package ordset.core.interval
 import ordset.core.Bound
 import ordset.core.domain.Domain
 
-trait IntervalAlgebra[E, D <: Domain[E]] {
+trait IntervalAlgebra[E, D[X] <: Domain[X]] {
 
   /**
    * Returns subset of elements that belongs to both input intervals.
@@ -54,11 +54,11 @@ trait IntervalAlgebra[E, D <: Domain[E]] {
 
 object IntervalAlgebra {
   
-  implicit def defaultAlgebra[E, D <: Domain[E]](implicit domain: D): IntervalAlgebra[E, D] =
+  implicit def defaultAlgebra[E, D[X] <: Domain[X]](implicit domain: D[E]): IntervalAlgebra[E, D] =
     new DefaultAlgebra(domain, IntervalFactory.defaultFactory(domain))
 
-  class DefaultAlgebra[E, D <: Domain[E]](
-    val domain: D,
+  class DefaultAlgebra[E, D[X] <: Domain[X]](
+    val domain: D[E],
     val interval: IntervalFactory[E, D]
   ) extends IntervalAlgebra[E, D] {
 

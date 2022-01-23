@@ -4,7 +4,7 @@ import ordset.core.value.ValueOps
 import ordset.core.AbstractSegmentSeq
 import ordset.core.domain.Domain
 
-trait OrderedSetCommons[E, D <: Domain[E], +S] {
+trait OrderedSetCommons[E, D[X] <: Domain[X], +S] {
   self: AbstractSegmentSeq[E, D, Boolean, S] => 
 
   @inline

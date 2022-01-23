@@ -21,7 +21,7 @@ import ordset.random.RngManager
  *   1. Adjacent segments after mapping MUST have different values (with respect to `valueOps.valueHash`).
  * </tr>
  */ 
-protected[ordset] class NonMergingMappedOrderedMap[E, D <: Domain[E], U, V, S] protected (
+protected[ordset] class NonMergingMappedOrderedMap[E, D[X] <: Domain[X], U, V, S] protected (
   override final val originalSeq: OrderedMapT[E, D, U, S],
   override final val segmentMapFunc: Segment[E, D, U] => V
 )(
@@ -58,7 +58,7 @@ protected[ordset] class NonMergingMappedOrderedMap[E, D <: Domain[E], U, V, S] p
 
 object NonMergingMappedOrderedMap {
 
-  def apply[E, D <: Domain[E], U, V, S](
+  def apply[E, D[X] <: Domain[X], U, V, S](
     originalSeq: OrderedMapT[E, D, U, S],
     segmentMapFunc: Segment[E, D, U] => V
   )(
@@ -69,7 +69,7 @@ object NonMergingMappedOrderedMap {
   ): NonMergingMappedOrderedMap[E, D, U, V, S] =
     new NonMergingMappedOrderedMap(originalSeq, segmentMapFunc)
 
-  def mapSegment[E, D <: Domain[E], U, V, S](
+  def mapSegment[E, D[X] <: Domain[X], U, V, S](
     originalSegment: SegmentT[E, D, U, S],
     segmentMapFunc: Segment[E, D, U] => V
   )(
@@ -80,7 +80,7 @@ object NonMergingMappedOrderedMap {
   ): MappedSegment[E, D, U, V, S] =
     apply(originalSegment.sequence, segmentMapFunc).mapSegment(originalSegment)
   
-  def mapTruncation[E, D <: Domain[E], U, V, S](
+  def mapTruncation[E, D[X] <: Domain[X], U, V, S](
     originalTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]],
     segmentMapFunc: Segment[E, D, U] => V
   )(

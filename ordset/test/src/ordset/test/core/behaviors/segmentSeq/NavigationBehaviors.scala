@@ -5,7 +5,7 @@ import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.SegmentSeqAssertions._
 import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 
-trait NavigationBehaviors[E, D <: Domain[E], V] { 
+trait NavigationBehaviors[E, D[X] <: Domain[X], V] { 
   this: AnyFunSpec =>
 
   import ordset._

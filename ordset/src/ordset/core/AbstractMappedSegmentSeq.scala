@@ -17,7 +17,7 @@ import AbstractMappedSegmentSeq._
  * X-----------------------------)[---------------X
  * }}}
  */
-abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
+abstract class AbstractMappedSegmentSeq[E, D[X] <: Domain[X], U, V, S]
   extends AbstractSegmentSeq[E, D, V, MappedSegmentBase[E, D, U, V, S]] {
 
   // Inspection --------------------------------------------------------------- //
@@ -517,16 +517,16 @@ abstract class AbstractMappedSegmentSeq[E, D <: Domain[E], U, V, S]
 
 object AbstractMappedSegmentSeq {
 
-  type MappedSegment[E, D <: Domain[E], U, V, S] =
+  type MappedSegment[E, D[X] <: Domain[X], U, V, S] =
     SegmentT[E, D, V, MappedSegmentBase[E, D, U, V, S]] with MappedSegmentBase[E, D, U, V, S]
 
-  type MappedFirstSegment[E, D <: Domain[E], U, V, S] =
+  type MappedFirstSegment[E, D[X] <: Domain[X], U, V, S] =
     SegmentT.First[E, D, V, MappedSegmentBase[E, D, U, V, S]] with MappedSegmentBase[E, D, U, V, S]
 
-  type MappedLastSegment[E, D <: Domain[E], U, V, S] =
+  type MappedLastSegment[E, D[X] <: Domain[X], U, V, S] =
     SegmentT.Last[E, D, V, MappedSegmentBase[E, D, U, V, S]] with MappedSegmentBase[E, D, U, V, S]
 
-  type MappedTruncation[E, D <: Domain[E], U, V, S] =
+  type MappedTruncation[E, D[X] <: Domain[X], U, V, S] =
     SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], MappedSegment[E, D, U, V, S]]
   
   /**
@@ -552,7 +552,7 @@ object AbstractMappedSegmentSeq {
    *
    * 1. `front` segment belongs to `sequence.originalSeq`.
    */
-  sealed trait MappedSegmentBase[E, D <: Domain[E], U, V, S]
+  sealed trait MappedSegmentBase[E, D[X] <: Domain[X], U, V, S]
     extends MappedSegmentLikeT[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]] {
 
     // Inspection --------------------------------------------------------------- //
@@ -786,7 +786,7 @@ object AbstractMappedSegmentSeq {
 
   object MappedSegmentBase {
 
-    trait TruncationBase[E, D <: Domain[E], U, V, S] {
+    trait TruncationBase[E, D[X] <: Domain[X], U, V, S] {
       self: SegmentTruncationT[E, D, V, MappedSegmentBase[E, D, U, V, S], MappedSegment[E, D, U, V, S]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -803,7 +803,7 @@ object AbstractMappedSegmentSeq {
    * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    */
-  sealed trait MappedSegmentWithNext[E, D <: Domain[E], U, V, S]
+  sealed trait MappedSegmentWithNext[E, D[X] <: Domain[X], U, V, S]
     extends MappedSegmentT.WithNext[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
       with MappedSegmentBase[E, D, U, V, S] {
 
@@ -857,7 +857,7 @@ object AbstractMappedSegmentSeq {
    * 1. 'back' segment must have previous segment.
    *    This condition is equivalent to: mapped segment has previous segment.
    */
-  sealed trait MappedSegmentWithPrev[E, D <: Domain[E], U, V, S]
+  sealed trait MappedSegmentWithPrev[E, D[X] <: Domain[X], U, V, S]
     extends MappedSegmentT.WithPrev[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
       with MappedSegmentBase[E, D, U, V, S] {
 
@@ -894,7 +894,7 @@ object AbstractMappedSegmentSeq {
    * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    */
-  final case class MappedInitialSegment[E, D <: Domain[E], U, V, S](
+  final case class MappedInitialSegment[E, D[X] <: Domain[X], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
     override val front: SegmentT.WithNext[E, D, U, S]
   ) extends MappedSegmentT.Initial[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
@@ -940,7 +940,7 @@ object AbstractMappedSegmentSeq {
 
   object MappedInitialSegment {
 
-    final class Truncation[E, D <: Domain[E], U, V, S, +Seg <: MappedInitialSegment[E, D, U, V, S]](
+    final class Truncation[E, D[X] <: Domain[X], U, V, S, +Seg <: MappedInitialSegment[E, D, U, V, S]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Initial.Truncation[E, D, V, MappedSegmentBase[E, D, U, V, S], Seg](
@@ -955,7 +955,7 @@ object AbstractMappedSegmentSeq {
    * Segment is specified by 'front' segment that must be the terminal segment of original sequence
    * (see preconditions of [[MappedSegmentBase]]).
    */
-  final case class MappedTerminalSegment[E, D <: Domain[E], U, V, S](
+  final case class MappedTerminalSegment[E, D[X] <: Domain[X], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
     override val front: SegmentT.Terminal[E, D, U, S]
   ) extends MappedSegmentT.Terminal[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
@@ -996,7 +996,7 @@ object AbstractMappedSegmentSeq {
 
   object MappedTerminalSegment {
 
-    final class Truncation[E, D <: Domain[E], U, V, S, +Seg <: MappedTerminalSegment[E, D, U, V, S]](
+    final class Truncation[E, D[X] <: Domain[X], U, V, S, +Seg <: MappedTerminalSegment[E, D, U, V, S]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Terminal.Truncation[E, D, V, MappedSegmentBase[E, D, U, V, S], Seg](
@@ -1011,7 +1011,7 @@ object AbstractMappedSegmentSeq {
    * Segment is specified by 'front' segment that corresponds to the upper bound
    * (see preconditions of [[MappedSegmentBase]]).
    */
-  final case class MappedInnerSegment[E, D <: Domain[E], U, V, S](
+  final case class MappedInnerSegment[E, D[X] <: Domain[X], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
     override val front: SegmentT.Inner[E, D, U, S]
   ) extends MappedSegmentT.Inner[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
@@ -1048,7 +1048,7 @@ object AbstractMappedSegmentSeq {
 
   object MappedInnerSegment {
 
-    final class Truncation[E, D <: Domain[E], U, V, S, +Seg <: MappedInnerSegment[E, D, U, V, S]](
+    final class Truncation[E, D[X] <: Domain[X], U, V, S, +Seg <: MappedInnerSegment[E, D, U, V, S]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Inner.Truncation[E, D, V, MappedSegmentBase[E, D, U, V, S], Seg](
@@ -1063,7 +1063,7 @@ object AbstractMappedSegmentSeq {
    * Segment is specified by 'front' segment that must be the last segment of original sequence
    * (see preconditions of [[MappedSegmentBase]]).
    */
-  final case class MappedSingleSegment[E, D <: Domain[E], U, V, S](
+  final case class MappedSingleSegment[E, D[X] <: Domain[X], U, V, S](
     override val sequence: MappedSegmentSeq[E, D, U, V, S],
     override val front: SegmentT.Last[E, D, U, S]
   ) extends MappedSegmentT.Single[E, D, U, V, S, MappedSegmentBase[E, D, U, V, S]]
@@ -1111,7 +1111,7 @@ object AbstractMappedSegmentSeq {
 
   object MappedSingleSegment {
 
-    final class Truncation[E, D <: Domain[E], U, V, S, +Seg <: MappedSingleSegment[E, D, U, V, S]](
+    final class Truncation[E, D[X] <: Domain[X], U, V, S, +Seg <: MappedSingleSegment[E, D, U, V, S]](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentT.Single.Truncation[E, D, V, MappedSegmentBase[E, D, U, V, S], Seg](
@@ -1121,15 +1121,15 @@ object AbstractMappedSegmentSeq {
   }
 
   // Protected section -------------------------------------------------------- //
-  protected type Mapper[E, D <: Domain[E], U, V, S, +R] =
+  protected type Mapper[E, D[X] <: Domain[X], U, V, S, +R] =
     SegmentT[E, D, U, S] => R
 
-  protected type WithNextMapper[E, D <: Domain[E], U, V, S, +R] =
+  protected type WithNextMapper[E, D[X] <: Domain[X], U, V, S, +R] =
     SegmentT.WithNext[E, D, U, S] => R
 
-  protected type WithPrevMapper[E, D <: Domain[E], U, V, S, +R] =
+  protected type WithPrevMapper[E, D[X] <: Domain[X], U, V, S, +R] =
     SegmentT.WithPrev[E, D, U, S] => R
 
-  protected type ComposedMapper[E, D <: Domain[E], U, V, S, R] =
+  protected type ComposedMapper[E, D[X] <: Domain[X], U, V, S, R] =
     (Mapper[E, D, U, V, S, R], SegmentT[E, D, U, S]) => R
 }

@@ -11,7 +11,7 @@ import ordset.test.core.samples.segmentSeq.ArraySeqSample
 
 import scala.language.postfixOps
 
-class MultiBoundedSetSample3[D <: Domain[Int]](
+class MultiBoundedSetSample3[D[X] <: Domain[X]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager,

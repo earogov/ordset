@@ -26,7 +26,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
   import ordset.test.core.IntervalAssertions._
   import ordset.test.core.TestRngUtil.Implicits._
 
-  type Dom = Domain.ContinuousUnbounded[Int]
+  type Dom[X] = Domain.ContinuousUnbounded[X]
 
   private val x: BoundBuilder[Int, Dom] = BoundBuilder[Int, Dom]
 
@@ -274,7 +274,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
 
   it("should get bound segments") {
 
-    def toList[E, D <: Domain[E], V](tuple: (Segment[E, D, V], Segment[E, D, V])): List[Segment[E, D, V]] =
+    def toList[E, D[X] <: Domain[X], V](tuple: (Segment[E, D, V], Segment[E, D, V])): List[Segment[E, D, V]] =
       List(tuple._1, tuple._2)
 
     assertSameRelationSeq(

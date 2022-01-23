@@ -15,7 +15,7 @@ import java.util.NoSuchElementException
 import scala.util.control.NonFatal
 import ordset.tree.treap.immutable.traverse.NodeAside
 
-class NonuniformTreapOrderedSet[E, D <: Domain[E]] protected (
+class NonuniformTreapOrderedSet[E, D[X] <: Domain[X]] protected (
   final override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
   final override val lastValue: Boolean,
   final val complementary: Boolean
@@ -57,7 +57,7 @@ object NonuniformTreapOrderedSet {
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
-  def uncheckedOptimized[E, D <: Domain[E]](
+  def uncheckedOptimized[E, D[X] <: Domain[X]](
     root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     lastValue: Boolean,
     complementary: Boolean
@@ -78,7 +78,7 @@ object NonuniformTreapOrderedSet {
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
-  def unchecked[E, D <: Domain[E]](
+  def unchecked[E, D[X] <: Domain[X]](
     root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     complementary: Boolean
   )(

@@ -14,7 +14,7 @@ import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
-trait Sample3[D <: Domain[Int]]
+trait Sample3[D[X] <: Domain[X]]
   extends SegmentMoveToBoundTest[Int, D, Boolean]
     with SegmentContainsTest[Int, D, Boolean]
     with SegmentRestrictBoundTest[Int, D, Boolean]

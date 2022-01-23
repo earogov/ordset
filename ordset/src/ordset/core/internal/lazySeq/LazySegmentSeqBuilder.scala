@@ -53,7 +53,7 @@ protected[ordset] object LazySegmentSeqBuilder {
    *      A       B      E         F
    * }}}
    */
-  def appendSegment[E, D <: Domain[E], V](
+  def appendSegment[E, D[X] <: Domain[X], V](
     bound: Bound[E],
     leftSegment: Segment[E, D, V],
     rightSegment: Segment[E, D, V]
@@ -73,7 +73,7 @@ protected[ordset] object LazySegmentSeqBuilder {
    * Returns lazy sequence that after computation of all lazy values is equivalent to the result of appending
    * sequence `leftSeq` to sequence `rightSeq` above specified `bound` (see [[SegmentSeqT.appendAboveBound]]). 
    */
-  def appendSeq[E, D <: Domain[E], V](
+  def appendSeq[E, D[X] <: Domain[X], V](
     bound: Bound[E],
     leftSeq: SegmentSeq[E, D, V],
     rightSeq: SegmentSeq[E, D, V]
@@ -92,7 +92,7 @@ protected[ordset] object LazySegmentSeqBuilder {
   /**
    * Creates [[SupplierSegmentSeq]] with `value1` below `bound` (including) and `value2` above it.
    */ 
-  private final def consSingleBoundedSupplierSeq[E, D <: Domain[E], V](
+  private final def consSingleBoundedSupplierSeq[E, D[X] <: Domain[X], V](
     bound: Bound.Upper[E],
     value1: SeqSupplier[E, D, V],
     value2: SeqSupplier[E, D, V]

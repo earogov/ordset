@@ -4,7 +4,7 @@ import ordset.core.domain.Domain
 import ordset.core.{Bound, ExtendedBound}
 import ordset.test.core.behaviors.TestShowUtil
 
-trait SegmentContainsTest[E, D <: Domain[E], V] {
+trait SegmentContainsTest[E, D[X] <: Domain[X], V] {
 
   def containsCases: Seq[SegmentContainsTest.TestCase[E, D, V]]
 }
@@ -18,7 +18,7 @@ object SegmentContainsTest {
    * @param includedBounds list of extended bounds that should be included in segment S
    * @param excludedBounds list of extended bounds that should not be included in segment S
    */
-  case class TestCase[E, D <: Domain[E], V](
+  case class TestCase[E, D[X] <: Domain[X], V](
     bound: Bound[E],
     includedBounds: List[ExtendedBound[E]],
     excludedBounds: List[ExtendedBound[E]]

@@ -6,7 +6,7 @@ import ordset.core.set.NonuniformTreapOrderedSet
 import AbstractUniformSegmentSeq.*
 
 // TODO: class description.
-abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
+abstract class AbstractUniformSegmentSeq[E, D[X] <: Domain[X],  V]
   extends AbstractSegmentSeq[E, D, V, UniformSingleSegment[E, D, V]] {
 
   // Inspection --------------------------------------------------------------- //
@@ -167,12 +167,12 @@ abstract class AbstractUniformSegmentSeq[E, D <: Domain[E],  V]
 
 object AbstractUniformSegmentSeq {
 
-  type UniformTruncation[E, D <: Domain[E], V] = UniformSingleSegment.Truncation[E, D, V, UniformSingleSegment[E, D, V]]
+  type UniformTruncation[E, D[X] <: Domain[X], V] = UniformSingleSegment.Truncation[E, D, V, UniformSingleSegment[E, D, V]]
   
   /**
    * Single segment of sequence. It has no previous and next segments.
    */
-  final case class UniformSingleSegment[E, D <: Domain[E], V](
+  final case class UniformSingleSegment[E, D[X] <: Domain[X], V](
     override val sequence: UniformSegmentSeq[E, D, V]
   ) extends SegmentT.Single[E, D, V, UniformSingleSegment[E, D, V]] {
 
@@ -220,7 +220,7 @@ object AbstractUniformSegmentSeq {
 
   object UniformSingleSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: UniformSingleSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: UniformSingleSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Single.Truncation[E, D, V, UniformSingleSegment[E, D, V], Seg](

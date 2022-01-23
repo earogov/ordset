@@ -7,7 +7,7 @@ import ordset.core.internal.lazySeq.*
 import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap}
-import ordset.core.value.ValueOps
+import ordset.core.value.{ValueOps, InclusionPredicate}
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
 import ordset.test.core.implementations.domain.BoundSelector
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
  * <tr>- access to zipped sequence;</tr>
  * <tr>- simplified creation and clone operation.</tr>
  */
-class LazyTreapSegmentSeq[E, D <: Domain[E], V] protected (
+class LazyTreapSegmentSeq[E, D[X] <: Domain[X], V] protected (
   initZippedSeq: ZSegmentSeq[E, D, V]
 )(
   implicit
@@ -49,7 +49,7 @@ object LazyTreapSegmentSeq {
   /**
    * Creates sequence that consists of lazy segments only.
    */
-  def totallyLazy[E, D <: Domain[E], V](
+  def totallyLazy[E, D[X] <: Domain[X], V](
     initSeq: Iterable[(ExtendedBound.Upper[E], () => SegmentSeq[E, D, V])]
   )(
     implicit
@@ -83,7 +83,7 @@ object LazyTreapSegmentSeq {
    * Creates new lazy sequence with the same internal state as original. The point is that access to the clone
    * will keep internal state of original unmodified.
    */
-  def clone[E, D <: Domain[E], V](
+  def clone[E, D[X] <: Domain[X], V](
     original: LazyTreapSegmentSeq[E, D, V]
   ): LazyTreapSegmentSeq[E, D, V] =
     new LazyTreapSegmentSeq(original.getZippedSeq)(original.domainOps, original.valueOps, original.rngManager)
@@ -91,7 +91,7 @@ object LazyTreapSegmentSeq {
   /**
    * Returns factory that creates lazy treap ordered map with random internal state (random lazy and eager parts).
    */
-  def getRandomMapFactory[E, D <: Domain[E], V](
+  def getRandomMapFactory[E, D[X] <: Domain[X], V](
     implicit boundSelector: BoundSelector[E]
   ): OrderedMapFactory[E, D, V, LazyTreapSegmentSeq[E, D, V]] =
     new RandomMapFactory
@@ -101,7 +101,7 @@ object LazyTreapSegmentSeq {
    * <tr>- all lazy control values are considered equals and have same hash code;</tr>
    * <tr>- all other control values are compared according to input `valueHash`.</tr>
    */
-  final class TestControlValueHash[E, D <: Domain[E], V](
+  final class TestControlValueHash[E, D[X] <: Domain[X], V](
     val valueHash: Hash[ControlValue[E, D, V]]
   ) extends Hash[ControlValue[E, D, V]] {
 
@@ -124,19 +124,26 @@ object LazyTreapSegmentSeq {
     protected lazy val lazyHash: Int = TestControlValueHash.##
   }
 
+  /**
+   * Implementation of [[ValueOps]] for [[ControlValue]] for tests:
+   * <tr>- all lazy control values are considered equals and have same hash code;</tr>
+   * <tr>- all other control values are compared according to input `valueOps`.</tr>
+   */
+  final class TestControlValueOps[E, D[X] <: Domain[X], V](
+    val valueOps: ValueOps[ControlValue[E, D, V]]
+  ) extends ValueOps[ControlValue[E, D, V]] {
+
+    override val unit: ControlValue[E, D, V] = valueOps.unit
+
+    override val valueHash: Hash[ControlValue[E, D, V]] = TestControlValueHash(valueOps.valueHash)
+
+    override val valueIncl: InclusionPredicate[ControlValue[E, D, V]] = valueOps.valueIncl
+  }
+
   object TestControlValueOps {
 
-    /**
-     * Implementation of [[ValueOps]] for [[ControlValue]] for tests:
-     * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-     * <tr>- all other control values are compared according to input `valueOps`.</tr>
-     */
-    def get[E, D <: Domain[E], V](valueOps: ValueOps[ControlValue[E, D, V]]): ValueOps[ControlValue[E, D, V]] =
-      new ControlValueOps(
-        valueOps.unit,
-        TestControlValueHash(valueOps.valueHash),
-        valueOps.valueIncl
-      )
+    def get[E, D[X] <: Domain[X], V](valueOps: ValueOps[ControlValue[E, D, V]]): ValueOps[ControlValue[E, D, V]] =
+      new TestControlValueOps(valueOps)
   }
 
   object TestZValueOps {
@@ -146,7 +153,7 @@ object LazyTreapSegmentSeq {
      * <tr>- all lazy control values are considered equals and have same hash code;</tr>
      * <tr>- all other control values are compared according to input `valueOps`.</tr>
      */
-    def get[E, D <: Domain[E], V](valueOps: ValueOps[ZValue[E, D, V]]): ValueOps[ZValue[E, D, V]] = {
+    def get[E, D[X] <: Domain[X], V](valueOps: ValueOps[ZValue[E, D, V]]): ValueOps[ZValue[E, D, V]] = {
       val firstOps: ValueOps[V] =
         new ValueOps.MapImpl[ZValue[E, D, V], V](
           valueOps,
@@ -168,7 +175,7 @@ object LazyTreapSegmentSeq {
   }
 
   // Private section ---------------------------------------------------------- //
-  private class RandomMapFactory[E, D <: Domain[E], V](
+  private class RandomMapFactory[E, D[X] <: Domain[X], V](
     implicit boundSelector: BoundSelector[E]
   ) extends OrderedMapFactory[E, D, V, LazyTreapSegmentSeq[E, D, V]] {
 

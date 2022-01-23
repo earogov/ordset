@@ -17,7 +17,7 @@ object LazyTreapSeqUtil {
   /**
    * Performs random access to different parts of sequence to shuffle its internal state.
    */
-  def shuffleLazySeq[E, D <: Domain[E], V, SS <: LazySegmentSeq[E, D, V]](
+  def shuffleLazySeq[E, D[X] <: Domain[X], V, SS <: LazySegmentSeq[E, D, V]](
     seq: SS,
     bounds: Iterable[ExtendedBound[E]]
   )(
@@ -43,7 +43,7 @@ object LazyTreapSeqUtil {
    * Takes input sequence and builds equivalent lazy sequence with random internal state:
    * different parts of sequence may be lazy or eager.
    */
-  def makeRandomLazySeq[E, D <: Domain[E], V](
+  def makeRandomLazySeq[E, D[X] <: Domain[X], V](
     seq: SegmentSeq[E, D, V]
   )(
     implicit
@@ -130,7 +130,7 @@ object LazyTreapSeqUtil {
    * 
    * Each value of sequence belongs to input `values` set.
    */
-  def makeRandomTreapSeq[E, D <: Domain[E], V](
+  def makeRandomTreapSeq[E, D[X] <: Domain[X], V](
     lower: ExtendedBound.Lower[E],
     upper: ExtendedBound.Upper[E],
     values: IndexedSeq[V]
@@ -198,12 +198,12 @@ object LazyTreapSeqUtil {
    * Operation is repeated `iterations` times.
    */
   @tailrec
-  def splitBounds[E](
+  def splitBounds[E, D[X] <: Domain[X]](
     bounds: Seq[ExtendedBound[E]],
     iterations: Int
   )(
     implicit
-    domain: Domain[E],
+    domain: D[E],
     boundSelector: BoundSelector[E]
   ): Seq[ExtendedBound[E]] = {
 

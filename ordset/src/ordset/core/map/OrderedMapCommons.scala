@@ -3,7 +3,7 @@ package ordset.core.map
 import ordset.core.AbstractSegmentSeq
 import ordset.core.domain.Domain
 
-trait OrderedMapCommons[E, D <: Domain[E], V, +S] {
+trait OrderedMapCommons[E, D[X] <: Domain[X], V, +S] {
   self: AbstractSegmentSeq[E, D, V, S] =>
 
   // Protected section -------------------------------------------------------- //

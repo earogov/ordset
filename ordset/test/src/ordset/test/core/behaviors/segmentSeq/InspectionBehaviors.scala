@@ -6,7 +6,7 @@ import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.SegmentSeqAssertions._
 import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 
-trait InspectionBehaviors[E, D <: Domain[E], V] {
+trait InspectionBehaviors[E, D[X] <: Domain[X], V] {
   this: AnyFunSpec =>
 
   import ordset._

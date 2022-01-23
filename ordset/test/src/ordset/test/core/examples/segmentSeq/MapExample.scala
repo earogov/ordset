@@ -22,7 +22,7 @@ object MapExample {
 
   private val intOps: ValueOps[Int] = implicitly
   private val booleanOps: ValueOps[Boolean] = implicitly
-  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
+  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -52,7 +52,7 @@ object MapExample {
     
     println()
     println(s"Map all segments below $bound1 to `true` and above - to `false`.")
-    val mapFunc = (s: Segment[Int, _ <: Domain[Int], Boolean]) => s.domainOps.extendedOrd.lteqv(s.upper, bound1)
+    val mapFunc = (s: Segment[Int, _ <: Domain, Boolean]) => s.domainOps.extendedOrd.lteqv(s.upper, bound1)
     val seq2 = seq1.mapSegments(mapFunc)(booleanOps)
 
     println("Received sequence:")

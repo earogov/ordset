@@ -13,7 +13,7 @@ import ordset.test.core.samples.segmentSeq.ZippedSeqSample
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
-class UniversalSetSample1[D <: Domain[Int]](
+class UniversalSetSample1[D[X] <: Domain[X]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager,

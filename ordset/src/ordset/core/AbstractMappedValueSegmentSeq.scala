@@ -5,7 +5,7 @@ import ordset.core.AbstractMappedSegmentSeq
 import ordset.core.internal.TransformationUtil
 import AbstractMappedSegmentSeq._
 
-abstract class AbstractMappedValueSegmentSeq[E, D <: Domain[E], U, V, S]
+abstract class AbstractMappedValueSegmentSeq[E, D[X] <: Domain[X], U, V, S]
   extends AbstractMappedSegmentSeq[E, D, U, V, S] {
 
   // Inspection --------------------------------------------------------------- //

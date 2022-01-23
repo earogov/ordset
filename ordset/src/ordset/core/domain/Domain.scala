@@ -2,7 +2,7 @@ package ordset.core.domain
 
 import ordset.{BoundedOrder, DiscreteOrder, Order, Hash}
 import ordset.core.{Bound, ExtendedBound}
-import ordset.core.range.{SimpleRange, SimpleRangeFactory, RangeAlgebra}
+import ordset.core.range.{SimpleRange, SimpleRangeFactory, RangeFactory, RangeAlgebra}
 
 sealed trait Domain[E] extends DomainLike[E] {
 
@@ -11,7 +11,7 @@ sealed trait Domain[E] extends DomainLike[E] {
 
 object Domain {
 
-  implicit def defaultHash[E, D <: Domain[E]]: Hash[D] = defaultHashInstance.asInstanceOf
+  implicit def defaultHash[E, D[X] <: Domain[X]]: Hash[D[E]] = defaultHashInstance.asInstanceOf
 
   sealed trait Unbounded[E] extends Domain[E] {
 
@@ -135,11 +135,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.UnboundedOrder[E] =
         ExtendedBound.unboundedOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        //SimpleRangeFactory.unbounded(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.Unbounded[Nothing, ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.unbounded(extendedOrd.contravariant)
 
-      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
-      //   rangeFactory.between(lowerBound, upperBound)
+      override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -163,11 +163,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.BoundedBelowOrder[E] =
         ExtendedBound.boundedBelowOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.boundedBelow(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.BoundedBelow[Bound.Lower[E], ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.boundedBelow(extendedOrd.contravariant)
 
-      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
-      //   rangeFactory.between(lowerBound, upperBound)
+      override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -191,11 +191,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.BoundedAboveOrder[E] =
         ExtendedBound.boundedAboveOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.boundedAbove(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.BoundedAbove[Bound.Upper[E], ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.boundedAbove(extendedOrd.contravariant)
 
-      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
-      //   rangeFactory.between(lowerBound, upperBound)
+      override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -219,11 +219,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.BoundedOrder[E] =
         ExtendedBound.boundedOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.bounded(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.Bounded[Bound[E], ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.bounded(extendedOrd.contravariant)
 
-      // override val boundsRange: SimpleRange[ExtendedBound[E]] = 
-      //   rangeFactory.between(lowerBound, upperBound)
+      override val boundsRange: SimpleRange[Bound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -253,8 +253,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.UnboundedOrder[E] =
         ExtendedBound.unboundedOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.unbounded(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.Unbounded[Nothing, ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.unbounded(extendedOrd.contravariant)
+
+      override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -284,8 +287,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.BoundedBelowOrder[E] =
         ExtendedBound.boundedBelowOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.boundedBelow(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.BoundedBelow[Bound.Lower[E], ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.boundedBelow(extendedOrd.contravariant)
+
+      override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -315,8 +321,11 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.BoundedAboveOrder[E] =
         ExtendedBound.boundedAboveOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.boundedAbove(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.BoundedAbove[Bound.Upper[E], ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.boundedAbove(extendedOrd.contravariant)
+
+      override val boundsRange: SimpleRange[ExtendedBound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
@@ -346,20 +355,23 @@ object Domain {
       override implicit val extendedOrd: ExtendedBound.BoundedOrder[E] =
         ExtendedBound.boundedOrder(boundOrd)
 
-      override implicit val rangeFactory: SimpleRangeFactory[ExtendedBound[E]] = ???
-        ///SimpleRangeFactory.bounded(extendedOrd)
+      override implicit val rangeFactory: RangeFactory.Bounded[Bound[E], ExtendedBound[E], SimpleRange] =
+        SimpleRangeFactory.bounded(extendedOrd.contravariant)
+
+      override val boundsRange: SimpleRange[Bound[E]] = 
+        rangeFactory.between(lowerBound, upperBound)
     }
   }
 
-  class DefaultHash[E, D <: Domain[E]](
+  class DefaultHash[E, D[X] <: Domain[X]](
     val orderHash: Hash[Order[E]]
-  ) extends Hash[D] {
+  ) extends Hash[D[E]] {
 
     import ordset.util.HashUtil._
 
     private val hashConst: Array[Int] = Array(0xC38B071A, 0x084E22F0, 0x4FE710A5, 0xAA63B51C, 0x84CE051B, 0x6E78FA31)
 
-    override def eqv(x: D, y: D): Boolean =
+    override def eqv(x: D[E], y: D[E]): Boolean =
       (x eq y) || 
       (
         x.isBoundedBelow == y.isBoundedBelow && 
@@ -368,7 +380,7 @@ object Domain {
         orderHash.eqv(x.elementOrd, y.elementOrd)
       )
 
-    override def hash(x: D): Int = {
+    override def hash(x: D[E]): Int = {
       val h1 = if (x.isBoundedBelow) hashConst(0) else hashConst(1)
       val h2 = if (x.isBoundedAbove) hashConst(2) else hashConst(3)
       val h3 = if (x.isContinuous) hashConst(4) else hashConst(5)
@@ -377,6 +389,6 @@ object Domain {
   }
 
   // Private section ---------------------------------------------------------- //
-  private val defaultHashInstance: DefaultHash[Any, Domain[Any]] = 
+  private val defaultHashInstance: DefaultHash[Any, Domain] = 
     new DefaultHash(ordset.util.HashUtil.classBasedHash)
 }

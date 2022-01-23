@@ -105,7 +105,7 @@ import java.util.concurrent.atomic.AtomicReference
  *      the same value
  * }}}
  */
-abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
+abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
   extends AbstractSegmentSeq[E, D, V, LazySegmentBase[E, D, V]] {
 
   // Inspection --------------------------------------------------------------- //
@@ -1692,16 +1692,16 @@ abstract class AbstractLazyTreapSegmentSeq[E, D <: Domain[E], V]
 
 object AbstractLazyTreapSegmentSeq { outer =>
 
-  type LazySegment[E, D <: Domain[E], V] =
+  type LazySegment[E, D[X] <: Domain[X], V] =
     SegmentT[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
 
-  type LazyFirstSegment[E, D <: Domain[E], V] =
+  type LazyFirstSegment[E, D[X] <: Domain[X], V] =
     SegmentT.First[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
 
-  type LazyLastSegment[E, D <: Domain[E], V] =
+  type LazyLastSegment[E, D[X] <: Domain[X], V] =
     SegmentT.Last[E, D, V, LazySegmentBase[E, D, V]] with LazySegmentBase[E, D, V]
 
-  type LazyTruncation[E, D <: Domain[E], V] =
+  type LazyTruncation[E, D[X] <: Domain[X], V] =
     SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], LazySegment[E, D, V]]
 
   /**
@@ -1734,34 +1734,34 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     import ordset.core.internal.lazySeq
 
-    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] & Tag[Stable.type]
+    type ZSegment[E, D[X] <: Domain[X], V] = lazySeq.ZSegment[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] & Tag[Stable.type]
+    type ZSegmentWithNext[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentWithNext[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] & Tag[Stable.type]
+    type ZSegmentWithPrev[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentWithPrev[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] & Tag[Stable.type]
+    type ZSegmentInitial[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentInitial[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] & Tag[Stable.type]
+    type ZSegmentTerminal[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentTerminal[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] & Tag[Stable.type]
+    type ZSegmentInner[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentInner[E, D, V] & Tag[Stable.type]
 
-    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] & Tag[Stable.type]
+    type ZSegmentSingle[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentSingle[E, D, V] & Tag[Stable.type]
 
     /**
      * If input `segment` is stable marks it with [[Stable]] tag, otherwise throws exception.
      */
     @throws[AssertionError]("if input segment is not stable")
-    def assert[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
+    def assert[E, D[X] <: Domain[X], V](segment: lazySeq.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
       if (segment.value._2.isStable) tagged(segment) else throwSegmentIsNotStable(segment)
 
     /**
      * Marks input segment with [[Stable]] tag. Stability check must be provided by caller.
      */
-    def unsafe[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
+    def unsafe[E, D[X] <: Domain[X], V](segment: lazySeq.ZSegment[E, D, V]): stable.ZSegment[E, D, V] =
       tagged(segment)
 
-    def throwSegmentIsNotStable[E, D <: Domain[E], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
+    def throwSegmentIsNotStable[E, D[X] <: Domain[X], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
       throw AssertionError(s"Expected that segment $zsegment is stable.")
 
     // Private section ---------------------------------------------------------- //
@@ -1798,34 +1798,34 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
     import ordset.core.internal.lazySeq
 
-    type ZSegment[E, D <: Domain[E], V] = lazySeq.ZSegment[E, D, V] & Tag[Eager.type]
+    type ZSegment[E, D[X] <: Domain[X], V] = lazySeq.ZSegment[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentWithNext[E, D <: Domain[E], V] = lazySeq.ZSegmentWithNext[E, D, V] & Tag[Eager.type]
+    type ZSegmentWithNext[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentWithNext[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentWithPrev[E, D <: Domain[E], V] = lazySeq.ZSegmentWithPrev[E, D, V] & Tag[Eager.type]
+    type ZSegmentWithPrev[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentWithPrev[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentInitial[E, D <: Domain[E], V] = lazySeq.ZSegmentInitial[E, D, V] & Tag[Eager.type]
+    type ZSegmentInitial[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentInitial[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentTerminal[E, D <: Domain[E], V] = lazySeq.ZSegmentTerminal[E, D, V] & Tag[Eager.type]
+    type ZSegmentTerminal[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentTerminal[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentInner[E, D <: Domain[E], V] = lazySeq.ZSegmentInner[E, D, V] & Tag[Eager.type]
+    type ZSegmentInner[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentInner[E, D, V] & Tag[Eager.type]
 
-    type ZSegmentSingle[E, D <: Domain[E], V] = lazySeq.ZSegmentSingle[E, D, V] & Tag[Eager.type]
+    type ZSegmentSingle[E, D[X] <: Domain[X], V] = lazySeq.ZSegmentSingle[E, D, V] & Tag[Eager.type]
 
     /**
      * If input `segment` is eager marks it with [[Eager]] tag, otherwise throws exception.
      */
     @throws[AssertionError]("if input segment is not eager")
-    def assert[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
+    def assert[E, D[X] <: Domain[X], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
       if (segment.value._2.isEager) tagged(segment) else throwSegmentIsNotEager(segment)
 
     /**
      * Marks input segment with [[Eager]] tag. Strictness check must be provided by caller.
      */
-    def unsafe[E, D <: Domain[E], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
+    def unsafe[E, D[X] <: Domain[X], V](segment: lazySeq.ZSegment[E, D, V]): eager.ZSegment[E, D, V] =
       tagged(segment)
 
-    def throwSegmentIsNotEager[E, D <: Domain[E], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
+    def throwSegmentIsNotEager[E, D[X] <: Domain[X], V](zsegment: lazySeq.ZSegment[E, D, V]): Nothing =
       throw AssertionError(s"Expected that segment $zsegment is eager.")
 
     // Private section ---------------------------------------------------------- //
@@ -1838,7 +1838,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
    * Wraps [[ZSegment]] - segment with internal representation of lazy sequence and
    * provides api to interact with lazy sequence.
    */
-  sealed trait LazySegmentBase[E, D <: Domain[E], V] 
+  sealed trait LazySegmentBase[E, D[X] <: Domain[X], V] 
     extends MappedSegmentLikeT[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
@@ -1968,7 +1968,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   object LazySegmentBase {
 
-    trait TruncationBase[E, D <: Domain[E], V] {
+    trait TruncationBase[E, D[X] <: Domain[X], V] {
       self: SegmentTruncationT[E, D, V, LazySegmentBase[E, D, V], LazySegment[E, D, V]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -1982,7 +1982,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy segment with next segment.
    */
-  sealed trait LazySegmentWithNext[E, D <: Domain[E], V] 
+  sealed trait LazySegmentWithNext[E, D[X] <: Domain[X], V] 
     extends MappedSegmentT.WithNext[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] 
     with LazySegmentBase[E, D, V] {
 
@@ -2008,7 +2008,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy segment with previous segment.
    */
-  sealed trait LazySegmentWithPrev[E, D <: Domain[E], V] 
+  sealed trait LazySegmentWithPrev[E, D[X] <: Domain[X], V] 
     extends MappedSegmentT.WithPrev[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]]
     with LazySegmentBase[E, D, V] {
 
@@ -2034,7 +2034,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy initial segment.
    */
-  final case class LazyInitialSegment[E, D <: Domain[E], V] private (
+  final case class LazyInitialSegment[E, D[X] <: Domain[X], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
@@ -2075,13 +2075,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   object LazyInitialSegment {
 
-    def apply[E, D <: Domain[E], V](
+    def apply[E, D[X] <: Domain[X], V](
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentInitial[E, D, V]
     ): LazyInitialSegment[E, D, V] = 
       new LazyInitialSegment(sequence, new AtomicReference(zsegment))
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: LazyInitialSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: LazyInitialSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Initial.Truncation[E, D, V, LazySegmentBase[E, D, V], Seg](
@@ -2093,7 +2093,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy terminal segment.
    */
-  final case class LazyTerminalSegment[E, D <: Domain[E], V] private (
+  final case class LazyTerminalSegment[E, D[X] <: Domain[X], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
@@ -2134,13 +2134,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   object LazyTerminalSegment {
 
-    def apply[E, D <: Domain[E], V](
+    def apply[E, D[X] <: Domain[X], V](
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentTerminal[E, D, V]
     ): LazyTerminalSegment[E, D, V] = 
       new LazyTerminalSegment(sequence, new AtomicReference(zsegment))
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: LazyTerminalSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: LazyTerminalSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Terminal.Truncation[E, D, V, LazySegmentBase[E, D, V], Seg](
@@ -2152,7 +2152,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy inner segment.
    */
-  final case class LazyInnerSegment[E, D <: Domain[E], V] private (
+  final case class LazyInnerSegment[E, D[X] <: Domain[X], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
@@ -2198,13 +2198,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   object LazyInnerSegment {
 
-    def apply[E, D <: Domain[E], V](
+    def apply[E, D[X] <: Domain[X], V](
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentInner[E, D, V]
     ): LazyInnerSegment[E, D, V] = 
       new LazyInnerSegment(sequence, new AtomicReference(zsegment))
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: LazyInnerSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: LazyInnerSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Inner.Truncation[E, D, V, LazySegmentBase[E, D, V], Seg](
@@ -2216,7 +2216,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Lazy single segment.
    */
-  final case class LazySingleSegment[E, D <: Domain[E], V] private (
+  final case class LazySingleSegment[E, D[X] <: Domain[X], V] private (
     override val sequence: LazySegmentSeq[E, D, V],
     // Public constructor has more strict type to provide safe cast in implementation of `this.original`
     // (see p.2 of comments to `LazySegmentBase.original`).
@@ -2264,13 +2264,13 @@ object AbstractLazyTreapSegmentSeq { outer =>
 
   object LazySingleSegment {
 
-    def apply[E, D <: Domain[E], V](
+    def apply[E, D[X] <: Domain[X], V](
       sequence: LazySegmentSeq[E, D, V],
       zsegment: Stable.ZSegmentSingle[E, D, V]
     ): LazySingleSegment[E, D, V] = 
       new LazySingleSegment(sequence, new AtomicReference(zsegment))
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: LazySingleSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: LazySingleSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Single.Truncation[E, D, V, LazySegmentBase[E, D, V], Seg](
@@ -2296,7 +2296,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
      * 2. `zsegment` and its adjacent segments are such that correction of control values isn't required.
      *    Otherwise method may produce lazy sequence in invalid state.
      */
-    def takeAboveZSegmentWithoutCorrection[E, D <: Domain[E], V](
+    def takeAboveZSegmentWithoutCorrection[E, D[X] <: Domain[X], V](
       zsegment: ZSegment[E, D, V],
       sequence: LazySegmentSeq[E, D, V]
     ): LazySegmentSeq[E, D, V] = {
@@ -2319,7 +2319,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
      * 2. `zsegment` and its adjacent segments are such that correction of control values isn't required.
      *    Otherwise method may produce lazy sequence in invalid state.
      */
-    def takeBelowZSegmentWithoutCorrection[E, D <: Domain[E], V](
+    def takeBelowZSegmentWithoutCorrection[E, D[X] <: Domain[X], V](
       zsegment: ZSegment[E, D, V],
       sequence: LazySegmentSeq[E, D, V]
     ): LazySegmentSeq[E, D, V] = {
@@ -2328,7 +2328,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
       sequence.consLazy(sequence.makeZippedSeq(newBaseSeq, newControlSeq))
     }
 
-    def sliceZSegmentWithoutCorrection[E, D <: Domain[E], V](
+    def sliceZSegmentWithoutCorrection[E, D[X] <: Domain[X], V](
       zsegment: ZSegment[E, D, V],
       sequence: LazySegmentSeq[E, D, V]
     ): (LazySegmentSeq[E, D, V], LazySegmentSeq[E, D, V]) = {
@@ -2342,7 +2342,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
     }
 
     // Private section ---------------------------------------------------------- //
-    private def sliceOriginalSeq[E, D <: Domain[E], U](
+    private def sliceOriginalSeq[E, D[X] <: Domain[X], U](
       back: SegmentT[E, D, U, TreapSegmentBase[E, D, U]] with TreapSegmentBase[E, D, U],
       front: SegmentT[E, D, U, TreapSegmentBase[E, D, U]] with TreapSegmentBase[E, D, U]
     ): (TreapSegmentSeq[E, D, U], TreapSegmentSeq[E, D, U]) =

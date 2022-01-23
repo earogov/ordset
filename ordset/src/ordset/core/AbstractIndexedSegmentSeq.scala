@@ -26,7 +26,7 @@ import scala.collection.Seq
  * <tr>`bounds` collection MUST be non-empty.                   </tr>
  * <tr>`bounds` collection SHOULD provide fast access by index. </tr>
  */
-abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V] 
+abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V] 
   extends AbstractSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
   
   // Inspection --------------------------------------------------------------- //
@@ -330,10 +330,10 @@ abstract class AbstractIndexedSegmentSeq[E, D <: Domain[E],  V]
 
 object AbstractIndexedSegmentSeq {
 
-  type IndexedSegment[E, D <: Domain[E], V] =
+  type IndexedSegment[E, D[X] <: Domain[X], V] =
     SegmentT[E, D, V, IndexedSegmentBase[E, D, V]] with IndexedSegmentBase[E, D, V]
   
-  type IndexedTruncation[E, D <: Domain[E], V] =
+  type IndexedTruncation[E, D[X] <: Domain[X], V] =
     SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], IndexedSegment[E, D, V]]
 
   /**
@@ -343,7 +343,7 @@ object AbstractIndexedSegmentSeq {
    *
    * 1. `0 <= ind <= bounds.length (last segment index)`.
    */
-  sealed trait IndexedSegmentBase[E, D <: Domain[E], V]
+  sealed trait IndexedSegmentBase[E, D[X] <: Domain[X], V]
     extends SegmentLikeT[E, D, V, IndexedSegmentBase[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //
@@ -391,7 +391,7 @@ object AbstractIndexedSegmentSeq {
 
   object IndexedSegmentBase {
 
-    trait TruncationBase[E, D <: Domain[E], V] {
+    trait TruncationBase[E, D[X] <: Domain[X], V] {
       self: SegmentTruncationT[E, D, V, IndexedSegmentBase[E, D, V], IndexedSegment[E, D, V]] =>
 
       override def prepend(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -409,7 +409,7 @@ object AbstractIndexedSegmentSeq {
    *
    * 1. `0 <= ind < bounds.length (last segment index)`.
    */
-  sealed trait IndexedSegmentWithNext[E, D <: Domain[E], V]
+  sealed trait IndexedSegmentWithNext[E, D[X] <: Domain[X], V]
     extends SegmentT.WithNext[E, D, V, IndexedSegmentBase[E, D, V]]
       with IndexedSegmentBase[E, D, V] {
 
@@ -437,7 +437,7 @@ object AbstractIndexedSegmentSeq {
    *
    * 1. `1 <= ind <= bounds.length (last segment index)`.
    */
-  sealed trait IndexedSegmentWithPrev[E, D <: Domain[E], V]
+  sealed trait IndexedSegmentWithPrev[E, D[X] <: Domain[X], V]
     extends SegmentT.WithPrev[E, D, V, IndexedSegmentBase[E, D, V]]
       with IndexedSegmentBase[E, D, V] {
 
@@ -459,7 +459,7 @@ object AbstractIndexedSegmentSeq {
   }
 
   /** Initial segment of sequence. */
-  final case class IndexedInitialSegment[E, D <: Domain[E], V](
+  final case class IndexedInitialSegment[E, D[X] <: Domain[X], V](
     override val sequence: NonuniformIndexedSegmentSeq[E, D, V]
   ) extends SegmentT.Initial[E, D, V, IndexedSegmentBase[E, D, V]]
     with IndexedSegmentWithNext[E, D, V] {
@@ -496,7 +496,7 @@ object AbstractIndexedSegmentSeq {
 
   object IndexedInitialSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: IndexedInitialSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: IndexedInitialSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Initial.Truncation[E, D, V, IndexedSegmentBase[E, D, V], Seg](
@@ -506,7 +506,7 @@ object AbstractIndexedSegmentSeq {
   }
 
   /** Terminal segment of sequence. */
-  final case class IndexedTerminalSegment[E, D <: Domain[E], V](
+  final case class IndexedTerminalSegment[E, D[X] <: Domain[X], V](
     override val sequence: NonuniformIndexedSegmentSeq[E, D, V]
   ) extends SegmentT.Terminal[E, D, V, IndexedSegmentBase[E, D, V]]
     with IndexedSegmentWithPrev[E, D, V] {
@@ -543,7 +543,7 @@ object AbstractIndexedSegmentSeq {
 
   object IndexedTerminalSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: IndexedTerminalSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: IndexedTerminalSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Terminal.Truncation[E, D, V, IndexedSegmentBase[E, D, V], Seg](
@@ -559,7 +559,7 @@ object AbstractIndexedSegmentSeq {
    *
    * 1. `1 <= ind < bounds.length (last segment index)`.
    */
-  final case class IndexedInnerSegment[E, D <: Domain[E], V](
+  final case class IndexedInnerSegment[E, D[X] <: Domain[X], V](
     override val sequence: NonuniformIndexedSegmentSeq[E, D, V],
     override val index: Int
   ) extends SegmentT.Inner[E, D, V, IndexedSegmentBase[E, D, V]]
@@ -594,7 +594,7 @@ object AbstractIndexedSegmentSeq {
 
   object IndexedInnerSegment {
 
-    final class Truncation[E, D <: Domain[E], V, +Seg <: IndexedInnerSegment[E, D, V]](
+    final class Truncation[E, D[X] <: Domain[X], V, +Seg <: IndexedInnerSegment[E, D, V]](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentT.Inner.Truncation[E, D, V, IndexedSegmentBase[E, D, V], Seg](

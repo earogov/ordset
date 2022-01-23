@@ -5,7 +5,7 @@ package ordset.test.core.behaviors.segmentSeq.multiBoundedSet
  import ordset.core.interval.IntervalRelation
  import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 
-trait LargeSample1[D <: Domain[Int]] {
+trait LargeSample1[D[X] <: Domain[X]] {
   self: SegmentSeqSample[Int, D, Boolean, SegmentSeq[Int, D, Boolean]] =>
 
   private val minIndex: Int = 1

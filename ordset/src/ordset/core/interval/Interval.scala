@@ -8,10 +8,10 @@ import ordset.{Hash, Show, util}
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
-sealed trait Interval[@sp(spNum) E, D <: Domain[E]] extends Range[ExtendedBound[E]] {
+sealed trait Interval[@sp(spNum) E, D[X] <: Domain[X]] extends Range[ExtendedBound[E]] {
 
   /** Domain of interval. */
-  def domain: D
+  def domain: D[E]
 
   /** @return `true` if interval is empty, i.e. contains no elements. */
   override def isEmpty: Boolean
@@ -63,19 +63,19 @@ sealed trait Interval[@sp(spNum) E, D <: Domain[E]] extends Range[ExtendedBound[
 
 object Interval {
 
-  implicit def defaultHash[E, D <: Domain[E]](
+  implicit def defaultHash[E, D[X] <: Domain[X]](
     implicit 
     boundHash: Hash[Bound[E]], 
-    domainHash: Hash[D]
+    domainHash: Hash[D[E]]
   ): DefaultHash[E, D] =
     new DefaultHashImpl(boundHash, domainHash)
 
-  implicit def defaultShow[E, D <: Domain[E]](
+  implicit def defaultShow[E, D[X] <: Domain[X]](
     implicit elementShow: Show[E]
   ): Show[Interval[E, D]] =
     SetBuilderFormat.intervalShow(elementShow)
 
-  sealed trait NonEmpty[E, D <: Domain[E]] extends Interval[E, D] with Range.NonEmpty[ExtendedBound[E]] {
+  sealed trait NonEmpty[E, D[X] <: Domain[X]] extends Interval[E, D] with Range.NonEmpty[ExtendedBound[E]] {
 
     override def lower: ExtendedBound.Lower[E]
 
@@ -121,7 +121,7 @@ object Interval {
       }
   }
 
-  sealed trait BoundedBelow[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
+  sealed trait BoundedBelow[@sp(spNum) E, D[X] <: Domain[X]] extends NonEmpty[E, D] {
 
     override def lower: Bound.Lower[E]
 
@@ -130,7 +130,7 @@ object Interval {
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domain.boundOrd.eqv(lower, bound)
   }
 
-  sealed trait BoundedAbove[@sp(spNum) E, D <: Domain[E]] extends NonEmpty[E, D] {
+  sealed trait BoundedAbove[@sp(spNum) E, D[X] <: Domain[X]] extends NonEmpty[E, D] {
 
     override def upper: Bound.Upper[E]
 
@@ -139,8 +139,8 @@ object Interval {
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domain.boundOrd.eqv(upper, bound)
   }
 
-  final case class Empty[E, D <: Domain[E]](
-    override val domain: D
+  final case class Empty[E, D[X] <: Domain[X]](
+    override val domain: D[E]
   ) extends Interval[E, D] with Range.Empty {
 
     override def isBounded: Boolean = false
@@ -160,8 +160,8 @@ object Interval {
     override def toString: String = SetBuilderFormat.emptyInterval
   }
 
-  final case class Unbounded[E, D <: Domain[E]](
-    override val domain: D
+  final case class Unbounded[E, D[X] <: Domain[X]](
+    override val domain: D[E]
   ) extends NonEmpty[E, D] {
 
     override def lower: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
@@ -189,9 +189,9 @@ object Interval {
     override def toString: String = SetBuilderFormat.unboundedInterval
   }
 
-  final case class Greater[@sp(spNum) E, D <: Domain[E]](
+  final case class Greater[@sp(spNum) E, D[X] <: Domain[X]](
     override val lower: Bound.Lower[E],
-    override val domain: D
+    override val domain: D[E]
   ) extends BoundedBelow[E, D] {
 
     override def upper: ExtendedBound.AboveAll.type = ExtendedBound.AboveAll
@@ -218,9 +218,9 @@ object Interval {
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
-  final case class Less[@sp(spNum) E, D <: Domain[E]](
+  final case class Less[@sp(spNum) E, D[X] <: Domain[X]](
     override val upper: Bound.Upper[E],
-    override val domain: D
+    override val domain: D[E]
   ) extends BoundedAbove[E, D] {
 
     override def lower: ExtendedBound.BelowAll.type = ExtendedBound.BelowAll
@@ -247,10 +247,10 @@ object Interval {
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
-  final case class Between[@sp(spNum) E, D <: Domain[E]](
+  final case class Between[@sp(spNum) E, D[X] <: Domain[X]](
     override val lower: Bound.Lower[E],
     override val upper: Bound.Upper[E],
-    override val domain: D
+    override val domain: D[E]
   ) extends BoundedBelow[E, D] with BoundedAbove[E, D] with Range[Bound[E]] {
 
     override def isBounded: Boolean = true
@@ -276,13 +276,13 @@ object Interval {
     override def toString: String = SetBuilderFormat.boundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
-  trait DefaultHash[E, D <: Domain[E]] extends Hash[Interval[E, D]] {
+  trait DefaultHash[E, D[X] <: Domain[X]] extends Hash[Interval[E, D]] {
 
     import util.HashUtil._
 
     def boundHash: Hash[Bound[E]]
 
-    def domainHash: Hash[D]
+    def domainHash: Hash[D[E]]
 
     override def hash(x: Interval[E, D]): Int = x match {
       case x: Empty[e, d] => 
@@ -324,8 +324,8 @@ object Interval {
       else false
   }
 
-  case class DefaultHashImpl[E, D <: Domain[E]](
+  case class DefaultHashImpl[E, D[X] <: Domain[X]](
     override val boundHash: Hash[Bound[E]], 
-    override val domainHash: Hash[D]
+    override val domainHash: Hash[D[E]]
   ) extends DefaultHash[E, D]
 }

@@ -14,7 +14,7 @@ import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.implementations.segmentSeq.lazyTreap.{LazyTreapSegmentSeq, LazyTreapSeqUtil}
 import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq.TestZValueOps
 
-abstract class LazyTreapSeqSample[E, D <: Domain[E], V](
+abstract class LazyTreapSeqSample[E, D[X] <: Domain[X], V](
   implicit
   override val domainOps: DomainOps[E, D],
   override val rngManager: RngManager,
@@ -60,7 +60,7 @@ object LazyTreapSeqSample {
    * Sample with lazy sequence which internal state is modified during access (lazy values are computed and cached).
    * [[restoreSequence]] can be used to rollback to the initial state.
    */
-  abstract class Restorable[E, D <: Domain[E], V](
+  abstract class Restorable[E, D[X] <: Domain[X], V](
     implicit
     override val domainOps: DomainOps[E, D],
     override val rngManager: RngManager,
@@ -105,7 +105,7 @@ object LazyTreapSeqSample {
    * If `shuffled` == `false` then sequence is returned in totally lazy state. Otherwise state is randomized
    * to provide some parts to be eager.
    */
-  abstract class Fixed[E, D <: Domain[E], V](
+  abstract class Fixed[E, D[X] <: Domain[X], V](
     shuffled: Boolean
   )(
     implicit

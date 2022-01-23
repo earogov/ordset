@@ -11,7 +11,7 @@ object SegmentSeqUtil {
    * Returns upper bounds of all segments from current (including or excluding) to last (including).
    * @return iterable of upper bounds.
    */
-  def getUpperBoundsIterableFromSegment[E, D <: Domain[E], V](
+  def getUpperBoundsIterableFromSegment[E, D[X] <: Domain[X], V](
     segment: Segment[E, D, V],
     including: Boolean
   ): Iterable[Bound.Upper[E]] = {
@@ -33,7 +33,7 @@ object SegmentSeqUtil {
    * Returns upper bounds of all segments from first (including) to current (including or excluding).
    * @return iterable of upper bounds.
    */
-  def getUpperBoundsIterableToSegment[E, D <: Domain[E], V](
+  def getUpperBoundsIterableToSegment[E, D[X] <: Domain[X], V](
     segment: Segment[E, D, V],
     including: Boolean
   ): Iterable[Bound.Upper[E]] = {
@@ -60,7 +60,7 @@ object SegmentSeqUtil {
    * Returns upper bounds of all segments from current (including or excluding) to last (including).
    * @return list of upper bounds with its size.
    */
-  def getUpperBoundsListFromSegment[E, D <: Domain[E], V](
+  def getUpperBoundsListFromSegment[E, D[X] <: Domain[X], V](
     segment: Segment[E, D, V],
     including: Boolean
   ): (List[Bound.Upper[E]], Int) = {
@@ -94,7 +94,7 @@ object SegmentSeqUtil {
    * Returns upper bounds of all segments from first (including) to current (including or excluding).
    * @return list of upper bounds with its size.
    */
-  def getUpperBoundsListToSegment[E, D <: Domain[E], V](
+  def getUpperBoundsListToSegment[E, D[X] <: Domain[X], V](
     segment: Segment[E, D, V],
     including: Boolean
   ): (List[Bound.Upper[E]], Int) = {
@@ -146,7 +146,7 @@ object SegmentSeqUtil {
    *
    * Output iterable has at least one element. Last element has bound == [[ExtendedBound.AboveAll]].
    */
-  def getExtendedBoundValueIterableForSeq[E, D <: Domain[E], V](
+  def getExtendedBoundValueIterableForSeq[E, D[X] <: Domain[X], V](
     seq: SegmentSeq[E, D, V]
   ): Iterable[(ExtendedBound.Upper[E], V)] =
     seq.firstSegment.forwardIterable.map(s => (s.upper, s.value))
@@ -174,7 +174,7 @@ object SegmentSeqUtil {
    *           tuple._1        tuple._2
    * }}}
    */
-  def getBoundSegments[E, D <: Domain[E], V, S](
+  def getBoundSegments[E, D[X] <: Domain[X], V, S](
     segment: Segment[E, D, ?], 
     seq: SegmentSeqT[E, D, V, S]
   ): (SegmentT[E, D, V, S], SegmentT[E, D, V, S]) =
@@ -203,7 +203,7 @@ object SegmentSeqUtil {
    *           (------)
    * }}}
    */
-  def getLowerBoundSegment[E, D <: Domain[E], V, S](
+  def getLowerBoundSegment[E, D[X] <: Domain[X], V, S](
     segment: Segment[E, D, ?],
     seq: SegmentSeqT[E, D, V, S]
   ): SegmentT[E, D, V, S] =
@@ -230,7 +230,7 @@ object SegmentSeqUtil {
    *                         (---------]
    * }}}
    */
-  def getUpperBoundSegment[E, D <: Domain[E], V, S](
+  def getUpperBoundSegment[E, D[X] <: Domain[X], V, S](
     segment: Segment[E, D, ?],
     seq: SegmentSeqT[E, D, V, S]
   ): SegmentT[E, D, V, S] =

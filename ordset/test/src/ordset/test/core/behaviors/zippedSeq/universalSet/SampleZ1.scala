@@ -13,7 +13,7 @@ import ordset.test.core.samples.segmentSeq.ZippedSeqSample
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
-trait SampleZ1[D <: Domain[Int]]
+trait SampleZ1[D[X] <: Domain[X]]
   extends OriginalSeqPatchTest[Int, D, Boolean, Boolean] {
   self: ZippedSeqSample[Int, D, Boolean, Boolean, Boolean] =>
 

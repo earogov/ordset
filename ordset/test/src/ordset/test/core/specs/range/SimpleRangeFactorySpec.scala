@@ -17,7 +17,7 @@ class RangeFactorySpec extends AnyFunSpec {
 
   it("should build ranges for unbounded domain") {
 
-    implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.unbounded
+    implicit val range: SimpleRangeFactory[Nothing, Int] = SimpleRangeFactory.unbounded
 
     // Non-empty range
     validateRange(SimpleRange(5, 5), 5, 5)
@@ -30,7 +30,7 @@ class RangeFactorySpec extends AnyFunSpec {
   it("should build ranges for bounded below domain") {
 
     val intOrder = int.tryNaturalOrderWithBounds(0, Int.MaxValue).get
-    implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.boundedBelow(intOrder)
+    implicit val range: SimpleRangeFactory[Int, Int] = SimpleRangeFactory.boundedBelow(intOrder)
 
     // Non-empty range
     validateRange(SimpleRange(5, 5), 5, 5)
@@ -48,7 +48,7 @@ class RangeFactorySpec extends AnyFunSpec {
   it("should build ranges for bounded above domain") {
 
     val intOrder = int.tryNaturalOrderWithBounds(Int.MinValue, 0).get
-    implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.boundedAbove(intOrder)
+    implicit val range: SimpleRangeFactory[Int, Int] = SimpleRangeFactory.boundedAbove(intOrder)
     
     // Non-empty range
     validateRange(SimpleRange(-5, -5), -5, -5)
@@ -66,7 +66,7 @@ class RangeFactorySpec extends AnyFunSpec {
   it("should build ranges for bounded domain") {
 
     val intOrd = int.tryNaturalOrderWithBounds(0, 10).get
-    implicit val range: SimpleRangeFactory[Int] = SimpleRangeFactory.bounded(intOrd)
+    implicit val range: SimpleRangeFactory[Int, Int] = SimpleRangeFactory.bounded(intOrd)
 
     // Non-empty range
     validateRange(SimpleRange(5, 5), 5, 5)
@@ -86,7 +86,7 @@ class RangeFactorySpec extends AnyFunSpec {
 
   private def defaultEmptyRangeTests(
     implicit
-    range: RangeFactory[Int, SimpleRange[Int]],
+    range: RangeFactory[Int, Int, SimpleRange],
     hash: Hash[SimpleRange[Int]]
   ): Unit = {
     assertSameRange[Int, SimpleRange[Int]](SimpleRange.empty, range.empty)
@@ -100,7 +100,7 @@ class RangeFactorySpec extends AnyFunSpec {
     upper: E
   )(
     implicit 
-    range: RangeFactory[E, SimpleRange[E]],
+    range: RangeFactory[E, E, SimpleRange],
     hash: Hash[SimpleRange[E]]
   ): Unit = {
     assertSameRange(expected, range.between(lower, upper))
@@ -113,7 +113,7 @@ class RangeFactorySpec extends AnyFunSpec {
     upper: E
   )(
     implicit 
-    range: RangeFactory[E, SimpleRange[E]],
+    range: RangeFactory[E, E, SimpleRange],
     hash: Hash[SimpleRange[E]]
   ): Unit =
     validateRange(SimpleRange.Empty, lower, upper)

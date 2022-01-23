@@ -13,7 +13,7 @@ import ordset.test.core.{Labels, TestRngUtil}
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
 
-class DegenerateSetSample1[D <: Domain[Int]](
+class DegenerateSetSample1[D[X] <: Domain[X]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager,

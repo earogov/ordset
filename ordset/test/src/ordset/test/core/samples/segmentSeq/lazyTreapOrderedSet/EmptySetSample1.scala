@@ -11,7 +11,7 @@ import ordset.test.core.{Labels, TestRngUtil}
 
 import scala.language.postfixOps
 
-class EmptySetSample1[D <: Domain[Int]](
+class EmptySetSample1[D[X] <: Domain[X]](
   seed: Long,
   shuffled: Boolean
 )(

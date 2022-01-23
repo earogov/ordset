@@ -5,7 +5,7 @@ import ordset.core.{Bound, ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.test.core.SegmentSeqAssertions.assertSameSegmentSeq
 
-class SegmentSeqValidator[E, D <: Domain[E], V](
+class SegmentSeqValidator[E, D[X] <: Domain[X], V](
   val sequence: SegmentSeq[E, D, V]
 ) {
 

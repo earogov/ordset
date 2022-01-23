@@ -6,7 +6,7 @@ import ordset.core.value.ValueOps
 import ordset.core.{AbstractZippedSegmentSeq, SegmentT, SegmentSeq, SegmentTruncationT, ZippedTruncation}
 import ordset.random.RngManager
 
-class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
+class ZippedOrderedMap[E, D[X] <: Domain[X], U1, U2, V, S1, S2] protected (
   override final val firstSeq: OrderedMapT[E, D, U1, S1],
   override final val secondSeq: OrderedMapT[E, D, U2, S2],
   final val operatorFunc: (U1, U2) => V,
@@ -51,7 +51,7 @@ class ZippedOrderedMap[E, D <: Domain[E], U1, U2, V, S1, S2] protected (
 
 object ZippedOrderedMap {
 
-  def apply[E, D <: Domain[E], U1, U2, V, S1, S2](
+  def apply[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
     first: OrderedMapT[E, D, U1, S1],
     second: OrderedMapT[E, D, U2, S2],
     operatorFunc: (U1, U2) => V,
@@ -65,7 +65,7 @@ object ZippedOrderedMap {
   ): ZippedOrderedMap[E, D, U1, U2, V, S1, S2] =
     new ZippedOrderedMap(first, second, operatorFunc, firstInvariantFunc, secondInvariantFunc)
 
-  def zipFirstMapTruncation[E, D <: Domain[E], U1, U2, V, S1, S2](
+  def zipFirstMapTruncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
     firstTruncation: SegmentTruncationT[E, D, U1, S1, SegmentT[E, D, U1, S1]],
     secondMap: OrderedMapT[E, D, U2, S2],
     operatorFunc: (U1, U2) => V,
@@ -87,7 +87,7 @@ object ZippedOrderedMap {
     zippedSeq.zipFirstSeqTruncation(firstTruncation)
   }
 
-  def zipSecondMapTruncation[E, D <: Domain[E], U1, U2, V, S1, S2](
+  def zipSecondMapTruncation[E, D[X] <: Domain[X], U1, U2, V, S1, S2](
     secondTruncation: SegmentTruncationT[E, D, U2, S2, SegmentT[E, D, U2, S2]],
     firstMap: OrderedMapT[E, D, U1, S1],
     operatorFunc: (U1, U2) => V,

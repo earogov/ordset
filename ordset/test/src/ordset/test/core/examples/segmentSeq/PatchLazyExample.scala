@@ -22,7 +22,7 @@ object PatchLazyExample {
   private val sep = "-----------------"
 
   private val stringOps: ValueOps[String] = implicitly
-  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded[Int]] = implicitly
+  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -192,7 +192,7 @@ object PatchLazyExample {
     println(TreapOrderedMap.getFactory.convertMap(seq3))
   }
 
-  private def buildPatchSeq(): OrderedMap[Int, Domain.ContinuousUnbounded[Int], String] = {
+  private def buildPatchSeq(): OrderedMap[Int, Domain.ContinuousUnbounded, String] = {
     val patchSeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
       List(
         (5`)[`, "X"),

@@ -13,7 +13,7 @@ import ordset.random.RngManager
  * 
  * Adjacent segments with the same values after mapping are merged.
  */ 
-class MappedValueOrderedMap[E, D <: Domain[E], U, V, S] protected (
+class MappedValueOrderedMap[E, D[X] <: Domain[X], U, V, S] protected (
   override final val originalSeq: OrderedMapT[E, D, U, S],
   override final val valueMapFunc: U => V
 )(
@@ -43,7 +43,7 @@ class MappedValueOrderedMap[E, D <: Domain[E], U, V, S] protected (
 
 object MappedValueOrderedMap {
 
-  def apply[E, D <: Domain[E], U, V, S](
+  def apply[E, D[X] <: Domain[X], U, V, S](
     originalSeq: OrderedMapT[E, D, U, S],
     valueMapFunc: U => V
   )(
@@ -54,7 +54,7 @@ object MappedValueOrderedMap {
   ): MappedValueOrderedMap[E, D, U, V, S] =
     new MappedValueOrderedMap(originalSeq, valueMapFunc)
 
-  def mapSegment[E, D <: Domain[E], U, V, S](
+  def mapSegment[E, D[X] <: Domain[X], U, V, S](
     originalSegment: SegmentT[E, D, U, S],
     valueMapFunc: U => V
   )(
@@ -65,7 +65,7 @@ object MappedValueOrderedMap {
   ): MappedSegment[E, D, U, V, S] =
     apply(originalSegment.sequence, valueMapFunc).mapSegment(originalSegment)
   
-  def mapTruncation[E, D <: Domain[E], U, V, S](
+  def mapTruncation[E, D[X] <: Domain[X], U, V, S](
     originalTruncation: SegmentTruncationT[E, D, U, S, SegmentT[E, D, U, S]],
     valueMapFunc: U => V
   )(
@@ -76,7 +76,7 @@ object MappedValueOrderedMap {
   ): MappedTruncation[E, D, U, V, S] =
     apply(originalTruncation.sequence, valueMapFunc).mapTruncation(originalTruncation)
 
-  def identity[E, D <: Domain[E], U, S](
+  def identity[E, D[X] <: Domain[X], U, S](
       originalSeq: OrderedMapT[E, D, U, S]
   ): MappedValueOrderedMap[E, D, U, U, S] =
     apply(originalSeq, scala.Predef.identity)(originalSeq.domainOps, originalSeq.valueOps, originalSeq.rngManager)

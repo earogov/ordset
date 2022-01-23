@@ -129,7 +129,7 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * @tparam V type of value assigned to interval of elements
  * @tparam S type of additional segment state
  */
-sealed trait SegmentT[E, D <: Domain[E], V, +S] extends SegmentLikeT[E, D, V, S] {
+sealed trait SegmentT[E, D[X] <: Domain[X], V, +S] extends SegmentLikeT[E, D, V, S] {
 
   override def truncation(bound: ExtendedBound[E]): SegmentTruncationT[E, D, V, S, this.type]
 
@@ -140,10 +140,10 @@ sealed trait SegmentT[E, D <: Domain[E], V, +S] extends SegmentLikeT[E, D, V, S]
 
 object SegmentT {
 
-  implicit def upperBoundOrder[E, D <: Domain[E]](implicit domain: D): UpperBoundOrder[E, D] =
+  implicit def upperBoundOrder[E, D[X] <: Domain[X]](implicit domain: D[E]): UpperBoundOrder[E, D] =
     new UpperBoundOrderImpl(domain)
 
-  implicit def lowerBoundOrder[E, D <: Domain[E]](implicit domain: D): LowerBoundOrder[E, D] =
+  implicit def lowerBoundOrder[E, D[X] <: Domain[X]](implicit domain: D[E]): LowerBoundOrder[E, D] =
     new LowerBoundOrderImpl(domain)
 
   /**
@@ -151,7 +151,7 @@ object SegmentT {
    *
    * @see [[SegmentT]]
    */
-  trait WithNext[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
+  trait WithNext[E, D[X] <: Domain[X], V, +S] extends SegmentT[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def hasNext: Boolean = true
@@ -178,7 +178,7 @@ object SegmentT {
    *
    * @see [[SegmentT]]
    */
-  trait WithPrev[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
+  trait WithPrev[E, D[X] <: Domain[X], V, +S] extends SegmentT[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def hasPrev: Boolean = true
@@ -205,7 +205,7 @@ object SegmentT {
    *
    * @see [[SegmentT]]
    */
-  trait First[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
+  trait First[E, D[X] <: Domain[X], V, +S] extends SegmentT[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def isFirst: Boolean = true
@@ -230,7 +230,7 @@ object SegmentT {
    *
    * @see [[SegmentT]]
    */
-  trait Last[E, D <: Domain[E], V, +S] extends SegmentT[E, D, V, S] {
+  trait Last[E, D[X] <: Domain[X], V, +S] extends SegmentT[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def isLast: Boolean = true
@@ -257,7 +257,7 @@ object SegmentT {
    * <tr>                                 </tr>
    * @see [[SegmentT]]
    */
-  trait Single[E, D <: Domain[E], V, +S] extends SegmentT.First[E, D, V, S] with SegmentT.Last[E, D, V, S] {
+  trait Single[E, D[X] <: Domain[X], V, +S] extends SegmentT.First[E, D, V, S] with SegmentT.Last[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def isSingle: Boolean = true
@@ -302,7 +302,7 @@ object SegmentT {
 
   object Single {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Single[E, D, V, S] with S](
+    abstract class Truncation[E, D[X] <: Domain[X], V, +S, +Seg <: SegmentT.Single[E, D, V, S] with S](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentTruncationT[E, D, V, S, Seg](
@@ -324,7 +324,7 @@ object SegmentT {
    * <tr>                                 </tr>
    * @see [[SegmentT]]
    */
-  trait Initial[E, D <: Domain[E], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.First[E, D, V, S] {
+  trait Initial[E, D[X] <: Domain[X], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.First[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def isInitial: Boolean = true
@@ -371,7 +371,7 @@ object SegmentT {
 
   object Initial {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Initial[E, D, V, S] with S](
+    abstract class Truncation[E, D[X] <: Domain[X], V, +S, +Seg <: SegmentT.Initial[E, D, V, S] with S](
       override val segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentTruncationT[E, D, V, S, Seg](
@@ -394,7 +394,7 @@ object SegmentT {
    * <tr>                               </tr>
    * @see [[SegmentT]]
    */
-  trait Terminal[E, D <: Domain[E], V, +S] extends SegmentT.WithPrev[E, D, V, S] with SegmentT.Last[E, D, V, S] {
+  trait Terminal[E, D[X] <: Domain[X], V, +S] extends SegmentT.WithPrev[E, D, V, S] with SegmentT.Last[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def isTerminal: Boolean = true
@@ -441,7 +441,7 @@ object SegmentT {
 
   object Terminal {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Terminal[E, D, V, S] with S](
+    abstract class Truncation[E, D[X] <: Domain[X], V, +S, +Seg <: SegmentT.Terminal[E, D, V, S] with S](
       override val segment: Seg,
       inputBound: ExtendedBound[E]
     ) extends SegmentTruncationT[E, D, V, S, Seg](
@@ -464,7 +464,7 @@ object SegmentT {
    * <tr>                               </tr>
    * @see [[SegmentT]]
    */
-  trait Inner[E, D <: Domain[E], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.WithPrev[E, D, V, S] {
+  trait Inner[E, D[X] <: Domain[X], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.WithPrev[E, D, V, S] {
 
     // Inspection --------------------------------------------------------------- //
     override def isInner: Boolean = true
@@ -513,7 +513,7 @@ object SegmentT {
 
   object Inner {
 
-    abstract class Truncation[E, D <: Domain[E], V, +S, +Seg <: SegmentT.Inner[E, D, V, S] with S](
+    abstract class Truncation[E, D[X] <: Domain[X], V, +S, +Seg <: SegmentT.Inner[E, D, V, S] with S](
       segment: Seg,
       inputBound: ExtendedBound[E],
     ) extends SegmentTruncationT[E, D, V, S, Seg](
@@ -538,11 +538,11 @@ object SegmentT {
    *   - [[Segment.Last]] is maximal segment (i.e. upper bound of last segment is maximal in domain).
    * </tr>
    */
-  trait UpperBoundOrder[E, D <: Domain[E]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
+  trait UpperBoundOrder[E, D[X] <: Domain[X]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
 
     import util.HashUtil._
 
-    def domain: D
+    def domain: D[E]
 
     final override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = 
       domain.extendedOrd.compare(x.upper, y.upper)
@@ -562,11 +562,11 @@ object SegmentT {
    *   - [[Segment.First]] is minimal segment (i.e. lower bound of first segment is minimal in domain).
    * </tr>
    */
-  trait LowerBoundOrder[E, D <: Domain[E]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
+  trait LowerBoundOrder[E, D[X] <: Domain[X]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
 
     import util.HashUtil._
 
-    def domain: D
+    def domain: D[E]
 
     final override def compare(x: Segment[E, D, ?], y: Segment[E, D, ?]): Int = 
       domain.extendedOrd.compare(x.lower, y.lower)
@@ -579,7 +579,7 @@ object SegmentT {
   }
 
   // Private section ---------------------------------------------------------- //
-  private final class UpperBoundOrderImpl[E, D <: Domain[E]](override val domain: D) extends UpperBoundOrder[E, D]
+  private final class UpperBoundOrderImpl[E, D[X] <: Domain[X]](override val domain: D[E]) extends UpperBoundOrder[E, D]
 
-  private final class LowerBoundOrderImpl[E, D <: Domain[E]](override val domain: D) extends LowerBoundOrder[E, D]
+  private final class LowerBoundOrderImpl[E, D[X] <: Domain[X]](override val domain: D[E]) extends LowerBoundOrder[E, D]
 }

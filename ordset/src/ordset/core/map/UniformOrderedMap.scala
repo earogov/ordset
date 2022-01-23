@@ -6,7 +6,7 @@ import ordset.core.{AbstractUniformSegmentSeq, Bound, ExtendedBound, SegmentSeq,
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 
-class UniformOrderedMap[E, D <: Domain[E], V] protected (
+class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
   final override val value: V,
   final val mapFactory: OrderedMapFactory[E, D, V, OrderedMap[E, D, V]]
 )(
@@ -56,7 +56,7 @@ class UniformOrderedMap[E, D <: Domain[E], V] protected (
 
 object UniformOrderedMap {
 
-  def apply[E, D <: Domain[E], V](
+  def apply[E, D[X] <: Domain[X], V](
     value: V,
     mapFactory: OrderedMapFactory[E, D, V, OrderedMap[E, D, V]]
   )(
@@ -67,7 +67,7 @@ object UniformOrderedMap {
   ): UniformOrderedMap[E, D, V] =
     new UniformOrderedMap(value, mapFactory)
 
-  def default[E, D <: Domain[E], V](
+  def default[E, D[X] <: Domain[X], V](
     value: V
   )(
     implicit
@@ -77,7 +77,7 @@ object UniformOrderedMap {
   ): UniformOrderedMap[E, D, V] =
     apply(value, TreapOrderedMap.getFactory)
 
-  def defaultUnit[E, D <: Domain[E], V](
+  def defaultUnit[E, D[X] <: Domain[X], V](
     implicit
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],

@@ -16,7 +16,7 @@ import scala.collection.immutable.{ArraySeq, HashMap}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
+trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
   this: AnyFunSpec =>
 
   implicit private lazy val fixedExecutionContext: ExecutionContext =
@@ -171,7 +171,7 @@ trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
       }
     }
 
-    case class CommandResult[E, D <: Domain[E], V](
+    case class CommandResult[E, D[X] <: Domain[X], V](
       val seq: SegmentSeq[E, D, V],
       val uncheckedCount: Int
     ) {
@@ -183,7 +183,7 @@ trait LazyTreapSeqBehaviors[E, D <: Domain[E], V] {
 
     object CommandResult {
 
-      def init[E, D <: Domain[E], V](seq: SegmentSeq[E, D, V]): CommandResult[E, D, V] = CommandResult(seq, 0)
+      def init[E, D[X] <: Domain[X], V](seq: SegmentSeq[E, D, V]): CommandResult[E, D, V] = CommandResult(seq, 0)
     }
   }
 }

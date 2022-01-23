@@ -11,7 +11,7 @@ import ordset.test.core.samples.segmentSeq.treapOrderedSet.{MultiBoundedSetSampl
 
 import scala.language.postfixOps
 
-class MultiBoundedSetSample3[D <: Domain[Int]](
+class MultiBoundedSetSample3[D[X] <: Domain[X]](
   seed: Long,
   shuffled: Boolean
 )(

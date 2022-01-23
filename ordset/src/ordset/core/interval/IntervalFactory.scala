@@ -9,7 +9,7 @@ import ordset.core.range
 /**
  * Factory to construct intervals.
  */
-trait IntervalFactory[E, D <: Domain[E]] {
+trait IntervalFactory[E, D[X] <: Domain[X]] {
 
   /**
    * Returns range factory for intervals.
@@ -19,7 +19,7 @@ trait IntervalFactory[E, D <: Domain[E]] {
   /**
    * Domain of interval.
    */
-  def domain: D
+  def domain: D[E]
 
   /**
    * Returns empty interval, which contains no elements of domain.
@@ -116,7 +116,7 @@ object IntervalFactory {
   /**
    * Returns interval factory depending on domain type (unbounded, bounded, etc).
    */
-  implicit def defaultFactory[E, D <: Domain[E]](implicit domain: D): IntervalFactory[E, D] =
+  implicit def defaultFactory[E, D[X] <: Domain[X]](implicit domain: D[E]): IntervalFactory[E, D] =
     domain match {
       case d: Domain.Unbounded[E] => unboundedFactory(d)
       case d: Domain.BoundedBelow[E] => boundedBelowFactory(d)
@@ -127,32 +127,40 @@ object IntervalFactory {
   /**
    * Returns interval factory for unbounded domain.
    */
-  def unboundedFactory[E, D <: Domain[E]](implicit domain: D & Domain.Unbounded[E]): UnboundedFactory[E, D] =
+  def unboundedFactory[E, D[X] <: Domain[X]](
+    implicit domain: D[E] & Domain.Unbounded[E]
+  ): UnboundedFactory[E, D] =
     new UnboundedFactory[E, D](domain)
 
   /**
    * Returns interval factory for bounded from below domain.
    */
-  def boundedBelowFactory[E, D <: Domain[E]](implicit domain: D & Domain.BoundedBelow[E]): BoundedBelowFactory[E, D] =
+  def boundedBelowFactory[E, D[X] <: Domain[X]](
+    implicit domain: D[E] & Domain.BoundedBelow[E]
+  ): BoundedBelowFactory[E, D] =
     new BoundedBelowFactory[E, D](domain)
 
   /**
    * Returns interval factory for bounded from above domain.
    */
-  def boundedAboveFactory[E, D <: Domain[E]](implicit domain: D & Domain.BoundedAbove[E]): BoundedAboveFactory[E, D] =
+  def boundedAboveFactory[E, D[X] <: Domain[X]](
+    implicit domain: D[E] & Domain.BoundedAbove[E]
+  ): BoundedAboveFactory[E, D] =
     new BoundedAboveFactory[E, D](domain)
 
   /**
    * Returns interval factory for bounded domain.
    */
-  def boundedFactory[E, D <: Domain[E]](implicit domain: D & Domain.Bounded[E]): BoundedFactory[E, D] =
+  def boundedFactory[E, D[X] <: Domain[X]](
+    implicit domain: D[E] & Domain.Bounded[E]
+  ): BoundedFactory[E, D] =
     new BoundedFactory[E, D](domain)
 
   /**
    * Factory to construct intervals on unbounded domain.
    */
-  class UnboundedFactory[E, D <: Domain[E]](
-    override val domain: D & Domain.Unbounded[E]
+  class UnboundedFactory[E, D[X] <: Domain[X]](
+    override val domain: D[E] & Domain.Unbounded[E]
   ) extends IntervalFactory[E, D] {
 
     override lazy val empty: Interval.Empty[E, D] = Interval.Empty(domain)
@@ -192,8 +200,8 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on bounded from below domain.
    */
-  class BoundedBelowFactory[E, D <: Domain[E]](
-    override val domain: D & Domain.BoundedBelow[E]
+  class BoundedBelowFactory[E, D[X] <: Domain[X]](
+    override val domain: D[E] & Domain.BoundedBelow[E]
   ) extends IntervalFactory[E, D] {
 
     private val lowerBound: Bound.Lower[E] = domain.boundOrd.lowerBound
@@ -259,8 +267,8 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on bounded from above domain.
    */
-  class BoundedAboveFactory[E, D <: Domain[E]](
-    override val domain: D & Domain.BoundedAbove[E]
+  class BoundedAboveFactory[E, D[X] <: Domain[X]](
+    override val domain: D[E] & Domain.BoundedAbove[E]
   ) extends IntervalFactory[E, D] {
 
     private val upperBound: Bound.Upper[E] = domain.boundOrd.upperBound
@@ -326,8 +334,8 @@ object IntervalFactory {
   /**
    * Factory to construct intervals on bounded domain.
    */
-  class BoundedFactory[E, D <: Domain[E]](
-    override val domain: D & Domain.Bounded[E]
+  class BoundedFactory[E, D[X] <: Domain[X]](
+    override val domain: D[E] & Domain.Bounded[E]
   ) extends IntervalFactory[E, D] {
 
     private val lowerBound: Bound.Lower[E] = domain.boundOrd.lowerBound
@@ -420,9 +428,9 @@ object IntervalFactory {
   /**
    * Implementation of range factory for intervals.
    */
-  class RangeFactory[E, D <: Domain[E]](
+  class RangeFactory[E, D[X] <: Domain[X]](
     val intervalFactory: IntervalFactory[E, D]
-  ) extends range.RangeFactory[ExtendedBound[E], Interval[E, D]] {
+  ) extends range.RangeFactory[ExtendedBound[E], ExtendedBound[E], [X] =>> Interval[E, D]] {
 
     override val order: ContravariantOrder[ExtendedBound[E]] = intervalFactory.domain.extendedOrd.contravariant
 
@@ -455,7 +463,7 @@ object IntervalFactory {
      * If `lower` bound is [[ExtendedBound.AboveAll]] or `upper` bound is [[ExtendedBound.BelowAll]],
      * then [[Interval.Empty]] will be returned.
      */
-    override def between(lower: ExtendedBound[E], upper: ExtendedBound[E]): Interval[E, D] =
+    override def between[EE <: ExtendedBound[E]](lower: EE, upper: EE): Interval[E, D] =
       (lower, upper) match {
         case (lower: Bound[E], upper: Bound[E]) => intervalFactory.betweenBounds(lower.provideLower, upper.provideUpper)
         case (lower: Bound[E], ExtendedBound.AboveAll) => intervalFactory.aboveBound(lower.provideLower)

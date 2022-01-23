@@ -5,7 +5,7 @@ import ordset.core.ArraySegmentSeq
 import ordset.random.RngManager
 import ordset.test.core.implementations.domain.BoundSelector
 
-abstract class ArraySeqSample[E, D <: Domain[E], V](
+abstract class ArraySeqSample[E, D[X] <: Domain[X], V](
   implicit
   override val domainOps: DomainOps[E, D],
   override val rngManager: RngManager,

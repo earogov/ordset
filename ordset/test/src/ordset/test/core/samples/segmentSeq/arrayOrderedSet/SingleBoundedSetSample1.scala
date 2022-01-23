@@ -11,7 +11,7 @@ import ordset.test.core.Labels
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.ArraySeqSample
 
-class SingleBoundedSetSample1[D <: Domain[Int]](
+class SingleBoundedSetSample1[D[X] <: Domain[X]](
   implicit
   override val domainOps: DomainOps[Int, D],
   override val rngManager: RngManager,

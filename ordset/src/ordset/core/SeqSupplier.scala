@@ -25,7 +25,7 @@ object SeqSupplier {
     /**
      * Returns factory for segment sequence of [[SeqSupplier]].
      */ 
-    def getFactory[E, D <: Domain[E], V]: OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]] =
+    def getFactory[E, D[X] <: Domain[X], V]: OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]] =
       TreapOrderedMap.getFactory
 
     /**
@@ -34,7 +34,7 @@ object SeqSupplier {
      * Output factory has disabled validation of bounds and values, so the client must guarantee that preconditions
      * of [[OrderedMapFactory]] are satisfied.
      */ 
-    def provideUncheckedFactory[E, D <: Domain[E], V](
+    def provideUncheckedFactory[E, D[X] <: Domain[X], V](
       implicit
       domainOps: DomainOps[E, D],
       rngManager: RngManager
@@ -51,7 +51,7 @@ object SeqSupplier {
   /**
    * [[Hash]] typeclass implementation for [[SeqSupplier]].
    */ 
-  final class HashImpl[E, D <: Domain[E], V] extends Hash[SeqSupplier[E, D, V]] {
+  final class HashImpl[E, D[X] <: Domain[X], V] extends Hash[SeqSupplier[E, D, V]] {
 
     override def hash(x: SeqSupplier[E, D, V]): Int = x match {
       case None => None.##
@@ -67,10 +67,10 @@ object SeqSupplier {
 
   object HashImpl {
 
-    def get[E, D <: Domain[E], V]: Hash[SeqSupplier[E, D, V]] = instance.asInstanceOf[Hash[SeqSupplier[E, D, V]]]
+    def get[E, D[X] <: Domain[X], V]: Hash[SeqSupplier[E, D, V]] = instance.asInstanceOf[Hash[SeqSupplier[E, D, V]]]
 
     // Private section ---------------------------------------------------------- //
-    private lazy val instance: HashImpl[Any, Domain[Any], Any] = new HashImpl()
+    private lazy val instance: HashImpl[Any, Domain, Any] = new HashImpl()
   }
 
   /**
@@ -78,11 +78,11 @@ object SeqSupplier {
    */ 
   object ValueOpsImpl {
 
-    def get[E, D <: Domain[E], V]: ValueOps[SeqSupplier[E, D, V]] = 
+    def get[E, D[X] <: Domain[X], V]: ValueOps[SeqSupplier[E, D, V]] = 
       instance.asInstanceOf[ValueOps[SeqSupplier[E, D, V]]]
 
     // Private section ---------------------------------------------------------- //
-    private lazy val instance: ValueOps[SeqSupplier[Any, Domain[Any], Any]] =
+    private lazy val instance: ValueOps[SeqSupplier[Any, Domain, Any]] =
       new ValueOps.DefaultImpl(
         None,
         HashImpl.get,

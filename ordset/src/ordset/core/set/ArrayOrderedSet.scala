@@ -18,7 +18,7 @@ object ArrayOrderedSet {
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
-  def unchecked[E, D <: Domain[E]](
+  def unchecked[E, D[X] <: Domain[X]](
     bounds: ArraySeq[Bound.Upper[E]],
     complementary: Boolean
   )(
@@ -32,13 +32,13 @@ object ArrayOrderedSet {
   /**
    * Returns ordered set factory.
    */
-  def getFactory[E, D <: Domain[E]]: OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] =
+  def getFactory[E, D[X] <: Domain[X]]: OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] =
     factoryInstance.asInstanceOf[OrderedSetFactory[E, D, ArrayOrderedSet[E, D]]]
 
   // Private section ---------------------------------------------------------- //
-  private lazy val factoryInstance: Factory[Any, Domain[Any]] = new Factory()
+  private lazy val factoryInstance: Factory[Any, Domain] = new Factory()
 
-  private class Factory[E, D <: Domain[E]] extends OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] {
+  private class Factory[E, D[X] <: Domain[X]] extends OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     override def unsafeBuildAsc(

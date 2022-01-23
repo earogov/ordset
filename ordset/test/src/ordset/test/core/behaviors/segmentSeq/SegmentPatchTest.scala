@@ -7,14 +7,14 @@ import ordset.util.label.Label
 import ordset.test.core.Labels
 import ordset.test.core.behaviors.TestCaseBase
 
-trait SegmentPatchTest[E, D <: Domain[E], V] {
+trait SegmentPatchTest[E, D[X] <: Domain[X], V] {
 
   def patchCases: Seq[SegmentPatchTest.TestCase[E, D, V]]
 }
 
 object SegmentPatchTest {
   
-  case class TestCase[E, D <: Domain[E], V](
+  case class TestCase[E, D[X] <: Domain[X], V](
     override val labels: Set[Label],
     bound: Bound[E],
     patch: SegmentSeq[E, D, V],

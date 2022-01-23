@@ -31,7 +31,7 @@ object TreapSegmentSeqBuilder {
    *
    * Implementation is <u>tread unsafe</u>.
    */
-  class Mutable[E, D <: Domain[E], V](
+  class Mutable[E, D[X] <: Domain[X], V](
     val domainOps: DomainOps[E, D],
     val valueOps: ValueOps[V],
     val rngManager: RngManager

@@ -11,7 +11,7 @@ import ordset.test.core.{Labels, TestRngUtil}
 
 import scala.language.postfixOps
 
-class UniversalSetSample1[D <: Domain[Int]](
+class UniversalSetSample1[D[X] <: Domain[X]](
   seed: Long
 )(
   implicit

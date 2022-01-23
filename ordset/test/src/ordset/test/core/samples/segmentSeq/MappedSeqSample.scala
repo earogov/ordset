@@ -5,7 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 import ordset.test.core.implementations.domain.BoundSelector
 
-abstract class MappedSeqSample[E, D <: Domain[E], U, V](
+abstract class MappedSeqSample[E, D[X] <: Domain[X], U, V](
   implicit
   override val domainOps: DomainOps[E, D],
   override val rngManager: RngManager,
