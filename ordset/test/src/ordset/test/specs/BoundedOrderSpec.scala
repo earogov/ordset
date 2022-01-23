@@ -10,7 +10,7 @@ import org.scalatest.funspec.AnyFunSpec
 import cats.instances.set
 
 @RunWith(classOf[JUnitRunner])
-class OrderSpec extends AnyFunSpec {
+class BoundedOrderSpec extends AnyFunSpec {
 
   import BoundedOrderSpec._
   import ordset.givens.int._
@@ -100,8 +100,25 @@ object BoundedOrderSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateBoundedBelowOrderWithoutReversed(boundedOrd, lowerBound, lowerIncluded, belowElements, setElements)
-    validateBoundedAboveOrderWithoutReversed(boundedOrd.reversed, lowerBound, lowerIncluded, setElements, belowElements)
+
+    val original = List(
+      boundedOrd, 
+      boundedOrd.contravariant,
+      boundedOrd.reversed.reversed,
+      boundedOrd.contravariant.reversed.reversed,
+    )
+    original.foreach{ ord => 
+      validateBoundedBelowOrderSingle(ord, lowerBound, lowerIncluded, belowElements, setElements)
+    }
+
+    val reversed = List(
+      boundedOrd.reversed,
+      boundedOrd.reversed.contravariant,
+      boundedOrd.contravariant.reversed
+    )
+    reversed.foreach{ ord =>
+      validateBoundedAboveOrderSingle(ord, lowerBound, lowerIncluded, setElements, belowElements)
+    }
   }
 
   def validateBoundedAboveOrder[E](
@@ -113,8 +130,25 @@ object BoundedOrderSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateBoundedAboveOrderWithoutReversed(boundedOrd, upperBound, upperIncluded, setElements, aboveElements)
-    validateBoundedBelowOrderWithoutReversed(boundedOrd.reversed, upperBound, upperIncluded, aboveElements, setElements)
+
+    val original = List(
+      boundedOrd, 
+      boundedOrd.contravariant,
+      boundedOrd.reversed.reversed,
+      boundedOrd.contravariant.reversed.reversed,
+    )
+    original.foreach{ ord => 
+      validateBoundedAboveOrderSingle(ord, upperBound, upperIncluded, setElements, aboveElements)
+    }
+
+    val reversed = List(
+      boundedOrd.reversed,
+      boundedOrd.reversed.contravariant,
+      boundedOrd.contravariant.reversed
+    )
+    reversed.foreach{ ord =>
+      validateBoundedBelowOrderSingle(ord, upperBound, upperIncluded, aboveElements, setElements)
+    }
   }
 
   def validateBoundedOrder[E](
@@ -129,15 +163,32 @@ object BoundedOrderSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateBoundedOrderWithoutReversed(
-      boundedOrd, lowerBound, lowerIncluded, upperBound, upperIncluded, belowElements, setElements, aboveElements
+
+    val original = List(
+      boundedOrd, 
+      boundedOrd.contravariant,
+      boundedOrd.reversed.reversed,
+      boundedOrd.contravariant.reversed.reversed,
     )
-    validateBoundedOrderWithoutReversed(
-      boundedOrd.reversed, upperBound, upperIncluded, lowerBound, lowerIncluded, aboveElements, setElements, belowElements
+    original.foreach{ ord => 
+      validateBoundedOrderSingle(
+        ord, lowerBound, lowerIncluded, upperBound, upperIncluded, belowElements, setElements, aboveElements
+      )
+    }
+
+    val reversed = List(
+      boundedOrd.reversed,
+      boundedOrd.reversed.contravariant,
+      boundedOrd.contravariant.reversed
     )
+    reversed.foreach{ ord =>
+      validateBoundedOrderSingle(
+        ord, upperBound, upperIncluded, lowerBound, lowerIncluded, aboveElements, setElements, belowElements
+      )
+    }
   }
 
-  private def validateBoundedBelowOrderWithoutReversed[E](
+  private def validateBoundedBelowOrderSingle[E](
     boundedOrd: BoundedOrder.Below[E, E],
     lowerBound: E,
     lowerIncluded: Boolean,
@@ -181,7 +232,7 @@ object BoundedOrderSpec {
     }
   }
 
-  private def validateBoundedAboveOrderWithoutReversed[E](
+  private def validateBoundedAboveOrderSingle[E](
     boundedOrd: BoundedOrder.Above[E, E],
     upperBound: E,
     upperIncluded: Boolean,
@@ -225,7 +276,7 @@ object BoundedOrderSpec {
     }
   }
 
-  private def validateBoundedOrderWithoutReversed[E](
+  private def validateBoundedOrderSingle[E](
     boundedOrd: BoundedOrder[E, E, E],
     lowerBound: E,
     lowerIncluded: Boolean,

@@ -195,7 +195,7 @@ object ContravariantOrder {
     override protected def original: Order[EE]
 
     override def compare(x: E, y: E): Int = 
-      original.compare(y, x)
+      original.compare(x, y)
 
     override def comparison(x: E, y: E): Comparison = 
       original.comparison(x, y)

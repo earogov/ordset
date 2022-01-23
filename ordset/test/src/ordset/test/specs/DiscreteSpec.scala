@@ -74,8 +74,9 @@ object DiscreteSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateDiscreteSucceedingWithoutReversed(discrete, adjElements)
-    validateDiscretePrecedingWithoutReversed(discrete.reversed, adjElements.map(_.reversed))
+    validateDiscreteSucceedingSingle(discrete, adjElements)
+    validateDiscretePrecedingSingle(discrete.reversed, adjElements.map(_.reversed))
+    validateDiscreteSucceedingSingle(discrete.reversed.reversed, adjElements)
   }
 
   def validateDiscretePreceding[E](
@@ -84,8 +85,9 @@ object DiscreteSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateDiscretePrecedingWithoutReversed(discrete, adjElements)
-    validateDiscreteSucceedingWithoutReversed(discrete.reversed, adjElements.map(_.reversed))
+    validateDiscretePrecedingSingle(discrete, adjElements)
+    validateDiscreteSucceedingSingle(discrete.reversed, adjElements.map(_.reversed))
+    validateDiscretePrecedingSingle(discrete.reversed.reversed, adjElements)
   }
 
   def validateDiscrete[E](
@@ -94,11 +96,12 @@ object DiscreteSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateDiscreteWithoutReversed(discrete, adjElements)
-    validateDiscreteWithoutReversed(discrete.reversed, adjElements.map(_.reversed))
+    validateDiscreteSingle(discrete, adjElements)
+    validateDiscreteSingle(discrete.reversed, adjElements.map(_.reversed))
+    validateDiscreteSingle(discrete.reversed.reversed, adjElements)
   }
 
-  def validateDiscreteSucceedingWithoutReversed[E](
+  def validateDiscreteSucceedingSingle[E](
     discrete: Discrete.Succeeding[E],
     adjElements: List[AdjacentElements[E]]
   )(
@@ -113,7 +116,7 @@ object DiscreteSpec {
     }
   }
 
-  def validateDiscretePrecedingWithoutReversed[E](
+  def validateDiscretePrecedingSingle[E](
     discrete: Discrete.Preceding[E],
     adjElements: List[AdjacentElements[E]]
   )(
@@ -128,14 +131,14 @@ object DiscreteSpec {
     }
   }
 
-  def validateDiscreteWithoutReversed[E](
+  def validateDiscreteSingle[E](
     discrete: Discrete[E],
     adjElements: List[AdjacentElements[E]]
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateDiscreteSucceedingWithoutReversed(discrete, adjElements)
-    validateDiscretePrecedingWithoutReversed(discrete, adjElements)
+    validateDiscreteSucceedingSingle(discrete, adjElements)
+    validateDiscretePrecedingSingle(discrete, adjElements)
   }
 
   private def eqvNullable[E](x: E | Null, y : E | Null)(implicit eq: Eq[E]): Boolean =

@@ -87,8 +87,9 @@ object BoundedSpec {
     lowerBound: E,
     lowerIncluded: Boolean
   ): Unit = {
-    validateBoundedBelowWithoutReversed(bounded, lowerBound, lowerIncluded)
-    validateBoundedAboveWithoutReversed(bounded.reversed, lowerBound, lowerIncluded)
+    validateBoundedBelowSingle(bounded, lowerBound, lowerIncluded)
+    validateBoundedAboveSingle(bounded.reversed, lowerBound, lowerIncluded)
+    validateBoundedBelowSingle(bounded.reversed.reversed, lowerBound, lowerIncluded)
   }
 
   def validateBoundedAbove[E](
@@ -96,8 +97,9 @@ object BoundedSpec {
     upperBound: E,
     upperIncluded: Boolean
   ): Unit = {
-    validateBoundedAboveWithoutReversed(bounded, upperBound, upperIncluded)
-    validateBoundedBelowWithoutReversed(bounded.reversed, upperBound, upperIncluded)
+    validateBoundedAboveSingle(bounded, upperBound, upperIncluded)
+    validateBoundedBelowSingle(bounded.reversed, upperBound, upperIncluded)
+    validateBoundedAboveSingle(bounded.reversed.reversed, upperBound, upperIncluded)
   }
 
   def validateBounded[E](
@@ -107,11 +109,12 @@ object BoundedSpec {
     upperBound: E,
     upperIncluded: Boolean
   ): Unit = {
-    validateBoundedWithoutReversed(bounded, lowerBound, lowerIncluded, upperBound, upperIncluded)
-    validateBoundedWithoutReversed(bounded.reversed, upperBound, upperIncluded, lowerBound, lowerIncluded)
+    validateBoundedSingle(bounded, lowerBound, lowerIncluded, upperBound, upperIncluded)
+    validateBoundedSingle(bounded.reversed, upperBound, upperIncluded, lowerBound, lowerIncluded)
+    validateBoundedSingle(bounded.reversed.reversed, lowerBound, lowerIncluded, upperBound, upperIncluded)
   }
 
-  private def validateBoundedBelowWithoutReversed[E](
+  private def validateBoundedBelowSingle[E](
     bounded: Bounded.Below[E],
     lowerBound: E,
     lowerIncluded: Boolean
@@ -121,7 +124,7 @@ object BoundedSpec {
     assert(bounded.lowerBoundExcluded == !lowerIncluded)
   }
 
-  private def validateBoundedAboveWithoutReversed[E](
+  private def validateBoundedAboveSingle[E](
     bounded: Bounded.Above[E],
     upperBound: E,
     upperIncluded: Boolean
@@ -131,7 +134,7 @@ object BoundedSpec {
     assert(bounded.upperBoundExcluded == !upperIncluded)
   }
 
-  private def validateBoundedWithoutReversed[E](
+  private def validateBoundedSingle[E](
     bounded: Bounded[E, E],
     lowerBound: E,
     lowerIncluded: Boolean,

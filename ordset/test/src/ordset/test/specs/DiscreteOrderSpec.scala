@@ -145,11 +145,12 @@ object DiscreteOrderSpec {
   )(
     implicit eq: Eq[E]
   ): Unit = {
-    validateDiscreteOrderWithoutReversed(discreteOrd, adjElements)
-    validateDiscreteOrderWithoutReversed(discreteOrd.reversed, adjElements.map(_.reversed))
+    validateDiscreteOrderSingle(discreteOrd, adjElements)
+    validateDiscreteOrderSingle(discreteOrd.reversed, adjElements.map(_.reversed))
+    validateDiscreteOrderSingle(discreteOrd.reversed.reversed, adjElements)
   }
 
-  private def validateDiscreteOrderWithoutReversed[E](
+  private def validateDiscreteOrderSingle[E](
     discreteOrd: DiscreteOrder[E],
     adjElements: List[AdjacentElements[E]]
   )(
