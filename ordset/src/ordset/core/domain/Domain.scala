@@ -30,6 +30,12 @@ object Domain {
     final override val isBoundedAbove: Boolean = false
 
     final override val isBounded: Boolean = false
+
+    final override def containsElement(element: E): Boolean = true
+
+    final override def containsBound(bound: Bound[E]): Boolean = true
+
+    final override def containsExtended(bound: ExtendedBound[E]): Boolean = true
   }
 
   sealed trait BoundedBelow[E] extends Domain[E] {
@@ -51,6 +57,12 @@ object Domain {
     final override val isBoundedAbove: Boolean = false
 
     final override val isBounded: Boolean = true
+
+    final override def containsElement(element: E): Boolean = elementOrd.includes(element)
+
+    final override def containsBound(bound: Bound[E]): Boolean = boundOrd.includes(bound)
+
+    final override def containsExtended(bound: ExtendedBound[E]): Boolean = extendedOrd.includes(bound)
   }
 
   sealed trait BoundedAbove[E] extends Domain[E] {
@@ -72,6 +84,12 @@ object Domain {
     final override val isBoundedAbove: Boolean = true
 
     final override val isBounded: Boolean = true
+
+    final override def containsElement(element: E): Boolean = elementOrd.includes(element)
+
+    final override def containsBound(bound: Bound[E]): Boolean = boundOrd.includes(bound)
+
+    final override def containsExtended(bound: ExtendedBound[E]): Boolean = extendedOrd.includes(bound)
   }
 
   sealed trait Bounded[E] extends Domain[E] {
@@ -93,6 +111,12 @@ object Domain {
     final override val isBoundedAbove: Boolean = true
     
     final override val isBounded: Boolean = true
+
+    final override def containsElement(element: E): Boolean = elementOrd.includes(element)
+
+    final override def containsBound(bound: Bound[E]): Boolean = boundOrd.includes(bound)
+
+    final override def containsExtended(bound: ExtendedBound[E]): Boolean = extendedOrd.includes(bound)
   }
 
   sealed trait Continuous[E] extends Domain[E] {

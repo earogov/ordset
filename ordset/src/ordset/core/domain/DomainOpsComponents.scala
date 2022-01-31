@@ -1,8 +1,9 @@
 package ordset.core.domain
 
-import ordset.Hash
+import ordset.{Hash, Show}
+import ordset.core.{Bound, ExtendedBound, SegmentT, Segment, SegmentSeqT, SegmentSeq, SeqValidationPredicate}
 import ordset.core.interval.{Interval, IntervalRelation, IntervalAlgebra, IntervalFactory}
-import ordset.core.{Bound, ExtendedBound, SegmentT, SeqValidationPredicate}
+import ordset.core.range.Range
 
 object DomainOpsComponents {
 
@@ -209,6 +210,53 @@ object DomainOpsComponents {
 
       implicit override val extendedBoundsSeq: SeqValidationPredicate[ExtendedBound[E]] = 
         (prev: ExtendedBound[E], next: ExtendedBound[E]) => domain.extendedOrd.lt(prev, next)
+    }
+  }
+
+  trait ShowOps[E, D[X] <: Domain[X]] {
+
+    def elementShow: Show[E]
+
+    def boundShow: Show[Bound[E]]
+
+    def extendedShow: Show[ExtendedBound[E]]
+
+    def rangeShow: Show[Range[ExtendedBound[E]]]
+
+    def intervalShow: Show[Interval[E, D]]
+
+    def intervalRelationShow[V](implicit valueShow: Show[V]): Show[IntervalRelation[E, D, V]]
+
+    def segmentShow[V](implicit valueShow: Show[V]): Show[Segment[E, D, V]]
+
+    def segmentSeqShow[V](implicit valueShow: Show[V]): Show[SegmentSeq[E, D, V]]
+  }
+
+  object ShowOps {
+
+    implicit def default[E, D[X] <: Domain[X]](elementShow: Show[E]): ShowOps[E, D] = 
+      new DefaultImpl(elementShow) 
+
+    class DefaultImpl[E, D[X] <: Domain[X]](
+      override val elementShow: Show[E]
+    ) extends ShowOps[E, D] {
+
+      override val boundShow: Show[Bound[E]] = Bound.defaultShow(elementShow)
+
+      override val extendedShow: Show[ExtendedBound[E]] = ExtendedBound.defaultShow(elementShow)
+
+      override val rangeShow: Show[Range[ExtendedBound[E]]] = Range.defaultShow(extendedShow)
+
+      override val intervalShow: Show[Interval[E, D]] = Interval.defaultShow(elementShow)
+
+      override def intervalRelationShow[V](implicit valueShow: Show[V]): Show[IntervalRelation[E, D, V]] =
+        IntervalRelation.defaultShow(elementShow, valueShow)
+
+      override def segmentShow[V](implicit valueShow: Show[V]): Show[Segment[E, D, V]] =
+        SegmentT.defaultShow(elementShow, valueShow)
+
+      override def segmentSeqShow[V](implicit valueShow: Show[V]): Show[SegmentSeq[E, D, V]] =
+        SegmentSeqT.defaultShow(elementShow, valueShow)
     }
   }
 }

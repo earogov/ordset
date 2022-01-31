@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.{Order, Hash}
+import ordset.{Order, Hash, Show}
 import ordset.core.domain.*
 import ordset.core.interval.*
 import ordset.core.map.{LazyTreapOrderedMap, UniformOrderedMap, TreapOrderedMap}
@@ -145,6 +145,13 @@ object SegmentT {
 
   implicit def lowerBoundOrder[E, D[X] <: Domain[X]](implicit domain: D[E]): LowerBoundOrder[E, D] =
     new LowerBoundOrderImpl(domain)
+
+  implicit def defaultShow[E, D[X] <: Domain[X], V](
+    implicit 
+    elementShow: Show[E], 
+    valueShow: Show[V]
+  ): Show[Segment[E, D, V]] = 
+    SetBuilderFormat.segmentShow(elementShow, valueShow)
 
   /**
    * Segment which has next segment. May be [[Initial]] or [[Inner]].

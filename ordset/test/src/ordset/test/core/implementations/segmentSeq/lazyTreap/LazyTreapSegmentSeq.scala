@@ -1,12 +1,12 @@
 package ordset.test.core.implementations.segmentSeq.lazyTreap
 
-import ordset.{Hash, util}
+import ordset.{Hash, Show, util}
 import ordset.core.{ExtendedBound, SegmentSeq, SegmentSeqException, SeqValidationPredicate, TreapSegmentSeq}
 import ordset.core.{LazySegmentSeq, LazySegmentBase, AbstractLazyTreapSegmentSeq}
 import ordset.core.internal.lazySeq.*
 import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap}
+import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap, BoundValue}
 import ordset.core.value.{ValueOps, InclusionPredicate}
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
@@ -138,6 +138,8 @@ object LazyTreapSegmentSeq {
     override val valueHash: Hash[ControlValue[E, D, V]] = TestControlValueHash(valueOps.valueHash)
 
     override val valueIncl: InclusionPredicate[ControlValue[E, D, V]] = valueOps.valueIncl
+
+    override val valueShow: Show[ControlValue[E, D, V]] = ControlValueShow.get
   }
 
   object TestControlValueOps {
@@ -181,7 +183,7 @@ object LazyTreapSegmentSeq {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     def unsafeBuildAsc(
-      seq: IterableOnce[(ExtendedBound.Upper[E], V)],
+      seq: IterableOnce[BoundValue[E, V]],
       domainOps: DomainOps[E, D],
       valueOps: ValueOps[V]
     )(

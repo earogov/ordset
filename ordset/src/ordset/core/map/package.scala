@@ -3,6 +3,9 @@ package ordset.core
 import ordset.core.domain.Domain
 
 package object map {
+
+  // Map factory  ------------------------------------------------------------- //
+  type BoundValue[+E, +V] = (ExtendedBound.Upper[E], V)
   
   // General map -------------------------------------------------------------- //
   type OrderedMap[E, D[X] <: Domain[X], V] = SegmentSeq[E, D, V]

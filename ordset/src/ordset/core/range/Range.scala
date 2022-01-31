@@ -71,13 +71,13 @@ object Range {
   /**
    * Default [[Hash]] and [[Eq]] implementation for range.
    */
-  class DefaultHash[E, R <: Range[E]](val elementHash: Hash[E]) extends Hash[R] {
+  class DefaultHash[E, R[X] <: Range[X]](val elementHash: Hash[E]) extends Hash[R[E]] {
 
     import ordset.util.HashUtil._
 
     private val hashConst: Int = 0x97C30FE5
 
-    override def eqv(x: R, y: R): Boolean = 
+    override def eqv(x: R[E], y: R[E]): Boolean = 
       x match {
         case x: Range.NonEmpty[E] =>
           y match {
@@ -90,7 +90,7 @@ object Range {
           y.isEmpty
       }
 
-    override def hash(x: R): Int = 
+    override def hash(x: R[E]): Int = 
       x match {
         case x: Range.NonEmpty[E] => product2Hash(elementHash.hash(x.lower), elementHash.hash(x.upper))
         case _ => hashConst
@@ -100,11 +100,11 @@ object Range {
   /**
    * Default [[Show]] implementation for range.
    */
-  class DefaultShow[E, R <: Range[E]](val elementShow: Show[E]) extends Show[R] {
+  class DefaultShow[E, R[+X] <: Range[X]](val elementShow: Show[E]) extends Show[R[E]] {
 
     import DefaultShow.*
 
-    override def show(x: R): String = 
+    override def show(x: R[E]): String = 
       x match {
         case x: Range.NonEmpty[E] =>
           val lowerStr = elementShow.show(x.lower)
@@ -127,5 +127,5 @@ object Range {
   }
 
   // Private section ---------------------------------------------------------- //
-  private val defaultShowInstance: DefaultShow[Any, Range[Any]] = new DefaultShow(Show.fromToString)
+  private val defaultShowInstance: DefaultShow[Any, Range] = new DefaultShow(Show.fromToString)
 }

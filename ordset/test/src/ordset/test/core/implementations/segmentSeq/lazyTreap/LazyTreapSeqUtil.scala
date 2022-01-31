@@ -3,6 +3,7 @@ package ordset.test.core.implementations.segmentSeq.lazyTreap
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.{Bound, ExtendedBound, LazySegmentSeq, TreapSegmentSeq, SegmentSeq}
+import ordset.core.map.BoundValue
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.test.core.RandomUtil
 import ordset.test.core.implementations.domain.BoundSelector
@@ -146,9 +147,9 @@ object LazyTreapSeqUtil {
     def generateValues(
       bounds: Vector[ExtendedBound.Upper[E]], 
       prevValue: Option[V],
-      acc: Vector[(ExtendedBound.Upper[E], V)],
+      acc: Vector[BoundValue[E, V]],
       rng: UnsafeUniformRng
-    ): Vector[(ExtendedBound.Upper[E], V)] = 
+    ): Vector[BoundValue[E, V]] = 
       if (bounds.isEmpty) acc
       else {
         val bound = bounds(0)

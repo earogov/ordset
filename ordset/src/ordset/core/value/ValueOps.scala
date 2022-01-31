@@ -1,10 +1,11 @@
 package ordset.core.value
 
-import ordset.Hash
+import ordset.{Hash, Show}
 import ordset.core.SeqValidationPredicate
 
 /**
  * Typeclasses for segment sequence values.
+ * 
  * @tparam V value type.
  */
 trait ValueOps[V] {
@@ -51,6 +52,11 @@ trait ValueOps[V] {
   def valueIncl: InclusionPredicate[V]
 
   /**
+   * @return show typeclass.
+   */
+  def valueShow: Show[V]
+
+  /**
    * Equality check. It's always consistent with equality and hash typeclass [[valueHash]].
    */
   final def eqv(x: V, y: V): Boolean = valueHash.eqv(x, y)
@@ -69,42 +75,60 @@ trait ValueOps[V] {
    * Inclusion check. It's always consistent with set inclusion predicate [[valueIncl]].
    */
   final def isIncluded(x: V): Boolean = valueIncl.apply(x)
+
+  /**
+   * String representation of value. It's always consistent with show typeclass [[valueShow]].
+   */
+  final def show(x: V): String = valueShow.show(x)
 }
 
 object ValueOps {
 
-  implicit lazy val booleanValueOps: ValueOps[Boolean] =
+  implicit def booleanValueOps(
+    implicit valueShow: Show[Boolean] = ordset.givens.boolean.booleanShow
+  ): ValueOps[Boolean] =
     new DefaultImpl[Boolean](
       false,
       ordset.givens.boolean.booleanNaturalOrder,
-      InclusionPredicate.booleanInclusion
+      InclusionPredicate.booleanInclusion,
+      valueShow
     )
 
-  implicit lazy val intValueOps: ValueOps[Int] =
+  implicit def intValueOps(
+    implicit valueShow: Show[Int] = ordset.givens.int.intShow
+  ): ValueOps[Int] =
     new DefaultImpl[Int](
       0,
       ordset.givens.int.intNaturalOrder,
-      InclusionPredicate.alwaysIncluded
+      InclusionPredicate.alwaysIncluded,
+      valueShow
     )
 
-  implicit lazy val longValueOps: ValueOps[Long] =
+  implicit def longValueOps(
+    implicit valueShow: Show[Long] = ordset.givens.long.longShow
+  ): ValueOps[Long] =
     new DefaultImpl[Long](
       0L,
       ordset.givens.long.longNaturalOrder,
-      InclusionPredicate.alwaysIncluded
+      InclusionPredicate.alwaysIncluded,
+      valueShow
     )
 
-  implicit lazy val stringValueOps: ValueOps[String] =
+  implicit def stringValueOps(
+    implicit valueShow: Show[String] = ordset.givens.string.stringShow
+  ): ValueOps[String] =
     new DefaultImpl[String](
       "",
       ordset.givens.string.stringNaturalOrder,
-      InclusionPredicate.alwaysIncluded
+      InclusionPredicate.alwaysIncluded,
+      valueShow
     )
 
   final class DefaultImpl[V](
     override val unit: V,
     override val valueHash: Hash[V],
-    override val valueIncl: InclusionPredicate[V]
+    override val valueIncl: InclusionPredicate[V],
+    override val valueShow: Show[V]
   ) extends ValueOps[V]
 
   final class Tuple2Impl[V1, V2](
@@ -117,6 +141,9 @@ object ValueOps {
 
     override val valueHash: Hash[(V1, V2)] =
       ordset.givens.tuple2.tuple2Hash(valueOps1.valueHash, valueOps2.valueHash)
+
+    override val valueShow: Show[(V1, V2)] =
+      ordset.givens.tuple2.tuple2Show(valueOps1.valueShow, valueOps2.valueShow)
   }
   
   final class EitherImpl[V1, V2](
@@ -132,6 +159,9 @@ object ValueOps {
       
     override val valueHash: Hash[Either[V1, V2]] =
       ordset.givens.either.eitherHash(valueOps1.valueHash, valueOps2.valueHash)
+
+    override val valueShow: Show[Either[V1, V2]] =
+      ordset.givens.either.eitherShow(valueOps1.valueShow, valueOps2.valueShow)
   }
 
   final class MapImpl[V1, V2](
@@ -140,11 +170,13 @@ object ValueOps {
     mapFunc2: V2 => V1
   ) extends ValueOps[V2] {
 
-    override val unit: V2 = mapFunc1.apply(valueOps.unit)
+    override val unit: V2 = mapFunc1(valueOps.unit)
 
     override val valueHash: Hash[V2] = Hash.by(mapFunc2)(valueOps.valueHash)
 
     override val valueIncl: InclusionPredicate[V2] = 
       new InclusionPredicate.MapImpl(valueOps.valueIncl, mapFunc2)
+
+    override val valueShow: Show[V2] = Show.show(v => valueOps.show(mapFunc2(v)))
   }
 }

@@ -18,11 +18,11 @@ class IntervalFactorySpec extends AnyFunSpec {
   import ordset.core.syntax.SetBuilderNotation._
 
   it("should build intervals for unbounded domain") {
-    type Dom = Domain.ContinuousUnbounded[Int]
+    type Dom[X] = Domain.ContinuousUnbounded[X]
 
-    val d: Dom = implicitly
+    val d: Dom[Int] = implicitly
 
-    implicit val domainOps = DomainOps.default(d)
+    implicit val domainOps: DomainOps[Int, Dom] = DomainOps.default(d)
     val interval = domainOps.intervals.factory
     val x = BoundBuilder(domainOps)
 

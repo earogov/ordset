@@ -33,6 +33,12 @@ trait DomainLike[E] {
   def isBounded: Boolean
 
   def isUnbounded: Boolean
+
+  def containsElement(element: E): Boolean
+
+  def containsBound(bound: Bound[E]): Boolean
+
+  def containsExtended(bound: ExtendedBound[E]): Boolean
 }
 
 object DomainLike {
@@ -69,6 +75,12 @@ object DomainLike {
     override def isBounded: Boolean = domain.isBounded
 
     override def isUnbounded: Boolean = domain.isUnbounded
+
+    override def containsElement(element: E): Boolean = domain.containsElement(element)
+
+    override def containsBound(bound: Bound[E]): Boolean = domain.containsBound(bound)
+
+    override def containsExtended(bound: ExtendedBound[E]): Boolean = domain.containsExtended(bound)
   }
 
   final case class ProxyImpl[E, D[X] <: Domain[X]](override val domain: D[E]) extends Proxy[E, D]

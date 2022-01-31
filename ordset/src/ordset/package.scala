@@ -11,6 +11,8 @@ package object ordset {
 
   type Show[A] = cats.Show[A]
 
+  type ContravariantShow[A] = cats.Show.ContravariantShow[A]
+
   val Show: cats.Show.type = cats.Show
 
   val Hash: cats.Hash.type = cats.Hash

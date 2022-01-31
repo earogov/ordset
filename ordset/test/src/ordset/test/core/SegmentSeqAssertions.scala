@@ -4,6 +4,7 @@ import ordset.{Hash, core}
 import ordset.core._
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.interval.IntervalRelation
+import ordset.core.map.BoundValue
 import ordset.util.IterableUtil
 
 object SegmentSeqAssertions {
@@ -92,8 +93,8 @@ object SegmentSeqAssertions {
     )
 
   def assertSameBoundValueIterable[E, D[X] <: Domain[X], V](
-    expected: Iterable[(ExtendedBound.Upper[E], V)],
-    actual: Iterable[(ExtendedBound.Upper[E], V)],
+    expected: Iterable[BoundValue[E, V]],
+    actual: Iterable[BoundValue[E, V]],
     info: String = ""
   )(
     implicit

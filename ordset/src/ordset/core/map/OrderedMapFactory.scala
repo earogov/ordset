@@ -67,7 +67,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    */
   @throws[SegmentSeqException]("if preconditions are violated")
   def unsafeBuildAsc(
-    seq: IterableOnce[(ExtendedBound.Upper[E], V)],
+    seq: IterableOnce[BoundValue[E, V]],
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
@@ -83,7 +83,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    * Note [[unsafeBuildAsc]] preconditions.
    */
   def tryBuildAsc(
-    seq: IterableOnce[(ExtendedBound.Upper[E], V)],
+    seq: IterableOnce[BoundValue[E, V]],
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
   )(
@@ -202,13 +202,13 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
      * Same as [[OrderedMapFactory.unsafeBuildAsc]].
      */
     @throws[SegmentSeqException]("if preconditions are violated")
-    final def unsafeBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): SSeq =
+    final def unsafeBuildAsc(seq: IterableOnce[BoundValue[E, V]]): SSeq =
       factory.unsafeBuildAsc(seq, domainOps, valueOps)(boundsValidation, valuesValidation)(rngManager)
 
     /**
      * Same as [[OrderedMapFactory.tryBuildAsc]].
      */
-    final def tryBuildAsc(seq: IterableOnce[(ExtendedBound.Upper[E], V)]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
+    final def tryBuildAsc(seq: IterableOnce[BoundValue[E, V]]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
 
     /**
      * Same as [[OrderedMapFactory.buildUniform]].

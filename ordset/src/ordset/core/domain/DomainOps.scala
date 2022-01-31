@@ -1,5 +1,6 @@
 package ordset.core.domain
 
+import ordset.Show
 import ordset.core.domain.DomainOpsComponents.*
 
 sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
@@ -13,16 +14,23 @@ sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
   def segments: Segments[E, D]
 
   def validation: Validation[E, D]
+
+  def showOps: ShowOps[E, D]
 }
 
 object DomainOps {
 
-  implicit def default[E, D[X] <: Domain[X]](implicit domain: D[E]): DomainOps[E, D] = domain match {
-    case d: Domain.Unbounded[E] => UnboundedOps.default(d)
-    case d: Domain.BoundedBelow[E] => BoundedBelowOps.default(d)
-    case d: Domain.BoundedAbove[E] => BoundedAboveOps.default(d)
-    case d: Domain.Bounded[E] => BoundedOps.default(d)
-  }
+  implicit def default[E, D[X] <: Domain[X]](
+    implicit 
+    domain: D[E],
+    elementShow: Show[E] = Show.fromToString[E]
+  ): DomainOps[E, D] = 
+    domain match {
+      case d: Domain.Unbounded[E] => UnboundedOps.default(d, elementShow)
+      case d: Domain.BoundedBelow[E] => BoundedBelowOps.default(d, elementShow)
+      case d: Domain.BoundedAbove[E] => BoundedAboveOps.default(d, elementShow)
+      case d: Domain.Bounded[E] => BoundedOps.default(d, elementShow)
+    }
 
   trait UnboundedOps[E, D[X] <: Domain[X]] extends DomainOps[E, D] {
 
@@ -33,11 +41,16 @@ object DomainOps {
 
   object UnboundedOps {
 
-    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.Unbounded[E]): UnboundedOps[E, D] = 
-      new DefaultImpl(domain)
+    implicit def default[E, D[X] <: Domain[X]](
+      implicit 
+      domain: D[E] & Domain.Unbounded[E],
+      elementShow: Show[E] = Show.fromToString[E]
+    ): UnboundedOps[E, D] = 
+      new DefaultImpl(domain, elementShow)
 
     class DefaultImpl[E, D[X] <: Domain[X]](
       override val domain: D[E] & Domain.Unbounded[E],
+      elementShow: Show[E]
     ) extends UnboundedOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -48,7 +61,9 @@ object DomainOps {
 
       override val segments: Segments[E, D] = Segments.default(domain)
 
-      override val validation: Validation[E, D] = Validation.default(domain) 
+      override val validation: Validation[E, D] = Validation.default(domain)
+
+      override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
   }
 
@@ -61,11 +76,16 @@ object DomainOps {
 
   object BoundedBelowOps {
 
-    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.BoundedBelow[E]): BoundedBelowOps[E, D] = 
-      new DefaultImpl(domain)
+    implicit def default[E, D[X] <: Domain[X]](
+      implicit 
+      domain: D[E] & Domain.BoundedBelow[E],
+      elementShow: Show[E] = Show.fromToString[E]
+    ): BoundedBelowOps[E, D] = 
+      new DefaultImpl(domain, elementShow)
 
     class DefaultImpl[E, D[X] <: Domain[X]](
       override val domain: D[E] & Domain.BoundedBelow[E],
+      elementShow: Show[E]
     ) extends BoundedBelowOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -76,7 +96,9 @@ object DomainOps {
 
       override val segments: Segments[E, D] = Segments.default(domain)
 
-      override val validation: Validation[E, D] = Validation.default(domain) 
+      override val validation: Validation[E, D] = Validation.default(domain)
+
+      override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
   }
 
@@ -89,11 +111,16 @@ object DomainOps {
 
   object BoundedAboveOps {
 
-    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.BoundedAbove[E]): BoundedAboveOps[E, D] = 
-      new DefaultImpl(domain)
+    implicit def default[E, D[X] <: Domain[X]](
+      implicit 
+      domain: D[E] & Domain.BoundedAbove[E],
+      elementShow: Show[E] = Show.fromToString[E]
+    ): BoundedAboveOps[E, D] = 
+      new DefaultImpl(domain, elementShow)
 
     class DefaultImpl[E, D[X] <: Domain[X]](
       override val domain: D[E] & Domain.BoundedAbove[E],
+      elementShow: Show[E]
     ) extends BoundedAboveOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -104,7 +131,9 @@ object DomainOps {
 
       override val segments: Segments[E, D] = Segments.default(domain)
 
-      override val validation: Validation[E, D] = Validation.default(domain) 
+      override val validation: Validation[E, D] = Validation.default(domain)
+
+      override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
   }
 
@@ -117,11 +146,16 @@ object DomainOps {
 
   object BoundedOps {
 
-    implicit def default[E, D[X] <: Domain[X]](domain: D[E] & Domain.Bounded[E]): BoundedOps[E, D] = 
-      new DefaultImpl(domain)
+    implicit def default[E, D[X] <: Domain[X]](
+      implicit 
+      domain: D[E] & Domain.Bounded[E],
+      elementShow: Show[E] = Show.fromToString[E]
+    ): BoundedOps[E, D] = 
+      new DefaultImpl(domain, elementShow)
 
     class DefaultImpl[E, D[X] <: Domain[X]](
       override val domain: D[E] & Domain.Bounded[E],
+      elementShow: Show[E]
     ) extends BoundedOps[E, D] {
 
       override val domains: Domains[E, D] = Domains.default
@@ -132,7 +166,9 @@ object DomainOps {
 
       override val segments: Segments[E, D] = Segments.default(domain)
 
-      override val validation: Validation[E, D] = Validation.default(domain) 
+      override val validation: Validation[E, D] = Validation.default(domain)
+
+      override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
   }
 }

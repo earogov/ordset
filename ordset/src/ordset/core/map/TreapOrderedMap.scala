@@ -52,7 +52,7 @@ object TreapOrderedMap {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     def unsafeBuildAsc(
-      seq: IterableOnce[(ExtendedBound.Upper[E], V)],
+      seq: IterableOnce[BoundValue[E, V]],
       domainOps: DomainOps[E, D],
       valueOps: ValueOps[V]
     )(
@@ -68,7 +68,7 @@ object TreapOrderedMap {
         val lastValue = new ValueHolder[V]()
         var buffer: List[MutableTreap.Node[Bound.Upper[E], V]] = Nil
         var root: ImmutableTreap[Bound.Upper[E], V] | Null = null
-        var prevItem: (ExtendedBound.Upper[E], V) | Null = null
+        var prevItem: BoundValue[E, V] | Null = null
         while (iter.hasNext) {
           if (root != null) {
             throw new IllegalArgumentException(

@@ -1,6 +1,6 @@
 package ordset.core.internal.lazySeq
 
-import ordset.Hash
+import ordset.{Hash, Show}
 import ordset.random.RngManager
 import ordset.core.domain.Domain
 import ordset.core.value.{ValueOps, InclusionPredicate}
@@ -59,6 +59,13 @@ protected[ordset] object ControlValue {
       // 2. check, whether value was computed.
       //
       // Updates of `result` must be synchronized on `lock` instance.
+      //
+      // We also use `lock` as initial value instead of `null` to guarantee single call of
+      // function to calculate lazy value. Otherwise the following scenario is possible:
+      // - we call function to calculate lazy value;
+      // - function returns `null` and we save the result;
+      // - client calls `compute` repeatedly, we consider `null` as undefined lazy value 
+      //   and call function repeatedly. 
       @volatile protected var result: SegmentSeq[E, D, V] | Dummy = lock
 
       protected def isComputed: Boolean = !lock.eq(result)
@@ -291,6 +298,14 @@ protected[ordset] object ControlValue {
       private lazy val instance: ControlValueHash[Any, Domain, Any] = new ControlValueHash()
     }
 
+    object ControlValueShow {
+
+      def get[E, D[X] <: Domain[X], V]: Show[ControlValue[E, D, V]] = instance.asInstanceOf
+
+      // Private section ---------------------------------------------------------- //
+      private lazy val instance: Show[ControlValue[Any, Domain, Any]] = Show.fromToString
+    }
+
     final class ControlValueOps[E, D[X] <: Domain[X], V] 
       extends ValueOps[ControlValue[E, D, V]] {
 
@@ -299,6 +314,8 @@ protected[ordset] object ControlValue {
       override val valueHash: Hash[ControlValue[E, D, V]] = ControlValueHash.get
 
       override val valueIncl: InclusionPredicate[ControlValue[E, D, V]] = InclusionPredicate.alwaysIncluded
+
+      override val valueShow: Show[ControlValue[E, D, V]] = ControlValueShow.get
     }
 
     object ControlValueOps {

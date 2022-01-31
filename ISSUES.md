@@ -18,3 +18,14 @@ It will allows to optimize computation of lazy values when only part of sequence
 If there is a lazy segment at specified bound then we create new lazy value. New function takes old one and modifies its result. Multiple calls of takeAboveBound/takeAboveBound methods with the same bound can produce function that causes stack overflow.
 
 4. Add `span` method to IntervalAlgebra (see RangeAlgebra).
+
+5. Fix nullable caches.
+
+Consider we have some internal state of type `C`, that has not been initialized yet:
+
+var cache: C | Null = null
+
+Next we get some value and put it into cache. Later we do `cache != null` checks to avoid repeated initialization, etc.
+But if type `C` is itself nullable, then after initialization cache may contain `null`. This can lead to the wrong
+behavior. Such cases are spread all over the project. Consider to replace `null` with some dummy object (available
+only inside library) to explicitly define uninitialized state.

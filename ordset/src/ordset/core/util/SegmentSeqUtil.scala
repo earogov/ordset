@@ -1,6 +1,7 @@
 package ordset.core.util
 
 import ordset.core.domain.Domain
+import ordset.core.map.BoundValue
 import ordset.core._
 
 import scala.annotation.tailrec
@@ -148,7 +149,7 @@ object SegmentSeqUtil {
    */
   def getExtendedBoundValueIterableForSeq[E, D[X] <: Domain[X], V](
     seq: SegmentSeq[E, D, V]
-  ): Iterable[(ExtendedBound.Upper[E], V)] =
+  ): Iterable[BoundValue[E, V]] =
     seq.firstSegment.forwardIterable.map(s => (s.upper, s.value))
 
   /**

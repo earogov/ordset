@@ -1,6 +1,6 @@
 package ordset.core.range
 
-import ordset.{Eq, Hash, Show}
+import ordset.{Hash, Show}
 
 /**
  * Simple range of elements (empty or non-empty).

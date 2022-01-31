@@ -1,5 +1,6 @@
 package ordset.core
 
+import ordset.Show
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.map.{LazyTreapOrderedMap, MappedOrderedMap, MappedValueOrderedMap, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
@@ -1080,4 +1081,14 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
       new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, other.valueOps, valueOps), 
       rngManager
     )
+}
+
+object SegmentSeqT {
+
+  implicit def defaultShow[E, D[X] <: Domain[X], V](
+    implicit 
+    elementShow: Show[E], 
+    valueShow: Show[V]
+  ): Show[SegmentSeq[E, D, V]] = 
+    SetBuilderFormat.segmentSeqShow(elementShow, valueShow)
 }

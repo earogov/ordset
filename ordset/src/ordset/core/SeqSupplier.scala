@@ -1,6 +1,6 @@
 package ordset.core
 
-import ordset.Hash
+import ordset.{Hash, Show}
 import ordset.core.domain.Domain
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.util.HashUtil.product1Hash
@@ -73,6 +73,14 @@ object SeqSupplier {
     private lazy val instance: HashImpl[Any, Domain, Any] = new HashImpl()
   }
 
+  object ShowImpl {
+
+    def get[E, D[X] <: Domain[X], V]: Show[SeqSupplier[E, D, V]] = instance.asInstanceOf[Show[SeqSupplier[E, D, V]]]
+
+    // Private section ---------------------------------------------------------- //
+    private lazy val instance: Show[SeqSupplier[Any, Domain, Any]] = Show.fromToString
+  }
+
   /**
    * [[ValueOps]] typeclass implementation for [[SeqSupplier]].
    */ 
@@ -86,7 +94,8 @@ object SeqSupplier {
       new ValueOps.DefaultImpl(
         None,
         HashImpl.get,
-        InclusionPredicate.optionInclusion
+        InclusionPredicate.optionInclusion,
+        ShowImpl.get
       )
   }
 }
