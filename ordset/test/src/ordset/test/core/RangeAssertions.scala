@@ -1,6 +1,6 @@
 package ordset.test.core
 
-import ordset.Hash
+import ordset.{Hash, Show}
 import ordset.core.range.Range
 
 object RangeAssertions {
@@ -13,10 +13,12 @@ object RangeAssertions {
     actual: R,
     info: String = ""
   )(
-    implicit rangeHash: Hash[R]
+    implicit 
+    rangeHash: Hash[R],
+    rangeShow: Show[R]
   ): Unit =
     assert(
       rangeHash.eqv(expected, actual),
-      debugInfo(expected, actual, info)
+      debugInfo(expected, actual, info)(rangeShow)
     )
 }

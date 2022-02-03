@@ -1,6 +1,7 @@
 package ordset.test.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
+import ordset.core.value.ValueOps
 import ordset.util.BooleanUtil
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.SegmentSeqAssertions._
@@ -395,22 +396,22 @@ trait InspectionBehaviors[E, D[X] <: Domain[X], V] {
   ): Unit =
     samples.foreach { sample =>
 
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
 
       it(s"should return value associated with segment for $sample") {
 
         def checkSequenceValueForBound(bound: ExtendedBound[E], refRelation: IntervalRelation[E, D, V]): Unit = {
           val refValue = refRelation.value
           val seqValue = sample.sequence.getValueForExtended(bound)
-          assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for extended bound $bound")
+          assert(valueOps.eqv(seqValue, refValue), s"sequence should return $refValue for extended bound $bound")
           bound match {
             case bound: Bound[E] =>
               val seqValue = sample.sequence.getValueForBound(bound)
-              assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for bound $bound")
+              assert(valueOps.eqv(seqValue, refValue), s"sequence should return $refValue for bound $bound")
               if (bound.isIncluding) {
                 val element = bound.element
                 val seqValue = sample.sequence.getValueForElement(element)
-                assert(valueHash.eqv(seqValue, refValue), s"sequence should return $refValue for element $element")
+                assert(valueOps.eqv(seqValue, refValue), s"sequence should return $refValue for element $element")
               }
             case _ => // no additional checks
           }
@@ -425,7 +426,7 @@ trait InspectionBehaviors[E, D[X] <: Domain[X], V] {
 
           // `segment.value` is correct
           val segment = iterator.next()
-          assert(valueHash.eqv(segment.value, refValue), s"segment $segment should have value $refValue")
+          assert(valueOps.eqv(segment.value, refValue), s"segment $segment should have value $refValue")
 
           // `sequence.getValueForBound` etc are correct
           checkSequenceValueForBound(segment.lower, refRelation)

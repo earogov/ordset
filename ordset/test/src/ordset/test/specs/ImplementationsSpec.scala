@@ -6,6 +6,8 @@ import org.scalatest.Assertions._
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
+import ordset.Eq
+import ordset.util.IterableUtil
 
 @RunWith(classOf[JUnitRunner])
 class ImplementationsSpec extends AnyFunSpec {
@@ -278,6 +280,34 @@ class ImplementationsSpec extends AnyFunSpec {
     )
   }
 
+  it("should implement order for `Iterable`") {
+
+    import ordset.givens.int._
+
+    validateBoundedBelowOrder[Iterable[Int]](
+      new iterable.NaturalOrder(),
+      Nil,
+      true,
+      List(),
+      List(Nil, List(1), List(2), List(3))
+    )(
+      new IterableEq()
+    )
+
+    validateBoundedOrder(
+      iterable.tryNaturalOrderWithBounds(List(1, 1, 1), false, List(1, 2), true).get,
+      List(1, 1, 1),
+      false, 
+      List(1, 2),
+      true,
+      List(List(1), List(1, 1), List(1, 1, 1)),
+      List(List(1, 1, 1, 1), List(1, 1, 2), List(1, 1, 3)),
+      List(List(1, 3), List(1, 2, 1), List(2))
+    )(
+      new IterableEq()
+    )
+  }
+
   it("should implement order for `List`") {
 
     import ordset.givens.int._
@@ -288,6 +318,8 @@ class ImplementationsSpec extends AnyFunSpec {
       true,
       List(),
       List(Nil, List(1), List(2), List(3))
+    )(
+      new ListEq()
     )
 
     validateBoundedOrder(
@@ -299,6 +331,8 @@ class ImplementationsSpec extends AnyFunSpec {
       List(List(1), List(1, 1), List(1, 1, 1)),
       List(List(1, 1, 1, 1), List(1, 1, 2), List(1, 1, 3)),
       List(List(1, 3), List(1, 2, 1), List(2))
+    )(
+      new ListEq()
     )
   }
 
@@ -312,6 +346,8 @@ class ImplementationsSpec extends AnyFunSpec {
       true,
       List(),
       List(LazyList(), LazyList(1), LazyList(2), LazyList(3))
+    )(
+      new LazyListEq()
     )
 
     validateBoundedOrder(
@@ -323,6 +359,8 @@ class ImplementationsSpec extends AnyFunSpec {
       List(LazyList(1), LazyList(1, 1), LazyList(1, 1, 1)),
       List(LazyList(1, 1, 1, 1), LazyList(1, 1, 2), LazyList(1, 1, 3)),
       List(LazyList(1, 3), LazyList(1, 2, 1), LazyList(2))
+    )(
+      new LazyListEq()
     )
   }
 
@@ -336,6 +374,8 @@ class ImplementationsSpec extends AnyFunSpec {
       true,
       List(),
       List(Queue(), Queue(1), Queue(2), Queue(3))
+    )(
+      new QueueEq()
     )
 
     validateBoundedOrder(
@@ -347,6 +387,28 @@ class ImplementationsSpec extends AnyFunSpec {
       List(Queue(1), Queue(1, 1), Queue(1, 1, 1)),
       List(Queue(1, 1, 1, 1), Queue(1, 1, 2), Queue(1, 1, 3)),
       List(Queue(1, 3), Queue(1, 2, 1), Queue(2))
+    )(
+      new QueueEq()
     )
+  }
+
+  private class IterableEq[T](implicit ev: Eq[T]) extends Eq[Iterable[T]] {
+
+    override def eqv(xs: Iterable[T], ys: Iterable[T]) = IterableUtil.iterableEq(xs, ys)(ev)
+  }
+
+  private class ListEq[T](implicit ev: Eq[T]) extends Eq[List[T]] {
+
+    override def eqv(xs: List[T], ys: List[T]) = IterableUtil.iterableEq(xs, ys)(ev)
+  }
+
+  private class LazyListEq[T](implicit ev: Eq[T]) extends Eq[LazyList[T]] {
+
+    override def eqv(xs: LazyList[T], ys: LazyList[T]) = IterableUtil.iterableEq(xs, ys)(ev)
+  }
+
+  private class QueueEq[T](implicit ev: Eq[T]) extends Eq[Queue[T]] {
+
+    override def eqv(xs: Queue[T], ys: Queue[T]) = IterableUtil.iterableEq(xs, ys)(ev)
   }
 }

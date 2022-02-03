@@ -254,12 +254,12 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
 
   it("should convert segment sequence to iterable of (bound, value) tuples") {
 
-    assertSameBoundValueIterable[Int, Dom, Boolean](
+    assertSameBoundValueSeq[Int, Dom, Boolean](
       List((ExtendedBound.AboveAll, false)),
       SegmentSeqUtil.getExtendedBoundValueIterableForSeq(seq1)
     )
 
-    assertSameBoundValueIterable[Int, Dom, Boolean](
+    assertSameBoundValueSeq[Int, Dom, Boolean](
       List(
         (0 `)[`, true),
         (10 `)[`, false),

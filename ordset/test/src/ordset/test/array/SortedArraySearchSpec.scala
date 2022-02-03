@@ -1,6 +1,5 @@
 package ordset.test.array
 
-import ordset.core.instances
 import org.scalatest.funspec.AnyFunSpec
 
 import scala.collection.immutable.ArraySeq

@@ -4,6 +4,7 @@ import ordset.Hash
 import ordset.core.internal.lazySeq.*
 import ordset.core.{ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
 import ordset.test.core.SegmentSeqAssertions._
@@ -35,8 +36,8 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
       import ordset.test.core.behaviors.lazyTreapSeq.LazyTreapSeqCacheTest._
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
-      implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
+      implicit val zvalueOps: ValueOps[ZValue[E, D, V]] = sample.testZvalueOps
 
       sample.lazyCacheCases.foreach { testPackage =>
 
@@ -58,7 +59,7 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
               (1 to 2) foreach { i =>
                 val seqValue = seq.getValueForExtended(testCase.bound)
                 assert(
-                  valueHash.eqv(seqValue, testCase.expectedValue),
+                  valueOps.eqv(seqValue, testCase.expectedValue),
                   s"expected value ${testCase.expectedValue} for bound ${testCase.bound} at iteration $i"
                 )
                 assertSameRelationAndSegmentSeq(testCase.expectedState, seq.getZippedSeq, s"iteration $i")
@@ -76,8 +77,8 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
     samples.foreach { sample =>
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
-      implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
+      implicit val zvalueOps: ValueOps[ZValue[E, D, V]] = sample.testZvalueOps
 
       it(s"should have valid state of $sample after sequential random access") {
 
@@ -103,8 +104,8 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
       val timeout = Duration(5, TimeUnit.SECONDS)
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
-      implicit val zvalueHash: Hash[ZValue[E, D, V]] = sample.testZvalueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
+      implicit val zvalueOps: ValueOps[ZValue[E, D, V]] = sample.testZvalueOps
 
       it(s"should have valid state of $sample after concurrent random access") {
 
@@ -141,7 +142,7 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
       import ordset.test.core.behaviors.lazyTreapSeq.LazyTreapSeqMultipleTakeTest._
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
 
       sample.multipleTakeCases.foreach { testPackage =>
 

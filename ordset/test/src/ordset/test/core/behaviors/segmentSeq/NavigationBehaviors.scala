@@ -1,6 +1,7 @@
 package ordset.test.core.behaviors.segmentSeq
 
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.SegmentSeqAssertions._
 import ordset.test.core.samples.segmentSeq.SegmentSeqSample
@@ -20,7 +21,7 @@ trait NavigationBehaviors[E, D[X] <: Domain[X], V] {
     samples.foreach { sample =>
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
   
       it(s"should move to the next segment if there is one for $sample") {
         @tailrec
@@ -57,7 +58,7 @@ trait NavigationBehaviors[E, D[X] <: Domain[X], V] {
     samples.foreach { sample =>
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
 
       it(s"segments should move to the specified bound for $sample") {
         @tailrec
@@ -111,7 +112,7 @@ trait NavigationBehaviors[E, D[X] <: Domain[X], V] {
     samples.foreach { sample =>
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+      implicit val valueOps: ValueOps[V] = sample.valueOps
   
       it(s"should move to the first and last segments for $sample") {
         if (sample.reference.isEmpty) fail("Invalid test case: expected sequence must be non-empty.")

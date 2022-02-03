@@ -29,3 +29,7 @@ Next we get some value and put it into cache. Later we do `cache != null` checks
 But if type `C` is itself nullable, then after initialization cache may contain `null`. This can lead to the wrong
 behavior. Such cases are spread all over the project. Consider to replace `null` with some dummy object (available
 only inside library) to explicitly define uninitialized state.
+
+6. Override `contravariant` and `reversed` methods of `DefaultOrder` for `Bound` and `ExtendedBound`.
+
+`DefaultOrder` also extends `Hash`. We should return more precise type, that includes `Hash`, for  `contravariant` and `reversed` methods.

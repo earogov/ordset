@@ -374,6 +374,95 @@ object implementations {
       with BoundedOrder[String, L, U]
   }
 
+  object iterable {
+
+    def tryNaturalOrderWithBounds[T, L <: Iterable[T], U <: Iterable[T]](
+      lowerBound: L,
+      lowerBoundIncluded: Boolean,
+      upperBound: U,
+      upperBoundIncluded: Boolean
+    )(
+      implicit 
+      ord: Order[T],
+      hash: Hash[T]
+    ): Try[NaturalOrderWithBounds[T, L, U]] =
+      Try(validateBounds(new NaturalOrderWithBounds(lowerBound, lowerBoundIncluded, upperBound, upperBoundIncluded)))
+
+    trait NaturalBounds extends Bounded.Below.Including[Iterable[Nothing]] {
+
+      override val lowerBound: Iterable[Nothing] = Nil
+    }
+
+    class NaturalOrder[T](
+      implicit 
+      ord: Order[T],
+      hash: Hash[T]
+    ) extends IterableOrder[T](ord, hash)
+      with BoundedOrder.Below.Including[Iterable[T], Iterable[Nothing]]
+      with NaturalBounds
+
+    class NaturalOrderWithBounds[T, +L <: Iterable[T], U <: Iterable[T]](
+      override val lowerBound: L,
+      override val lowerBoundIncluded: Boolean,
+      override val upperBound: U,
+      override val upperBoundIncluded: Boolean
+    )(
+      implicit 
+      ord: Order[T],
+      hash: Hash[T]
+    ) extends IterableOrder[T](ord, hash)
+      with BoundedOrder[Iterable[T], L, U]
+
+    class IterableEq[T](
+      implicit protected val eq: Eq[T]
+    ) extends Eq[Iterable[T]] {
+
+      import ordset.util.IterableUtil
+
+      override def eqv(x: Iterable[T], y: Iterable[T]): Boolean =
+        IterableUtil.iterableEq(x, y)
+    }
+
+    class IterableHash[T](
+      implicit override protected val eq: Hash[T]
+    ) extends IterableEq[T] 
+      with Hash[Iterable[T]] {
+      
+      import ordset.util.IterableUtil
+
+      override def hash(x: Iterable[T]): Int =
+        IterableUtil.iterableHash(x)
+    }
+
+    class IterableShow[T](
+      implicit show: Show[T]
+    ) extends Show[Iterable[T]] {
+
+      override def show(x: Iterable[T]): String = 
+        x.iterator.map(show.show(_)).mkString("Iterable(", ", ", ")")
+    }
+
+    // Protected section -------------------------------------------------------- //
+    protected abstract class IterableOrder[T](
+      ord: Order[T],
+      hash: Hash[T]
+    ) extends Order[Iterable[T]] 
+      with Hash[Iterable[T]] {
+
+      import ordset.util.IterableUtil
+
+      override def compare(xs: Iterable[T], ys: Iterable[T]): Int =
+        if (xs eq ys) 0
+        else IterableUtil.iterableCompare(xs, ys)(ord)
+
+      override def eqv(xs: Iterable[T], ys: Iterable[T]): Boolean =
+        (xs eq ys) || IterableUtil.iterableEq(xs, ys)(hash)
+
+      override def hash(x: Iterable[T]): Int = 
+        IterableUtil.iterableHash(x)(hash)
+    }
+  }
+
   object list {
 
     def tryNaturalOrderWithBounds[T, L <: List[T], U <: List[T]](

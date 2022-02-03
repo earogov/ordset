@@ -1,6 +1,7 @@
 package ordset.test.core.behaviors.segmentSeq
 
 import ordset.Hash
+import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.{Bound, ExtendedBound, Segment, SegmentSeq}
 import org.scalatest.funspec.AnyFunSpec
@@ -18,7 +19,7 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
       sample.prependCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
-        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+        implicit val valueOps: ValueOps[V] = sample.valueOps
 
         it(s"should prepend $testCase below $sample") {
           val actual = sample.sequence.prepend(testCase.otherSeq)
@@ -34,7 +35,7 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
       sample.prependBelowBoundCases.foreach { testCase =>
         
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
-        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+        implicit val valueOps: ValueOps[V] = sample.valueOps
 
         val seqValidator = new SegmentSeqValidator(sample.sequence)
 
@@ -127,7 +128,7 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
       sample.appendCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
-        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+        implicit val valueOps: ValueOps[V] = sample.valueOps
 
         it(s"should append $testCase above $sample") {
           val actual = sample.sequence.append(testCase.otherSeq)
@@ -143,7 +144,7 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
       sample.appendAboveBoundCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
-        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+        implicit val valueOps: ValueOps[V] = sample.valueOps
 
         val seqValidator = new SegmentSeqValidator(sample.sequence)
 
@@ -236,7 +237,7 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
       sample.sliceCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
-        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+        implicit val valueOps: ValueOps[V] = sample.valueOps
 
         val seqValidator = new SegmentSeqValidator(sample.sequence)
 
@@ -282,7 +283,7 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
       sample.patchCases.foreach { testCase =>
 
         implicit val domainOps: DomainOps[E, D] = sample.domainOps
-        implicit val valueHash: Hash[V] = sample.valueOps.valueHash
+        implicit val valueOps: ValueOps[V] = sample.valueOps
 
         it(s"should patch segment of $sample at bound ${testCase.bound} with $testCase") {
           val actual = sample.sequence.getSegmentForBound(testCase.bound).patch(testCase.patch)

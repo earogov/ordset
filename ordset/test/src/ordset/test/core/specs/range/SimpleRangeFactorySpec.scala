@@ -1,6 +1,6 @@
 package ordset.test.core.specs.range
 
-import ordset.Hash
+import ordset.{Hash, Show}
 import ordset.core.range._
 import ordset.test.core.RangeAssertions._
 
@@ -87,7 +87,8 @@ class RangeFactorySpec extends AnyFunSpec {
   private def defaultEmptyRangeTests(
     implicit
     range: RangeFactory[Int, Int, SimpleRange],
-    hash: Hash[SimpleRange[Int]]
+    hash: Hash[SimpleRange[Int]],
+    show: Show[SimpleRange[Int]]
   ): Unit = {
     assertSameRange[Int, SimpleRange[Int]](SimpleRange.empty, range.empty)
     assertSameRange(SimpleRange.empty, range.like(SimpleRange.empty))
@@ -101,7 +102,8 @@ class RangeFactorySpec extends AnyFunSpec {
   )(
     implicit 
     range: RangeFactory[E, E, SimpleRange],
-    hash: Hash[SimpleRange[E]]
+    hash: Hash[SimpleRange[E]],
+    show: Show[SimpleRange[E]]
   ): Unit = {
     assertSameRange(expected, range.between(lower, upper))
     assertSameRange(expected, range.like(SimpleRange(lower, upper)))
@@ -114,7 +116,8 @@ class RangeFactorySpec extends AnyFunSpec {
   )(
     implicit 
     range: RangeFactory[E, E, SimpleRange],
-    hash: Hash[SimpleRange[E]]
+    hash: Hash[SimpleRange[E]],
+    show: Show[SimpleRange[E]]
   ): Unit =
     validateRange(SimpleRange.Empty, lower, upper)
 }

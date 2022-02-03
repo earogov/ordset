@@ -1,6 +1,6 @@
 package ordset.core.domain
 
-import ordset.{BoundedOrder, DiscreteOrder, Order, Hash}
+import ordset.{BoundedOrder, DiscreteOrder, Order, Hash, Show}
 import ordset.core.{Bound, ExtendedBound}
 import ordset.core.range.{SimpleRange, SimpleRangeFactory, RangeFactory, RangeAlgebra}
 
@@ -12,6 +12,9 @@ sealed trait Domain[E] extends DomainLike[E] {
 object Domain {
 
   implicit def defaultHash[E, D[X] <: Domain[X]]: Hash[D[E]] = defaultHashInstance.asInstanceOf
+
+  implicit def defaultShow[E, D[X] <: Domain[X]](implicit boundShow: Show[ExtendedBound[E]]): Show[D[E]] = 
+    new DefaultShow(boundShow, Show.fromToString)
 
   sealed trait Unbounded[E] extends Domain[E] {
 
@@ -409,6 +412,55 @@ object Domain {
       val h2 = if (x.isBoundedAbove) hashConst(2) else hashConst(3)
       val h3 = if (x.isContinuous) hashConst(4) else hashConst(5)
       product4Hash(orderHash.hash(x.elementOrd), h1, h2, h3)
+    }
+  }
+
+  class DefaultShow[E, D[X] <: Domain[X]](
+    val boundShow: Show[ExtendedBound[E]],
+    val orderShow: Show[Order[E]]
+  ) extends Show[D[E]] {
+
+    private val comma: String = ", "
+
+    override def show(d: D[E]): String = {
+      val stringBuilder = new StringBuilder()
+      stringBuilder.append("Domain(")
+      
+      if (d.isContinuous) stringBuilder.append("continuous")
+      else if (d.isDiscrete) stringBuilder.append("discrete")
+
+      stringBuilder.append(comma)
+
+      d match {
+        case d: Unbounded[E] =>
+          stringBuilder.append("unbounded")
+        case d: BoundedBelow[E] =>
+          stringBuilder.append("boundedBelow")
+          stringBuilder.append(comma)
+          appendBounds(d, stringBuilder)
+        case d: BoundedAbove[E] =>
+          stringBuilder.append("boundedAbove")
+          stringBuilder.append(comma)
+          appendBounds(d, stringBuilder)
+        case d: Bounded[E] =>
+          stringBuilder.append("bounded")
+          stringBuilder.append(comma)
+          appendBounds(d, stringBuilder)
+      }
+
+      stringBuilder.append(comma)
+      stringBuilder.append("elementOrd = ")
+      stringBuilder.append(orderShow.show(d.elementOrd))
+
+      stringBuilder.append(")")
+      stringBuilder.result
+    }
+
+    private def appendBounds(d: D[E], builder: StringBuilder): Unit = {
+      builder.append("lowerBound = ")
+      builder.append(boundShow.show(d.lowerBound))
+      builder.append(", upperBound = ")
+      builder.append(boundShow.show(d.upperBound))
     }
   }
 

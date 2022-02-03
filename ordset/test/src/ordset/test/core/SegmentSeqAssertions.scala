@@ -1,11 +1,13 @@
 package ordset.test.core
 
-import ordset.{Hash, core}
 import ordset.core._
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.core.interval.IntervalRelation
 import ordset.core.map.BoundValue
 import ordset.util.IterableUtil
+import ordset.givens.{tuple2, iterable}
+import ordset.ContravariantHash
 
 object SegmentSeqAssertions {
 
@@ -19,16 +21,9 @@ object SegmentSeqAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
-  ): Unit = {
-    assert(
-      domainOps.domains.hash.eqv(
-        expected.domainOps.domain,
-        actual.domainOps.domain
-      )
-    )
+    valueOps: ValueOps[V]
+  ): Unit = 
     assertSameRelation(expected.intervalRelation, actual.intervalRelation, info)
-  }
 
   def assertSameRelationAndSegment[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
@@ -37,7 +32,7 @@ object SegmentSeqAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
+    valueOps: ValueOps[V]
   ): Unit =
     assertSameRelation(expected, actual.intervalRelation, info)
 
@@ -48,11 +43,11 @@ object SegmentSeqAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
+    valueOps: ValueOps[V]
   ): Unit =
     assert(
-      domainOps.intervalRelations.hash(valueHash).eqv(expected, actual),
-      debugInfo(expected, actual, info)
+      domainOps.intervalRelations.hash(valueOps.valueHash).eqv(expected, actual),
+      debugInfo(expected, actual, info)(domainOps.showOps.intervalRelationShow(valueOps.valueShow))
     )
 
   def assertSameSegmentSeq[E, D[X] <: Domain[X], V](
@@ -62,20 +57,13 @@ object SegmentSeqAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
-  ): Unit = {
-    assert(
-      domainOps.domains.hash.eqv(
-        expected.domainOps.domain,
-        actual.domainOps.domain
-      )
-    )
+    valueOps: ValueOps[V]
+  ): Unit =
     IntervalAssertions.assertSameRelationSeq(
       expected.firstSegment.forwardIterable.map(_.intervalRelation),
       actual.firstSegment.forwardIterable.map(_.intervalRelation),
       info
     )
-  }
 
   def assertSameRelationAndSegmentSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[IntervalRelation[E, D, V]],
@@ -84,7 +72,7 @@ object SegmentSeqAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
+    valueOps: ValueOps[V]
   ): Unit =
     IntervalAssertions.assertSameRelationSeq(
       expected,
@@ -92,37 +80,28 @@ object SegmentSeqAssertions {
       info
     )
 
-  def assertSameBoundValueIterable[E, D[X] <: Domain[X], V](
+  def assertSameBoundValueSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[BoundValue[E, V]],
     actual: Iterable[BoundValue[E, V]],
     info: String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
-  ): Unit = {
-
-    val expIter = expected.iterator
-    val actIter = actual.iterator
-
-    if (expIter.hasNext != actIter.hasNext) {
-      fail("iterables have different length" + debugInfo(expected, actual, info))
-    }
-    while (expIter.hasNext) {
-      val expItem = expIter.next()
-      val actItem = actIter.next()
-
-      if (expIter.hasNext != actIter.hasNext) {
-        fail("iterables have different length" + debugInfo(expected, actual, info))
-      }
-      assert(
-        valueHash.eqv(expItem._2, actItem._2),
-        "different values" + debugInfo(expItem._2, actItem._2, info)
+    valueOps: ValueOps[V]
+  ): Unit = 
+    assert(
+      IterableUtil.iterableEq(
+        actual,
+        expected
+      )(
+        tuple2.tuple2Hash(ContravariantHash.fromHash(domainOps.extendedOrd), valueOps.valueHash)
+      ),
+      debugInfo(
+        expected, 
+        actual, 
+        info
+      )(
+        iterable.iterableShow(tuple2.tuple2Show(domainOps.showOps.extendedShow, valueOps.valueShow))
       )
-      assert(
-        domainOps.extendedOrd.eqv(expItem._1, actItem._1),
-        "different bounds" + debugInfo(expItem._1, actItem._1, info)
-      )
-    }
-  }
+    )   
 }

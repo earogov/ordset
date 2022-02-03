@@ -1,7 +1,8 @@
 package ordset.test.core
 
-import ordset.{Eq, Hash}
+import ordset.givens.iterable
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.core.interval.{Interval, IntervalRelation}
 import ordset.util.IterableUtil
 
@@ -10,18 +11,6 @@ object IntervalAssertions {
   import ordset.test.AssertionsUtil.debugInfo
   import org.scalatest.Assertions._
 
-  def assertEqvIntervals[E, D[X] <: Domain[X]](
-    expected: Interval[E, D],
-    actual: Interval[E, D],
-    info: String = ""
-  )(
-    implicit eq: Eq[Interval[E, D]]
-  ): Unit = 
-    assert(
-      eq.eqv(expected, actual),
-      debugInfo(expected, actual, info)
-    ) 
-
   def assertSameIntervals[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     actual: Interval[E, D],
@@ -29,7 +18,10 @@ object IntervalAssertions {
   )(
     implicit domainOps: DomainOps[E, D]
   ): Unit = 
-    assertEqvIntervals(expected, actual, info)(domainOps.intervals.hash)
+    assert(
+      domainOps.intervals.hash.eqv(expected, actual),
+      debugInfo(expected, actual, info)(domainOps.showOps.intervalShow)
+    ) 
 
   def assertSameIntervalRelations[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
@@ -38,12 +30,12 @@ object IntervalAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
-  ): Unit = 
+    valueOps: ValueOps[V]
+  ): Unit =
     assert(
-      domainOps.intervalRelations.hash(valueHash).eqv(expected, actual),
-      debugInfo(expected, actual, info)
-    ) 
+      domainOps.intervalRelations.hash(valueOps.valueHash).eqv(expected, actual),
+      debugInfo(expected, actual, info)(domainOps.showOps.intervalRelationShow(valueOps.valueShow))
+    )
 
   def assertSameRelationSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[IntervalRelation[E, D, V]],
@@ -52,15 +44,21 @@ object IntervalAssertions {
   )(
     implicit
     domainOps: DomainOps[E, D],
-    valueHash: Hash[V]
+    valueOps: ValueOps[V]
   ): Unit =
     assert(
-      IterableUtil.iteratorEq(
-        actual.iterator,
-        expected.iterator
+      IterableUtil.iterableEq(
+        actual,
+        expected
       )(
-        domainOps.intervalRelations.hash(valueHash)
+        domainOps.intervalRelations.hash(valueOps.valueHash)
       ),
-      debugInfo(expected, actual, info)
+      debugInfo(
+        expected, 
+        actual, 
+        info
+      )(
+        iterable.iterableShow(domainOps.showOps.intervalRelationShow(valueOps.valueShow))
+      )
     ) 
 }

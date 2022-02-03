@@ -102,11 +102,28 @@ package object ordset {
       implicit def stringShow: Show[String] = cats.instances.string.catsStdShowForString
     }
 
+    object iterable {
+
+      import implementations.iterable._
+
+      implicit def iterableNaturalOrder[T](implicit ord: Order[T], hash: Hash[T]): NaturalOrder[T] = new NaturalOrder
+
+      implicit def iterableEq[T](implicit ev: Eq[T]): Eq[Iterable[T]] = new IterableEq
+
+      implicit def iterableHash[T](implicit ev: Hash[T]): Hash[Iterable[T]] = new IterableHash
+
+      implicit def iterableShow[T](implicit ev: Show[T]): Show[Iterable[T]] = new IterableShow
+    }
+
     object list {
 
       import implementations.list._
 
       implicit def listNaturalOrder[T](implicit ord: Order[T], hash: Hash[T]): NaturalOrder[T] = new NaturalOrder
+
+      implicit def listEq[T](implicit ev: Eq[T]): Eq[List[T]] = cats.instances.list.catsKernelStdEqForList
+
+      implicit def listHash[T](implicit ev: Hash[T]): Hash[List[T]] = cats.instances.list.catsKernelStdHashForList
 
       implicit def listShow[T](implicit ev: Show[T]): Show[List[T]] = cats.instances.list.catsStdShowForList
     }
@@ -117,6 +134,12 @@ package object ordset {
 
       implicit def lazyListNaturalOrder[T](implicit ord: Order[T], hash: Hash[T]): NaturalOrder[T] = new NaturalOrder
 
+      implicit def lazyListEq[T](implicit ev: Eq[T]): Eq[LazyList[T]] = 
+        cats.instances.lazyList.catsKernelStdEqForLazyList
+
+      implicit def lazyListHash[T](implicit ev: Hash[T]): Hash[LazyList[T]] = 
+        cats.instances.lazyList.catsKernelStdHashForLazyList
+
       implicit def lazyListShow[T](implicit ev: Show[T]): Show[LazyList[T]] =
         cats.instances.lazyList.catsStdShowForLazyList
     }
@@ -126,6 +149,12 @@ package object ordset {
       import implementations.queue._
 
       implicit def queueNaturalOrder[T](implicit ord: Order[T], hash: Hash[T]): NaturalOrder[T] = new NaturalOrder
+
+      implicit def queueEq[T](implicit ev: Eq[T]): Eq[Queue[T]] = 
+        cats.instances.queue.catsKernelStdEqForQueue
+
+      implicit def queueHash[T](implicit ev: Hash[T]): Hash[Queue[T]] = 
+        cats.instances.queue.catsKernelStdHashForQueue
 
       implicit def queueShow[T](implicit ev: Show[T]): Show[Queue[T]] =
         cats.instances.queue.catsStdShowForQueue
@@ -142,6 +171,9 @@ package object ordset {
 
     object tuple2 {
 
+      implicit def tuple2Eq[T1, T2](implicit ev1: Eq[T1], ev2: Eq[T2]): Eq[(T1, T2)] =
+        kernel.instances.tuple.catsKernelStdEqForTuple2
+
       implicit def tuple2Hash[T1, T2](implicit ev1: Hash[T1], ev2: Hash[T2]): Hash[(T1, T2)] =
         kernel.instances.tuple.catsKernelStdHashForTuple2
 
@@ -150,6 +182,9 @@ package object ordset {
     }
 
     object either {
+
+      implicit def eitherEq[T1, T2](implicit ev1: Eq[T1], ev2: Eq[T2]): Eq[Either[T1, T2]] =
+        kernel.instances.either.catsStdEqForEither
 
       implicit def eitherHash[T1, T2](implicit ev1: Hash[T1], ev2: Hash[T2]): Hash[Either[T1, T2]] =
         kernel.instances.either.catsStdHashForEither

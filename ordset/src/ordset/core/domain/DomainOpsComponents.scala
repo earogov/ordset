@@ -221,6 +221,8 @@ object DomainOpsComponents {
 
     def extendedShow: Show[ExtendedBound[E]]
 
+    def domainShow: Show[D[E]]
+
     def rangeShow: Show[Range[ExtendedBound[E]]]
 
     def intervalShow: Show[Interval[E, D]]
@@ -244,6 +246,8 @@ object DomainOpsComponents {
       override val boundShow: Show[Bound[E]] = Bound.defaultShow(elementShow)
 
       override val extendedShow: Show[ExtendedBound[E]] = ExtendedBound.defaultShow(elementShow)
+
+      override val domainShow: Show[D[E]] = Domain.defaultShow(extendedShow)
 
       override val rangeShow: Show[Range[ExtendedBound[E]]] = Range.defaultShow(extendedShow)
 

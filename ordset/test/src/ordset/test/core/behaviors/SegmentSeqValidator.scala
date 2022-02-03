@@ -3,6 +3,7 @@ package ordset.test.core.behaviors
 import ordset.Hash
 import ordset.core.{Bound, ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.test.core.SegmentSeqAssertions.assertSameSegmentSeq
 
 class SegmentSeqValidator[E, D[X] <: Domain[X], V](
@@ -10,7 +11,7 @@ class SegmentSeqValidator[E, D[X] <: Domain[X], V](
 ) {
 
   implicit private val domainOps: DomainOps[E, D] = sequence.domainOps
-  implicit private val valueHash: Hash[V] = sequence.valueOps.valueHash
+  implicit private val valueOps: ValueOps[V] = sequence.valueOps
 
   /**
    * Checks that result of [[ordset.core.SegmentSeqT.takeBelowExtended]] is equal to

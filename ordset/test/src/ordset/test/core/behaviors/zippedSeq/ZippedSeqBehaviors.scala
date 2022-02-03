@@ -2,6 +2,7 @@ package ordset.test.core.behaviors.zippedSeq
 
 import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.core.{SegmentSeq, ZippedSegmentSeq}
 import ordset.test.core.SegmentSeqAssertions.assertSameRelationAndSegmentSeq
 import ordset.test.core.samples.segmentSeq.ZippedSeqSample
@@ -16,8 +17,8 @@ trait ZippedSeqBehaviors[E, D[X] <: Domain[X], U1, U2, V] {
     samples.foreach { sample =>
 
       implicit val domainOps: DomainOps[E, D] = sample.domainOps
-      implicit val valueHash1: Hash[U1] = sample.sequence.firstSeq.valueOps.valueHash
-      implicit val valueHash2: Hash[U2] = sample.sequence.secondSeq.valueOps.valueHash
+      implicit val valueOps1: ValueOps[U1] = sample.sequence.firstSeq.valueOps
+      implicit val valueOps2: ValueOps[U2] = sample.sequence.secondSeq.valueOps
 
       sample.firstSeqPatchCases.foreach { testCase =>
 
