@@ -1,16 +1,16 @@
 package ordset.test.core.implementations.segmentSeq.lazyTreap
 
 import ordset.{Hash, Show, util}
-import ordset.core.{ExtendedBound, SegmentSeq, SegmentSeqException, TreapSegmentSeq}
-import ordset.core.{LazySegmentSeq, LazySegmentBase, AbstractLazyTreapSegmentSeq}
-import ordset.core.internal.lazySeq.*
-import ordset.core.internal.lazySeq.ControlValue.*
+import ordset.core.ExtendedBound
+import ordset.core.segmentSeq.*
+import ordset.core.segmentSeq.internal.lazySeq.*
+import ordset.core.segmentSeq.internal.lazySeq.ControlValue.*
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap}
-import ordset.core.map.{BoundValue, OrderedMapFactoryIterable}
+import ordset.core.segmentSeq.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap}
+import ordset.core.segmentSeq.map.{BoundValue, OrderedMapFactoryIterable}
 import ordset.core.value.{ValueOps, InclusionPredicate}
 import ordset.core.syntax.SetBuilderNotation.*
-import ordset.core.validation.ValidatingIterable
+import ordset.core.segmentSeq.validation.ValidatingIterable
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
 import ordset.test.core.implementations.domain.BoundSelector

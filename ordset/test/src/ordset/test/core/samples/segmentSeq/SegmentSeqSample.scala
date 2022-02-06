@@ -3,9 +3,10 @@ package ordset.test.core.samples.segmentSeq
 import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.syntax.SetBuilderNotation.BoundBuilder
-import ordset.core.util.SegmentSeqUtil
+import ordset.core.segmentSeq.util.SegmentSeqUtil
+import ordset.core.segmentSeq.*
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, ExtendedBound, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound}
 import ordset.core.interval.{Interval, IntervalRelation}
 import ordset.random.RngManager
 import ordset.util.label.Label

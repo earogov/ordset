@@ -1,9 +1,10 @@
 package ordset.test.core.specs.util
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.{ArrayOrderedSet, OrderedSet}
-import ordset.core.util.SegmentSeqUtil
-import ordset.core.{Bound, ExtendedBound, Segment}
+import ordset.core.segmentSeq.*
+import ordset.core.segmentSeq.set.{ArrayOrderedSet, OrderedSet}
+import ordset.core.segmentSeq.util.SegmentSeqUtil
+import ordset.core.{Bound, ExtendedBound}
 import ordset.util.IterableUtil
 import ordset.{Order, core}
 import org.junit.runner.RunWith

@@ -3,7 +3,8 @@ package ordset.test.core.behaviors.segmentSeq.set.degenerateSet
 import ordset.core.domain.Domain
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
-import ordset.core.{Bound, ExtendedBound, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound}
+import ordset.core.segmentSeq.*
 import ordset.core.interval.IntervalRelation
 import ordset.util.label.Label
 import ordset.test.core.behaviors.TestTuple

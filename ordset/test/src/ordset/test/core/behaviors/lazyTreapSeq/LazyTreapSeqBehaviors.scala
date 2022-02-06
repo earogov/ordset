@@ -1,8 +1,9 @@
 package ordset.test.core.behaviors.lazyTreapSeq
 
 import ordset.Hash
-import ordset.core.internal.lazySeq.*
-import ordset.core.{ExtendedBound, SegmentSeq}
+import ordset.core.segmentSeq.internal.lazySeq.*
+import ordset.core.ExtendedBound
+import ordset.core.segmentSeq.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.{RngManager, UnsafeUniformRng}

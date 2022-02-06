@@ -1,6 +1,6 @@
 package ordset.test.core.behaviors.lazyTreapSeq
 
-import ordset.core.internal.lazySeq.*
+import ordset.core.segmentSeq.internal.lazySeq.*
 import ordset.core.ExtendedBound
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain

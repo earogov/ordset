@@ -1,8 +1,8 @@
 package ordset.test.core.samples.segmentSeq.set.zippedOrderedSet
 
-import ordset.core.ZippedSegmentSeq
+import ordset.core.segmentSeq.ZippedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.*
+import ordset.core.segmentSeq.set.*
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager

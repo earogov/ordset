@@ -1,8 +1,8 @@
 package ordset.test.core
 
 import ordset.Show
-import ordset.core.map.UniformOrderedMap
-import ordset.core.set.{NonuniformArrayOrderedSet, NonuniformTreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
+import ordset.core.segmentSeq.map.UniformOrderedMap
+import ordset.core.segmentSeq.set.{NonuniformArrayOrderedSet, NonuniformTreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.util.label.Label
 import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 

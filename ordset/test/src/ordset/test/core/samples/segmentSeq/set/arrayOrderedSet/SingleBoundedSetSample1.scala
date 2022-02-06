@@ -1,8 +1,8 @@
 package ordset.test.core.samples.segmentSeq.set.arrayOrderedSet
 
-import ordset.core.ArraySegmentSeq
+import ordset.core.segmentSeq.ArraySegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.ArrayOrderedSet
+import ordset.core.segmentSeq.set.ArrayOrderedSet
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager
 import ordset.util.label.Label

@@ -2,8 +2,9 @@ package ordset.test.core.implementations.segmentSeq.lazyTreap
 
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{Bound, ExtendedBound, LazySegmentSeq, TreapSegmentSeq, SegmentSeq}
-import ordset.core.map.BoundValue
+import ordset.core.{Bound, ExtendedBound}
+import ordset.core.segmentSeq.*
+import ordset.core.segmentSeq.map.BoundValue
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.test.core.RandomUtil
@@ -12,7 +13,7 @@ import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
-import ordset.core.map.TreapOrderedMap
+import ordset.core.segmentSeq.map.TreapOrderedMap
 
 object LazyTreapSeqUtil {
 

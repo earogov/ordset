@@ -1,7 +1,8 @@
 package ordset.core.domain
 
 import ordset.{Hash, Show}
-import ordset.core.{Bound, ExtendedBound, SegmentT, Segment, SegmentSeqT, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound}
+import ordset.core.segmentSeq.{SegmentT, Segment, SegmentSeqT, SegmentSeq}
 import ordset.core.interval.{Interval, IntervalRelation, IntervalAlgebra, IntervalFactory}
 import ordset.core.range.Range
 

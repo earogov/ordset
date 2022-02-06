@@ -1,6 +1,7 @@
 package ordset.core.interval
 
-import ordset.core.{Bound, ExtendedBound, SetBuilderFormat}
+import ordset.core.{Bound, ExtendedBound}
+import ordset.core.segmentSeq.SetBuilderFormat
 import ordset.core.domain.Domain
 import ordset.core.range.Range
 import ordset.{Hash, Show, util}

@@ -1,10 +1,10 @@
 package ordset.test.core
 
-import ordset.core._
+import ordset.core.segmentSeq.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.interval.IntervalRelation
-import ordset.core.map.BoundValue
+import ordset.core.segmentSeq.map.BoundValue
 import ordset.util.IterableUtil
 import ordset.givens.{tuple2, iterable}
 import ordset.ContravariantHash

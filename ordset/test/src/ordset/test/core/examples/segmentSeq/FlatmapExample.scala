@@ -2,11 +2,12 @@ package ordset.test.core.examples.segmentSeq
 
 import ordset.core.domain.{DomainOps, Domain}
 import ordset.core.value.ValueOps
-import ordset.core.map.{TreapOrderedMap, UniformOrderedMap}
-import ordset.core.set.{TreapOrderedSet, UniformOrderedSet}
+import ordset.core.segmentSeq.*
+import ordset.core.segmentSeq.map.{TreapOrderedMap, UniformOrderedMap}
+import ordset.core.segmentSeq.set.{TreapOrderedSet, UniformOrderedSet}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
-import ordset.core.{ExtendedBound, Bound, Segment, SegmentSeq, SeqValidationPredicate}
+import ordset.core.{ExtendedBound, Bound}
 import ordset.random.RngManager
 import ordset.test.core.implementations.domain.BoundSelector
 

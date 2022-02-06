@@ -1,6 +1,6 @@
 package ordset.test.core.samples.segmentSeq
 
-import ordset.core.UniformSegmentSeq
+import ordset.core.segmentSeq.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.random.RngManager
 import ordset.test.core.implementations.domain.BoundSelector

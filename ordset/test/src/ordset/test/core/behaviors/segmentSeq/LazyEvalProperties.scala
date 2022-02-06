@@ -1,6 +1,6 @@
 package ordset.test.core.behaviors.segmentSeq
 
-import ordset.core.{SegmentSeq, Segment}
+import ordset.core.segmentSeq.{SegmentSeq, Segment}
 import ordset.core.domain.Domain
 import ordset.core.ExtendedBound
 import ordset.test.core.samples.segmentSeq.SegmentSeqSample

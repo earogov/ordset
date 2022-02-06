@@ -1,12 +1,12 @@
 package ordset.test.core.samples.segmentSeq
 
 import ordset.{Hash, util}
-import ordset.core.internal.lazySeq.*
-import ordset.core.internal.lazySeq.ControlValue.*
-import ordset.core.{AbstractLazyTreapSegmentSeq, ExtendedBound, LazySegmentSeq, LazySegmentBase, SegmentSeq}
+import ordset.core.segmentSeq.internal.lazySeq.*
+import ordset.core.segmentSeq.internal.lazySeq.ControlValue.*
+import ordset.core.segmentSeq.*
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{OrderedMapCommons, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
+import ordset.core.segmentSeq.map.{OrderedMapCommons, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.random.RngManager
 import ordset.util.HashUtil.product1Hash

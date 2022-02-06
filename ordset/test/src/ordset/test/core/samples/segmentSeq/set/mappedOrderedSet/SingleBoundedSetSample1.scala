@@ -1,8 +1,8 @@
 package ordset.test.core.samples.segmentSeq.set.mappedOrderedSet
 
-import ordset.core.{MappedSegmentSeq, Segment}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.{ArrayOrderedSet, MappedOrderedSet, OrderedSet}
+import ordset.core.segmentSeq.MappedSegmentSeq
+import ordset.core.segmentSeq.set.{ArrayOrderedSet, MappedOrderedSet, OrderedSet}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.random.RngManager
 import ordset.util.label.Label

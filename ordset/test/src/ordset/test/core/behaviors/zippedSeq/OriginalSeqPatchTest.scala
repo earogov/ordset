@@ -1,6 +1,7 @@
 package ordset.test.core.behaviors.zippedSeq
 
-import ordset.core.{Bound, SegmentSeq}
+import ordset.core.Bound
+import ordset.core.segmentSeq.*
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain
 import ordset.util.label.Label

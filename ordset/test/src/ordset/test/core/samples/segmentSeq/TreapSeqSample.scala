@@ -1,7 +1,7 @@
 package ordset.test.core.samples.segmentSeq
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.TreapSegmentSeq
+import ordset.core.segmentSeq.*
 import ordset.random.RngManager
 import ordset.util.label.Label
 import ordset.test.core.Labels

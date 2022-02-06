@@ -2,6 +2,7 @@ package ordset.test.core.behaviors.segmentSeq
 
 import ordset.core.domain.Domain
 import ordset.core.value.ValueOps
+import ordset.core.segmentSeq.*
 import ordset.util.BooleanUtil
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.SegmentSeqAssertions._

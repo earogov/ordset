@@ -3,7 +3,6 @@ package ordset.test.core.behaviors.zippedSeq
 import ordset.Hash
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
-import ordset.core.{SegmentSeq, ZippedSegmentSeq}
 import ordset.test.core.SegmentSeqAssertions.assertSameRelationAndSegmentSeq
 import ordset.test.core.samples.segmentSeq.ZippedSeqSample
 import org.scalatest.funspec.AnyFunSpec

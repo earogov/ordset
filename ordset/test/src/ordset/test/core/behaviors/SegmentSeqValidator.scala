@@ -1,7 +1,8 @@
 package ordset.test.core.behaviors
 
 import ordset.Hash
-import ordset.core.{Bound, ExtendedBound, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound}
+import ordset.core.segmentSeq.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.test.core.SegmentSeqAssertions.assertSameSegmentSeq

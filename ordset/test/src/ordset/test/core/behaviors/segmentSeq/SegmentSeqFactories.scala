@@ -1,8 +1,8 @@
 package ordset.test.core.behaviors.segmentSeq
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.{ArrayOrderedSet, NonuniformArrayOrderedSet, NonuniformTreapOrderedSet}
-import ordset.core.set.{OrderedSet, OrderedSetFactory, TreapOrderedSet}
+import ordset.core.segmentSeq.set.{ArrayOrderedSet, NonuniformArrayOrderedSet, NonuniformTreapOrderedSet}
+import ordset.core.segmentSeq.set.{OrderedSet, OrderedSetFactory, TreapOrderedSet}
 import ordset.core.value.ValueOps
 import ordset.util.label.Label
 import ordset.test.core.implementations.domain.BoundSelector

@@ -3,7 +3,8 @@ package ordset.test.core.behaviors.segmentSeq
 import ordset.Hash
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.{Bound, ExtendedBound, Segment, SegmentSeq}
+import ordset.core.{Bound, ExtendedBound}
+import ordset.core.segmentSeq.*
 import org.scalatest.funspec.AnyFunSpec
 import ordset.test.core.SegmentSeqAssertions._
 import ordset.test.core.behaviors.SegmentSeqValidator

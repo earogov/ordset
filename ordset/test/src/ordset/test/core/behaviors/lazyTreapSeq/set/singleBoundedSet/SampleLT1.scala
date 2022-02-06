@@ -1,10 +1,10 @@
 package ordset.test.core.behaviors.lazyTreapSeq.set.singleBoundedSet
 
-import ordset.core.internal.lazySeq.ControlValue.*
+import ordset.core.segmentSeq.internal.lazySeq.ControlValue.*
 import ordset.core.ExtendedBound
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
+import ordset.core.segmentSeq.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrderedSet, ZippedOrderedSet}
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.random.RngManager

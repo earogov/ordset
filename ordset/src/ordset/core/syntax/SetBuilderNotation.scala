@@ -4,9 +4,9 @@ import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.interval.{Interval, IntervalRelation}
-import ordset.core.validation.ValidatingIterable
-import ordset.core.set.OrderedSetFactoryIterable
-import ordset.core.map.{BoundValue, OrderedMapFactoryIterable}
+import ordset.core.segmentSeq.validation.ValidatingIterable
+import ordset.core.segmentSeq.set.OrderedSetFactoryIterable
+import ordset.core.segmentSeq.map.{BoundValue, OrderedMapFactoryIterable}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}

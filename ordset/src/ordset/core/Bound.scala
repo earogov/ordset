@@ -2,6 +2,7 @@ package ordset.core
 
 import ordset.core.domain.*
 import ordset.core.interval.*
+import ordset.core.segmentSeq.SetBuilderFormat
 import ordset.{Order, Hash, Discrete, Show, util}
 
 import scala.Specializable.{AllNumeric => spNum}

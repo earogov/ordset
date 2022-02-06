@@ -1,7 +1,8 @@
 package ordset.test.core.behaviors.segmentSeq.set.multiBoundedSet
 
  import ordset.core.domain.Domain
- import ordset.core.{Bound, ExtendedBound, SegmentSeq}
+ import ordset.core.{Bound, ExtendedBound}
+ import ordset.core.segmentSeq.*
  import ordset.core.interval.IntervalRelation
  import ordset.test.core.samples.segmentSeq.SegmentSeqSample
 
