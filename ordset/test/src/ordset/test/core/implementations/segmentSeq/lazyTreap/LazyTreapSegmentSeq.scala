@@ -1,13 +1,16 @@
 package ordset.test.core.implementations.segmentSeq.lazyTreap
 
 import ordset.{Hash, Show, util}
-import ordset.core.{ExtendedBound, SegmentSeq, SegmentSeqException, SeqValidationPredicate, TreapSegmentSeq}
+import ordset.core.{ExtendedBound, SegmentSeq, SegmentSeqException, TreapSegmentSeq}
 import ordset.core.{LazySegmentSeq, LazySegmentBase, AbstractLazyTreapSegmentSeq}
 import ordset.core.internal.lazySeq.*
 import ordset.core.internal.lazySeq.ControlValue.*
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap, BoundValue}
+import ordset.core.map.{OrderedMap, OrderedMapCommons, OrderedMapFactory, TreapOrderedMap, ZippedOrderedMap}
+import ordset.core.map.{BoundValue, OrderedMapFactoryIterable}
 import ordset.core.value.{ValueOps, InclusionPredicate}
+import ordset.core.syntax.SetBuilderNotation.*
+import ordset.core.validation.ValidatingIterable
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
 import ordset.test.core.implementations.domain.BoundSelector
@@ -57,24 +60,18 @@ object LazyTreapSegmentSeq {
     valueOps: ValueOps[V],
     rngManager: RngManager
   ): LazyTreapSegmentSeq[E, D, V] = {
+    implicit val controlValueOps: ValueOps[ControlValue[E, D, V]] = ControlValueOps.get
+    implicit val zvalueOps: ValueOps[ZValue[E, D, V]] = ZValueOps.get(valueOps)
+
+    val initBoundValues: Iterable[BoundValue[E, ControlValue[E, D, V]]] = initSeq.map(p => 
+      (p._1, LazyValue.Default(p._2)(domainOps.domain))
+    )
     val initZippedSeq: ZSegmentSeq[E, D, V] = ZippedOrderedMap.apply(
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((ExtendedBound.AboveAll, valueOps.unit)),
-        domainOps,
-        valueOps
-      )(),
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
-        initSeq.map(p => (p._1, LazyValue.Default(p._2)(domainOps.domain))),
-        domainOps,
-        ControlValueOps.get
-      )(),
+      TreapOrderedMap.getFactory.buildUniform(valueOps.unit),
+      TreapOrderedMap.getFactory.unsafeBuildAsc(initBoundValues),
       Tuple2.apply,
       BooleanUtil.falsePredicate1,
       BooleanUtil.falsePredicate1
-    )(
-      domainOps,
-      ZValueOps.get(valueOps),
-      rngManager
     )
     new LazyTreapSegmentSeq(initZippedSeq)
   }
@@ -183,22 +180,14 @@ object LazyTreapSegmentSeq {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     def unsafeBuildAsc(
-      seq: IterableOnce[BoundValue[E, V]],
+      seq: ValidatingIterable[BoundValue[E, V]]
+    )(
+      implicit 
       domainOps: DomainOps[E, D],
-      valueOps: ValueOps[V]
-    )(
-      boundsValidation: SeqValidationPredicate[ExtendedBound.Upper[E]] = domainOps.validation.extendedBoundsSeq,
-      valuesValidation: SeqValidationPredicate[V] = valueOps.distinctionValidation
-    )(
-      implicit rngManager: RngManager
+      valueOps: ValueOps[V],
+      rngManager: RngManager
     ): LazyTreapSegmentSeq[E, D, V] = {
-      val baseSeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        seq, domainOps, valueOps
-      )(
-        boundsValidation, valuesValidation
-      )(
-        rngManager
-      )
+      val baseSeq = TreapOrderedMap.getFactory.unsafeBuildAsc(seq)
       val lazySeq = LazyTreapSeqUtil.makeRandomLazySeq(baseSeq)(boundSelector, rngManager)
       LazyTreapSeqUtil.shuffleLazySeq(lazySeq, baseSeq.extendedUpperBounds)(rngManager)
     }

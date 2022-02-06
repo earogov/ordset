@@ -29,6 +29,12 @@ object OrderedMapFactoryIterable {
     new DefaultImpl(iterable, domainOps, valueOps)
 
   /**
+   * Returns iterable with single tuple ([[ExtendedBound.AboveAll]], value) to construct ordered map.
+   */
+  def single[E, D[X] <: Domain[X], V](value: V): ValidatingIterable[BoundValue[E, V]] =
+    new SingleImpl(value)
+
+  /**
    * Iterable of tuples (upper bound, value) to construct ordered map.
    * 
    * Iterable provides default validation for ordered maps:
@@ -47,6 +53,15 @@ object OrderedMapFactoryIterable {
     iterable,
     new DomainBoundsValidation(domainOps),
     new AdjacentBoundsValidation(domainOps).and(new AdjacentValuesValidation(valueOps))
+  )
+
+  /**
+   * Iterable with single tuple ([[ExtendedBound.AboveAll]], value) to construct ordered map.
+   */
+  final class SingleImpl[E, D[X] <: Domain[X], V](
+    private val value: V
+  ) extends ValidatingIterable.UncheckedIterable[BoundValue[E, V]](
+    List((ExtendedBound.AboveAll, value))
   )
 
   /**

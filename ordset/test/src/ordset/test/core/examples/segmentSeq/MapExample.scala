@@ -16,13 +16,13 @@ object MapExample {
 
   import ordset.givens.boolean.*
   import ordset.givens.int.*
-  import ordset.test.core.TestRngUtil.Implicits.*
+  import ordset.test.core.TestRngUtil.Givens.*
 
   private val sep = "-----------------"
 
-  private val intOps: ValueOps[Int] = implicitly
-  private val booleanOps: ValueOps[Boolean] = implicitly
-  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
+  private implicit val intOps: ValueOps[Int] = implicitly
+  private implicit val booleanOps: ValueOps[Boolean] = implicitly
+  private implicit val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -34,18 +34,17 @@ object MapExample {
     println(s"$sep SegmentSeq.mapSegments example $sep")
 
     println("Initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, false),
-        (10`)[`, true),
-        (20`)[`, false),
-        (30`)[`, true),
-        (40`)[`, false),
-        (AboveAll, true)
-      ),
-      domainOps,
-      booleanOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, false),
+          (10`)[`, true),
+          (20`)[`, false),
+          (30`)[`, true),
+          (40`)[`, false),
+          (AboveAll, true)
+        )
+      )
     println(seq1)
 
     val bound1 = Bound.Upper.excluding(20)
@@ -53,19 +52,19 @@ object MapExample {
     println()
     println(s"Map all segments below $bound1 to `true` and above - to `false`.")
     val mapFunc = (s: Segment[Int, _ <: Domain, Boolean]) => s.domainOps.extendedOrd.lteqv(s.upper, bound1)
-    val seq2 = seq1.mapSegments(mapFunc)(booleanOps)
+    val seq2 = seq1.mapSegments(mapFunc)
 
     println("Received sequence:")
     println(seq2)
 
     println()
     println("We can also apply mapping to some segment and receive corresponding mapped segment:")
-    val mappedSegment = seq1.getSegmentForElement(15).mapSegments(mapFunc)(booleanOps)
+    val mappedSegment = seq1.getSegmentForElement(15).mapSegments(mapFunc)
     println(mappedSegment)
 
     println()
     println("Or we can apply mapping to truncation and get mapped truncation:")
-    val mappedTruncation = seq1.getSegmentForBound(15`]`).truncation(15`]`).mapSegments(mapFunc)(booleanOps)
+    val mappedTruncation = seq1.getSegmentForBound(15`]`).truncation(15`]`).mapSegments(mapFunc)
     println(mappedTruncation)
   }
 
@@ -74,23 +73,22 @@ object MapExample {
     println(s"$sep SegmentSeq.map example $sep")
 
     println("Initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, -20),
-        (10`)[`, -5),
-        (20`)[`, 10),
-        (30`)[`, -7),
-        (40`)[`, 15),
-        (AboveAll, 20)
-      ),
-      domainOps,
-      intOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, -20),
+          (10`)[`, -5),
+          (20`)[`, 10),
+          (30`)[`, -7),
+          (40`)[`, 15),
+          (AboveAll, 20)
+        )
+      )
     println(seq1)
 
     println()
     println(s"Map all positive or zero values to `true` and negative to `false`")
-    val seq2 = seq1.map(_ >= 0)(booleanOps)
+    val seq2 = seq1.map(_ >= 0)
 
     println("Received sequence:")
     println(seq2)

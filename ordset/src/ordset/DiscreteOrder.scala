@@ -3,7 +3,7 @@ package ordset
 /**
  * Typeclass specifying discrete ordered set.
  * 
- * Implementations MUST enforce conditions:
+ * Implementations must enforce conditions:
  * <tr>
  *   1.a If `x` has successor, then: `successor(x) > x` according to the current order.
  * </tr>

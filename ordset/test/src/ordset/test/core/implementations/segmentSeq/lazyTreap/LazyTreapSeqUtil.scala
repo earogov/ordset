@@ -4,6 +4,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.{Bound, ExtendedBound, LazySegmentSeq, TreapSegmentSeq, SegmentSeq}
 import ordset.core.map.BoundValue
+import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.test.core.RandomUtil
 import ordset.test.core.implementations.domain.BoundSelector
@@ -166,8 +167,8 @@ object LazyTreapSeqUtil {
 
     val seqFactory = TreapOrderedMap.getFactory[E, D, V]
 
-    if (values.isEmpty) seqFactory.buildUniform(valueOps.unit, domainOps, valueOps)
-    else if (values.size == 1) seqFactory.buildUniform(values(0), domainOps, valueOps)
+    if (values.isEmpty) seqFactory.buildUniform(valueOps.unit)
+    else if (values.size == 1) seqFactory.buildUniform(values(0))
     else {
       val rng = rngManager.newUnsafeUniformRng()
 
@@ -188,9 +189,8 @@ object LazyTreapSeqUtil {
         }
         .toVector
 
-      val boundsWithValues = generateValues(splittedBounds, None, Vector.empty, rng)
-
-      seqFactory.unsafeBuildAsc(boundsWithValues, domainOps, valueOps)()
+      val boundValues = generateValues(splittedBounds, None, Vector.empty, rng)
+      seqFactory.unsafeBuildAsc(boundValues)
     }  
   }
 

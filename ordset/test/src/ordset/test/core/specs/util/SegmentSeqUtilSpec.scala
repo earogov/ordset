@@ -24,7 +24,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
   import ordset.givens.tuple2._
   import ordset.test.core.SegmentSeqAssertions._
   import ordset.test.core.IntervalAssertions._
-  import ordset.test.core.TestRngUtil.Implicits._
+  import ordset.test.core.TestRngUtil.Givens._
 
   type Dom[X] = Domain.ContinuousUnbounded[X]
 
@@ -256,7 +256,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
 
     assertSameBoundValueSeq[Int, Dom, Boolean](
       List((ExtendedBound.AboveAll, false)),
-      SegmentSeqUtil.getExtendedBoundValueIterableForSeq(seq1)
+      SegmentSeqUtil.getBoundValueIterableForSeq(seq1)
     )
 
     assertSameBoundValueSeq[Int, Dom, Boolean](
@@ -268,7 +268,7 @@ class SegmentSeqUtilSpec extends AnyFunSpec {
         (40 `)[`, true),
         (ExtendedBound.AboveAll, false)
       ),
-      SegmentSeqUtil.getExtendedBoundValueIterableForSeq(seq2)
+      SegmentSeqUtil.getBoundValueIterableForSeq(seq2)
     )
   }
 

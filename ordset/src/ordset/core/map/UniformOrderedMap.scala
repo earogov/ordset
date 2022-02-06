@@ -2,8 +2,9 @@ package ordset.core.map
 
 import ordset.core.AbstractUniformSegmentSeq.UniformSingleSegment
 import ordset.core.value.ValueOps
-import ordset.core.{AbstractUniformSegmentSeq, Bound, ExtendedBound, SegmentSeq, SeqValidationPredicate}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, ExtendedBound, SegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.validation.ValidatingIterable
 import ordset.random.RngManager
 
 class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
@@ -28,13 +29,12 @@ class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
       this
     else
       mapFactory.unsafeBuildAsc(
-        List((bound.provideUpper, firstValue), (ExtendedBound.AboveAll, value)), 
+        ValidatingIterable.unchecked(
+          List((bound.provideUpper, firstValue), (ExtendedBound.AboveAll, value))
+        )
+      )(
         domainOps, 
-        valueOps
-      )(
-        SeqValidationPredicate.alwaysTrue, 
-        SeqValidationPredicate.alwaysTrue
-      )(
+        valueOps,
         rngManager
       )
   
@@ -43,13 +43,12 @@ class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
       this
     else
       mapFactory.unsafeBuildAsc(
-        List((bound.provideUpper, value), (ExtendedBound.AboveAll, lastValue)), 
+        ValidatingIterable.unchecked(
+          List((bound.provideUpper, value), (ExtendedBound.AboveAll, lastValue))
+        )
+      )(
         domainOps, 
-        valueOps
-      )(
-        SeqValidationPredicate.alwaysTrue, 
-        SeqValidationPredicate.alwaysTrue
-      )(
+        valueOps,
         rngManager
       )
 }

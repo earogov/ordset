@@ -7,7 +7,7 @@ object TestRngUtil {
 
   def defaultRngManager(seed: Long): RngManager = new KISSThreadLocalRngManager(seed, seed)
 
-  object Implicits {
+  object Givens {
 
     /**
      * Default random manager for tests.

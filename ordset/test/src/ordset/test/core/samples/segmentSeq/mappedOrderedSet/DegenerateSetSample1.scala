@@ -4,11 +4,12 @@ import ordset.core.MappedSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.{ArrayOrderedSet, MappedValueOrderedSet, OrderedSet}
 import ordset.core.syntax.BoundSyntax.*
+import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager
 import ordset.util.label.Label
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.MappedSeqSample
-import ordset.test.core.{Labels, TestRngUtil}
+import ordset.test.core.Labels
 
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps
@@ -24,13 +25,7 @@ class DegenerateSetSample1[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + Labels.degenerateSeq
 
   override val originalSeq: OrderedSet[Int, D] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(
-      bounds, !complementary, domainOps
-    )(
-      domainOps.validation.boundsSeq
-    )(
-      rngManager
-    )
+    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, !complementary)
 
   // sequence:
   //

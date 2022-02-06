@@ -23,8 +23,8 @@ import scala.collection.Seq
  * }}}
  * Upper bound of last segment is not stored.
  *
- * <tr>`bounds` collection MUST be non-empty.                   </tr>
- * <tr>`bounds` collection SHOULD provide fast access by index. </tr>
+ * <tr>`bounds` collection must be non-empty.                   </tr>
+ * <tr>`bounds` collection should provide fast access by index. </tr>
  */
 abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V] 
   extends AbstractSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
@@ -33,7 +33,7 @@ abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V]
   /**
    * Collection of segments upper bounds.
    *
-   * It MUST be non-empty.
+   * It must be non-empty.
    */
   val bounds: Seq[Bound.Upper[E]]
 

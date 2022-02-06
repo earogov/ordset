@@ -10,7 +10,7 @@ import scala.{specialized => sp}
 /**
  * Utility methods for search in sorted arrays.
  *
- * Input array MUST be sorted according to specified order (strictly):
+ * Input array must be sorted according to specified order (strictly):
  * {{{
  *   order.compare(array[i], array[i-1]) > 0 for i in [1, array.length - 1]
  * }}}

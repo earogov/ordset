@@ -19,7 +19,7 @@ object TreapSegmentSeqBuilder {
    * Usage:
    * <tr>
    *   1. Add tuples (segment upper bound, segment value) to internal buffer (see [[addBound]]).
-   *      Bounds MUST follow in ascending order according to `domainOps.boundOrd`.
+   *      Bounds must follow in ascending order according to `domainOps.boundOrd`.
    * </tr>
    * <tr>
    *   2. Set value of last segment (see [[setLastValue]]).
@@ -40,7 +40,7 @@ object TreapSegmentSeqBuilder {
     /**
      * Add segment upper bound and value to internal buffer.
      *
-     * Bounds MUST follow in ascending order according to `domainOps.boundOrd`.
+     * Bounds must follow in ascending order according to `domainOps.boundOrd`.
      */
     def addBound(bound: Bound.Upper[E], value: V): TreapSegmentSeqBuilder.Mutable[E, D, V] = {
       buffer = BuildAsc.addToBuffer(buffer, bound, rng.nextInt(), value)(boundOrd)
@@ -71,7 +71,7 @@ object TreapSegmentSeqBuilder {
     /**
      * Builds [[TreapSegmentSeq]].
      *
-     * Value of last segment MUST be specified (see [[setLastValue]]).
+     * Value of last segment must be specified (see [[setLastValue]]).
      */
     @throws[AssertionError]("if last value of sequence is not defined")
     def buildSeq: TreapSegmentSeq[E, D, V] = {

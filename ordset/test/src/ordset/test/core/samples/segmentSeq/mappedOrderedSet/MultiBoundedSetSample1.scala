@@ -6,7 +6,7 @@ import ordset.core.set.{ArrayOrderedSet, MappedOrderedSet, OrderedSet}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.random.RngManager
 import ordset.util.label.Label
-import ordset.test.core.{Labels, TestRngUtil}
+import ordset.test.core.Labels
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.MappedSeqSample
 

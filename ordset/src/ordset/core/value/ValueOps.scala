@@ -1,7 +1,6 @@
 package ordset.core.value
 
 import ordset.{Hash, Show}
-import ordset.core.SeqValidationPredicate
 
 /**
  * Typeclasses for segment sequence values.
@@ -9,11 +8,6 @@ import ordset.core.SeqValidationPredicate
  * @tparam V value type.
  */
 trait ValueOps[V] {
-
-  /**
-   * Validation function wrapping [[neqv]] method.
-   */
-  final lazy val distinctionValidation: SeqValidationPredicate[V] = neqv
 
   /**
    * @return some constant value of type `V`. Returned value doesn't have to get special meaning.

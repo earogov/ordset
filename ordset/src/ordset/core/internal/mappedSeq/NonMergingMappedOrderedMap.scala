@@ -18,7 +18,7 @@ import ordset.random.RngManager
  * 
  * Precondition:
  * <tr>
- *   1. Adjacent segments after mapping MUST have different values (with respect to `valueOps.valueHash`).
+ *   1. Adjacent segments after mapping must have different values (with respect to `valueOps.valueHash`).
  * </tr>
  */ 
 protected[ordset] class NonMergingMappedOrderedMap[E, D[X] <: Domain[X], U, V, S] protected (

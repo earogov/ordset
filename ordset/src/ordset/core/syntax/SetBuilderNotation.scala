@@ -1,7 +1,12 @@
 package ordset.core.syntax
 
+import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.value.ValueOps
 import ordset.core.interval.{Interval, IntervalRelation}
+import ordset.core.validation.ValidatingIterable
+import ordset.core.set.OrderedSetFactoryIterable
+import ordset.core.map.{BoundValue, OrderedMapFactoryIterable}
 
 import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
@@ -38,15 +43,35 @@ object SetBuilderNotation {
       lower.domainOps.intervals.factory.betweenBounds(lower.bound, upper.bound)
   }
 
-  implicit def upperBoundToInterval[@sp(spNum) E, D[X] <: Domain[X]](upper: DomainBound.Upper[E, D])(
+  implicit def upperBoundToInterval[@sp(spNum) E, D[X] <: Domain[X]](
+    upper: DomainBound.Upper[E, D]
+  )(
     implicit domainOps: DomainOps[E, D]
   ): Interval[E, D] =
     upper.domainOps.intervals.factory.belowBound(upper.bound)
 
-  implicit def lowerBoundToInterval[@sp(spNum) E, D[X] <: Domain[X]](lower: DomainBound.Lower[E, D])(
+  implicit def lowerBoundToInterval[@sp(spNum) E, D[X] <: Domain[X]](
+    lower: DomainBound.Lower[E, D]
+  )(
     implicit domainOps: DomainOps[E, D]
   ): Interval[E, D] =
     lower.domainOps.intervals.factory.aboveBound(lower.bound)
+
+  implicit def setValidatingIterable[@sp(spNum) E, D[X] <: Domain[X]](
+    bounds: IterableOnce[Bound.Upper[E]]
+  )(
+    implicit domainOps: DomainOps[E, D]
+  ): ValidatingIterable[Bound.Upper[E]] =
+    OrderedSetFactoryIterable.default(bounds)(domainOps)
+
+  implicit def mapValidatingIterable[@sp(spNum) E, D[X] <: Domain[X], V](
+    boundValues: IterableOnce[BoundValue[E, V]]
+  )(
+    implicit 
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V]
+  ): ValidatingIterable[BoundValue[E, V]] =
+    OrderedMapFactoryIterable.default(boundValues)(domainOps, valueOps)
 
   implicit class ValueToIntervalRelation[@sp(Boolean) +V](val value: V) {
 

@@ -147,7 +147,7 @@ object SegmentSeqUtil {
    *
    * Output iterable has at least one element. Last element has bound == [[ExtendedBound.AboveAll]].
    */
-  def getExtendedBoundValueIterableForSeq[E, D[X] <: Domain[X], V](
+  def getBoundValueIterableForSeq[E, D[X] <: Domain[X], V](
     seq: SegmentSeq[E, D, V]
   ): Iterable[BoundValue[E, V]] =
     seq.firstSegment.forwardIterable.map(s => (s.upper, s.value))

@@ -3,6 +3,7 @@ package ordset.test.core.samples.segmentSeq.treapOrderedSet
 import ordset.core.TreapSegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.TreapOrderedSet
+import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager
 import ordset.util.label.Label
 import ordset.test.core.implementations.domain.BoundSelector
@@ -25,10 +26,10 @@ class EmptySetSample1[D[X] <: Domain[X]](
 
   override val sequence: TreapSegmentSeq[Int, D, Boolean] =
     TreapOrderedSet.getFactory.unsafeBuildAsc(
-      bounds, complementary, domainOps
+      bounds, 
+      complementary
     )(
-      domainOps.validation.boundsSeq
-    )(
+      domainOps,
       TestRngUtil.defaultRngManager(seed)
     )
 }

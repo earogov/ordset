@@ -13,8 +13,6 @@ sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
 
   def segments: Segments[E, D]
 
-  def validation: Validation[E, D]
-
   def showOps: ShowOps[E, D]
 }
 
@@ -61,8 +59,6 @@ object DomainOps {
 
       override val segments: Segments[E, D] = Segments.default(domain)
 
-      override val validation: Validation[E, D] = Validation.default(domain)
-
       override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
   }
@@ -95,8 +91,6 @@ object DomainOps {
       override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
 
       override val segments: Segments[E, D] = Segments.default(domain)
-
-      override val validation: Validation[E, D] = Validation.default(domain)
 
       override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
@@ -131,8 +125,6 @@ object DomainOps {
 
       override val segments: Segments[E, D] = Segments.default(domain)
 
-      override val validation: Validation[E, D] = Validation.default(domain)
-
       override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }
   }
@@ -165,8 +157,6 @@ object DomainOps {
       override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
 
       override val segments: Segments[E, D] = Segments.default(domain)
-
-      override val validation: Validation[E, D] = Validation.default(domain)
 
       override lazy val showOps: ShowOps[E, D] = ShowOps.default(elementShow)
     }

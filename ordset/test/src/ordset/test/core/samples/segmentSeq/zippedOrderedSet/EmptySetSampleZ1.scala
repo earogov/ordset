@@ -27,15 +27,13 @@ class EmptySetSampleZ1[D[X] <: Domain[X]](
 
   override val firstSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
     ArraySeq(10`](`, 20`](`),
-    complementary = false,
-    domainOps
-  )()
+    complementary = false
+  )
 
   override val secondSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
     ArraySeq(25`](`),
-    complementary = false,
-    domainOps
-  )()
+    complementary = false
+  )
 
   // firstSeq:
   // X-----f----](------t-----](--------------f--------------X

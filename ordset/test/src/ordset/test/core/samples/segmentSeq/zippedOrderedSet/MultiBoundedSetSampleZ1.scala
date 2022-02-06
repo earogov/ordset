@@ -27,15 +27,13 @@ class MultiBoundedSetSampleZ1[D[X] <: Domain[X]](
 
   override val firstSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
     ArraySeq(10`](`, 20`](`, 30`)[`),
-    complementary = true,
-    domainOps
-  )()
+    complementary = true
+  )
 
   override val secondSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
     ArraySeq(5`)[`, 15`)[`, 25`](`, 35`](`),
-    complementary = false,
-    domainOps
-  )()
+    complementary = false
+  )
 
   // firstSeq:
   // X-----t----](------f-----](-------t-----)[-------f------X

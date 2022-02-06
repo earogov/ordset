@@ -2,7 +2,7 @@ package ordset.random
 
 /**
  * Instances of [[UnsafeUniformRng]] provide maximal performance due to absence of synchronization penalty.
- * This implies requirement that each instance MUST be owned only by one thread at the same time.
+ * This implies requirement that each instance must be owned only by one thread at the same time.
  *
  * [[RngManager]] is intended to simplify distribution of random generators across application.
  * The general rules of usage are the follows:
@@ -31,7 +31,7 @@ trait RngManager {
   /**
    * Creates new instance of thread unsafe random generator with uniform distribution.
    *
-   * Subsequent calls of method MUST provide instance of generators with different states
+   * Subsequent calls of method must provide instance of generators with different states
    * to avoid generating of overlapping random sequences.
    */
   def newUnsafeUniformRng(): UnsafeUniformRng

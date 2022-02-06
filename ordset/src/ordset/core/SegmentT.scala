@@ -4,6 +4,7 @@ import ordset.{Order, Hash, Show}
 import ordset.core.domain.*
 import ordset.core.interval.*
 import ordset.core.map.{LazyTreapOrderedMap, UniformOrderedMap, TreapOrderedMap}
+import ordset.core.validation.ValidatingIterable
 import ordset.util
 
 import scala.collection.{AbstractIterable, AbstractIterator}
@@ -72,7 +73,7 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * - doesn't have previous segment.
  *
  * <h3>
- * Each concrete class implementing segment MUST have ONE (and only one) of supertypes:
+ * Each concrete class implementing segment must have ONE (and only one) of supertypes:
  * </h3>
  * <tr><b> - Initial  </b></tr>
  * <tr><b> - Terminal </b></tr>
@@ -114,7 +115,7 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * <tr>- upper bound of last segment has maximal value (equivalent to plus infinity);   </tr>
  * <tr>- lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
  * <tr>
- * These properties MUST be provided by implementations of [[DomainOps.segments.upperOrd]] and
+ * These properties must be provided by implementations of [[DomainOps.segments.upperOrd]] and
  * [[DomainOps.segments.lowerOrd]].
  * </tr>
  * <tr></tr>
@@ -362,16 +363,16 @@ object SegmentT {
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(other)
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-      val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((upper, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
-        domainOps,
-        SeqSupplier.ValueOpsImpl.get
-      )(
-        SeqValidationPredicate.alwaysTrue,
-        SeqValidationPredicate.alwaysTrue
-      )(
-        rngManager
-      )
+      val lazySeq = 
+        TreapOrderedMap.getFactory.unsafeBuildAsc(
+          ValidatingIterable.unchecked(
+            List((upper, Some(mapFunc)), (ExtendedBound.AboveAll, None))
+          )
+        )(
+          domainOps,
+          SeqSupplier.ValueOpsImpl.get,
+          rngManager
+        )
       LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
     }
   }
@@ -432,16 +433,16 @@ object SegmentT {
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = movePrev.append(other)
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-      val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((lower.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc))),
-        domainOps,
-        SeqSupplier.ValueOpsImpl.get
-      )(
-        SeqValidationPredicate.alwaysTrue,
-        SeqValidationPredicate.alwaysTrue
-      )(
-        rngManager
-      )
+      val lazySeq = 
+        TreapOrderedMap.getFactory.unsafeBuildAsc(
+          ValidatingIterable.unchecked(
+            List((lower.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc)))
+          )
+        )(
+          domainOps,
+          SeqSupplier.ValueOpsImpl.get,
+          rngManager
+        )
       LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
     }
   }
@@ -504,16 +505,16 @@ object SegmentT {
     override def patch(other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = moveNext.prepend(movePrev.append(other))
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
-      val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-        List((lower.flipLower, None), (upper, Some(mapFunc)), (ExtendedBound.AboveAll, None)),
-        domainOps,
-        SeqSupplier.ValueOpsImpl.get
-      )(
-        SeqValidationPredicate.alwaysTrue,
-        SeqValidationPredicate.alwaysTrue
-      )(
-        rngManager
-      )
+      val lazySeq = 
+        TreapOrderedMap.getFactory.unsafeBuildAsc(
+          ValidatingIterable.unchecked(
+            List((lower.flipLower, None), (upper, Some(mapFunc)), (ExtendedBound.AboveAll, None))
+          )
+        )(
+          domainOps,
+          SeqSupplier.ValueOpsImpl.get,
+          rngManager
+        )
       LazyTreapOrderedMap.apply(sequence, lazySeq)(domainOps, valueOps, rngManager)
     }
   }

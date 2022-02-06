@@ -9,7 +9,7 @@ import ordset.util.BooleanUtil
 import ordset.util.label.Label
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.MappedSeqSample
-import ordset.test.core.{Labels, TestRngUtil}
+import ordset.test.core.Labels
 
 import scala.collection.immutable.ArraySeq
 import scala.language.postfixOps

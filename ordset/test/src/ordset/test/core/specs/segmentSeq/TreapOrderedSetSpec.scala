@@ -18,7 +18,7 @@ class TreapOrderedSetSpec extends AnyFunSpec
 
   import ordset.givens.boolean._
   import ordset.givens.int._
-  import ordset.test.core.TestRngUtil.Implicits._
+  import ordset.test.core.TestRngUtil.Givens._
 
   type Dom[X] = Domain.ContinuousUnbounded[X]
   type SegmentSeq = OrderedSet[Int, Dom]

@@ -3,7 +3,9 @@ package ordset.core
 import ordset.Show
 import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.map.{LazyTreapOrderedMap, MappedOrderedMap, MappedValueOrderedMap, TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
+import ordset.core.map.{LazyTreapOrderedMap, MappedOrderedMap, MappedValueOrderedMap}
+import ordset.core.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
+import ordset.core.validation.ValidatingIterable
 import ordset.core.util.SegmentSeqUtil
 import ordset.random.RngManager
 import ordset.util.BooleanUtil
@@ -46,7 +48,7 @@ import scala.specialized as sp
  * <tr>N - number of segment in sequence.</tr>
  * <tr></tr>
  *  
- * All implementations of segment sequence MUST provide basic properties:
+ * All implementations of segment sequence must provide basic properties:
  * <tr>1. <u>segments cover universal set without gaps and overlapping</u>.                 </tr>
  * <tr>2. <u>adjacent segments have different values</u>.                                   </tr>
  * <tr>                                                                                     </tr>
@@ -92,7 +94,7 @@ import scala.specialized as sp
  *   - lower bound of first segment has minimal value in domain (for unbounded domain it's equivalent to minus infinity). 
  * </tr>
  * <tr>
- * These properties MUST be provided by implementations of [[DomainOps.segments.upperOrd]] and [[DomainOps.segments.lowerOrd]].
+ * These properties must be provided by implementations of [[DomainOps.segments.upperOrd]] and [[DomainOps.segments.lowerOrd]].
  * </tr>
  * <tr></tr>
  * 
@@ -744,16 +746,16 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
   )(
     implicit valueOps: ValueOps[U]
   ): SegmentSeq[E, D, U] = {
-    val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s)))),
-      domainOps,
-      SeqSupplier.ValueOpsImpl.get
-    )(
-      SeqValidationPredicate.alwaysTrue,
-      SeqValidationPredicate.alwaysTrue
-    )(
-      rngManager
-    )
+    val lazySeq = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        ValidatingIterable.unchecked(
+          firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s))))
+        )
+      )(
+        domainOps,
+        SeqSupplier.ValueOpsImpl.get,
+        rngManager
+      )
     LazyTreapOrderedMap.apply(
       UniformOrderedMap.default(valueOps.unit),
       lazySeq
@@ -819,16 +821,16 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
   )(
     implicit valueOps: ValueOps[U]
   ): SegmentSeq[E, D, U] = {
-    val lazySeq = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s.value)))),
-      domainOps,
-      SeqSupplier.ValueOpsImpl.get
-    )(
-      SeqValidationPredicate.alwaysTrue,
-      SeqValidationPredicate.alwaysTrue
-    )(
-      rngManager
-    )
+    val lazySeq = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        ValidatingIterable.unchecked(
+          firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s.value))))
+        )
+      )(
+        domainOps,
+        SeqSupplier.ValueOpsImpl.get,
+        rngManager
+      )
     LazyTreapOrderedMap.apply(
       UniformOrderedMap.default(valueOps.unit),
       lazySeq
@@ -939,7 +941,7 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    *
    * Invariant functions MAY return `true` for invariant values. This allows to apply some performance optimizations.
    *
-   * Note that invariant functions MUST NOT return `true` for non-invariant values. This may produce inconsistent
+   * Note that invariant functions must NOT return `true` for non-invariant values. This may produce inconsistent
    * output sequences depending of traverse direction.
    *
    * <h3>Example</h3>

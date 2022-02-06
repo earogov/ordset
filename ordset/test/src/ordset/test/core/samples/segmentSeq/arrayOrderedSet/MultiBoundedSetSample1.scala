@@ -3,6 +3,7 @@ package ordset.test.core.samples.segmentSeq.arrayOrderedSet
 import ordset.core.ArraySegmentSeq
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.set.ArrayOrderedSet
+import ordset.core.syntax.SetBuilderNotation.*
 import ordset.util.label.Label
 import ordset.random.RngManager
 import ordset.test.core.Labels
@@ -22,5 +23,5 @@ class MultiBoundedSetSample1[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
 
   override val sequence: ArraySegmentSeq[Int, D, Boolean] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary, domainOps)(domainOps.validation.boundsSeq)
+    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary)
 }

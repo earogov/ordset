@@ -1,7 +1,8 @@
 package ordset.core.set
 
-import ordset.core.{AbstractIndexedSegmentSeq, Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.{AbstractIndexedSegmentSeq, Bound, SegmentSeqException}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.validation.ValidatingIterable
 import ordset.random.RngManager
 
 import scala.collection.immutable.ArraySeq
@@ -42,26 +43,22 @@ object ArrayOrderedSet {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     override def unsafeBuildAsc(
-      bounds: IterableOnce[Bound.Upper[E]],
-      complementary: Boolean,
-      domainOps: DomainOps[E, D]
+      bounds: ValidatingIterable[Bound.Upper[E]],
+      complementary: Boolean
     )(
-      boundsValidationFunc: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
-    )(
-      implicit rngManager: RngManager
+      implicit 
+      domainOps: DomainOps[E, D],
+      rngManager: RngManager
     ): ArrayOrderedSet[E, D] =
-      bounds match {
-        case bounds: ArraySeq[Bound.Upper[E]] =>
-          SeqValidationPredicate.validateIterable(bounds, boundsValidationFunc)
-          unchecked(bounds, complementary)(domainOps, rngManager)
+      bounds.originalIterable match {
+        case boundsArraySeq: ArraySeq[Bound.Upper[E]] =>
+          bounds.validateAll()
+          unchecked(boundsArraySeq, complementary)(domainOps, rngManager)
         case _ =>
-          val boundsArraySeq =
-            SeqValidationPredicate.foldIterableAfter[Bound.Upper[E], ArraySeq[Bound.Upper[E]]](
-              bounds,
-              boundsValidationFunc,
-              ArraySeq.empty[Bound.Upper[E]],
-              (seq, bnd) => seq.appended(bnd)
-            )
+          val boundsArraySeq = 
+            bounds.foldLeftValidated(ArraySeq.empty[Bound.Upper[E]]) { (seq, bnd) => 
+              seq.appended(bnd) 
+            }
           unchecked(boundsArraySeq, complementary)(domainOps, rngManager)
       }
 

@@ -5,7 +5,7 @@ import ordset.{Eq, Hash, Show}
 /**
  * Range of elements (empty or non-empty).
  * 
- * Note, any range implementation MUST be a subclass of [[Range.Empty]] or [[Range.NonEmpty]].
+ * Note, any range implementation must be a subclass of [[Range.Empty]] or [[Range.NonEmpty]].
  * 
  * @tparam E type of elements.
  */

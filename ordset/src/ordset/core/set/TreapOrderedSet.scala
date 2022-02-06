@@ -1,7 +1,8 @@
 package ordset.core.set
 
-import ordset.core.{Bound, SegmentSeqException, SeqValidationPredicate}
+import ordset.core.{Bound, SegmentSeqException}
 import ordset.core.domain.{Domain, DomainOps}
+import ordset.core.validation.ValidatingIterable
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
@@ -51,34 +52,30 @@ object TreapOrderedSet {
 
     @throws[SegmentSeqException]("if preconditions are violated")
     override def unsafeBuildAsc(
-      bounds: IterableOnce[Bound.Upper[E]],
-      complementary: Boolean,
-      domainOps: DomainOps[E, D]
+      bounds: ValidatingIterable[Bound.Upper[E]],
+      complementary: Boolean
     )(
-      boundsValidation: SeqValidationPredicate[Bound.Upper[E]] = domainOps.validation.boundsSeq
-    )(
-      implicit rngManager: RngManager
-    ): TreapOrderedSet[E, D] = {
+      implicit 
+      domainOps: DomainOps[E, D],
+      rngManager: RngManager
+    ): TreapOrderedSet[E, D] =
       try {
         val rng = rngManager.newUnsafeUniformRng()
         val boundOrd = domainOps.domain.boundOrd
         var value = complementary
+
         val buffer =
-          SeqValidationPredicate.foldIterableAfter[Bound.Upper[E], List[MutableTreap.Node[Bound.Upper[E], Boolean]]](
-            bounds,
-            boundsValidation,
-            List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]],
-            (buf, bnd) => {
-              val buffer =
-                BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], Boolean](
-                  buf, bnd, rng.nextInt(), value
-                )(
-                  boundOrd
-                )
-              value = !value
-              buffer
-            }
-          )
+          bounds.foldLeftValidated(List.empty[MutableTreap.Node[Bound.Upper[E], Boolean]]) { (buf, bnd) =>
+            val newBuf =
+              BuildAsc.addToBuffer[Bound.Upper[E], Bound[E], Boolean](
+                buf, bnd, rng.nextInt(), value
+              )(
+                boundOrd
+              )
+            value = !value
+            newBuf
+          }
+
         val root = BuildAsc.finalizeBuffer(buffer)
         root match {
           case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
@@ -88,8 +85,7 @@ object TreapOrderedSet {
         }
       } catch {
         case NonFatal(e) => throw SegmentSeqException.seqBuildFailed(e)
-      } 
-    }
+      }
 
     override def convertSet(set: OrderedSet[E, D]): TreapOrderedSet[E, D] =
       set match {

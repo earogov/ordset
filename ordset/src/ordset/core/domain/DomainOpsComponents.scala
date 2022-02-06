@@ -1,7 +1,7 @@
 package ordset.core.domain
 
 import ordset.{Hash, Show}
-import ordset.core.{Bound, ExtendedBound, SegmentT, Segment, SegmentSeqT, SegmentSeq, SeqValidationPredicate}
+import ordset.core.{Bound, ExtendedBound, SegmentT, Segment, SegmentSeqT, SegmentSeq}
 import ordset.core.interval.{Interval, IntervalRelation, IntervalAlgebra, IntervalFactory}
 import ordset.core.range.Range
 
@@ -187,29 +187,6 @@ object DomainOpsComponents {
       override implicit val upperOrd: SegmentT.UpperBoundOrder[E, D] = SegmentT.upperBoundOrder(domain)
 
       override implicit val lowerOrd: SegmentT.LowerBoundOrder[E, D] = SegmentT.lowerBoundOrder(domain)
-    }
-  }
-
-  trait Validation[E, D[X] <: Domain[X]] {
-
-    implicit val boundsSeq: SeqValidationPredicate[Bound[E]]
-
-    implicit val extendedBoundsSeq: SeqValidationPredicate[ExtendedBound[E]]
-  }
-
-  object Validation {
-
-    def default[E, D[X] <: Domain[X]](domain: D[E]): Validation[E, D] = new DefaultImpl(domain)
-
-    class DefaultImpl[E, D[X] <: Domain[X]](
-      domain: D[E]
-    ) extends Validation[E, D] {
-
-      implicit override val boundsSeq: SeqValidationPredicate[Bound[E]] = 
-        (prev: Bound[E], next: Bound[E]) => domain.boundOrd.lt(prev, next)
-
-      implicit override val extendedBoundsSeq: SeqValidationPredicate[ExtendedBound[E]] = 
-        (prev: ExtendedBound[E], next: ExtendedBound[E]) => domain.extendedOrd.lt(prev, next)
     }
   }
 

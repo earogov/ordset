@@ -17,12 +17,12 @@ object ZipExample {
 
   import ordset.givens.boolean.*
   import ordset.givens.int.*
-  import ordset.test.core.TestRngUtil.Implicits.*
+  import ordset.test.core.TestRngUtil.Givens.*
 
   private val sep = "-----------------"
   
-  private val stringOps: ValueOps[String] = implicitly
-  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
+  private implicit val stringOps: ValueOps[String] = implicitly
+  private implicit val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -35,27 +35,25 @@ object ZipExample {
     println(s"$sep SegmentSeq.zipIntoTuple example $sep")
 
     println("First initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, "A"),
-        (10`)[`, "B"),
-        (AboveAll, "C")
-      ),
-      domainOps,
-      stringOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, "A"),
+          (10`)[`, "B"),
+          (AboveAll, "C")
+        )
+      )
     println(seq1)
 
     println()
     println("Second initial sequence:")
-    val seq2 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (5`)[`, "1"),
-        (AboveAll, "2")
-      ),
-      domainOps,
-      stringOps
-    )()
+    val seq2 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (5`)[`, "1"),
+          (AboveAll, "2")
+        )
+      )
     println(seq2)
 
     println()
@@ -70,28 +68,26 @@ object ZipExample {
 
     println()
     println("First initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, "A"),
-        (10`)[`, "B"),
-        (AboveAll, "C")
-      ),
-      domainOps,
-      stringOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, "A"),
+          (10`)[`, "B"),
+          (AboveAll, "C")
+        )
+      )
     println(seq1)
 
     println()
     println("Second initial sequence:")
-    val seq2 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (5`)[`, "C"),
-        (15`)[`, "B"),
-        (AboveAll, "A")
-      ),
-      domainOps,
-      stringOps
-    )()
+    val seq2 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (5`)[`, "C"),
+          (15`)[`, "B"),
+          (AboveAll, "A")
+        )
+      )
     println(seq2)
 
     println()
@@ -105,20 +101,20 @@ object ZipExample {
     println(s"$sep Truncation.zip example $sep")
 
     println("First initial sequence:")
-    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      List(0`)`, 10`)`),
-      complementary = true,
-      domainOps
-    )()
+    val seq1 = 
+      TreapOrderedSet.getFactory.unsafeBuildAsc(
+        List(0`)`, 10`)`),
+        complementary = true
+      )
     println(seq1)
 
     println()
     println("Second initial sequence:")
-    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      List(5`)[`, 15`)[`),
-      complementary = true,
-      domainOps,
-    )()
+    val seq2 = 
+      TreapOrderedSet.getFactory.unsafeBuildAsc(
+        List(5`)[`, 15`)[`),
+        complementary = true
+      )
     println(seq2)
 
     println()

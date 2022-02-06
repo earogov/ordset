@@ -1391,7 +1391,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * <tr></tr>
    *
    * 1. If some bound is marked as "unstable" (for example `stableLowerBound` == false) then corresponding bound segment
-   * of new control sequence MUST be unstable.
+   * of new control sequence must be unstable.
    * {{{
    *
    *               zsegment

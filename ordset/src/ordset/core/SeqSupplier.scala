@@ -39,13 +39,7 @@ object SeqSupplier {
       domainOps: DomainOps[E, D],
       rngManager: RngManager
     ): OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]]#Partial =
-      getFactory.provided(
-        domainOps, ValueOpsImpl.get
-      )(
-        SeqValidationPredicate.alwaysTrue, SeqValidationPredicate.alwaysTrue
-      )(
-        rngManager
-      )
+      getFactory.provided(domainOps, ValueOpsImpl.get, rngManager)
   }
 
   /**

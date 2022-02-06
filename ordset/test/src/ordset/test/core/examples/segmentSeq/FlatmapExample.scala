@@ -17,13 +17,13 @@ object FlatmapExample {
   import ordset.givens.boolean.*
   import ordset.givens.string.*
   import ordset.givens.int.*
-  import ordset.test.core.TestRngUtil.Implicits.*
+  import ordset.test.core.TestRngUtil.Givens.*
 
   private val sep = "-----------------"
 
-  private val booleanOps: ValueOps[Boolean] = implicitly
-  private val stringOps: ValueOps[String] = implicitly
-  private val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
+  private implicit val booleanOps: ValueOps[Boolean] = implicitly
+  private implicit val stringOps: ValueOps[String] = implicitly
+  private implicit val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -37,11 +37,11 @@ object FlatmapExample {
     println(s"$sep Segment.flatMap example $sep")
 
     println("Initial sequence:")
-    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
-      List(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
-      complementary = false,
-      domainOps
-    )()
+    val seq1 = 
+      TreapOrderedSet.getFactory.unsafeBuildAsc(
+        List(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
+        complementary = false
+      )
     println(seq1)
 
     val segment1 = seq1.getSegmentForBound(15`[`)
@@ -52,11 +52,7 @@ object FlatmapExample {
     val seq2 = segment1.flatMap { () =>
       TreapOrderedSet.getFactory.unsafeBuildAsc(
         List(12`)`, 15`]`, 17`)`),
-        complementary = false,
-        seq1.domainOps
-      )(
-      )(
-        seq1.rngManager
+        complementary = false
       )
     }
 
@@ -102,12 +98,21 @@ object FlatmapExample {
       midBoundOpt
         .map(b =>
           TreapOrderedMap.getFactory.unsafeBuildSingleBounded(
-            b, values._1, values._2, segment.domainOps, segment.valueOps
-          )()
+            b, values._1, 
+            values._2
+          )(
+            segment.domainOps, 
+            segment.valueOps,
+            rngManager
+          )
         )
         .getOrElse(
           TreapOrderedMap.getFactory.buildUniform(
-            values._1, segment.domainOps, segment.valueOps
+            values._1
+          )(
+            segment.domainOps, 
+            segment.valueOps,
+            rngManager
           )
         )
     }
@@ -120,18 +125,17 @@ object FlatmapExample {
       }
 
     println("Initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, false),
-        (10`)[`, true),
-        (20`)[`, false),
-        (30`)[`, true),
-        (40`)[`, false),
-        (AboveAll, true)
-      ),
-      domainOps,
-      booleanOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, false),
+          (10`)[`, true),
+          (20`)[`, false),
+          (30`)[`, true),
+          (40`)[`, false),
+          (AboveAll, true)
+        )
+      )
     println(seq1)
 
     println()
@@ -162,15 +166,14 @@ object FlatmapExample {
     println(s"$sep SegmentSeq.flatMap example $sep")
 
     println("Initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, true),
-        (10`)[`, false),
-        (AboveAll, true)
-      ),
-      domainOps,
-      booleanOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, true),
+          (10`)[`, false),
+          (AboveAll, true)
+        )
+      )
     println(seq1)
 
     println()
@@ -178,19 +181,18 @@ object FlatmapExample {
     println("- if segment value is `false`, then returns universal sequence with string `empty`;")
     println("- if segment value is `true`, then returns sequence:")
 
-    val seq2 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (-10`)[`, "A"),
-        (-5`)[`, "B"),
-        (5`)[`, "C"),
-        (7`)[`, "D"),
-        (20`)[`, "E"),
-        (25`)[`, "F"),
-        (AboveAll, "G")
-      ),
-      domainOps,
-      stringOps
-    )()
+    val seq2 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (-10`)[`, "A"),
+          (-5`)[`, "B"),
+          (5`)[`, "C"),
+          (7`)[`, "D"),
+          (20`)[`, "E"),
+          (25`)[`, "F"),
+          (AboveAll, "G")
+        )
+      )
     println(seq2)
 
     val seq3 = seq1.flatMap { v => if v then seq2 else UniformOrderedMap.default("empty") }
@@ -209,30 +211,28 @@ object FlatmapExample {
     println(s"$sep SegmentSeq.flatMap advanced example $sep")
 
     println("Initial sequence:")
-    val seq1 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (20`)[`, false),
-        (AboveAll, true)
-      ),
-      domainOps,
-      booleanOps
-    )()
+    val seq1 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (20`)[`, false),
+          (AboveAll, true)
+        )
+      )
     println(seq1)
 
     println()
     println("Let's apply flatMap with function, that returns following sequence for each segment:")
-    val seq2 = TreapOrderedMap.getFactory.unsafeBuildAsc(
-      List(
-        (0`)[`, "A"),
-        (10`)[`, "B"),
-        (20`)[`, "C"),
-        (30`)[`, "D"),
-        (40`)[`, "E"),
-        (AboveAll, "F")
-      ),
-      domainOps,
-      stringOps
-    )()
+    val seq2 = 
+      TreapOrderedMap.getFactory.unsafeBuildAsc(
+        List(
+          (0`)[`, "A"),
+          (10`)[`, "B"),
+          (20`)[`, "C"),
+          (30`)[`, "D"),
+          (40`)[`, "E"),
+          (AboveAll, "F")
+        )
+      )
     println(seq2)
 
     println()

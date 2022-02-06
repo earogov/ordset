@@ -1,9 +1,10 @@
 package ordset.core.set
 
 import ordset.core.AbstractUniformSegmentSeq.UniformSingleSegment
-import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, SeqValidationPredicate, TreapSegmentSeq}
+import ordset.core.{AbstractUniformSegmentSeq, Bound, SegmentSeq, TreapSegmentSeq}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
+import ordset.core.validation.ValidatingIterable
 import ordset.random.RngManager
 
 class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
@@ -27,10 +28,10 @@ class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
       this
     else
       setFactory.unsafeBuildAsc(
-        List(bound.provideUpper), firstValue, domainOps
+        ValidatingIterable.unchecked(List(bound.provideUpper)),
+        firstValue
       )(
-        SeqValidationPredicate.alwaysTrue
-      )(
+        domainOps,
         rngManager
       )
   
@@ -39,10 +40,10 @@ class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
       this
     else
       setFactory.unsafeBuildAsc(
-        List(bound.provideUpper), value, domainOps
+        ValidatingIterable.unchecked( List(bound.provideUpper)),
+        value
       )(
-        SeqValidationPredicate.alwaysTrue
-      )(
+        domainOps,
         rngManager
       )
 }

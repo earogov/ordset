@@ -5,7 +5,7 @@ import ordset.util.OptionUtil
 /**
  * Typeclass specifying sequence of elements of discrete ordered set. 
  *
- * Implementations MUST enforce conditions: 
+ * Implementations must enforce conditions: 
  * <tr>
  *   1.a If `x` has successor, then: `predecessor(successor(x)) = x`.
  * </tr>

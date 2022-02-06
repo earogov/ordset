@@ -41,7 +41,7 @@ class EmptySetSampleLT1[D[X] <: Domain[X]](
   // X-----------------)[--------------------](--------------------](-----------------X
   //                   0                     10                    20
   override protected def initializeSequence: LazyTreapSegmentSeq[Int, D, Boolean] = {
-    val seq = TreapOrderedSet.getFactory[Int, D].unsafeBuildAsc(ArraySeq.empty, complementary = false, domainOps)()
+    val seq = TreapOrderedSet.getFactory[Int, D].buildUniform(false)
 
     LazyTreapSegmentSeq.totallyLazy(
       List(

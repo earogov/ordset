@@ -44,21 +44,18 @@ class MultiBoundedSetSampleLT1[D[X] <: Domain[X]](
   override protected def initializeSequence: LazyTreapSegmentSeq[Int, D, Boolean] = {
     val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
-      complementary = true,
-      domainOps
-    )()
+      complementary = true
+    )
 
     val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(2 `)[`, 8 `](`, 17 `)[`),
-      complementary = false,
-      domainOps
-    )()
+      complementary = false
+    )
 
     val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
       ArraySeq(15 `)[`, 20 `](`),
-      complementary = false,
-      domainOps
-    )()
+      complementary = false
+    )
 
     LazyTreapSegmentSeq.totallyLazy(
       List(

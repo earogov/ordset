@@ -13,6 +13,11 @@ trait ValidatingIterable[+E] extends IterableOnce[E] {
   override def iterator: ValidatingIterable.ValidatingIterator[E]
 
   /**
+   * Original iterable, to which validation is applied.
+   */
+  def originalIterable: IterableOnce[E]
+
+  /**
    * Returns `true`, if all elements of iterable satisfy validation condition.
    */
   def allValid: Boolean = iterator.allValid
@@ -28,7 +33,7 @@ trait ValidatingIterable[+E] extends IterableOnce[E] {
    * each call of function `f`.
    */
   @throws[ValidationException]
-  def foldLeftValidated[R](init: R, f: (R, E) => R): R = iterator.foldLeftValidated(init, f)
+  def foldLeftValidated[R](init: R)(f: (R, E) => R): R = iterator.foldLeftValidated(init)(f)
 }
 
 object ValidatingIterable {
@@ -96,7 +101,7 @@ object ValidatingIterable {
      * Validation is applied before each call of function `f`.
      */
     @throws[ValidationException]
-    def foldLeftValidated[R](init: R, f: (R, E) => R): R = {
+    def foldLeftValidated[R](init: R)(f: (R, E) => R): R = {
       var result = init
       while (this.hasNext) {
         val next = this.next()
@@ -130,14 +135,14 @@ object ValidatingIterable {
     override def validateAll(): Unit = {}
 
     @throws[ValidationException]
-    override def foldLeftValidated[R](init: R, f: (R, E) => R): R = originalIterator.foldLeft(init)(f)
+    override def foldLeftValidated[R](init: R)(f: (R, E) => R): R = originalIterator.foldLeft(init)(f)
   }
 
   /**
    * Iterable without actual validation. It is always passed if requested.
    */
   class UncheckedIterable[E](
-    protected val originalIterable: IterableOnce[E]
+    override val originalIterable: IterableOnce[E]
   ) extends ValidatingIterable[E] {
 
     override def iterator: ValidatingIterator[E] = new UncheckedIterator(originalIterable.iterator)
@@ -177,7 +182,7 @@ object ValidatingIterable {
    * Iterable, that applies validation to a single element.
    */
   class ValidatingIterableArity1[E](
-    protected val originalIterable: IterableOnce[E],
+    override val originalIterable: IterableOnce[E],
     protected val validation: ValidationPredicate.Arity1[E]
   ) extends ValidatingIterable[E] {
 
@@ -206,7 +211,7 @@ object ValidatingIterable {
    * Iterable, that applies validation to a pair of adjacent elements.
    */
   class ValidatingIterableArity2[E](
-    protected val originalIterable: IterableOnce[E],
+    override val originalIterable: IterableOnce[E],
     protected val validation: ValidationPredicate.Arity2[E]
   ) extends ValidatingIterable[E] {
 
@@ -239,7 +244,7 @@ object ValidatingIterable {
    * Iterable, combining [[ValidatingIterableArity1]] and [[ValidatingIterableArity2]].
    */
   class ValidatingIterableArity1And2[E](
-    protected val originalIterable: IterableOnce[E],
+    override val originalIterable: IterableOnce[E],
     protected val validation1: ValidationPredicate.Arity1[E],
     protected val validation2: ValidationPredicate.Arity2[E]
   ) extends ValidatingIterable[E] {
