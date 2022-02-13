@@ -12,7 +12,9 @@ import org.scalatest.funspec.AnyFunSpec
 class DiscreteOrderSpec extends AnyFunSpec {
 
   import DiscreteOrderSpec._
-  import ordset.givens.int._
+
+  val intOrdering = implicitly[Ordering[Int]]
+  val bigIntOrdering = implicitly[Ordering[BigInt]]
 
   it("should specify discrete ordered set") {
 
@@ -21,10 +23,32 @@ class DiscreteOrderSpec extends AnyFunSpec {
       override def hasSuccessor(x: Int) = x < 10
       override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
       override def hasPredecessor(x: Int) = x > 0
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateDiscreteOrder(discreteOrd1, List((null, -1), (null, 0), (0, 1), (1, 2), (9, 10), (11, null), (12, null)))
+  }
+
+  it("should specify discrete infinite unbounded ordered set") {
+
+    val discreteOrd1 = new DiscreteOrder.InfiniteUnbounded[BigInt] { 
+      override def successor(x: BigInt): BigInt = x + 1
+      override def predecessor(x: BigInt): BigInt = x - 1
+      override def compare(x: BigInt, y: BigInt): Int = bigIntOrdering.compare(x, y)
+    }
+
+    validateDiscreteOrder(
+      discreteOrd1, 
+      List(
+        (BigInt(-2), BigInt(-1)), 
+        (BigInt(-1), BigInt(0)), 
+        (BigInt(0), BigInt(1)), 
+        (BigInt(1), BigInt(2)), 
+        (BigInt(9), BigInt(10)), 
+        (BigInt(11), BigInt(12)), 
+        (BigInt(12), BigInt(13))
+      )
+    )
   }
 
   it("should specify discrete finite from below ordered set") {
@@ -34,7 +58,7 @@ class DiscreteOrderSpec extends AnyFunSpec {
       override def hasSuccessor(x: Int) = true
       override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
       override def lowerBound: Int = 0
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateDiscreteFiniteBelowOrder(
@@ -53,7 +77,7 @@ class DiscreteOrderSpec extends AnyFunSpec {
       override def predecessorOrNull(x: Int): Int | Null = x - 1
       override def hasPredecessor(x: Int) = true
       override def upperBound: Int = 0
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateDiscreteFiniteAboveOrder(
@@ -72,7 +96,7 @@ class DiscreteOrderSpec extends AnyFunSpec {
       override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
       override def lowerBound: Int = 0
       override def upperBound: Int = 10
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateDiscreteFiniteOrder(

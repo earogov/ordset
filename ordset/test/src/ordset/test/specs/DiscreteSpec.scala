@@ -112,6 +112,12 @@ object DiscreteSpec {
         assert(eqvNullable(e.successor, discrete.successorOrNull(e.predecessor)))
         assert(eqvNullable(e.successor, discrete.successorOpt(e.predecessor).orNull))
         if e.successor == null then assert(!discrete.hasSuccessor(e.predecessor))
+        else discrete match {
+          case discrete: Discrete.Succeeding.Infinite[E] => 
+            assert(eq.eqv(e.successor, discrete.successor(e.predecessor)))
+          case _ => 
+            // no additional checks required
+        }
       }
     }
   }
@@ -127,6 +133,12 @@ object DiscreteSpec {
         assert(eqvNullable(e.predecessor, discrete.predecessorOrNull(e.successor)))
         assert(eqvNullable(e.predecessor, discrete.predecessorOpt(e.successor).orNull))
         if e.predecessor == null then assert(!discrete.hasPredecessor(e.successor))
+        else discrete match {
+          case discrete: Discrete.Preceding.Infinite[E] => 
+            assert(eq.eqv(e.predecessor, discrete.predecessor(e.successor)))
+          case _ => 
+            // no additional checks required
+        }
       }
     }
   }

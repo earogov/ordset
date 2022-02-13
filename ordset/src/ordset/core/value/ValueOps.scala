@@ -108,6 +108,46 @@ object ValueOps {
       valueShow
     )
 
+  implicit def bigIntValueOps(
+    implicit valueShow: Show[BigInt] = ordset.givens.bigInt.bigIntShow
+  ): ValueOps[BigInt] =
+    new DefaultImpl[BigInt](
+      BigInt(0),
+      ordset.givens.bigInt.bigIntNaturalOrder,
+      InclusionPredicate.alwaysIncluded,
+      valueShow
+    )
+
+  implicit def floatValueOps(
+    implicit valueShow: Show[Float] = ordset.givens.float.floatShow
+  ): ValueOps[Float] =
+    new DefaultImpl[Float](
+      0f,
+      ordset.givens.float.floatNaturalOrder,
+      InclusionPredicate.alwaysIncluded,
+      valueShow
+    )
+
+  implicit def doubleValueOps(
+    implicit valueShow: Show[Double] = ordset.givens.double.doubleShow
+  ): ValueOps[Double] =
+    new DefaultImpl[Double](
+      0d,
+      ordset.givens.double.doubleNaturalOrder,
+      InclusionPredicate.alwaysIncluded,
+      valueShow
+    )
+
+  implicit def bigDecimalValueOps(
+    implicit valueShow: Show[BigDecimal] = ordset.givens.bigDecimal.bigDecimalShow
+  ): ValueOps[BigDecimal] =
+    new DefaultImpl[BigDecimal](
+      BigDecimal(0),
+      ordset.givens.bigDecimal.bigDecimalNaturalOrder,
+      InclusionPredicate.alwaysIncluded,
+      valueShow
+    )
+
   implicit def stringValueOps(
     implicit valueShow: Show[String] = ordset.givens.string.stringShow
   ): ValueOps[String] =

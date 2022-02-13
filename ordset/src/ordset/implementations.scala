@@ -242,6 +242,33 @@ object implementations {
     }
   }
 
+  object bigInt {
+
+    def tryNaturalOrderWithBounds[L <: BigInt, U <: BigInt](
+      lowerBound: L,
+      upperBound: U
+    ): Try[NaturalOrderWithBounds[L, U]] =
+      Try(validateBounds(new NaturalOrderWithBounds(lowerBound, upperBound)))
+
+    class NaturalOrder()
+      extends cats.kernel.instances.BigIntOrder
+      with DiscreteOrder.InfiniteUnbounded[BigInt]
+      with numeric.DiscreteInfinite[BigInt] {
+
+      override protected val num: Numeric[BigInt] = implicitly[Numeric[BigInt]]
+    }
+
+    class NaturalOrderWithBounds[+L <: BigInt, +U <: BigInt](
+      override val lowerBound: L,
+      override val upperBound: U
+    ) extends cats.kernel.instances.BigIntOrder
+      with DiscreteOrder.Finite[BigInt, L, U]
+      with numeric.Discrete[BigInt] {
+
+      override protected val num: Numeric[BigInt] = implicitly[Numeric[BigInt]]
+    }
+  }
+
   object float {
 
     def tryNaturalOrderWithBounds[L <: Float, U <: Float](
@@ -302,6 +329,27 @@ object implementations {
       override val upperBoundIncluded: Boolean
     ) extends cats.kernel.instances.DoubleOrder
       with BoundedOrder[Double, L, U]
+  }
+
+  object bigDecimal {
+
+    def tryNaturalOrderWithBounds[L <: BigDecimal, U <: BigDecimal](
+      lowerBound: L,
+      lowerBoundIncluded: Boolean,
+      upperBound: U,
+      upperBoundIncluded: Boolean
+    ): Try[NaturalOrderWithBounds[L, U]] =
+      Try(validateBounds(new NaturalOrderWithBounds(lowerBound, lowerBoundIncluded, upperBound, upperBoundIncluded)))
+
+    class NaturalOrder() extends cats.kernel.instances.BigDecimalOrder
+
+    class NaturalOrderWithBounds[+L <: BigDecimal, +U <: BigDecimal](
+      override val lowerBound: L,
+      override val lowerBoundIncluded: Boolean,
+      override val upperBound: U,
+      override val upperBoundIncluded: Boolean
+    ) extends cats.kernel.instances.BigDecimalOrder
+      with BoundedOrder[BigDecimal, L, U]
   }
 
   object char {

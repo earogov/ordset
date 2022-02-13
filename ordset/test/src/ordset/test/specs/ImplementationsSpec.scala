@@ -172,6 +172,37 @@ class ImplementationsSpec extends AnyFunSpec {
     )
   }
 
+  it("should implement order for `BigInt`") {
+
+    validateDiscreteOrder(
+      new bigInt.NaturalOrder(),
+      List(
+        (BigInt(Int.MinValue) - 1, BigInt(Int.MinValue)), 
+        (BigInt(Int.MinValue), BigInt(Int.MinValue) + 1), 
+        (BigInt(0), BigInt(1)), 
+        (BigInt(Int.MaxValue) - 1, BigInt(Int.MaxValue)), 
+        (BigInt(Int.MaxValue), BigInt(Int.MaxValue) + 1)
+      )
+    )
+
+    validateDiscreteFiniteOrder(
+      bigInt.tryNaturalOrderWithBounds(BigInt(0), BigInt(10)).get,
+      BigInt(0), 
+      BigInt(10),
+      List(
+        (null, BigInt(-1)), 
+        (null, BigInt(0)), 
+        (BigInt(0), BigInt(1)), 
+        (BigInt(9), BigInt(10)), 
+        (BigInt(10), null), 
+        (BigInt(11), null)
+      ),
+      List(BigInt(-3), BigInt(-2), BigInt(-1)),
+      List(BigInt(0), BigInt(1), BigInt(9), BigInt(10)),
+      List(BigInt(11), BigInt(12), BigInt(13))
+    )
+  }
+
   it("should implement order for `Char`") {
 
     validateDiscreteFiniteOrder(
@@ -277,6 +308,20 @@ class ImplementationsSpec extends AnyFunSpec {
       List(-2d, -1d, 0d),
       List(1d, 9d, 10d),
       List(11d, 12d, 13d)
+    )
+  }
+
+  it("should implement order for `BigDecimal`") {
+
+    validateBoundedOrder(
+      bigDecimal.tryNaturalOrderWithBounds(BigDecimal(0d), false, BigDecimal(10d), true).get,
+      BigDecimal(0d),
+      false,
+      BigDecimal(10d),
+      true,
+      List(BigDecimal(-2d), BigDecimal(-1d), BigDecimal(0d)),
+      List(BigDecimal(1d), BigDecimal(9d), BigDecimal(10d)),
+      List(BigDecimal(11d), BigDecimal(12d), BigDecimal(13d))
     )
   }
 

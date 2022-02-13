@@ -67,6 +67,47 @@ trait DiscreteOrder[E]
 object DiscreteOrder {
 
   /**
+   * Typeclass specifying discrete ordered set with infinite number of elements. Set has no lower and upper bounds.
+   * Note, infinite sets can also be bounded, but these cases are not described by current typeclass (see examples 
+   * below).
+   * 
+   * See conditions of [[DiscreteOrder]].
+   * 
+   * <h3>Examples of infinite unbounded sets</h3>
+   * <tr>1. `{x ∈ Z}` - integer numbers.</tr>
+   * 
+   * <h3>Examples of infinite bounded sets [are not described by typeclass]</h3>
+   * <tr>
+   *   1. `{1/x | x ∈ N and x ≥ 1}` - sequence of rational fractions ... 1/3, 1/2, 1/1.
+   *      Lower bound is 0, but there is infinite number of elements.
+   * </tr>
+   */
+  trait InfiniteUnbounded[E]
+    extends DiscreteOrder[E]
+    with Discrete.Infinite[E]
+    with Reversible[InfiniteUnbounded[E], InfiniteUnbounded[E]] {
+
+    override def reversed: InfiniteUnbounded[E] = new InfiniteUnbounded.ReversedImpl(this)
+  }
+
+  object InfiniteUnbounded {
+
+    /**
+     * [[DiscreteOrder.InfiniteUnbounded]] typeclass received by reverting another [[DiscreteOrder.InfiniteUnbounded]] 
+     * instance.
+     */
+    trait Reversed[E] 
+      extends DiscreteOrder.Reversed[E]
+      with Discrete.Infinite.Reversed[E]
+      with InfiniteUnbounded[E]
+
+    class ReversedImpl[E](original: InfiniteUnbounded[E]) extends Reversed[E] {
+
+      override val reversed: InfiniteUnbounded[E] = original
+    }
+  }
+
+  /**
    * Typeclass specifying discrete ordered set with finite number of elements. Set has both lower and upper bounds.
    * 
    * See conditions of [[DiscreteOrder]], [[Finite.Below]] and [[Finite.Above]].
@@ -102,7 +143,7 @@ object DiscreteOrder {
      * <tr>1. `{x ∈ N}` - natural numbers, lower bound is 0.</tr>
      * <tr>2. `{x ∈ String}` - all strings with lexicographical order, lower bound is empty string.</tr>
      * 
-     * <h3>Examples of infinite from below bounded sets</h3>
+     * <h3>Examples of infinite from below bounded sets [are not described by typeclass]</h3>
      * <tr>
      *   1. `{1/x | x ∈ N and x ≥ 1}` - sequence of rational fractions ... 1/3, 1/2, 1/1.
      *      Lower bound is 0, but there is infinite number of elements.
@@ -154,7 +195,7 @@ object DiscreteOrder {
      * <tr>1. `{-x | x ∈ N}` - non-positive numbers, upper bound is 0.</tr>
      * <tr>2. `{x ∈ String}` - all strings with reversed lexicographical order, upper bound is empty string.</tr>
      * 
-     * <h3>Examples of infinite from above bounded sets</h3>
+     * <h3>Examples of infinite from above bounded sets [are not described by typeclass]</h3>
      * <tr>
      *   1. `{-1/x | x ∈ N and x ≥ 1}` - sequence of rational fractions -1/1, -1/2, -1/3 ...
      *      Upper bound is 0, but there is infinite number of elements.

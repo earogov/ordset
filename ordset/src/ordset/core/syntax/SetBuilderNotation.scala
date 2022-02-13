@@ -58,14 +58,14 @@ object SetBuilderNotation {
     lower.domainOps.intervals.factory.aboveBound(lower.bound)
 
   implicit def setValidatingIterable[@sp(spNum) E, D[X] <: Domain[X]](
-    bounds: IterableOnce[Bound.Upper[E]]
+    bounds: Iterable[Bound.Upper[E]]
   )(
     implicit domainOps: DomainOps[E, D]
   ): ValidatingIterable[Bound.Upper[E]] =
     OrderedSetFactoryIterable.default(bounds)(domainOps)
 
   implicit def mapValidatingIterable[@sp(spNum) E, D[X] <: Domain[X], V](
-    boundValues: IterableOnce[BoundValue[E, V]]
+    boundValues: Iterable[BoundValue[E, V]]
   )(
     implicit 
     domainOps: DomainOps[E, D],

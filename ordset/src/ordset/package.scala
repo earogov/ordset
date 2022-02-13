@@ -1,5 +1,6 @@
 import cats.kernel
 import scala.collection.immutable.Queue
+import cats.instances.bigDecimal
 
 package object ordset {
 
@@ -75,13 +76,22 @@ package object ordset {
       implicit def longShow: Show[Long] = cats.instances.long.catsStdShowForLong
     }
 
+    object bigInt {
+
+      import implementations.bigInt._
+
+      implicit val bigIntNaturalOrder: NaturalOrder = new NaturalOrder
+
+      implicit def bigIntShow: Show[BigInt] = cats.instances.bigInt.catsStdShowForBigInt
+    }
+
     object float {
 
       import implementations.float._
 
       implicit val floatNaturalOrder: NaturalOrder = new NaturalOrder
 
-      implicit def stringShow: Show[Float] = cats.instances.float.catsStdShowForFloat
+      implicit def floatShow: Show[Float] = cats.instances.float.catsStdShowForFloat
     }
 
     object double {
@@ -90,7 +100,16 @@ package object ordset {
 
       implicit val doubleNaturalOrder: NaturalOrder = new NaturalOrder
 
-      implicit def stringShow: Show[Double] = cats.instances.double.catsStdShowForDouble
+      implicit def doubleShow: Show[Double] = cats.instances.double.catsStdShowForDouble
+    }
+
+    object bigDecimal {
+
+      import implementations.bigDecimal._
+
+      implicit val bigDecimalNaturalOrder: NaturalOrder = new NaturalOrder
+
+      implicit def bigDecimalShow: Show[BigDecimal] = cats.instances.bigDecimal.catsStdShowForBigDecimal
     }
 
     object string {

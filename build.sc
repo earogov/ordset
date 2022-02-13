@@ -31,7 +31,7 @@ object ordset extends ScalaModule {
     /**
      * Run one test suite. For example:
      * {{{
-     *   mill ordset.test.testOne ordset.test.core.specs.segmentSeq.ArrayOrderedSetSpec
+     *   mill ordset.test.testOne ordset.test.core.specs.segmentSeq.set.ArrayOrderedSetSpec
      * }}}
      */
     def testOne(args: String*): Command[Unit] = T.command {

@@ -16,7 +16,7 @@ object OrderedSetFactoryIterable {
    * <tr>- sequence of bounds must be monotonically increasing according to `domain` order.</tr>
    */
   def default[E, D[X] <: Domain[X]](
-    iterable: IterableOnce[Bound.Upper[E]]
+    iterable: Iterable[Bound.Upper[E]]
   )(
     implicit domainOps: DomainOps[E, D]
   ): ValidatingIterable[Bound.Upper[E]] =
@@ -43,7 +43,7 @@ object OrderedSetFactoryIterable {
    * <tr>- sequence of bounds must be monotonically increasing according to `domain` order.</tr>
    */
   final class DefaultImpl[E, D[X] <: Domain[X]](
-    private val iterable: IterableOnce[Bound.Upper[E]],
+    private val iterable: Iterable[Bound.Upper[E]],
     private val domainOps: DomainOps[E, D]
   ) extends ValidatingIterable.ValidatingIterableArity1And2[Bound.Upper[E]](
     iterable,

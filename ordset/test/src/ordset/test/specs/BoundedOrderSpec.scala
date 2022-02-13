@@ -13,14 +13,15 @@ import cats.instances.set
 class BoundedOrderSpec extends AnyFunSpec {
 
   import BoundedOrderSpec._
-  import ordset.givens.int._
+
+  val intOrdering = implicitly[Ordering[Int]]
 
   it("should specify ordered set bounded from below") {
 
     val bounded1 = new BoundedOrder.Below[Int, Int] { 
       override val lowerBound: Int = 0
       override val lowerBoundIncluded: Boolean = true
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateBoundedBelowOrder(bounded1, 0, true, List(-3, -2, -1), List(0, 1, 2, 3))
@@ -28,14 +29,14 @@ class BoundedOrderSpec extends AnyFunSpec {
     val bounded2 = new BoundedOrder.Below[Int, Int] { 
       override val lowerBound: Int = 0
       override val lowerBoundIncluded: Boolean = false
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateBoundedBelowOrder(bounded2, 0, false, List(-3, -2, -1, 0), List(1, 2, 3))
 
     val bounded3 = new BoundedOrder.Below.Including[Int, Int] { 
       override val lowerBound: Int = 0
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateBoundedBelowOrder(bounded3, 0, true, List(-3, -2, -1), List(0, 1, 2, 3))
@@ -46,7 +47,7 @@ class BoundedOrderSpec extends AnyFunSpec {
       val bounded1 = new BoundedOrder.Above[Int, Int] { 
         override val upperBound: Int = 0
         override val upperBoundIncluded: Boolean = true
-        override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+        override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
       }
 
       validateBoundedAboveOrder(bounded1, 0, true, List(-3, -2, -1, 0), List(1, 2, 3))
@@ -54,14 +55,14 @@ class BoundedOrderSpec extends AnyFunSpec {
       val bounded2 = new BoundedOrder.Above[Int, Int] { 
         override val upperBound: Int = 0
         override val upperBoundIncluded: Boolean = false
-        override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+        override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
       }
 
       validateBoundedAboveOrder(bounded2, 0, false, List(-3, -2, -1), List(0, 1, 2, 3))
 
       val bounded3 = new BoundedOrder.Above.Including[Int, Int] { 
         override val upperBound: Int = 0
-        override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+        override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
       }
 
       validateBoundedAboveOrder(bounded3, 0, true, List(-3, -2, -1, 0), List(1, 2, 3))
@@ -74,7 +75,7 @@ class BoundedOrderSpec extends AnyFunSpec {
       override val lowerBoundIncluded: Boolean = false
       override val upperBound: Int = 100
       override val upperBoundIncluded: Boolean = true
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateBoundedOrder(bounded1, 0, false, 100, true, List(-3, -2, -1, 0), List(1, 2, 3, 100), List(101, 102, 103))
@@ -82,7 +83,7 @@ class BoundedOrderSpec extends AnyFunSpec {
     val bounded2 = new BoundedOrder.Including[Int, Int, Int] {
       override val lowerBound: Int = 0
       override val upperBound: Int = 100
-      override def compare(x: Int, y: Int): Int = intNaturalOrder.compare(x, y)
+      override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
     validateBoundedOrder(bounded2, 0, true, 100, true, List(-3, -2, -1), List(0, 1, 2, 3, 100), List(101, 102, 103))

@@ -20,7 +20,7 @@ object OrderedMapFactoryIterable {
    * <tr>- values associated with adjacent bounds must be different according to `valueOps` order.</tr>
    */
   def default[E, D[X] <: Domain[X], V](
-    iterable: IterableOnce[BoundValue[E, V]]
+    iterable: Iterable[BoundValue[E, V]]
   )(
     implicit 
     domainOps: DomainOps[E, D],
@@ -46,7 +46,7 @@ object OrderedMapFactoryIterable {
    * <tr>- values associated with adjacent bounds must be different according to `valueOps` order.</tr>
    */
   final class DefaultImpl[E, D[X] <: Domain[X], V](
-    private val iterable: IterableOnce[BoundValue[E, V]],
+    private val iterable: Iterable[BoundValue[E, V]],
     private val domainOps: DomainOps[E, D],
     private val valueOps: ValueOps[V]
   ) extends ValidatingIterable.ValidatingIterableArity1And2[BoundValue[E, V]](

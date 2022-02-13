@@ -22,9 +22,9 @@ object FlatmapExample {
 
   private val sep = "-----------------"
 
-  private implicit val booleanOps: ValueOps[Boolean] = implicitly
-  private implicit val stringOps: ValueOps[String] = implicitly
-  private implicit val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = implicitly
+  private implicit val booleanOps: ValueOps[Boolean] = ValueOps.booleanValueOps
+  private implicit val stringOps: ValueOps[String] = ValueOps.stringValueOps
+  private implicit val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = DomainOps.default
 
   def main(args: Array[String]): Unit = {
     example1()

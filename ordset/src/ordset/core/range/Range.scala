@@ -109,7 +109,7 @@ object Range {
         case x: Range.NonEmpty[E] =>
           val lowerStr = elementShow.show(x.lower)
           val upperStr = elementShow.show(x.upper)
-          s"$rangeBegin$lowerStr$separator$upperStr"
+          s"$rangeBegin$lowerStr$separator$upperStr$rangeEnd"
         case _ => 
           emptyRange
       }
