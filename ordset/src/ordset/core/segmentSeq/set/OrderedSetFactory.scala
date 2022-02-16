@@ -45,9 +45,10 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    *
    *   bound,,i-1,, `<` bound,,i,, for all i in [1, bounds.size - 1]
    * 
-   * 2. All bounds must be between bounds of [[DomainOps.domain]]:
+   * 2. All bounds in sequence must be greater than or equal to the lower bound of [[DomainOps.domain]] 
+   *    and less that its upper bound:
    *
-   *   domain.lowerBound `≤` bound,,i,, `≤` domain.upperBound for all i in [0, bounds.size - 1]
+   *   domain.lowerBound `≤` bound,,i,, `<` domain.upperBound for all i in [0, bounds.size - 1]
    *
    * Factory implementations should delegate control of preconditions to input `bounds` iterable
    * (see [[ValidatingIterable]]). This allows client to omit checks, if it's known, that sequence of bounds

@@ -49,9 +49,10 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    *
    *   bound,,i-1,, `<` bound,,i,, for all i in [1, seq.size - 1]
    * 
-   * 4. All bounds, except last one, must be between bounds of [[DomainOps.domain]]:
+   * 4. All bounds in sequence, except last one, must be greater than or equal to the lower bound of
+   *    [[DomainOps.domain]]  and less that its upper bound:
    *
-   *   domain.lowerBound `≤` bound,,i,, `≤` domain.upperBound for all i in [0, seq.size - 2]
+   *   domain.lowerBound `≤` bound,,i,, `<` domain.upperBound for all i in [0, seq.size - 2]
    *
    * 5. Sequence of values must not contain identical adjacent elements:
    *

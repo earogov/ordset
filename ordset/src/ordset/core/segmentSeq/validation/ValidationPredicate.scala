@@ -15,16 +15,23 @@ object ValidationPredicate {
 
     /**
      * Returns `true` if element satisfies validation condition.
+     * 
+     * @param x validated element.
      */
     override def apply(x: E): Boolean
 
     /**
-     * Same as [[apply]] but throws exception if validation is failed.
+     * Same as [[apply]] but throws exception if validation is failed. 
+     * The result must be consistent with [[apply]] apply.
+     * 
+     * @param x validated element.
+     * @param index index of validated element. It must not affect on validation result, and should be used only
+     *              in error message for debug purposes.
      */
     @throws[ValidationException]("if validation is failed")
-    def validate(x: E): Unit = 
+    def validate(x: E, index: Long): Unit = 
       if !apply(x) 
-      then throw ValidationException.invalidObject(x.toString)
+      then throw ValidationException.invalidObject(x.toString, index)
   }
 
   object Arity1 {
@@ -49,9 +56,9 @@ object ValidationPredicate {
           override def apply(x: E): Boolean = 
             self.apply(x) && other.apply(x)
 
-          override def validate(x: E): Unit = {
-            self.validate(x)
-            other.validate(x)
+          override def validate(x: E, index: Long): Unit = {
+            self.validate(x, index)
+            other.validate(x, index)
           }
         }
     }
@@ -66,16 +73,25 @@ object ValidationPredicate {
     /**
      * Returns `true` if two given elements satisfy validation condition.
      * Order of arguments corresponds to order in validated sequence.
+     * 
+     * @param prev preceding validated element.
+     * @param next succeeding validated element.
      */
     override def apply(prev: E, next: E): Boolean
 
     /**
      * Same as [[apply]] but throws exception if validation is failed.
+     * The result must be consistent with [[apply]] apply.
+     * 
+     * @param prev preceding validated element.
+     * @param next succeeding validated element.
+     * @param index index of succeeding validated element. It must not affect on validation result, and should be
+     *              used only in error message for debug purposes.
      */
     @throws[IllegalArgumentException]("if validation is failed")
-    def validate(prev: E, next: E): Unit =
+    def validate(prev: E, next: E, index: Long): Unit =
       if !apply(prev, next)
-      then throw throw ValidationException.invalidObjectsSeq(prev.toString, next.toString)
+      then throw throw ValidationException.invalidObjectsSeq(prev.toString, next.toString, index)
   }
 
   object Arity2 {
@@ -100,9 +116,9 @@ object ValidationPredicate {
           override def apply(prev: E, next: E): Boolean = 
             self.apply(prev, next) && other.apply(prev, next)
 
-          override def validate(prev: E, next: E): Unit = {
-            self.validate(prev, next)
-            other.validate(prev, next)
+          override def validate(prev: E, next: E, index: Long): Unit = {
+            self.validate(prev, next, index)
+            other.validate(prev, next, index)
           }
         }
     }

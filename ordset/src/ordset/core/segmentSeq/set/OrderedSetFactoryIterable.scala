@@ -11,9 +11,12 @@ object OrderedSetFactoryIterable {
   /**
    * Returns iterable of upper bounds to construct ordered set.
    * 
-   * Iterable provides default validation for ordered sets:
-   * <tr>- all bounds must be between bounds of `domain`;</tr>
-   * <tr>- sequence of bounds must be monotonically increasing according to `domain` order.</tr>
+   * Iterable provides default validation for ordered sets according to domain order:
+   *
+   * <tr>1. For each bound `b` must be satisfied condition:</tr>
+   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
+   * 
+   * <tr>2. Sequence of bounds must be monotonically increasing.</tr>
    */
   def default[E, D[X] <: Domain[X]](
     iterable: Iterable[Bound.Upper[E]]
@@ -25,8 +28,10 @@ object OrderedSetFactoryIterable {
   /**
    * Returns iterable with single upper bound to construct ordered set.
    * 
-   * Iterable provides validation:
-   * <tr>- bound must be between bounds of `domain`.</tr>
+   * Iterable provides validation according to domain order:
+   * 
+   * <tr>1. For each bound `b` must be satisfied condition:</tr>
+   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
    */
   def single[E, D[X] <: Domain[X]](
     bound: Bound.Upper[E]
@@ -38,9 +43,12 @@ object OrderedSetFactoryIterable {
   /**
    * Iterable of upper bounds to construct ordered set.
    * 
-   * Iterable provides default validation for ordered sets:
-   * <tr>- all bounds must be between bounds of `domain`;</tr>
-   * <tr>- sequence of bounds must be monotonically increasing according to `domain` order.</tr>
+   * Iterable provides default validation for ordered sets according to domain order:
+   *  
+   * <tr>1. For each bound `b` must be satisfied condition:</tr>
+   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
+   * 
+   * <tr>2. Sequence of bounds must be monotonically increasing.</tr>
    */
   final class DefaultImpl[E, D[X] <: Domain[X]](
     private val iterable: Iterable[Bound.Upper[E]],
@@ -54,8 +62,10 @@ object OrderedSetFactoryIterable {
   /**
    * Iterable with single upper bound to construct ordered set.
    * 
-   * Iterable provides validation:
-   * <tr>- bound must be between bounds of `domain`.</tr>
+   * Iterable provides validation according to domain order:
+  *
+   * <tr>1. For each bound `b` must be satisfied condition:</tr>
+   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
    */
   final class SingleImpl[E, D[X] <: Domain[X]](
     private val bound: Bound.Upper[E],
@@ -66,30 +76,40 @@ object OrderedSetFactoryIterable {
   )
 
   /**
-   * Validation predicate for single bound such that:
-   * <tr>- returns `true` if given bound is between bounds of `domain`.</tr>
+   * Validation predicate for single bound `b` such that:
+   * <tr>
+   *   1. returns `true` iff (`b` `≥` domain lower bound) and (`b` `<` domain upper bound) according to domain order.
+   * <tr>
    */
   final class DomainBoundsValidation[E, D[X] <: Domain[X]](
     private val domainOps: DomainOps[E, D]
   ) extends ValidationPredicate.Arity1[Bound.Upper[E]] {
 
-    override def apply(x: Bound.Upper[E]): Boolean = 
-      domainOps.containsBound(x)
+    override def apply(x: Bound.Upper[E]): Boolean = {
+      val ord = domainOps.extendedOrd
+      ord.lteqv(domainOps.lowerBound, x) && ord.lt(x, domainOps.upperBound)
+    }
 
     @throws[ValidationException]("if validation is failed")
-    override def validate(x: Bound.Upper[E]): Unit = 
+    override def validate(x: Bound.Upper[E], index: Long): Unit = 
       if !apply(x) then {
         val showOps = domainOps.showOps
-        val boundStr = showOps.boundShow.show(x)
-        val boundsStr = showOps.rangeShow.show(domainOps.boundsRange)
-        val causeStr = s"out of domain bounds $boundsStr"
-        throw ValidationException.invalidBound(boundStr, causeStr)
+        val boundStr = showOps.extendedShow.show(x)
+        val causeStr = 
+          if (domainOps.extendedOrd.eqv(x, domainOps.upperBound)) {
+            s"bound must be less than upper bound of domain"
+          } else {
+            s"out of domain bounds ${showOps.rangeShow.show(domainOps.boundsRange)}"
+          }
+        throw ValidationException.invalidBound(boundStr, index, causeStr)
       }
   }
 
   /**
-   * Validation predicate for pair of bounds such that:
-   * <tr>- returns `true` if first bound is less than second bound according to `domain` order.</tr>
+   * Validation predicate for pair of bounds (`prev`, `next`) such that:
+   * <tr>
+   *   1. returns `true` iff (`prev` `<` `next`) according to domain order.
+   * </tr>
    */
   final class AdjacentBoundsValidation[E, D[X] <: Domain[X]](
     private val domainOps: DomainOps[E, D]
@@ -99,13 +119,13 @@ object OrderedSetFactoryIterable {
       domainOps.boundOrd.lt(prev, next)
 
     @throws[ValidationException]("if validation is failed")
-    override def validate(prev: Bound.Upper[E], next: Bound.Upper[E]): Unit = 
+    override def validate(prev: Bound.Upper[E], next: Bound.Upper[E], index: Long): Unit = 
       if !apply(prev, next) then {
         val boundShow = domainOps.showOps.boundShow
         val prevStr = boundShow.show(prev)
         val nextStr = boundShow.show(next)
         val causeStr = s"sequence must be monotonically increasing"
-        throw ValidationException.invalidBoundsSeq(prevStr, nextStr, causeStr)
+        throw ValidationException.invalidBoundsSeq(prevStr, nextStr, index, causeStr)
       }
   }
 }

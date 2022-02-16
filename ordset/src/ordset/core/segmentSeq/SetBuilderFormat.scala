@@ -181,29 +181,46 @@ object SetBuilderFormat { format =>
   def singleSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Single[E, D, ? <: V],
     valueToStr: V => String = toStringFunc[V]
-  ): String =
-    s"Segment.Single(${format.universalIntervalRelation(segment.value, valueToStr)})"
+  ): String = {
+    val rel = s"${format.unboundedInterval} $relationSeparator ${valueToStr(segment.value)}"
+    s"Segment.Single($rel)"
+  }
 
   def initialSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Initial[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
-  ): String =
-    s"Segment.Initial(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
+  ): String = {
+    val int = s"$setBegin${format.upperBound(segment.upper, elementToStr)}$setEnd"
+    val rel = s"$int $relationSeparator ${valueToStr(segment.value)}"
+    s"Segment.Initial($rel)"
+  }
 
   def terminalSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Terminal[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
-  ): String =
-    s"Segment.Terminal(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
+  ): String = {
+    val int = s"$setBegin${format.lowerBound(segment.lower, elementToStr)}$setEnd"
+    val rel = s"$int $relationSeparator ${valueToStr(segment.value)}"
+    s"Segment.Terminal($rel)"
+  }
 
   def innerSegment[E, D[X] <: Domain[X], V](
     segment: Segment.Inner[E, D, ? <: V],
     elementToStr: E => String = toStringFunc[E],
     valueToStr: V => String = toStringFunc[V]
-  ): String =
-    s"Segment.Inner(${format.intervalRelation(segment.interval, segment.value, elementToStr, valueToStr)})"
+  ): String = {
+    val lowerBound = segment.lower
+    val upperBound = segment.upper
+
+    val int = 
+      s"$setBegin${elementToStr(lowerBound.element)} ${lessSign(lowerBound.isIncluding)} " +
+      s"$variable ${lessSign(upperBound.isIncluding)} ${elementToStr(upperBound.element)}$setEnd"
+
+    val rel = s"$int $relationSeparator ${valueToStr(segment.value)}"
+    s"Segment.Inner($rel)"
+  }
 
   def segment[E, D[X] <: Domain[X], V](
     segment: Segment[E, D, ? <: V],

@@ -162,6 +162,7 @@ object ValidatingIterable {
     @throws[NoSuchElementException]
     override def next(): E = {
       val n = originalIterator.next()
+      index = index + 1
       prevCache = nextCache
       nextCache = n
       n
@@ -176,6 +177,9 @@ object ValidatingIterable {
 
     /** Last element, that was returned by [[next()]] method. */
     protected var nextCache: Undefined[E] = Undefined
+
+    /** Index of last element, that was returned by [[next()]] method. */
+    protected var index: Long = -1
   }
 
   /**
@@ -204,7 +208,7 @@ object ValidatingIterable {
 
     @throws[ValidationException]
     override def validate(): Unit = 
-      if Undefined != nextCache then validation.validate(Undefined.asDefined(nextCache))
+      if Undefined != nextCache then validation.validate(Undefined.asDefined(nextCache), index)
   }
 
   /**
@@ -237,7 +241,7 @@ object ValidatingIterable {
     @throws[ValidationException]
     override def validate(): Unit = 
       if Undefined != prevCache && Undefined != nextCache 
-      then validation.validate(Undefined.asDefined(prevCache), Undefined.asDefined(nextCache))
+      then validation.validate(Undefined.asDefined(prevCache), Undefined.asDefined(nextCache), index)
   }
 
   /**
@@ -274,8 +278,8 @@ object ValidatingIterable {
     override def validate(): Unit = 
       if Undefined != nextCache then {
         val next = Undefined.asDefined(nextCache)
-        validation1.validate(next)
-        if Undefined != prevCache then validation2.validate(Undefined.asDefined(prevCache), next)
+        validation1.validate(next, index)
+        if Undefined != prevCache then validation2.validate(Undefined.asDefined(prevCache), next, index)
       }
   }
 }
