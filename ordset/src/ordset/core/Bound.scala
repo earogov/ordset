@@ -325,38 +325,36 @@ object Bound {
       var xo = x.offset
       if (x.isExcluding) {
         // ( N  =>  [ N+1
-        if (x.isLower) {
-          val xs = elementOrd.successorOrNull(xe)
-          if (xs != null) {
+        if (x.isLower) elementOrd.successorOrNone(xe) match {
+          case Discrete.None => {}
+          case xs: E @unchecked => 
             xe = xs
             xo = 0
-          }
+        }
         // N )  =>  N-1 ]
-        } else {
-          val xp = elementOrd.predecessorOrNull(xe)
-          if (xp != null) {
+        else elementOrd.predecessorOrNone(xe) match {
+          case Discrete.None => {}
+          case xp: E @unchecked =>
             xe = xp
             xo = 0
-          }
         }
       }
       var ye = y.element
       var yo = y.offset
       if (y.isExcluding) {
         // ( N  =>  [ N+1
-        if (y.isLower) {
-          val ys = elementOrd.successorOrNull(ye)
-          if (ys != null) {
+        if (y.isLower) elementOrd.successorOrNone(ye) match {
+          case Discrete.None => {}
+          case ys: E @unchecked =>
             ye = ys
             yo = 0
-          }
+        }
         // N )  =>  N-1 ]
-        } else {
-          val yp = elementOrd.predecessorOrNull(ye)
-          if (yp != null) {
+        else elementOrd.predecessorOrNone(ye) match {
+          case Discrete.None => {}
+          case yp: E @unchecked =>
             ye = yp
             yo = 0
-          }
         }
       }
       val cmp = elementOrd.compare(xe, ye)
@@ -369,19 +367,18 @@ object Bound {
       var xo = x.offset
       if (x.isExcluding) {
         // ( N  =>  [ N+1
-        if (x.isLower) {
-          val xs = elementOrd.successorOrNull(xe)
-          if (xs != null) {
+        if (x.isLower) elementOrd.successorOrNone(xe) match {
+          case Discrete.None => {}
+          case xs: E @unchecked =>
             xe = xs
             xo = 0
-          }
+        }
         // N )  =>  N-1 ]
-        } else {
-          val xp = elementOrd.predecessorOrNull(xe)
-          if (xp != null) {
+        else elementOrd.predecessorOrNone(xe) match {
+          case Discrete.None => {}
+          case xp: E @unchecked => 
             xe = xp
             xo = 0
-          }
         }
       }
       product2Hash(elementOrd.hash(xe), intOrd.hash(xo))
@@ -392,38 +389,36 @@ object Bound {
       var xo = x.offset
       if (x.isExcluding) {
         // ( N  =>  [ N+1
-        if (x.isLower) {
-          val xs = elementOrd.successorOrNull(xe)
-          if (xs != null) {
+        if (x.isLower) elementOrd.successorOrNone(xe) match {
+          case Discrete.None => {}
+          case xs: E @unchecked =>
             xe = xs
             xo = 0
-          }
+        }
         // N )  =>  N-1 ]
-        } else {
-          val xp = elementOrd.predecessorOrNull(xe)
-          if (xp != null) {
+        else elementOrd.predecessorOrNone(xe) match {
+          case Discrete.None => {}
+          case xp: E @unchecked =>
             xe = xp
             xo = 0
-          }
         }
       }
       var ye = y.element
       var yo = y.offset
       if (y.isExcluding) {
         // ( N  =>  [ N+1
-        if (y.isLower) {
-          val ys = elementOrd.successorOrNull(ye)
-          if (ys != null) {
-            ye = ys
-            yo = 0
-          }
+        if (y.isLower) elementOrd.successorOrNone(ye) match {
+          case Discrete.None => {}
+          case ys: E @unchecked =>
+              ye = ys
+              yo = 0
+        }
         // N )  =>  N-1 ]
-        } else {
-          val yp = elementOrd.predecessorOrNull(ye)
-          if (yp != null) {
+        else elementOrd.predecessorOrNone(ye) match {
+          case Discrete.None => {}
+          case yp: E @unchecked =>
             ye = yp
             yo = 0
-          }
         }
       }
       elementOrd.eqv(xe, ye) && intOrd.eqv(xo, yo)

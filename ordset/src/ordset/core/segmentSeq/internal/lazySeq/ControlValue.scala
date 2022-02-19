@@ -9,6 +9,7 @@ import ordset.core.segmentSeq.SegmentSeq
 import ordset.core.range.Range
 import ordset.core.segmentSeq.map.UniformOrderedMap
 import ordset.util.StringUtil
+import ordset.util.types.Undefined
 
 protected[ordset] sealed trait ControlValue[E, D[X] <: Domain[X], V] {
 
@@ -29,8 +30,6 @@ protected[ordset] object ControlValue {
 
     sealed trait LazyValue[E, D[X] <: Domain[X], V] extends ControlValue[E, D, V] {
 
-      import LazyValue.Dummy
-
       override def isStable: Boolean = false
 
       override def isUnstable: Boolean = true
@@ -50,7 +49,7 @@ protected[ordset] object ControlValue {
       def takeBelowBound(bound: Bound[E]): LazyValue[E, D, V]
 
       // Protected section -------------------------------------------------------- //
-      protected val lock: Dummy = new Dummy()
+      protected val lock: Object = new Object()
 
       // One instance of `LazyValue` can be shared among several lazy segment sequences.
       // Memoization of the result allows to call function only once for all of them.
@@ -67,9 +66,9 @@ protected[ordset] object ControlValue {
       // - function returns `null` and we save the result;
       // - client calls `compute` repeatedly, we consider `null` as undefined lazy value 
       //   and call function repeatedly. 
-      @volatile protected var result: SegmentSeq[E, D, V] | Dummy = lock
+      @volatile protected var result: Undefined[SegmentSeq[E, D, V]] = Undefined
 
-      protected def isComputed: Boolean = !lock.eq(result)
+      protected def isComputed: Boolean = Undefined != result
 
       protected def computedSeqToString[E, D[X] <: Domain[X], V]: String =
         StringUtil.limit(StringUtil.collapse(result.toString), 50)
@@ -84,11 +83,11 @@ protected[ordset] object ControlValue {
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          var r = result
-          if (!lock.eq(r)) r.asInstanceOf
+          var r: Undefined[SegmentSeq[E, D, V]] = result
+          if (Undefined != r) Undefined.asDefined(r)
           else lock.synchronized {
             r = result
-            if (!lock.eq(r)) r.asInstanceOf
+            if (Undefined != r) Undefined.asDefined(r)
             else {
               val r = func().takeAboveExtended(domain.lowerBound).takeBelowExtended(domain.upperBound)
               result = r
@@ -141,11 +140,11 @@ protected[ordset] object ControlValue {
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          var r = result
-          if (!lock.eq(r)) r.asInstanceOf
+          var r: Undefined[SegmentSeq[E, D, V]] = result
+          if (Undefined != r) Undefined.asDefined(r)
           else lock.synchronized {
             r = result
-            if (!lock.eq(r)) r.asInstanceOf
+            if (Undefined != r) Undefined.asDefined(r)
             else {
               val r = lazyValue.compute.takeAboveExtended(bounds.lower).takeBelowExtended(bounds.upper)
               result = r
@@ -205,11 +204,11 @@ protected[ordset] object ControlValue {
       ) extends LazyValue[E, D, V] {
 
         override def compute: SegmentSeq[E, D, V] = {
-          var r = result
-          if (!lock.eq(r)) r.asInstanceOf
+          var r: Undefined[SegmentSeq[E, D, V]] = result
+          if (Undefined != r) Undefined.asDefined(r)
           else lock.synchronized {
             r = result
-            if (!lock.eq(r)) r.asInstanceOf
+            if (Undefined != r) Undefined.asDefined(r)
             else {
               val seq = lazyValue.compute
               val value = seq.getValueForExtended(bound)
@@ -231,12 +230,6 @@ protected[ordset] object ControlValue {
 
           s"LazyValue.Single($params)"
         }
-      }
-
-      // Protected section -------------------------------------------------------- //
-      protected final class Dummy {
-
-        override def toString(): String = "undefined"
       }
 
       // Private section ---------------------------------------------------------- //

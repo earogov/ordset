@@ -7,6 +7,7 @@ import org.scalatest.Assertions._
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
+import ordset.Discrete
 
 @RunWith(classOf[JUnitRunner])
 class DiscreteOrderSpec extends AnyFunSpec {
@@ -19,14 +20,17 @@ class DiscreteOrderSpec extends AnyFunSpec {
   it("should specify discrete ordered set") {
 
     val discreteOrd1 = new DiscreteOrder[Int] { 
-      override def successorOrNull(x: Int): Int | Null = if hasSuccessor(x) then x + 1 else null
+      override def successorOrNone(x: Int): Discrete.Maybe[Int] = if hasSuccessor(x) then x + 1 else Discrete.None
       override def hasSuccessor(x: Int) = x < 10
-      override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
+      override def predecessorOrNone(x: Int): Discrete.Maybe[Int] = if hasPredecessor(x) then x - 1 else Discrete.None
       override def hasPredecessor(x: Int) = x > 0
       override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
 
-    validateDiscreteOrder(discreteOrd1, List((null, -1), (null, 0), (0, 1), (1, 2), (9, 10), (11, null), (12, null)))
+    validateDiscreteOrder(
+      discreteOrd1, 
+      List((Discrete.None, -1), (Discrete.None, 0), (0, 1), (1, 2), (9, 10), (11, Discrete.None), (12, Discrete.None))
+    )
   }
 
   it("should specify discrete infinite unbounded ordered set") {
@@ -54,9 +58,9 @@ class DiscreteOrderSpec extends AnyFunSpec {
   it("should specify discrete finite from below ordered set") {
 
     val discreteOrd1 = new DiscreteOrder.Finite.Below[Int, Int] { 
-      override def successorOrNull(x: Int): Int | Null = x + 1
+      override def successorOrNone(x: Int): Int = x + 1
       override def hasSuccessor(x: Int) = true
-      override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
+      override def predecessorOrNone(x: Int): Discrete.Maybe[Int] = if hasPredecessor(x) then x - 1 else Discrete.None
       override def lowerBound: Int = 0
       override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
     }
@@ -64,7 +68,7 @@ class DiscreteOrderSpec extends AnyFunSpec {
     validateDiscreteFiniteBelowOrder(
       discreteOrd1,
       0,
-      List((null, -1), (null, 0), (0, 1), (1, 2), (9, 10), (11, 12)),
+      List((Discrete.None, -1), (Discrete.None, 0), (0, 1), (1, 2), (9, 10), (11, 12)),
       List(-3, -2, -1),
       List(0, 1, 2)
     )
@@ -73,8 +77,8 @@ class DiscreteOrderSpec extends AnyFunSpec {
   it("should specify discrete finite from above ordered set") {
 
     val discreteOrd1 = new DiscreteOrder.Finite.Above[Int, Int] { 
-      override def successorOrNull(x: Int): Int | Null = if hasSuccessor(x) then x + 1 else null
-      override def predecessorOrNull(x: Int): Int | Null = x - 1
+      override def successorOrNone(x: Int): Discrete.Maybe[Int] = if hasSuccessor(x) then x + 1 else Discrete.None
+      override def predecessorOrNone(x: Int): Int = x - 1
       override def hasPredecessor(x: Int) = true
       override def upperBound: Int = 0
       override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
@@ -83,7 +87,7 @@ class DiscreteOrderSpec extends AnyFunSpec {
     validateDiscreteFiniteAboveOrder(
       discreteOrd1,
       0,
-      List((-3, -2), (-2, -1), (-1, 0), (0, null), (1, null)),
+      List((-3, -2), (-2, -1), (-1, 0), (0, Discrete.None), (1, Discrete.None)),
       List(-2, -1, 0),
       List(1, 2, 3)
     )
@@ -92,8 +96,8 @@ class DiscreteOrderSpec extends AnyFunSpec {
   it("should specify discrete finite ordered set") {
 
     val discreteOrd1 = new DiscreteOrder.Finite[Int, Int, Int] { 
-      override def successorOrNull(x: Int): Int | Null = if hasSuccessor(x) then x + 1 else null
-      override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
+      override def successorOrNone(x: Int): Discrete.Maybe[Int] = if hasSuccessor(x) then x + 1 else Discrete.None
+      override def predecessorOrNone(x: Int): Discrete.Maybe[Int] = if hasPredecessor(x) then x - 1 else Discrete.None
       override def lowerBound: Int = 0
       override def upperBound: Int = 10
       override def compare(x: Int, y: Int): Int = intOrdering.compare(x, y)
@@ -103,7 +107,7 @@ class DiscreteOrderSpec extends AnyFunSpec {
       discreteOrd1,
       0,
       10,
-      List((null, -1), (null, 0), (0, 1), (1, 2), (9, 10), (10, null), (11, null)),
+      List((Discrete.None, -1), (Discrete.None, 0), (0, 1), (1, 2), (9, 10), (10, Discrete.None), (11, Discrete.None)),
       List(-3, -2, -1),
       List(0, 1, 2, 9, 10),
       List(11, 12, 13)
@@ -185,50 +189,52 @@ object DiscreteOrderSpec {
     val ordering = discreteOrd.toOrdering
 
     adjElements.foreach { e =>
-      val p = e.predecessor
-      val s = e.successor
-      if s != null && p != null then {
+      e.predecessor match {
+        case Discrete.None => {}
+        case p: E @unchecked => e.successor match {
+          case Discrete.None => {}
+          case s: E @unchecked =>
+            assert(discreteOrd.isAdjacent(p, s))
+            assert(discreteOrd.isAdjacent(s, p))
+            assert(discreteOrd.isSuccessor(p, s))
 
-        assert(discreteOrd.isAdjacent(p, s))
-        assert(discreteOrd.isAdjacent(s, p))
-        assert(discreteOrd.isSuccessor(p, s))
+            assert(!discreteOrd.eqv(p, s))
+            assert(!discreteOrd.eqv(s, p))
 
-        assert(!discreteOrd.eqv(p, s))
-        assert(!discreteOrd.eqv(s, p))
+            assert(discreteOrd.neqv(p, s))
+            assert(discreteOrd.neqv(s, p))
 
-        assert(discreteOrd.neqv(p, s))
-        assert(discreteOrd.neqv(s, p))
+            assert(discreteOrd.gt(s, p))
+            assert(discreteOrd.gteqv(s, p))
+            assert(discreteOrd.compare(s, p) > 0)
 
-        assert(discreteOrd.gt(s, p))
-        assert(discreteOrd.gteqv(s, p))
-        assert(discreteOrd.compare(s, p) > 0)
+            assert(discreteOrd.lt(p, s))
+            assert(discreteOrd.lteqv(p, s))
+            assert(discreteOrd.compare(p, s) < 0)
 
-        assert(discreteOrd.lt(p, s))
-        assert(discreteOrd.lteqv(p, s))
-        assert(discreteOrd.compare(p, s) < 0)
+            assert(eq.eqv(discreteOrd.min(p, s), p))
+            assert(eq.eqv(discreteOrd.min(s, p), p))
 
-        assert(eq.eqv(discreteOrd.min(p, s), p))
-        assert(eq.eqv(discreteOrd.min(s, p), p))
+            assert(eq.eqv(discreteOrd.max(p, s), s))
+            assert(eq.eqv(discreteOrd.max(s, p), s))
 
-        assert(eq.eqv(discreteOrd.max(p, s), s))
-        assert(eq.eqv(discreteOrd.max(s, p), s))
+            assert(!ordering.equiv(p, s))
+            assert(!ordering.equiv(s, p))
 
-        assert(!ordering.equiv(p, s))
-        assert(!ordering.equiv(s, p))
+            assert(ordering.gt(s, p))
+            assert(ordering.gteq(s, p))
+            assert(ordering.compare(s, p) > 0)
 
-        assert(ordering.gt(s, p))
-        assert(ordering.gteq(s, p))
-        assert(ordering.compare(s, p) > 0)
+            assert(ordering.lt(p, s))
+            assert(ordering.lteq(p, s))
+            assert(ordering.compare(p, s) < 0)
 
-        assert(ordering.lt(p, s))
-        assert(ordering.lteq(p, s))
-        assert(ordering.compare(p, s) < 0)
+            assert(eq.eqv(ordering.min(p, s), p))
+            assert(eq.eqv(ordering.min(s, p), p))
 
-        assert(eq.eqv(ordering.min(p, s), p))
-        assert(eq.eqv(ordering.min(s, p), p))
-
-        assert(eq.eqv(ordering.max(p, s), s))
-        assert(eq.eqv(ordering.max(s, p), s))
+            assert(eq.eqv(ordering.max(p, s), s))
+            assert(eq.eqv(ordering.max(s, p), s))
+        }
       }
     }
   }

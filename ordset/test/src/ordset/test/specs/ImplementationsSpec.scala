@@ -6,7 +6,7 @@ import org.scalatest.Assertions._
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import ordset.Eq
+import ordset.{Eq, Discrete}
 import ordset.util.IterableUtil
 
 @RunWith(classOf[JUnitRunner])
@@ -22,7 +22,7 @@ class ImplementationsSpec extends AnyFunSpec {
       new unit.NaturalOrder(),
       {}, 
       {},
-      List((null, {}), ({}, null)),
+      List((Discrete.None, {}), ({}, Discrete.None)),
       List(),
       List({}),
       List()
@@ -35,7 +35,7 @@ class ImplementationsSpec extends AnyFunSpec {
       new boolean.NaturalOrder(),
       false, 
       true,
-      List((null, false), (false, true), (true, null)),
+      List((Discrete.None, false), (false, true), (true, Discrete.None)),
       List(),
       List(false, true),
       List()
@@ -49,11 +49,11 @@ class ImplementationsSpec extends AnyFunSpec {
       Byte.MinValue, 
       Byte.MaxValue,
       List(
-        (null, Byte.MinValue), 
+        (Discrete.None, Byte.MinValue), 
         (Byte.MinValue, -127.toByte), 
         (0.toByte, 1.toByte), 
         (126.toByte, Byte.MaxValue), 
-        (Byte.MaxValue, null)
+        (Byte.MaxValue, Discrete.None)
       ),
       List(),
       List(Byte.MinValue, 0.toByte, Byte.MaxValue),
@@ -65,12 +65,12 @@ class ImplementationsSpec extends AnyFunSpec {
       0.toByte, 
       10.toByte,
       List(
-        (null, -1.toByte), 
-        (null, 0.toByte), 
+        (Discrete.None, -1.toByte), 
+        (Discrete.None, 0.toByte), 
         (0.toByte, 1.toByte), 
         (9.toByte, 10.toByte), 
-        (10.toByte, null), 
-        (11.toByte, null)
+        (10.toByte, Discrete.None), 
+        (11.toByte, Discrete.None)
       ),
       List(-3.toByte, -2.toByte, -1.toByte),
       List(0.toByte, 1.toByte, 9.toByte, 10.toByte),
@@ -85,11 +85,11 @@ class ImplementationsSpec extends AnyFunSpec {
       Short.MinValue, 
       Short.MaxValue,
       List(
-        (null, Short.MinValue), 
+        (Discrete.None, Short.MinValue), 
         (Short.MinValue, -32767.toShort), 
         (0.toShort, 1.toShort), 
         (32766.toShort, Short.MaxValue), 
-        (Short.MaxValue, null)
+        (Short.MaxValue, Discrete.None)
       ),
       List(),
       List(Short.MinValue, 0.toShort, Short.MaxValue),
@@ -101,12 +101,12 @@ class ImplementationsSpec extends AnyFunSpec {
       0.toShort, 
       10.toShort,
       List(
-        (null, -1.toShort), 
-        (null, 0.toShort), 
+        (Discrete.None, -1.toShort), 
+        (Discrete.None, 0.toShort), 
         (0.toShort, 1.toShort), 
         (9.toShort, 10.toShort), 
-        (10.toShort, null), 
-        (11.toShort, null)
+        (10.toShort, Discrete.None), 
+        (11.toShort, Discrete.None)
       ),
       List(-3.toShort, -2.toShort, -1.toShort),
       List(0.toShort, 1.toShort, 9.toShort, 10.toShort),
@@ -121,11 +121,11 @@ class ImplementationsSpec extends AnyFunSpec {
       Int.MinValue, 
       Int.MaxValue,
       List(
-        (null, Int.MinValue), 
+        (Discrete.None, Int.MinValue), 
         (Int.MinValue, Int.MinValue + 1), 
         (0, 1), 
         (Int.MaxValue - 1, Int.MaxValue), 
-        (Int.MaxValue, null)
+        (Int.MaxValue, Discrete.None)
       ),
       List(),
       List(Int.MinValue, 0, Int.MaxValue),
@@ -136,7 +136,7 @@ class ImplementationsSpec extends AnyFunSpec {
       int.tryNaturalOrderWithBounds(0, 10).get,
       0, 
       10,
-      List((null, -1), (null, 0), (0, 1), (9, 10), (10, null), (11, null)),
+      List((Discrete.None, -1), (Discrete.None, 0), (0, 1), (9, 10), (10, Discrete.None), (11, Discrete.None)),
       List(-3, -2, -1),
       List(0, 1, 9, 10),
       List(11, 12, 13)
@@ -150,11 +150,11 @@ class ImplementationsSpec extends AnyFunSpec {
       Long.MinValue, 
       Long.MaxValue,
       List(
-        (null, Long.MinValue), 
+        (Discrete.None, Long.MinValue), 
         (Long.MinValue, Long.MinValue + 1), 
         (0L, 1L), 
         (Long.MaxValue - 1, Long.MaxValue), 
-        (Long.MaxValue, null)
+        (Long.MaxValue, Discrete.None)
       ),
       List(),
       List(Long.MinValue, 0L, Long.MaxValue),
@@ -165,7 +165,7 @@ class ImplementationsSpec extends AnyFunSpec {
       long.tryNaturalOrderWithBounds(0L, 10L).get,
       0L, 
       10L,
-      List((null, -1L), (null, 0L), (0L, 1L), (9L, 10L), (10L, null), (11L, null)),
+      List((Discrete.None, -1L), (Discrete.None, 0L), (0L, 1L), (9L, 10L), (10L, Discrete.None), (11L, Discrete.None)),
       List(-3L, -2L, -1L),
       List(0L, 1L, 9L, 10L),
       List(11L, 12L, 13L)
@@ -190,12 +190,12 @@ class ImplementationsSpec extends AnyFunSpec {
       BigInt(0), 
       BigInt(10),
       List(
-        (null, BigInt(-1)), 
-        (null, BigInt(0)), 
+        (Discrete.None, BigInt(-1)), 
+        (Discrete.None, BigInt(0)), 
         (BigInt(0), BigInt(1)), 
         (BigInt(9), BigInt(10)), 
-        (BigInt(10), null), 
-        (BigInt(11), null)
+        (BigInt(10), Discrete.None), 
+        (BigInt(11), Discrete.None)
       ),
       List(BigInt(-3), BigInt(-2), BigInt(-1)),
       List(BigInt(0), BigInt(1), BigInt(9), BigInt(10)),
@@ -210,11 +210,11 @@ class ImplementationsSpec extends AnyFunSpec {
       Char.MinValue, 
       Char.MaxValue,
       List(
-        (null, Char.MinValue), 
+        (Discrete.None, Char.MinValue), 
         (Char.MinValue, (Char.MinValue + 1).toChar), 
         (10.toChar, 11.toChar), 
         ((Char.MaxValue - 1).toChar, Char.MaxValue), 
-        (Char.MaxValue, null)
+        (Char.MaxValue, Discrete.None)
       ),
       List(),
       List(Char.MinValue, 10.toChar, Char.MaxValue),
@@ -226,12 +226,12 @@ class ImplementationsSpec extends AnyFunSpec {
       10.toChar, 
       20.toChar,
       List(
-        (null, 8.toChar), 
-        (null, 9.toChar), 
+        (Discrete.None, 8.toChar), 
+        (Discrete.None, 9.toChar), 
         (10.toChar, 11.toChar), 
         (19.toChar, 20.toChar), 
-        (20.toChar, null), 
-        (21.toChar, null)
+        (20.toChar, Discrete.None), 
+        (21.toChar, Discrete.None)
       ),
       List(7.toChar, 8.toChar, 9.toChar),
       List(10.toChar, 11.toChar, 19.toChar, 20.toChar),

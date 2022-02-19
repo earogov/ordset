@@ -1,7 +1,5 @@
 package ordset
 
-import ordset.util.OptionUtil
-
 /**
  * Typeclass specifying sequence of elements of discrete ordered set. 
  *
@@ -29,6 +27,26 @@ trait Discrete[E] extends Discrete.Succeeding[E] with Discrete.Preceding[E] with
 
 object Discrete {
 
+  type Maybe[+E] = E | None.type
+
+  /**
+   * Returns 'true', if input argument equals to [[Discrete.None]] object.
+   */
+  def isNone[E](x: Maybe[E]): Boolean = None == x
+
+  /**
+   * Returns 'true', if input argument doesn't equal to [[Discrete.None]] object.
+   */
+  def isPresent[E](x: Maybe[E]): Boolean = None != x
+
+  /**
+   * Object representing absence of successor or predecessor.
+   */
+  object None {
+
+    override def toString(): String = "Discrete.None"
+  }
+
   /** 
    * Typeclass to get succeeding elements of sequence.
    * 
@@ -38,17 +56,20 @@ object Discrete {
 
     /**
      * Returns:
-     * <tr>`null`, if element has no successor;</tr>
+     * <tr>[[Discrete.None]], if element has no successor;</tr>
      * <tr>the successor of element otherwise.</tr>
      */
-    def successorOrNull(x: E): E | Null
+    def successorOrNone(x: E): Discrete.Maybe[E]
 
     /**
      * Returns:
      * <tr>[[Option.empty]], if element has no successor;</tr>
      * <tr>the successor of element otherwise.</tr>
      */
-    def successorOpt(x: E): Option[E] = OptionUtil.optionOfNullable(successorOrNull(x))
+    def successorOpt(x: E): Option[E] = successorOrNone(x) match {
+      case Discrete.None => Option.empty
+      case x: E @unchecked => Some(x)
+    }
 
     /**
      * Returns `true` if element has successor.
@@ -70,7 +91,7 @@ object Discrete {
        */
       def successor(x: E): E
 
-      override def successorOrNull(x: E): E | Null = successor(x)
+      override def successorOrNone(x: E): Discrete.Maybe[E] = successor(x)
 
       override def hasSuccessor(x: E): Boolean = true
 
@@ -98,7 +119,7 @@ object Discrete {
      */
     trait Reversed[E] extends Succeeding[E] {
 
-      override def successorOrNull(x: E): E | Null = reversed.predecessorOrNull(x)
+      override def successorOrNone(x: E): Discrete.Maybe[E] = reversed.predecessorOrNone(x)
 
       override def hasSuccessor(x: E): Boolean = reversed.hasPredecessor(x)
     }
@@ -118,17 +139,20 @@ object Discrete {
 
     /**
      * Returns:
-     * <tr>`null`, if element has no predecessor;</tr>
+     * <tr>[[Discrete.None]], if element has no predecessor;</tr>
      * <tr>the predecessor of element otherwise.</tr>
      */
-    def predecessorOrNull(x: E): E | Null
+    def predecessorOrNone(x: E): Discrete.Maybe[E]
 
     /**
      * Returns:
      * <tr>[[Option.empty]], if element has no predecessor;</tr>
      * <tr>the predecessor of element otherwise.</tr>
      */
-    def predecessorOpt(x: E): Option[E] = OptionUtil.optionOfNullable(predecessorOrNull(x))
+    def predecessorOpt(x: E): Option[E] =  predecessorOrNone(x) match {
+      case Discrete.None => Option.empty
+      case x: E @unchecked => Some(x)
+    }
 
     /**
      * Returns `true` if element has predecessor.
@@ -150,7 +174,7 @@ object Discrete {
        */
       def predecessor(x: E): E
 
-      override def predecessorOrNull(x: E): E | Null = predecessor(x)
+      override def predecessorOrNone(x: E): Discrete.Maybe[E] = predecessor(x)
 
       override def hasPredecessor(x: E): Boolean = true
 
@@ -178,7 +202,7 @@ object Discrete {
      */
     trait Reversed[E] extends Preceding[E] {
 
-      override def predecessorOrNull(x: E): E | Null = reversed.successorOrNull(x)
+      override def predecessorOrNone(x: E): Discrete.Maybe[E] = reversed.successorOrNone(x)
 
       override def hasPredecessor(x: E): Boolean = reversed.hasSuccessor(x)
     }
@@ -212,9 +236,9 @@ object Discrete {
      */
     def predecessor(x: E): E
 
-    override def successorOrNull(x: E): E | Null = successor(x)
+    override def successorOrNone(x: E): Discrete.Maybe[E] = successor(x)
 
-    override def predecessorOrNull(x: E): E | Null = predecessor(x)
+    override def predecessorOrNone(x: E): Discrete.Maybe[E] = predecessor(x)
 
     override def reversed: Infinite[E] = new Infinite.ReversedImpl(this)
   }

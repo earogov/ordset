@@ -18,12 +18,16 @@ object implementations {
 
     trait Succeeding extends Discrete.Succeeding[Unit] {
 
-      override def successorOrNull(x: Unit): Null = null
+      override def successorOrNone(x: Unit): Discrete.None.type = Discrete.None
+
+      override def successorOpt(x: Unit): None.type = None
     }
 
     trait Preceding extends Discrete.Preceding[Unit] {
 
-      override def predecessorOrNull(x: Unit): Null = null
+      override def predecessorOrNone(x: Unit): Discrete.None.type = Discrete.None
+
+      override def predecessorOpt(x: Unit): None.type = None
     }
 
     trait Discrete extends ordset.Discrete[Unit] with Succeeding with Preceding
@@ -49,12 +53,20 @@ object implementations {
 
     trait Succeeding extends Discrete.Succeeding[Boolean] {
 
-      override def successorOrNull(x: Boolean): Boolean | Null = if !x then true else null
+      override def successorOrNone(x: Boolean): Discrete.Maybe[Boolean] = 
+        if !x then true else Discrete.None
+
+      override def successorOpt(x: Boolean): Option[Boolean] =
+        if !x then Some(true) else Option.empty
     }
 
     trait Preceding extends Discrete.Preceding[Boolean] {
 
-      override def predecessorOrNull(x: Boolean): Boolean | Null = if x then false else null
+      override def predecessorOrNone(x: Boolean): Discrete.Maybe[Boolean] = 
+        if x then false else Discrete.None
+
+      override def predecessorOpt(x: Boolean): Option[Boolean] =
+        if x then Some(false) else Option.empty
     }
 
     trait Discrete extends ordset.Discrete[Boolean] with Succeeding with Preceding
@@ -72,7 +84,11 @@ object implementations {
 
       protected def num: Numeric[E]
 
-      override def successorOrNull(x: E): E | Null = if hasSuccessor(x) then num.plus(x, num.one) else null
+      override def successorOrNone(x: E): Discrete.Maybe[E] = 
+        if hasSuccessor(x) then num.plus(x, num.one) else Discrete.None
+
+      override def successorOpt(x: E): Option[E] = 
+        if hasSuccessor(x) then Some(num.plus(x, num.one)) else Option.empty
     }
 
     trait SucceedingInfinite[E] extends Discrete.Succeeding.Infinite[E] {
@@ -86,7 +102,11 @@ object implementations {
 
       protected def num: Numeric[E]
 
-      override def predecessorOrNull(x: E): E | Null = if hasPredecessor(x) then num.minus(x, num.one) else null
+      override def predecessorOrNone(x: E): Discrete.Maybe[E] = 
+        if hasPredecessor(x) then num.minus(x, num.one) else Discrete.None
+
+      override def predecessorOpt(x: E): Option[E] =
+        if hasPredecessor(x) then Some(num.minus(x, num.one)) else Option.empty
     }
 
     trait PrecedingInfinite[E] extends Discrete.Preceding.Infinite[E] {
@@ -369,12 +389,20 @@ object implementations {
 
     trait Succeeding extends Discrete.Succeeding[Char] {
 
-      override def successorOrNull(x: Char): Char | Null = if hasSuccessor(x) then (x + 1).toChar else null
+      override def successorOrNone(x: Char): Discrete.Maybe[Char] = 
+        if hasSuccessor(x) then (x + 1).toChar else Discrete.None
+
+      override def successorOpt(x: Char): Option[Char] =
+        if hasSuccessor(x) then Some((x + 1).toChar) else Option.empty
     }
 
     trait Preceding extends Discrete.Preceding[Char] {
 
-      override def predecessorOrNull(x: Char): Char | Null = if hasPredecessor(x) then (x - 1).toChar else null
+      override def predecessorOrNone(x: Char): Discrete.Maybe[Char] = 
+        if hasPredecessor(x) then (x - 1).toChar else Discrete.None
+
+      override def predecessorOpt(x: Char): Option[Char] =
+        if hasPredecessor(x) then Some((x - 1).toChar) else Option.empty
     }
 
     trait Discrete extends ordset.Discrete[Char] with Succeeding with Preceding

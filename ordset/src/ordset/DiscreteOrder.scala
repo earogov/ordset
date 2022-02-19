@@ -50,9 +50,9 @@ trait DiscreteOrder[E]
   /**
    * Returns `true`, if `y` is successor of `x`.
    */
-  def isSuccessor(x: E, y: E): Boolean = {
-    val sx: E | Null = successorOrNull(x)
-    if sx != null then eqv(sx, y) else false
+  def isSuccessor(x: E, y: E): Boolean = successorOrNone(x) match {
+    case Discrete.None => false
+    case sx: E @unchecked => eqv(sx, y)
   }
 
   /**

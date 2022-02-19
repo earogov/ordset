@@ -203,12 +203,16 @@ object ValidatingIterable {
     protected val validation: ValidationPredicate.Arity1[E]
   ) extends AbstractValidatingIterator[E](originalIterator) {
 
-    override def isValid: Boolean = 
-      Undefined == nextCache || validation.apply(Undefined.asDefined(nextCache))
+    override def isValid: Boolean = nextCache match {
+      case Undefined => true
+      case c: E @unchecked => validation.apply(c)
+    }
 
     @throws[ValidationException]
-    override def validate(): Unit = 
-      if Undefined != nextCache then validation.validate(Undefined.asDefined(nextCache), index)
+    override def validate(): Unit = nextCache match {
+      case Undefined => {}
+      case c: E @unchecked => validation.validate(c, index)
+    }
   }
 
   /**
@@ -233,15 +237,22 @@ object ValidatingIterable {
     protected val validation: ValidationPredicate.Arity2[E]
   ) extends AbstractValidatingIterator[E](originalIterator) {
 
-    override def isValid: Boolean = 
-      Undefined == prevCache ||
-      Undefined == nextCache ||
-      validation.apply(Undefined.asDefined(prevCache), Undefined.asDefined(nextCache))
+    override def isValid: Boolean = nextCache match {
+      case Undefined => true
+      case nc: E @unchecked => prevCache match {
+        case Undefined => true
+        case pc: E @unchecked => validation.apply(pc, nc)
+      }
+    }
 
     @throws[ValidationException]
-    override def validate(): Unit = 
-      if Undefined != prevCache && Undefined != nextCache 
-      then validation.validate(Undefined.asDefined(prevCache), Undefined.asDefined(nextCache), index)
+    override def validate(): Unit = nextCache match {
+      case Undefined => {}
+      case nc: E @unchecked => prevCache match {
+        case Undefined => {}
+        case pc: E @unchecked => validation.validate(pc, nc, index)
+      }
+    }
   }
 
   /**
@@ -266,20 +277,25 @@ object ValidatingIterable {
     protected val validation2: ValidationPredicate.Arity2[E]
   ) extends AbstractValidatingIterator[E](originalIterator) {
 
-    override def isValid: Boolean = 
-      if Undefined == nextCache then true
-      else if Undefined == prevCache then validation1.apply(Undefined.asDefined(nextCache))
-      else {
-        val next = Undefined.asDefined(nextCache)
-        validation1.apply(next) && validation2.apply(Undefined.asDefined(prevCache), next)
-      }
+    override def isValid: Boolean = nextCache match {
+      case Undefined => true
+      case nc: E @unchecked => 
+        if (validation1.apply(nc)) prevCache match {
+          case Undefined => true
+          case pc: E @unchecked => validation2.apply(pc, nc)
+        }
+        else false
+    }
 
     @throws[ValidationException]
-    override def validate(): Unit = 
-      if Undefined != nextCache then {
-        val next = Undefined.asDefined(nextCache)
-        validation1.validate(next, index)
-        if Undefined != prevCache then validation2.validate(Undefined.asDefined(prevCache), next, index)
-      }
+    override def validate(): Unit = nextCache match {
+      case Undefined => {}
+      case nc: E @unchecked => 
+        validation1.validate(nc, index)
+        prevCache match {
+          case Undefined => {}
+          case pc: E @unchecked => validation2.validate(pc, nc, index)
+        }
+    }
   }
 }

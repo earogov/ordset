@@ -6,6 +6,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.segmentSeq.{SegmentSeq, TreapSegmentSeq}
 import ordset.core.segmentSeq.map.TreapOrderedMap
+import ordset.util.types.Undefined
 import ordset.random.{RngManager, UnsafeUniformRng}
 import ordset.tree.treap.immutable.transform.BuildAsc
 import ordset.tree.treap.mutable.MutableTreap
@@ -77,11 +78,12 @@ object TreapSegmentSeqBuilder {
     @throws[AssertionError]("if last value of sequence is not defined")
     def buildSeq: TreapSegmentSeq[E, D, V] = {
       val lv = lastValue
-      if (lv == null)
-        throw new AssertionError("Last value of sequence is not defined")
-      else {
-        val root = BuildAsc.finalizeBuffer(buffer)
-        TreapOrderedMap.unchecked[E, D, V](root, lv)(domainOps, valueOps, rngManager)
+      lv match {
+        case Undefined => 
+          throw new AssertionError("Last value of sequence is not defined")
+        case lv: V @unchecked => 
+          val root = BuildAsc.finalizeBuffer(buffer)
+          TreapOrderedMap.unchecked[E, D, V](root, lv)(domainOps, valueOps, rngManager)
       }
     }
 
@@ -92,6 +94,6 @@ object TreapSegmentSeqBuilder {
 
     private var buffer: TreapBuffer[E, V] = List.empty
 
-    private var lastValue: V | Null = null
+    private var lastValue: Undefined[V] = Undefined
   }
 }

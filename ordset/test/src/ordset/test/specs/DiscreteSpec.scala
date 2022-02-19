@@ -17,11 +17,11 @@ class DiscreteSpec extends AnyFunSpec {
   it("should specify sequence of succeeding elements") {
 
     val discrete1 = new Discrete.Succeeding[Int] { 
-      override def successorOrNull(x: Int): Int | Null = if hasSuccessor(x) then x + 1 else null
+      override def successorOrNone(x: Int): Discrete.Maybe[Int] = if hasSuccessor(x) then x + 1 else Discrete.None
       override def hasSuccessor(x: Int) = x < 10
     }
 
-    validateDiscreteSucceeding(discrete1, List((1, 2), (9, 10), (11, null), (12, null)))
+    validateDiscreteSucceeding(discrete1, List((1, 2), (9, 10), (11, Discrete.None), (12, Discrete.None)))
 
     val discrete2 = new Discrete.Succeeding.Infinite[Int] { 
       override def successor(x: Int): Int = x + 1
@@ -33,11 +33,11 @@ class DiscreteSpec extends AnyFunSpec {
   it("should specify sequence of preceding elements") {
 
       val discrete1 = new Discrete.Preceding[Int] { 
-        override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
+        override def predecessorOrNone(x: Int): Discrete.Maybe[Int] = if hasPredecessor(x) then x - 1 else Discrete.None
         override def hasPredecessor(x: Int) = x > 0
       }
 
-      validateDiscretePreceding(discrete1, List((null, -1), (null, 0), (0, 1), (10, 11)))
+      validateDiscretePreceding(discrete1, List((Discrete.None, -1), (Discrete.None, 0), (0, 1), (10, 11)))
 
       val discrete2 = new Discrete.Preceding.Infinite[Int] { 
         override def predecessor(x: Int): Int = x - 1
@@ -49,13 +49,16 @@ class DiscreteSpec extends AnyFunSpec {
   it("should specify sequence of succeeding and preceding elements") {
 
     val discrete1 = new Discrete[Int] { 
-      override def successorOrNull(x: Int): Int | Null = if hasSuccessor(x) then x + 1 else null
+      override def successorOrNone(x: Int): Discrete.Maybe[Int] = if hasSuccessor(x) then x + 1 else Discrete.None
       override def hasSuccessor(x: Int) = x < 10
-      override def predecessorOrNull(x: Int): Int | Null = if hasPredecessor(x) then x - 1 else null
+      override def predecessorOrNone(x: Int): Discrete.Maybe[Int] = if hasPredecessor(x) then x - 1 else Discrete.None
       override def hasPredecessor(x: Int) = x > 0
     }
 
-    validateDiscrete(discrete1, List((null, -1), (null, 0), (0, 1), (1, 2), (9, 10), (11, null), (12, null)))
+    validateDiscrete(
+      discrete1, 
+      List((Discrete.None, -1), (Discrete.None, 0), (0, 1), (1, 2), (9, 10), (11, Discrete.None), (12, Discrete.None))
+    )
 
     val discrete2 = new Discrete.Infinite[Int] { 
       override def successor(x: Int): Int = x + 1
@@ -108,16 +111,19 @@ object DiscreteSpec {
     implicit eq: Eq[E]
   ): Unit = {
     adjElements.foreach { e =>
-      if e.predecessor != null then {
-        assert(eqvNullable(e.successor, discrete.successorOrNull(e.predecessor)))
-        assert(eqvNullable(e.successor, discrete.successorOpt(e.predecessor).orNull))
-        if e.successor == null then assert(!discrete.hasSuccessor(e.predecessor))
-        else discrete match {
-          case discrete: Discrete.Succeeding.Infinite[E] => 
-            assert(eq.eqv(e.successor, discrete.successor(e.predecessor)))
-          case _ => 
-            // no additional checks required
-        }
+      e.predecessor match {
+        case Discrete.None => {}
+        case p: E @unchecked =>
+          assert(eqvMaybe(e.successor, discrete.successorOrNone(p)))
+          assert(eqvOption(e.successorOpt, discrete.successorOpt(p)))
+          e.successor match {
+            case Discrete.None => assert(!discrete.hasSuccessor(p))
+            case s: E @unchecked => discrete match {
+              case discrete: Discrete.Succeeding.Infinite[E] => 
+                assert(eq.eqv(s, discrete.successor(p)))
+              case _ => {}
+            }
+          }
       }
     }
   }
@@ -129,16 +135,19 @@ object DiscreteSpec {
     implicit eq: Eq[E]
   ): Unit = {
     adjElements.foreach { e =>
-      if e.successor != null then {
-        assert(eqvNullable(e.predecessor, discrete.predecessorOrNull(e.successor)))
-        assert(eqvNullable(e.predecessor, discrete.predecessorOpt(e.successor).orNull))
-        if e.predecessor == null then assert(!discrete.hasPredecessor(e.successor))
-        else discrete match {
-          case discrete: Discrete.Preceding.Infinite[E] => 
-            assert(eq.eqv(e.predecessor, discrete.predecessor(e.successor)))
-          case _ => 
-            // no additional checks required
-        }
+      e.successor match {
+        case Discrete.None => {}
+        case s: E @unchecked =>
+          assert(eqvMaybe(e.predecessor, discrete.predecessorOrNone(s)))
+          assert(eqvOption(e.predecessorOpt, discrete.predecessorOpt(s)))
+          e.predecessor match {
+            case Discrete.None => assert(!discrete.hasPredecessor(s))
+            case p: E @unchecked => discrete match {
+              case discrete: Discrete.Preceding.Infinite[E] => 
+                assert(eq.eqv(p, discrete.predecessor(s)))
+              case _ => {}
+            }
+          }
       }
     }
   }
@@ -153,11 +162,19 @@ object DiscreteSpec {
     validateDiscretePrecedingSingle(discrete, adjElements)
   }
 
-  private def eqvNullable[E](x: E | Null, y : E | Null)(implicit eq: Eq[E]): Boolean =
-    if x != null then
-      if y != null then eq.eqv(x, y)
-      else false
-    else
-      if y == null then true
-      else false
+  private def eqvMaybe[E](x: Discrete.Maybe[E], y : Discrete.Maybe[E])(implicit eq: Eq[E]): Boolean =
+    (x, y) match {
+      case (Discrete.None, Discrete.None) => true
+      case (Discrete.None, _) => false
+      case (_, Discrete.None) => false
+      case(x: E @unchecked, y: E @unchecked) => eq.eqv(x, y)
+    }
+
+  private def eqvOption[E](x: Option[E], y : Option[E])(implicit eq: Eq[E]): Boolean =
+    (x, y) match {
+      case (None, None) => true
+      case (None, _) => false
+      case (_, None) => false
+      case(Some(x), Some(y)) => eq.eqv(x, y)
+    }
 }

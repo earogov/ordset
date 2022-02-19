@@ -19,7 +19,7 @@ If there is a lazy segment at specified bound then we create new lazy value. New
 
 4. Add `span` method to IntervalAlgebra (see RangeAlgebra).
 
-5. Fix nullable caches.
+5. [Closed] Fix nullable caches.
 
 Consider we have some internal state of type `C`, that has not been initialized yet:
 
