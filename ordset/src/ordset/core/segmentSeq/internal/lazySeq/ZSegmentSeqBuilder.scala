@@ -22,7 +22,7 @@ protected[ordset] object ZSegmentSeqBuilder {
    * <tr>1. `baseSeq` - segment sequence with base values;</tr>
    * <tr>2. `supplierSeq` - segment sequence with optional lazy values.</tr>
    * <tr></tr>
-   * (*1) - Technically method returns zipped sequence [[ZSegmentSeq]]. But it is used as internal representation
+   * (*1) - Actually method returns zipped sequence [[ZSegmentSeq]]. But it is used as internal representation
    *        of [[AbstractLazyTreapSegmentSeq]]. So we can use [[ZSegmentSeq]] and lazy segment sequence as synonyms.
    * 
    * <tr>
@@ -148,7 +148,7 @@ protected[ordset] object ZSegmentSeqBuilder {
    *
    *  where
    *  (A, ...) - value of base sequence;
-   *  (..., u) - control value: s - eager stable, u - eager unstable, ? - lazy.
+   *  (..., u) - control value: s - strict stable, u - strict unstable, ? - lazy.
    * }}}
    */
   final def appendZippedSegment[E, D[X] <: Domain[X], V](
@@ -267,13 +267,13 @@ protected[ordset] object ZSegmentSeqBuilder {
       } else if (leftControlValue.isLazy) {
         TreapSegmentSeqUtil.appendAboveTruncation(
           controlSeqTruncation(leftZsegment, bound),
-          takeAboveAndPrependControlValue(rightZsegment, EagerValue.unstable)
+          takeAboveAndPrependControlValue(rightZsegment, StrictValue.unstable)
         )
       // s-? => stable becomes unstable
       } else if (rightControlValue.isLazy) {
         TreapSegmentSeqUtil.prependBelowTruncation(
           controlSeqTruncation(rightZsegment, bound),
-          takeBelowAndAppendControlValue(leftZsegment, EagerValue.unstable)
+          takeBelowAndAppendControlValue(leftZsegment, StrictValue.unstable)
         )
       // s-u
       } else if (leftControlValue.isStable) {
@@ -282,14 +282,14 @@ protected[ordset] object ZSegmentSeqBuilder {
         if (!rightZsegment.hasNextSuchThat(_.value._2.isLazy)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             leftZsegment.self.secondSeqLowerTruncation,
-            takeAboveAndPrependControlValue(rightZsegment, EagerValue.stable)
+            takeAboveAndPrependControlValue(rightZsegment, StrictValue.stable)
           )
         // s-u, same base values, there is lazy segment after unstable =>
         // stable becomes unstable (both control segments are merged)
         } else if (valueOps.eqv(leftZsegment.value._1, rightZsegment.value._1)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             leftZsegment.self.secondSeqLowerTruncation,
-            takeAboveAndPrependControlValue(rightZsegment, EagerValue.unstable)
+            takeAboveAndPrependControlValue(rightZsegment, StrictValue.unstable)
           )
         // s-u, different base values, there is lazy segment after unstable =>
         // no correction
@@ -306,14 +306,14 @@ protected[ordset] object ZSegmentSeqBuilder {
         if (!rightZsegment.hasPrevSuchThat(_.value._2.isLazy)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             leftZsegment.self.secondSeqLowerTruncation,
-            takeAboveAndPrependControlValue(rightZsegment, EagerValue.stable)
+            takeAboveAndPrependControlValue(rightZsegment, StrictValue.stable)
           )
         // u-s, same base values, there is lazy segment before unstable =>
         // stable becomes unstable (both control segments are merged)
         } else if (valueOps.eqv(leftZsegment.value._1, rightZsegment.value._1)) {
           TreapSegmentSeqUtil.appendAboveTruncation(
             leftZsegment.self.secondSeqLowerTruncation,
-            takeAboveAndPrependControlValue(rightZsegment, EagerValue.unstable)
+            takeAboveAndPrependControlValue(rightZsegment, StrictValue.unstable)
           )
         // u-s, different base values, there is lazy segment before unstable =>
         // no correction
@@ -340,7 +340,7 @@ protected[ordset] object ZSegmentSeqBuilder {
           } else {
             TreapSegmentSeqUtil.appendAboveTruncation(
               leftZsegment.self.secondSeqLowerTruncation,
-              takeAboveAndPrependControlValue(rightZsegment, EagerValue.stable)
+              takeAboveAndPrependControlValue(rightZsegment, StrictValue.stable)
             )
           }
         } else if (valueOps.eqv(leftZsegment.value._1, rightZsegment.value._1)) {
@@ -356,14 +356,14 @@ protected[ordset] object ZSegmentSeqBuilder {
           if (leftIsLazy) {
             TreapSegmentSeqUtil.appendAboveTruncation(
               controlSeqTruncation(leftZsegment, bound),
-              takeAboveAndPrependControlValue(rightZsegment, EagerValue.stable)
+              takeAboveAndPrependControlValue(rightZsegment, StrictValue.stable)
             )
           // u-u, different base values, there is no lazy segments before left unstable,
           // there is lazy segment after right unstable => left unstable becomes stable
           } else {
             TreapSegmentSeqUtil.prependBelowTruncation(
               controlSeqTruncation(rightZsegment, bound),
-              takeBelowAndAppendControlValue(leftZsegment, EagerValue.stable)
+              takeBelowAndAppendControlValue(leftZsegment, StrictValue.stable)
             )
           }
         }
@@ -371,6 +371,168 @@ protected[ordset] object ZSegmentSeqBuilder {
     }
     makeZippedSeq(newBaseSeq, newControlSeq)
   }
+
+  /**
+   * Takes zipped sequence in arbitrary state and builds equivalent strict zipped sequence. Thus, all segments in
+   * the result sequence are strict stable.
+   * {{{
+   * 
+   * input zipped sequence:
+   * 
+   * X----------](---------)[----------)[----------X
+   *     (A, u)     (-, ?)     (B, s)      (-, ?)
+   * 
+   *                        VVV
+   * 
+   * output zipped sequence:
+   * 
+   * X----------](---](----)[-----------)[---)[----X
+   *    (A, s)     /     \      (B, s)     /     \
+   *           (C, s)   (D, s)         (E, s)   (F, s)
+   * 
+   *  where
+   *  (A, ...) - value of base sequence;
+   *  (..., u) - control value: s - strict stable, u - strict unstable, ? - lazy.
+   * }}}
+   * 
+   * <h3>Complexity analysis</h3>
+   * 
+   * To build strict sequence one needs to evaluate all lazy segments and merge received sequences into common treap
+   * data structure. The overall time cost depends on:
+   * <tr>- the number of nodes in the initial base sequence;</tr>
+   * <tr>- the number of lazy segments to evaluate;</tr>
+   * <tr>- the number of nodes in each lazy sequence;</tr>
+   * <tr>- the underlying data structure of each lazy sequence.</tr>
+   * 
+   * For simplicity let's consider idealized case of merging S segments with N nodes in each.
+   * {{{
+   * 
+   * initial base sequence:
+   * 
+   * X----------------------------------------X
+   * 
+   * initial control sequence (S lazy segments):
+   * 
+   *      lazy          lazy          lazy
+   * X-----------)[-------------](------------X
+   *        /            |               \
+   *   () => seq1     () => seq2       () => seq3
+   * 
+   * seq1:
+   *    N nodes
+   * X...........)[---------------------------X
+   * 
+   * seq2:
+   *                  N nodes
+   * X-----------)[.............](------------X
+   * 
+   * seq3:
+   *                                N nodes
+   * X--------------------------](............X
+   * }}}
+   * 
+   * Case I.
+   * 
+   * Assume we have S non-treap data structures, thus we have to build treap with N*S sorted keys. This can be done
+   * with approximately 2*N*S operations. But for each new segment sequence we are going to append we also need to 
+   * to find node at lower bound of lazy segment (from which we will start appending). Assuming that all segment
+   * sequences provide effective logarithmic search we get the following total cost for case I:
+   *
+   * C,,I,, = 2*N*S + (S-1)log2(N)
+   * 
+   * Case II.
+   * 
+   * Now consider the case when there is S treap data structures. To merge each pair of treaps at bound `b` we need to:
+   * <tr>1. split left tree at bound `b`;</tr>
+   * <tr>2. split right tree at bound `b`;</tr>
+   * <tr>3. merge corresponding splitted parts.</tr>
+   * 
+   * Each split requires to traverse tree from the root to one of the leaves. Average cost of this operation is:
+   *  
+   * C,,split,, = log2(N)
+   * 
+   * To merge treaps we need to traverse in reversed order all nodes visited at steps 1 and 2 and rearrange them.
+   * So the cost is:
+   *
+   * C,,merge,, = 2log2(N)
+   * 
+   * The total cost of steps 1, 2, 3:
+   * 
+   * C,,1,, = 4log2(N) = 2log2(N^2)
+   * 
+   * Since we have S lazy segments, we need to perform (S-1) such merges. But after each step size of the left tree
+   * will increase by N nodes. So the cost of the 2-nd merge is:
+   * 
+   * C,,2,, = log2(2N) + log2(N) + log2(2N) + log2(N) = 2log2(2 * N^2)
+   *              |          |          \     /
+   *          split of     split of      merge
+   *         left tree    right tree
+   * 
+   * For i-th merge we get:
+   * 
+   * C,,i,, = 2log2(i * N^2)
+   * 
+   * And sum of (S-1) such terms will be:
+   *
+   * C,,II,, = 2log2(1 * N^2) + 2log2(2 * N^2) + ... + 2log2((S-1) * N^2) = 2log2((S-1)! * N^(2(S - 1)))
+   * 
+   * C,,II,, = 2log2((S-1)!) + 4(S-1)log2(N)
+   * 
+   * Alternatively we could build the result treap just like in case I appending N*S sorted keys. So let's compare
+   * the costs:
+   *
+   * Diff = C,,I,, - C,,II,, = N*S - log2((S-1)!) - 3/2*(S-1)log2(N)
+   * 
+   * Function is positive in the regions of parametric space (N, S) where merging of treaps is more efficient than 
+   * building new one from scratch. The bound is defined by equation:
+   * 
+   * Diff = 0
+   * 
+   * For large N we can drop logarithmic term 3/2*(S-1)log2(N) compared to N*S and get:
+   *
+   * N*S - log2((S-1)!) = 0
+   * 
+   * N = 1/S*log2((S-1)!)
+   * 
+   * Despite the factorial this function increases rather slowly. And even for exact equation Diff = 0 we get,
+   * for instance, N ≈ 15 for S = 1000. So if we have 1000 lazy segments and more than 15 nodes in each, then
+   * algorithm II is more optimal. The fewer lazy segments we have, the lower the threshold for N. In other words,
+   * algorithm I is only good for cases, when we have a lot of small lazy sequences to merge.
+   * 
+   * Common case.
+   * 
+   * In the common case we will have some mix of treap and non-treap data structures to merge. We will prefer
+   * algorithm II whenever possible and fallback to I for non-treap data structures. Also logarithmic overhead is 
+   * added for case of non-treap data structures due to switch of algorithms. So the total cost is in range:
+   *
+   * C,,common,, = min(C,,I',, + , C,,II,,) ... max(C,,I',,, C,,II,,)
+   * 
+   * where C,,I',, = 2*N*S + 2(S-1)log2(N) + log2((S-1)!)
+   */
+  final def strictZippedSeq[E, D[X] <: Domain[X], V](
+    zippedSeq: ZSegmentSeq[E, D, V]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    valueOps: ValueOps[V],
+    rngManager: RngManager
+  ): ZSegmentSeq[E, D, V] =
+    if (ZSegmentSeqUtil.isTotallyStrict(zippedSeq)) zippedSeq
+    else {
+      val oldBaseSeq = zippedSeq.firstSeq
+      val newBaseSeq = zippedSeq.firstSegment.forwardIterable
+        .foldLeft(makeUniformBaseSeq: TreapSegmentSeq[E, D, V]) { (leftSeq, zsegment) =>
+          val rightSeq = zsegment.value._2 match {
+            case value: StrictValue[E, D, V] => oldBaseSeq
+            case value: LazyValue[E, D, V] => value.compute
+          }
+          val bound = zsegment.lower
+          val truncation = leftSeq.getSegmentForExtended(bound).truncation(bound)
+          TreapSegmentSeqUtil.appendAboveTruncation(truncation, rightSeq)
+        }
+      val newControlSeq = makeUniformControlSeq[E, D, V](StrictValue.stable)
+      makeZippedSeq(newBaseSeq, newControlSeq)
+    }
 
   // Private section ---------------------------------------------------------- //
   private type ControlBuffer[E, D[X] <: Domain[X], V] = List[MutableTreap.Node[Bound.Upper[E], ControlValue[E, D, V]]]
@@ -482,10 +644,10 @@ protected[ordset] object ZSegmentSeqBuilder {
           else {
             zippedSegment match {
               case zippedSegment: InitialZSegmentWithPrev[E, D, V] =>
-                builder.addBound(zippedSegment.lower.flipLower, EagerValue.stable)
+                builder.addBound(zippedSegment.lower.flipLower, StrictValue.stable)
               case _ => // nothing to do
             }
-            builder.addBound(zippedSegment.upper, EagerValue.unstable)
+            builder.addBound(zippedSegment.upper, StrictValue.unstable)
           }
         case _ =>
           // `zippedSegment` contains previous segment of `maskSegment` => `zippedSegment` has next segment.
@@ -518,7 +680,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       val zippedTruncation = maskTruncation.zipIntoTuple(baseSeq)
       zippedTruncation.segment match {
         case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
-          builder.addBound(zippedSegment.upper, EagerValue.unstable)
+          builder.addBound(zippedSegment.upper, StrictValue.unstable)
         case _ =>
           builder
       }
@@ -555,7 +717,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       // `lazySeq` contains `None`.
       } else maskSegment match {
         case s: LazyMaskSegmentWithNext[E, D, V] => traverseMaskSeq(s.moveNext, builder)
-        case _ => builder.setLastValue(EagerValue.stable)
+        case _ => builder.setLastValue(StrictValue.stable)
       }
 
     val lazyMaskSeq = supplierSeq.map(_.isDefined)(ValueOps.booleanValueOps)
@@ -608,7 +770,7 @@ protected[ordset] object ZSegmentSeqBuilder {
     // The basic algorithm is following:
     //
     // 1. Map values of `supplierSeq`: segments with `Some(f)` should be converted into [[LazyValue]],
-    //    with `None` -  into [[EagerValue.unsatble]].
+    //    with `None` -  into [[StrictValue.unsatble]].
     //    
     //      None       Some(f1)   Some(f2)   None
     // X-------------)[--------)[--------)[--------X - supplier sequence
@@ -725,7 +887,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       startSegment: ControlGenSegment[E, D, V],
       zippedSeq: ZSegmentSeq[E, D, V]
     ): (Option[ControlGenSegment[E, D, V]], ZSegmentSeq[E, D, V]) = {
-      if (startSegment.value.isEager) (None, zippedSeq)
+      if (startSegment.value.isStrict) (None, zippedSeq)
       else {
         val (endSegmentOpt, controlSeqPatch) = buildControlSeqPatch(startSegment)
 
@@ -773,7 +935,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       supplierSeq,
       v => v match {
         case Some(f) => LazyValue.Default(f)(domainOps.domain)
-        case _ => EagerValue.unstable[E, D, V]
+        case _ => StrictValue.unstable[E, D, V]
       }
     )(
       domainOps,
@@ -787,22 +949,25 @@ protected[ordset] object ZSegmentSeqBuilder {
   /**
    * Creates uniform base sequence with value [[ValueOps.unit]].
    */ 
-  protected final def makeUniformBaseSeq[E, D[X] <: Domain[X], V](
+  private final def makeUniformBaseSeq[E, D[X] <: Domain[X], V](
     implicit
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
   ): UniformOrderedMap[E, D, V] =
     UniformOrderedMap.apply(
-      valueOps.unit, TreapOrderedMap.getFactory
+      valueOps.unit, 
+      TreapOrderedMap.getFactory
     )(
-      domainOps, valueOps, rngManager
+      domainOps, 
+      valueOps, 
+      rngManager
     )
 
   /**
    * Creates uniform control sequence with specified `value`.
    */ 
-  protected final def makeUniformControlSeq[E, D[X] <: Domain[X], V](
+  private final def makeUniformControlSeq[E, D[X] <: Domain[X], V](
     value: ControlValue[E, D, V]
   )(
     implicit
@@ -811,15 +976,18 @@ protected[ordset] object ZSegmentSeqBuilder {
     rngManager: RngManager
   ): UniformSegmentSeq[E, D, ControlValue[E, D, V]] =
     UniformOrderedMap.apply(
-      value, TreapOrderedMap.getFactory
+      value, 
+      TreapOrderedMap.getFactory
     )(
-      domainOps, ControlValueOps.get, rngManager
+      domainOps, 
+      ControlValueOps.get, 
+      rngManager
     )
 
   /**
    * Creates zipped segment sequence with specified sequences.
    */ 
-  protected final def makeZippedSeq[E, D[X] <: Domain[X], V](
+  private final def makeZippedSeq[E, D[X] <: Domain[X], V](
     baseSeq: BaseSegmentSeq[E, D, V],
     controlSeq: ControlSegmentSeq[E, D, V]
   )(

@@ -292,4 +292,21 @@ trait TransformationBehaviors[E, D[X] <: Domain[X], V] {
         }
       }
     }
+
+  def segmentSeqCanBeConvertedIntoStrictSequence(
+    samples: Iterable[SegmentSeqSample[E, D, V, SegmentSeq[E, D, V]]]
+  ): Unit = {
+    samples.foreach { sample =>
+
+      implicit val domainOps: DomainOps[E, D] = sample.domainOps
+      implicit val valueOps: ValueOps[V] = sample.valueOps
+
+      it(s"should convert sequence $sample into strict one") {
+        val actual = sample.sequence.strict
+        assertSameRelationAndSegmentSeq(sample.reference, actual, "step 1")
+        // Subsequent calls of `strict` method must return the same result.
+        assertSameRelationAndSegmentSeq(sample.reference, actual.strict, "step 2")
+      }
+    }
+  }
 }

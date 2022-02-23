@@ -9,12 +9,10 @@ import ordset.core.value.ValueOps
 import scala.collection.Seq
 
 /**
- * For common description of segment sequence see [[SegmentSeq]].
+ * Implementation of segment sequence (see [[SegmentSeq]]) based on collection with efficient indexed access 
+ * (array, etc).
  *
- * <u>Class is not intended to model empty and universal sets.</u>
- * For such cases implementation based on [[UniformSegmentSeq]] can be used.
- *
- * Upper bounds of segments are stored in `bounds` standard collection:
+ * Upper bounds of segments are stored in `bounds` collection:
  * {{{
  *
  *   Segment 0       Segment 1       Segment 2   - segment index
@@ -23,12 +21,16 @@ import scala.collection.Seq
  *       A               B              C        - value
  * }}}
  * Upper bound of last segment is not stored.
+ * 
+ * <u>Class is not intended to model empty and universal sets.</u>
+ * For such cases implementation based on [[UniformSegmentSeq]] should be used.
  *
+ * Preconditions:
  * <tr>`bounds` collection must be non-empty.                   </tr>
  * <tr>`bounds` collection should provide fast access by index. </tr>
  */
 abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V] 
-  extends AbstractSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
+  extends AbstractStrictSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {
   
   // Inspection --------------------------------------------------------------- //
   /**

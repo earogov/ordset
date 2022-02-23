@@ -19,9 +19,9 @@ protected[ordset] sealed trait ControlValue[E, D[X] <: Domain[X], V] {
 
   def isLazy: Boolean
 
-  def isEager: Boolean
+  def isStrict: Boolean
 
-  def isEagerUnstable: Boolean = isEager && isUnstable
+  def isStrictUnstable: Boolean = isStrict && isUnstable
 
   def isLazyOrStable: Boolean = isStable || isLazy
 }
@@ -36,9 +36,9 @@ protected[ordset] object ControlValue {
 
       override def isLazy: Boolean = true
 
-      override def isEager: Boolean = false
+      override def isStrict: Boolean = false
 
-      override def isEagerUnstable: Boolean = false
+      override def isStrictUnstable: Boolean = false
 
       override def isLazyOrStable: Boolean = true
 
@@ -237,7 +237,7 @@ protected[ordset] object ControlValue {
         () => throw UnsupportedOperationException("Function should never be called.")
     }
 
-    final case class EagerValue[E, D[X] <: Domain[X], V] private (
+    final case class StrictValue[E, D[X] <: Domain[X], V] private (
       private val stable: Boolean
     ) extends ControlValue[E, D, V] {
 
@@ -247,27 +247,27 @@ protected[ordset] object ControlValue {
 
       override def isLazy: Boolean = false
 
-      override def isEager: Boolean = true
+      override def isStrict: Boolean = true
 
-      override def isEagerUnstable: Boolean = !stable
+      override def isStrictUnstable: Boolean = !stable
 
       override def isLazyOrStable: Boolean = stable
 
-      override def toString: String = s"EagerValue(stable = $stable)"
+      override def toString: String = s"StrictValue(stable = $stable)"
     }
 
-    object EagerValue {
+    object StrictValue {
 
-      def cons[E, D[X] <: Domain[X], V](isStable: Boolean): EagerValue[E, D, V] = if (isStable) stable else unstable
+      def cons[E, D[X] <: Domain[X], V](isStable: Boolean): StrictValue[E, D, V] = if (isStable) stable else unstable
 
-      def stable[E, D[X] <: Domain[X], V]: EagerValue[E, D, V] = stableInstance.asInstanceOf
+      def stable[E, D[X] <: Domain[X], V]: StrictValue[E, D, V] = stableInstance.asInstanceOf
 
-      def unstable[E, D[X] <: Domain[X], V]: EagerValue[E, D, V] = unstableInstance.asInstanceOf
+      def unstable[E, D[X] <: Domain[X], V]: StrictValue[E, D, V] = unstableInstance.asInstanceOf
 
       // Private section ---------------------------------------------------------- //
-      private lazy val stableInstance: EagerValue[Any, Domain, Any] = new EagerValue(true)
+      private lazy val stableInstance: StrictValue[Any, Domain, Any] = new StrictValue(true)
 
-      private lazy val unstableInstance: EagerValue[Any, Domain, Any] = new EagerValue(false)
+      private lazy val unstableInstance: StrictValue[Any, Domain, Any] = new StrictValue(false)
     }
 
     final class ControlValueHash[E, D[X] <: Domain[X], V]
@@ -279,7 +279,7 @@ protected[ordset] object ControlValue {
 
       override def eqv(x: ControlValue[E, D, V], y: ControlValue[E, D, V]): Boolean = (x, y) match {
         case (x: LazyValue[_, _, _], y: LazyValue[_, _, _]) => x.eq(y)
-        case (x: EagerValue[_, _, _], y: EagerValue[_, _, _]) => x.isStable == y.isStable
+        case (x: StrictValue[_, _, _], y: StrictValue[_, _, _]) => x.isStable == y.isStable
         case _ => false
       }
     }
@@ -303,7 +303,7 @@ protected[ordset] object ControlValue {
     final class ControlValueOps[E, D[X] <: Domain[X], V] 
       extends ValueOps[ControlValue[E, D, V]] {
 
-      override val unit: ControlValue[E, D, V] = EagerValue.stable
+      override val unit: ControlValue[E, D, V] = StrictValue.stable
 
       override val valueHash: Hash[ControlValue[E, D, V]] = ControlValueHash.get
 

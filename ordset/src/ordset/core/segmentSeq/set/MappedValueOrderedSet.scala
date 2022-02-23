@@ -17,6 +17,9 @@ class MappedValueOrderedSet[E, D[X] <: Domain[X], S] protected (
 ) extends AbstractMappedValueSegmentSeq[E, D, Boolean, Boolean, S]
   with OrderedSetCommons[E, D, MappedSetSegmentBase[E, D, S]] {
 
+  // Transformation ----------------------------------------------------------- //
+  override def strict: StrictOrderedSet[E, D] = defaultStrict
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)

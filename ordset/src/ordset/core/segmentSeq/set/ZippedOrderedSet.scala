@@ -28,6 +28,9 @@ class ZippedOrderedSet[E, D[X] <: Domain[X], S1, S2] protected (
   @inline
   final override def secondInvariant(value: Boolean): Boolean = invariantFunc(value)
 
+  // Transformation ----------------------------------------------------------- //
+  override def strict: StrictOrderedSet[E, D] = defaultStrict
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)

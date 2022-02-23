@@ -28,6 +28,10 @@ package object set {
 
   type OrderedSetT[E, D[X] <: Domain[X], +S] = SegmentSeqT[E, D, Boolean, S]
 
+  type StrictOrderedSet[E, D[X] <: Domain[X]] = StrictSegmentSeq[E, D, Boolean]
+
+  type StrictOrderedSeqT[E, D[X] <: Domain[X], +S] = StrictSegmentSeqT[E, D, Boolean, S]
+
   // Uniform set -------------------------------------------------------------- //
   type UniformSetSegment[E, D[X] <: Domain[X]] = UniformSegment[E, D, Boolean]
 

@@ -13,4 +13,9 @@ trait OrderedSetCommons[E, D[X] <: Domain[X], +S] {
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def isValueIncluded(value: Boolean): Boolean = value
+
+  /**
+   * Default implementation for [[SegmentSeqT.strict]] method.
+   */
+  protected def defaultStrict: StrictOrderedSet[E, D] = TreapOrderedSet.getFactory.convertSet(this)
 }

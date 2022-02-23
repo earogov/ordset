@@ -126,10 +126,10 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * the basic use case of segments.
  * <tr></tr>
  * 
- * @tparam E type of element in ordered set
- * @tparam D type of elements domain
- * @tparam V type of value assigned to interval of elements
- * @tparam S type of additional segment state
+ * @tparam E type of elements on ordered domain
+ * @tparam D type of ordered domain
+ * @tparam V type of value assigned to range of elements
+ * @tparam S type of range state
  */
 sealed trait SegmentT[E, D[X] <: Domain[X], V, +S] extends SegmentLikeT[E, D, V, S] {
 

@@ -5,7 +5,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.segmentSeq.{AbstractMappedSegmentSeq, Segment, SegmentSeq, SegmentT, SegmentTruncationT}
 import ordset.core.segmentSeq.{MappedSegment, MappedTruncation}
-import ordset.core.segmentSeq.map.{OrderedMapT, OrderedMapCommons, UniformOrderedMap}
+import ordset.core.segmentSeq.map.{OrderedMapT, OrderedMapCommons, UniformOrderedMap, StrictOrderedMap}
 import ordset.random.RngManager
 
 /**
@@ -31,6 +31,9 @@ protected[ordset] class NonMergingMappedOrderedMap[E, D[X] <: Domain[X], U, V, S
   final override val rngManager: RngManager
 ) extends AbstractMappedSegmentSeq[E, D, U, V, S]
   with OrderedMapCommons[E, D, V, MappedSegmentBase[E, D, U, V, S]] {
+
+  // Transformation ----------------------------------------------------------- //
+  override def strict: StrictOrderedMap[E, D, V] = defaultStrict
 
   // Protected section -------------------------------------------------------- //
   @inline

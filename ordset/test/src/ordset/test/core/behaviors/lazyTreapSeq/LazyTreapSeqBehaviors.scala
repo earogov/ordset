@@ -109,19 +109,31 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
       implicit val zvalueOps: ValueOps[ZValue[E, D, V]] = sample.testZvalueOps
 
       it(s"should have valid state of $sample after concurrent random access") {
+        runTest(withStrictConversion = false)
+      }
 
+      it(s"should have valid state of $sample after concurrent random access and conversion to strict sequence") {
+        runTest(withStrictConversion = true)
+      }
+
+      def runTest(withStrictConversion: Boolean): Unit = {
         // Get copy of sequence. Further operation will not affect on state of original.
         val seq = sample.sequence
 
-        val future = Future.sequence((1 to tasksNum).map( _ =>
+        // One of the tasks should execute conversion into strict sequence.
+        val rng = sample.rngManager.newUnsafeUniformRng()
+        val strictTaskNum = rng.nextInt(tasksNum) + 1
+
+        val future = Future.sequence((1 to tasksNum).map { i =>
           Future {
             try {
-              LazyTreapSeqUtil.shuffleLazySeq(seq, sample.extendedBounds)
+              if (withStrictConversion && i == strictTaskNum) seq.strict
+              else LazyTreapSeqUtil.shuffleLazySeq(seq, sample.extendedBounds)
             } catch {
               case e: AssertionError => fail(e)
             }
           }
-        ))
+        })
         Await.result(future, timeout)
 
         assertSameRelationAndSegmentSeq(sample.reference, seq)

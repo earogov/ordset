@@ -44,9 +44,9 @@ trait SampleLT1[D[X] <: Domain[X]]
           true forAll (x >= 2 & x <= 8),
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x > 8 & x <= 10),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x > 8 & x <= 10),
             someLazyZvalue forAll (x > 10)
           )
         ),
@@ -55,11 +55,11 @@ trait SampleLT1[D[X] <: Domain[X]]
           true forAll (x >= 15 & x <= 20),
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, StrictValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
+            (false, StrictValue.stable[Int, D, Boolean]) forAll (x > 20)
           )
         ),
         LazyTreapSeqCacheTest.SegmentTestCase(
@@ -77,11 +77,11 @@ trait SampleLT1[D[X] <: Domain[X]]
           false forAll (x > 8 & x < 15),
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, StrictValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
+            (false, StrictValue.stable[Int, D, Boolean]) forAll (x > 20)
           )
         ),
         LazyTreapSeqCacheTest.SegmentTestCase(
@@ -99,9 +99,9 @@ trait SampleLT1[D[X] <: Domain[X]]
           false,
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x > 8 & x <= 10),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x > 8 & x <= 10),
             someLazyZvalue forAll (x > 10),
           )
         ),
@@ -110,11 +110,11 @@ trait SampleLT1[D[X] <: Domain[X]]
           false,
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
-            (true, EagerValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
-            (false, EagerValue.stable[Int, D, Boolean]) forAll (x > 20)
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x < 2),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 2 & x <= 8),
+            (false, StrictValue.stable[Int, D, Boolean]) forAll (x > 8 & x < 15),
+            (true, StrictValue.stable[Int, D, Boolean]) forAll (x >= 15 & x <= 20),
+            (false, StrictValue.stable[Int, D, Boolean]) forAll (x > 20)
           )
         ),
         LazyTreapSeqCacheTest.ValueTestCase(

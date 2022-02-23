@@ -44,7 +44,7 @@ object LazyTreapSeqUtil {
 
   /**
    * Takes input sequence and builds equivalent lazy sequence with random internal state:
-   * different parts of sequence may be lazy or eager.
+   * different parts of sequence may be lazy or strict.
    */
   def makeRandomLazySeq[E, D[X] <: Domain[X], V](
     seq: SegmentSeq[E, D, V]

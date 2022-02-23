@@ -4,6 +4,14 @@ import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.Domain
 import ordset.core.segmentSeq.map.LazyTreapOrderedMap
 
+/**
+ * Base class for segment sequences.
+ * 
+ * @tparam E type of elements on ordered domain
+ * @tparam D type of ordered domain
+ * @tparam V type of value assigned to range of elements
+ * @tparam S type of range state
+ */
 abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSeqT[E, D, V, S] {
 
   // Transformation ----------------------------------------------------------- //

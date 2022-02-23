@@ -82,7 +82,7 @@ trait SampleLT1[D[X] <: Domain[X]]
           false,
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 10),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 10),
             someLazyZvalue forAll (x > 10 & x <= 20),
             someLazyZvalue forAll (x > 20)
           )
@@ -92,7 +92,7 @@ trait SampleLT1[D[X] <: Domain[X]]
           false,
           List(
             someLazyZvalue forAll (x < 0),
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 20),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x >= 0 & x <= 20),
             someLazyZvalue forAll (x > 20)
           )
         ),
@@ -110,7 +110,7 @@ trait SampleLT1[D[X] <: Domain[X]]
           -5 `)`,
           false,
           List(
-            (false, EagerValue.unstable[Int, D, Boolean]) forAll (x < 0),
+            (false, StrictValue.unstable[Int, D, Boolean]) forAll (x < 0),
             someLazyZvalue forAll (x >= 0 & x <= 10),
             someLazyZvalue forAll (x > 10 & x <= 20),
             someLazyZvalue forAll (x > 20)

@@ -14,9 +14,8 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitC
 import AbstractTreapSegmentSeq.*
 import ordset.core.segmentSeq.util.TreapSegmentSeqUtil
 
-// TODO: class description.
 abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
-  extends AbstractSegmentSeq[E, D, V, TreapSegmentBase[E, D, V]] {
+  extends AbstractStrictSegmentSeq[E, D, V, TreapSegmentBase[E, D, V]] {
   
   // Inspection --------------------------------------------------------------- //
   /**

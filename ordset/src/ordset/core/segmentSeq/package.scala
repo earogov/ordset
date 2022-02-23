@@ -20,6 +20,8 @@ package object segmentSeq {
 
   type SegmentSeq[E, D[X] <: Domain[X], V] = SegmentSeqT[E, D, V, Any]
 
+  type StrictSegmentSeq[E, D[X] <: Domain[X], V] = StrictSegmentSeqT[E, D, V, Any]
+
   // Uniform sequence --------------------------------------------------------- //
   type UniformSegment[E, D[X] <: Domain[X], V] = AbstractUniformSegmentSeq.UniformSingleSegment[E, D, V]
 

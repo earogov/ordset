@@ -61,6 +61,8 @@ class UniformOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeSliced(testSuite)
 
     it should behave like segmentCanBePatched(testSuite)
+
+    it should behave like segmentSeqCanBeConvertedIntoStrictSequence(testSuite)
   }
 
   describe("Uniform ordered set lazy operations:") {

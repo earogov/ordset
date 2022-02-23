@@ -8,7 +8,6 @@ import ordset.core.segmentSeq.internal.lazySeq.LazySegmentSeqBuilder
 import ordset.core.segmentSeq.internal.SegmentSeqExceptionUtil.*
 import AbstractZippedSegmentSeq.*
 
-// TODO: class description.
 abstract class AbstractZippedSegmentSeq[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
   extends AbstractSegmentSeq[E, D, V, ZippedSegmentBase[E, D, U1, U2, V, S1, S2]] {
   

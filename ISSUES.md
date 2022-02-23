@@ -33,3 +33,16 @@ only inside library) to explicitly define uninitialized state.
 6. Override `contravariant` and `reversed` methods of `DefaultOrder` for `Bound` and `ExtendedBound`.
 
 `DefaultOrder` also extends `Hash`. We should return more precise type, that includes `Hash`, for  `contravariant` and `reversed` methods.
+
+7. [Closed] Provide `StrictSegmentSeq` subtype of segment sequence.
+
+It will allow distinguish lazy sequences (which need some additional computations to return segment or value) from
+strict ones, for instance, `TreapOrderedSet`, `ArrayOrderedSet`, etc.
+
+8. [Closed] Provide `strict` method for segment sequence.
+
+Method should convert lazy sequence into strict one with subtype `StrictSegmentSeq` (see issue 7).
+
+9. Further optimization of `strict` method of `AbstractLazyTreapSegmentSeq`.
+
+See docs for `ZSegmentSeqBuilder.strictZippedSeq`.

@@ -87,6 +87,8 @@ class TreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeSliced(testSuite)
 
     it should behave like segmentCanBePatched(testSuite)
+
+    it should behave like segmentSeqCanBeConvertedIntoStrictSequence(testSuite)
   }
 
   describe("Treap based ordered set lazy operations:") {

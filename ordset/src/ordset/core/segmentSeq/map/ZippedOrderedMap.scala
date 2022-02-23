@@ -30,6 +30,9 @@ class ZippedOrderedMap[E, D[X] <: Domain[X], U1, U2, V, S1, S2] protected (
   @inline
   final override def secondInvariant(value: U2): Boolean = secondInvariantFunc(value)
 
+  // Transformation ----------------------------------------------------------- //
+  override def strict: StrictOrderedMap[E, D, V] = defaultStrict
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)

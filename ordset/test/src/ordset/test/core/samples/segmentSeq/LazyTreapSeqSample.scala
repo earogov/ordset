@@ -51,7 +51,7 @@ abstract class LazyTreapSeqSample[E, D[X] <: Domain[X], V](
    * Reference list of interval relations that equivalent to [[lazySeq.getZippedSeq]] after all lazy value are computed.
    */
   lazy val zippedReference: Seq[IntervalRelation[E, D, ZValue[E, D, V]]] =
-    reference.map(_.mapValue((_, EagerValue.stable)))
+    reference.map(_.mapValue((_, StrictValue.stable)))
 }
 
 object LazyTreapSeqSample {
@@ -100,10 +100,10 @@ object LazyTreapSeqSample {
 
   /**
    * Sample with lazy sequence which internal state is kept fixed during access. Each time [[sequence]] is called
-   * it returns sequence with exactly the same lazy and eager parts.
+   * it returns sequence with exactly the same lazy and strict parts.
    *
    * If `shuffled` == `false` then sequence is returned in totally lazy state. Otherwise state is randomized
-   * to provide some parts to be eager.
+   * to provide some parts to be strict.
    */
   abstract class Fixed[E, D[X] <: Domain[X], V](
     shuffled: Boolean
@@ -118,7 +118,7 @@ object LazyTreapSeqSample {
      * Returns lazy sequence.
      *
      * Note, each method call returns copy of sequence. So during tests state of original sequence never changes
-     * (lazy and eager parts stay the same).
+     * (lazy and strict parts stay the same).
      */
     override def sequence: LazyTreapSegmentSeq[E, D, V] = LazyTreapSegmentSeq.clone(lazySeq)
 

@@ -90,6 +90,8 @@ class LazyTreapOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeSliced(defaultSuite)
 
     it should behave like segmentCanBePatched(defaultSuite)
+
+    it should behave like segmentSeqCanBeConvertedIntoStrictSequence(defaultSuite)
   }
 
   describe("Lazy treap ordered set specific operations:") {

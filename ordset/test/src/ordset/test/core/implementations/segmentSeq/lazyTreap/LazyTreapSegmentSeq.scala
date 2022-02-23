@@ -39,7 +39,7 @@ class LazyTreapSegmentSeq[E, D[X] <: Domain[X], V] protected (
     new LazyTreapSegmentSeq(
       makeZippedSeq(
         makeUniformBaseSeq(value),
-        makeUniformControlSeq(EagerValue.stable)
+        makeUniformControlSeq(StrictValue.stable)
       )
     )
 
@@ -86,7 +86,7 @@ object LazyTreapSegmentSeq {
     new LazyTreapSegmentSeq(original.getZippedSeq)(original.domainOps, original.valueOps, original.rngManager)
 
   /**
-   * Returns factory that creates lazy treap ordered map with random internal state (random lazy and eager parts).
+   * Returns factory that creates lazy treap ordered map with random internal state (random lazy and strict parts).
    */
   def getRandomMapFactory[E, D[X] <: Domain[X], V](
     implicit boundSelector: BoundSelector[E]

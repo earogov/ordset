@@ -6,9 +6,8 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.segmentSeq.set.NonuniformTreapOrderedSet
 import AbstractUniformSegmentSeq.*
 
-// TODO: class description.
 abstract class AbstractUniformSegmentSeq[E, D[X] <: Domain[X],  V]
-  extends AbstractSegmentSeq[E, D, V, UniformSingleSegment[E, D, V]] {
+  extends AbstractStrictSegmentSeq[E, D, V, UniformSingleSegment[E, D, V]] {
 
   // Inspection --------------------------------------------------------------- //
   final override def isEmpty: Boolean = !isValueIncluded(value)

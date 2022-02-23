@@ -28,7 +28,7 @@ class LazyTreapOrderedMap[E, D[X] <: Domain[X], V] protected (
     new LazyTreapOrderedMap(
       makeZippedSeq(
         makeUniformBaseSeq(value),
-        makeUniformControlSeq(EagerValue.stable)
+        makeUniformControlSeq(StrictValue.stable)
       )
     )
 

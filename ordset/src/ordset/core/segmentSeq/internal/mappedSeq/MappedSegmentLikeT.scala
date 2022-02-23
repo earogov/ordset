@@ -11,8 +11,8 @@ import scala.collection.{AbstractIterable, AbstractIterator}
 /**
  * Segment which maps value of original segment.
  *
- * @tparam E type of element in ordered set
- * @tparam D type of elements domain
+ * @tparam E type of elements on ordered domain
+ * @tparam D type of ordered domain
  * @tparam U type of original value assigned to interval of elements
  * @tparam V type of new value assigned to interval of elements
  * @tparam S1 type of additional state of original segment

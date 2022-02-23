@@ -6,14 +6,23 @@ import ordset.core.domain.Domain
 import scala.collection.immutable.ArraySeq
 
 /**
- * For common description of segment sequence see [[SegmentSeq]].
+ * Implementation of segment sequence (see [[SegmentSeq]]) based array.
+ * 
+ * Upper bounds of segments are stored in `bounds` array:
+ * {{{
  *
+ *   Segment 0       Segment 1       Segment 2   - segment index
+ *              0                 1              - bound index
+ * -------------|-----------------|------------
+ *       A               B              C        - value
+ * }}}
+ * Upper bound of last segment is not stored.
+ * 
  * <u>Class is not intended to model empty and universal sets.</u>
- * For such cases implementation based on [[UniformSegmentSeq]] can be used.
+ * For such cases implementation based on [[UniformSegmentSeq]] should be used.
  *
- * Upper bounds of segments are stored in `bounds` array based collection.
- *
- * <tr>`bounds` collection must be non-empty. </tr>
+ * Preconditions:
+ * <tr>`bounds` array must be non-empty.</tr>
  */
 abstract class AbstractArraySegmentSeq[E, D[X] <: Domain[X], V] extends AbstractIndexedSegmentSeq[E, D, V] {
 

@@ -65,6 +65,8 @@ class ArrayOrderedSetSpec extends AnyFunSpec
     it should behave like segmentSeqCanBeSliced(testSuite)
 
     it should behave like segmentCanBePatched(testSuite)
+
+    it should behave like segmentSeqCanBeConvertedIntoStrictSequence(testSuite)
   }
 
   describe("Array based ordered set lazy operations:") {

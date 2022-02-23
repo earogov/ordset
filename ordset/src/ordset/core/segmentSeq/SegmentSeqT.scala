@@ -99,10 +99,10 @@ import scala.specialized as sp
  * </tr>
  * <tr></tr>
  * 
- * @tparam E type of element in ordered set
- * @tparam D type of elements domain
- * @tparam V type of value assigned to interval of elements
- * @tparam S type of additional segment state
+ * @tparam E type of elements on ordered domain
+ * @tparam D type of ordered domain
+ * @tparam V type of value assigned to range of elements
+ * @tparam S type of range state
  */
 trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
@@ -1084,6 +1084,22 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
       new ValueOps.Tuple2Impl(InclusionPredicate.alwaysIncluded, other.valueOps, valueOps), 
       rngManager
     )
+
+  /**
+   * Converts given segment sequence into strict one. 
+   * 
+   * By default `zip`, `map`, `flatMap` and other operations may produce lazy sequence. Such sequences require 
+   * additional computations to return segment or value. For instance, mapped sequence receives segment of original 
+   * sequence and then applies mapping function to its value. This strategy is memory efficient for large sequences, 
+   * since we don't create new data structure to store mapped sequence. But long chain of lazy operations (i.e when
+   * we apply `map`, `zip`, etc. many times in a row) can cause performance penalty, especially when one needs to
+   * repeatedly request same segment or value.
+   *
+   * [[strict]] method allows to convert lazy sequence into strict one. Thus, lazy operations are applied only once,
+   * and the result is stored in some data structure, which provides efficient access. If segment sequence is already
+   * strict, no conversion is performed.
+   */
+  def strict: StrictSegmentSeq[E, D, V]
 }
 
 object SegmentSeqT {

@@ -24,6 +24,9 @@ class MappedValueOrderedMap[E, D[X] <: Domain[X], U, V, S] protected (
 ) extends AbstractMappedValueSegmentSeq[E, D, U, V, S]
   with OrderedMapCommons[E, D, V, MappedSegmentBase[E, D, U, V, S]] {
 
+  // Transformation ----------------------------------------------------------- //
+  override def strict: StrictOrderedMap[E, D, V] = defaultStrict
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)

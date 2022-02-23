@@ -9,4 +9,9 @@ trait OrderedMapCommons[E, D[X] <: Domain[X], V, +S] {
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def isValueIncluded(value: V): Boolean = valueOps.isIncluded(value)
+
+  /**
+   * Default implementation for [[SegmentSeqT.strict]] method.
+   */
+  protected def defaultStrict: StrictOrderedMap[E, D, V] = TreapOrderedMap.getFactory.convertMap(this)
 }
