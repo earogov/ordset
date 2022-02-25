@@ -28,8 +28,8 @@ object TreapSegmentSeqUtil {
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
     segment match {
-      case s: NonuniformTreapSegmentBase[_, _, _] => s.takeBelow
-      case s: UniformSegment[_, _, _] => s.takeBelow
+      case s: NonuniformTreapSegmentBase[E, D, V] => s.takeBelow
+      case s: UniformSegment[E, D, V] => s.takeBelow
     }
 
   /**
@@ -64,8 +64,8 @@ object TreapSegmentSeqUtil {
   ): TreapSegmentSeq[E, D, V] =
     // We have to pattern match here due to type inference issue.
     segment match {
-      case s: NonuniformTreapSegmentBase[_, _, _] => s.takeAbove
-      case s: UniformSegment[_, _, _] => s.takeAbove
+      case s: NonuniformTreapSegmentBase[E, D, V] => s.takeAbove
+      case s: UniformSegment[E, D, V] => s.takeAbove
     }
 
   /**
@@ -100,8 +100,8 @@ object TreapSegmentSeqUtil {
   ): (TreapSegmentSeq[E, D, V], TreapSegmentSeq[E, D, V]) =
     // We have to pattern match here due to type inference issue.
     segment match {
-      case s: NonuniformTreapSegmentBase[_, _, _] => s.slice
-      case s: UniformSegment[_, _, _] => s.slice
+      case s: NonuniformTreapSegmentBase[E, D, V] => s.slice
+      case s: UniformSegment[E, D, V] => s.slice
     }
 
   /**
@@ -197,7 +197,7 @@ object TreapSegmentSeqUtil {
     otherSeq: SegmentSeq[E, D, V]
   ): TreapSegmentSeq[E, D, V] =
     segment match {
-      case s: NonuniformTreapSegmentBase[_, _, _] => s.patch(otherSeq)
-      case _: UniformSegment[_, _, _] => TreapOrderedMap.getFactory.convertMap(otherSeq)
+      case s: NonuniformTreapSegmentBase[E, D, V] => s.patch(otherSeq)
+      case _: UniformSegment[E, D, V] => TreapOrderedMap.getFactory.convertMap(otherSeq)
     }
 }

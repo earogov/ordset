@@ -11,7 +11,7 @@ import ordset.core.segmentSeq.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrd
 import ordset.core.segmentSeq.util.{TreapSegmentSeqBuilder, TreapSegmentSeqUtil}
 import ordset.random.RngManager
 import ordset.tree.treap.mutable.MutableTreap
-import ordset.util.OptionUtil
+import ordset.util.{OptionUtil, NowarnFilter}
 
 import scala.annotation.tailrec
 
@@ -559,6 +559,16 @@ protected[ordset] object ZSegmentSeqBuilder {
     MappedSegmentWithNext[E, D, SeqSupplier[E, D, V], Boolean, Any]
 
 
+  private type InitialZSegment[E, D[X] <: Domain[X], V] =
+    ZippedTupleSegment[
+      E,
+      D,
+      Boolean,
+      V,
+      MappedSegmentBase[E, D, SeqSupplier[E, D, V], Boolean, Any],
+      Any
+    ]
+
   private type InitialZSegmentWithPrev[E, D[X] <: Domain[X], V] =
     ZippedTupleSegmentWithPrev[
       E,
@@ -636,7 +646,7 @@ protected[ordset] object ZSegmentSeqBuilder {
       val maskTruncation = maskSegment.movePrev.upperTruncation
       val zippedTruncation = maskTruncation.zipIntoTuple(baseSeq)
       val zippedSegment = zippedTruncation.segment
-      zippedSegment match {
+      (zippedSegment: InitialZSegment[E, D, V]) match {
         case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
           if (builder.hasLastBound(zippedSegment.upper))
             // Bound had been already added => nothing to do.
@@ -652,7 +662,7 @@ protected[ordset] object ZSegmentSeqBuilder {
         case _ =>
           // `zippedSegment` contains previous segment of `maskSegment` => `zippedSegment` has next segment.
           throwNoNextSegment(zippedSegment)
-      }
+      }: @annotation.nowarn(NowarnFilter.unreachableCase)
     }
 
     @tailrec
@@ -678,12 +688,12 @@ protected[ordset] object ZSegmentSeqBuilder {
     ): ControlSeqBuilder[E, D, V] = {
       val maskTruncation = maskSegment.moveNext.lowerTruncation
       val zippedTruncation = maskTruncation.zipIntoTuple(baseSeq)
-      zippedTruncation.segment match {
+      (zippedTruncation.segment: InitialZSegment[E, D, V]) match {
         case zippedSegment: InitialZSegmentWithNext[E, D, V] =>
           builder.addBound(zippedSegment.upper, StrictValue.unstable)
         case _ =>
           builder
-      }
+      }: @annotation.nowarn(NowarnFilter.unreachableCase)
     }
 
     @tailrec
@@ -697,7 +707,7 @@ protected[ordset] object ZSegmentSeqBuilder {
         maskSegment match {
           case maskSegment: LazyMaskSegmentWithPrev[E, D, V] => addLeftUnstableSegment(maskSegment, builder)
           case _ => // nothing to do
-        }
+        }: @annotation.nowarn(NowarnFilter.unreachableCase)
         // p.2.2.
         addLazySegments(maskSegment.back, builder)
 
@@ -713,12 +723,12 @@ protected[ordset] object ZSegmentSeqBuilder {
             // Builder doesn't have last value => `addLazySegments` haven't found last segment =>
             // there must be next segment after `maskSegment`.
             throwNoNextSegment(maskSegment)
-        }
+        }: @annotation.nowarn(NowarnFilter.unreachableCase)
       // `lazySeq` contains `None`.
       } else maskSegment match {
         case s: LazyMaskSegmentWithNext[E, D, V] => traverseMaskSeq(s.moveNext, builder)
         case _ => builder.setLastValue(StrictValue.stable)
-      }
+      }: @annotation.nowarn(NowarnFilter.unreachableCase)
 
     val lazyMaskSeq = supplierSeq.map(_.isDefined)(ValueOps.booleanValueOps)
 

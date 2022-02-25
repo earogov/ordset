@@ -48,14 +48,14 @@ trait LazyTreapSeqBehaviors[E, D[X] <: Domain[X], V] {
           val seq = sample.sequence
 
           testPackage.cases.foreach {
-            case testCase: SegmentTestCase[_, _, _] =>
+            case testCase: SegmentTestCase[E, D, V] =>
               // Repeated call must return the same segment and leave the same state.
               (1 to 2) foreach { i =>
                 val segment = seq.getSegmentForExtended(testCase.bound)
                 assertSameRelationAndSegment(testCase.expectedSegment, segment, s"iteration $i")
                 assertSameRelationAndSegmentSeq(testCase.expectedState, seq.getZippedSeq, s"iteration $i")
               }
-            case testCase: ValueTestCase[_, _, _] =>
+            case testCase: ValueTestCase[E, D, V] =>
               // Repeated call must return the same value and leave the same state.
               (1 to 2) foreach { i =>
                 val seqValue = seq.getValueForExtended(testCase.bound)

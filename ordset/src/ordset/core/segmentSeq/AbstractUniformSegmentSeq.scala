@@ -3,7 +3,6 @@ package ordset.core.segmentSeq
 import ordset.core.{Bound, ExtendedBound}
 import ordset.core.value.ValueOps
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.core.segmentSeq.set.NonuniformTreapOrderedSet
 import AbstractUniformSegmentSeq.*
 
 abstract class AbstractUniformSegmentSeq[E, D[X] <: Domain[X],  V]
@@ -173,7 +172,7 @@ object AbstractUniformSegmentSeq {
    * Single segment of sequence. It has no previous and next segments.
    */
   final case class UniformSingleSegment[E, D[X] <: Domain[X], V](
-    override val sequence: UniformSegmentSeq[E, D, V]
+    override val sequence: AbstractUniformSegmentSeq[E, D, V]
   ) extends SegmentT.Single[E, D, V, UniformSingleSegment[E, D, V]] {
 
     // Inspection --------------------------------------------------------------- //

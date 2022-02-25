@@ -21,7 +21,7 @@ object CommonsRngFactory {
    * @return the RNG.
    */
   def create(source: RandomSource): UnsafeUniformRng =
-    new UniformRandomProviderProxy(RandomSource.create(source))
+    new UniformRandomProviderProxy(source.create)
 
   /**
    * Creates a random number generator with the given `seed`.
@@ -38,5 +38,5 @@ object CommonsRngFactory {
    *                               generator implemented by the given `source`.
    */
   def create(source: RandomSource, seed: Any, data: Any*): UnsafeUniformRng =
-    new UniformRandomProviderProxy(RandomSource.create(source, seed, data: _*))
+    new UniformRandomProviderProxy(source.create(seed, data: _*))
 }

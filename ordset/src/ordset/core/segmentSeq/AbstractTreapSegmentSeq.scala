@@ -13,6 +13,7 @@ import ordset.tree.treap.immutable.traverse.{NodeAside, NodeDownward, NodeUpward
 import ordset.tree.treap.immutable.{ImmutableTreap, NodeStackContext, NodeVisitContext}
 import AbstractTreapSegmentSeq.*
 import ordset.core.segmentSeq.util.TreapSegmentSeqUtil
+import ordset.util.NowarnFilter
 
 abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
   extends AbstractStrictSegmentSeq[E, D, V, TreapSegmentBase[E, D, V]] {
@@ -401,10 +402,10 @@ abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
     val originalLeftSequence: TreapSegmentSeq[E, D, V] =
       if (originalBoundMatch && !boundValuesMatch) originalBoundSegment match {
         case s: TreapSegmentWithNext[E, D, V] => s.moveNext.takeBelow
-        case _ =>
+        case _ => 
           // `originalBoundMatch` == `true` => `originalBoundSegment` has upper bound => impossible to get here
           throw new AssertionError(s"Expected segment $originalBoundSegment has next segment.")
-      }
+      }: @annotation.nowarn(NowarnFilter.unreachableCase)
       else originalBoundSegment.takeBelow
 
     val boundOrd = domainOps.boundOrd

@@ -4,17 +4,18 @@ import scalalib._
 
 object ordset extends ScalaModule {
 
-  def scalaVersion = "3.0.0"
+  def scalaVersion = "3.1.1"
 
   override def scalacOptions = Seq(
     "-language:implicitConversions",
     "-language:higherKinds",
     "-deprecation",
-    "-Yexplicit-nulls"
+    "-Yexplicit-nulls",
+    "-Wunused:nowarn"
   )
 
   override def ivyDeps = Agg(
-    ivy"org.typelevel::cats-core:2.6.1"
+    ivy"org.typelevel::cats-core:2.7.0"
   )
 
   object test extends Tests {
@@ -24,8 +25,8 @@ object ordset extends ScalaModule {
     override def moduleDeps = Seq(commonsRandom)
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.9",
-      ivy"org.scalatestplus::junit-4-13:3.2.9.0"
+      ivy"org.scalatest::scalatest:3.2.11",
+      ivy"org.scalatestplus::junit-4-13:3.2.11.0"
     )
 
     /**
@@ -42,18 +43,19 @@ object ordset extends ScalaModule {
 
 object commonsRandom extends ScalaModule {
 
-  def scalaVersion = "3.0.0"
+  def scalaVersion = "3.1.1"
 
   override def scalacOptions = Seq(
     "-language:implicitConversions",
     "-language:higherKinds",
     "-deprecation",
-    "-Yexplicit-nulls"
+    "-Yexplicit-nulls",
+    "-Wunused:nowarn"
   )
 
   override def ivyDeps = Agg(
-    ivy"org.apache.commons:commons-rng-simple:1.3",
-    ivy"org.apache.commons:commons-rng-client-api:1.3"
+    ivy"org.apache.commons:commons-rng-simple:1.4",
+    ivy"org.apache.commons:commons-rng-client-api:1.4"
   )
 
   override def moduleDeps = Seq(ordset)
@@ -63,8 +65,8 @@ object commonsRandom extends ScalaModule {
     override def testFramework = "org.scalatest.tools.Framework"
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.9",
-      ivy"org.scalatestplus::junit-4-13:3.2.9.0"
+      ivy"org.scalatest::scalatest:3.2.11",
+      ivy"org.scalatestplus::junit-4-13:3.2.11.0"
     )
   }
 }

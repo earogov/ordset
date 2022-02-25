@@ -197,7 +197,10 @@ package object ordset {
         kernel.instances.tuple.catsKernelStdHashForTuple2
 
       implicit def tuple2Show[T1, T2](implicit ev1: Show[T1], ev2: Show[T2]): Show[(T1, T2)] =
-        cats.instances.tuple.catsStdShowForTuple2
+        new Show[(T1, T2)] {
+          override def show(f: (T1, T2)): String =
+            s"(${ev1.show(f._1)},${ev2.show(f._2)})"
+        }
     }
 
     object either {
