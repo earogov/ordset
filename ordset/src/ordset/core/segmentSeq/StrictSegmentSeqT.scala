@@ -4,8 +4,8 @@ import ordset.core.domain.Domain
 
 /**
  * According to evaluation strategy the following types of segment sequences are distinguished:
- * <tr>- strict</tr>
- * <tr>- lazy</tr>
+ * <div>- strict</div>
+ * <div>- lazy</div>
  * 
  * Lazy sequences perform some additional computations to return segment or value. For instance, mapped sequence 
  * receives segment of original sequence and then applies mapping function to its value; zipped sequence gets

@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Implementation of [[AbstractLazyTreapSegmentSeq]] for tests. It provides:
- * <tr>- access to zipped sequence;</tr>
- * <tr>- simplified creation and clone operation.</tr>
+ * <div>- access to zipped sequence;</div>
+ * <div>- simplified creation and clone operation.</div>
  */
 class LazyTreapSegmentSeq[E, D[X] <: Domain[X], V] protected (
   initZippedSeq: ZSegmentSeq[E, D, V]
@@ -95,8 +95,8 @@ object LazyTreapSegmentSeq {
 
   /**
    * Implementation of [[ordset.Hash]] for [[ControlValue]] for tests:
-   * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-   * <tr>- all other control values are compared according to input `valueHash`.</tr>
+   * <div>- all lazy control values are considered equals and have same hash code;</div>
+   * <div>- all other control values are compared according to input `valueHash`.</div>
    */
   final class TestControlValueHash[E, D[X] <: Domain[X], V](
     val valueHash: Hash[ControlValue[E, D, V]]
@@ -123,8 +123,8 @@ object LazyTreapSegmentSeq {
 
   /**
    * Implementation of [[ValueOps]] for [[ControlValue]] for tests:
-   * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-   * <tr>- all other control values are compared according to input `valueOps`.</tr>
+   * <div>- all lazy control values are considered equals and have same hash code;</div>
+   * <div>- all other control values are compared according to input `valueOps`.</div>
    */
   final class TestControlValueOps[E, D[X] <: Domain[X], V](
     val valueOps: ValueOps[ControlValue[E, D, V]]
@@ -149,8 +149,8 @@ object LazyTreapSegmentSeq {
 
     /**
      * Implementation of [[ValueOps]] for [[ZValue]] for tests:
-     * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-     * <tr>- all other control values are compared according to input `valueOps`.</tr>
+     * <div>- all lazy control values are considered equals and have same hash code;</div>
+     * <div>- all other control values are compared according to input `valueOps`.</div>
      */
     def get[E, D[X] <: Domain[X], V](valueOps: ValueOps[ZValue[E, D, V]]): ValueOps[ZValue[E, D, V]] = {
       val firstOps: ValueOps[V] =

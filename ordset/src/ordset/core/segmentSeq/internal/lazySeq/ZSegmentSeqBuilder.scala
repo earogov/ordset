@@ -19,21 +19,21 @@ protected[ordset] object ZSegmentSeqBuilder {
 
   /**
    * Creates lazy segment sequence (*1) using two input sequences:
-   * <tr>1. `baseSeq` - segment sequence with base values;</tr>
-   * <tr>2. `supplierSeq` - segment sequence with optional lazy values.</tr>
-   * <tr></tr>
+   * <div>1. `baseSeq` - segment sequence with base values;</div>
+   * <div>2. `supplierSeq` - segment sequence with optional lazy values.</div>
+   * <div></div>
    * (*1) - Actually method returns zipped sequence [[ZSegmentSeq]]. But it is used as internal representation
    *        of [[AbstractLazyTreapSegmentSeq]]. So we can use [[ZSegmentSeq]] and lazy segment sequence as synonyms.
    * 
-   * <tr>
+   * <div>
    *   If segment of `supplierSeq` has [[None]] value then corresponding segments of output sequence have the same
    *   values as `baseSeq`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   If segment of `supplierSeq` has [[Some]] value with a function F: `() => segmentSeqF`, then corresponding
    *   segments of output sequence are lazy. Their values are completely defined by sequence `segmentSeqF` and
    *   corresponding values of `baseSeq` are ignored.
-   * </tr>
+   * </div>
    * {{{
    *
    *         A             B              C
@@ -399,10 +399,10 @@ protected[ordset] object ZSegmentSeqBuilder {
    * 
    * To build strict sequence one needs to evaluate all lazy segments and merge received sequences into common treap
    * data structure. The overall time cost depends on:
-   * <tr>- the number of nodes in the initial base sequence;</tr>
-   * <tr>- the number of lazy segments to evaluate;</tr>
-   * <tr>- the number of nodes in each lazy sequence;</tr>
-   * <tr>- the underlying data structure of each lazy sequence.</tr>
+   * <div>- the number of nodes in the initial base sequence;</div>
+   * <div>- the number of lazy segments to evaluate;</div>
+   * <div>- the number of nodes in each lazy sequence;</div>
+   * <div>- the underlying data structure of each lazy sequence.</div>
    * 
    * For simplicity let's consider idealized case of merging S segments with N nodes in each.
    * {{{
@@ -443,9 +443,9 @@ protected[ordset] object ZSegmentSeqBuilder {
    * Case II.
    * 
    * Now consider the case when there is S treap data structures. To merge each pair of treaps at bound `b` we need to:
-   * <tr>1. split left tree at bound `b`;</tr>
-   * <tr>2. split right tree at bound `b`;</tr>
-   * <tr>3. merge corresponding splitted parts.</tr>
+   * <div>1. split left tree at bound `b`;</div>
+   * <div>2. split right tree at bound `b`;</div>
+   * <div>3. merge corresponding splitted parts.</div>
    * 
    * Each split requires to traverse tree from the root to one of the leaves. Average cost of this operation is:
    *  
@@ -821,11 +821,11 @@ protected[ordset] object ZSegmentSeqBuilder {
     /**
      * Starting from `startSegment` iterates over corresponding sequence and builds new control sequence.
      * Iteration continues until first non-lazy segment is met (or until last segment of sequence).
-     * <tr></tr>
+     * <div></div>
      * 
      * Returns tuple of:
-     * <tr>- first non-lazy segment that was met, or [[None]] if there was no such segment;</tr>
-     * <tr>- new control sequence.</tr>
+     * <div>- first non-lazy segment that was met, or [[None]] if there was no such segment;</div>
+     * <div>- new control sequence.</div>
      * {{{
      * 
      *     u      ? (f1)    ? (f2)       u
@@ -836,12 +836,12 @@ protected[ordset] object ZSegmentSeqBuilder {
      *        ? (f1)              ? (f2)
      * X-----------------](------------------X - output control sequence
      * }}}
-     * <tr></tr>
+     * <div></div>
      * 
      * Output control sequence contains only bounds between lazy segments. Lower bound of `startSegment` and
      * upper bound of last lazy segment are not included. Lazy values are moved to new sequence without any
      * changes.
-     * <tr></tr>
+     * <div></div>
      * 
      * If `startSegment` is non-lazy then returns uniform sequence with value of `startSegment`.
      */
@@ -881,15 +881,15 @@ protected[ordset] object ZSegmentSeqBuilder {
     /**
      * Builds patch sequence for group of adjacent lazy segments starting from `startSegment` and applies it to 
      * `zippedSeq` (see p.2.).
-     * <tr></tr>
+     * <div></div>
      * 
      * Returns tuple of:
-     * <tr>
+     * <div>
      *   - first non-lazy segment that follows after group of lazy segments, or [[None]] if there is no such segment;
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   - new zipped sequence with applied patch.
-     * </tr>
+     * </div>
      * 
      * If `startSegment` is non-lazy then returns input `zippedSeq`.
      */ 

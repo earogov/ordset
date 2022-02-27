@@ -43,18 +43,18 @@ import scala.annotation.unchecked.uncheckedVariance
  * to make them contravariant. 
  * 
  * [[ContravariantOrder]] extends invariant [[Order]] to simplify interoperability: 
- * <tr>
+ * <div>
  *  - Most of methods can require as before invariant [[Order]], so there is no need to migrate all it's subclasses.
  *    In the same time new contravariant instances will also fit.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *  - When contravariance of order is really needed, then invariant instance can be converted into contravariant one
  *    with a wrapper (see [[OrderExtensions]]).
- * </tr>
+ * </div>
  * 
  * <h3>Note to unchecked variance</h3>
  * 
- * [[ContravariantOrder]] extends [[Order]] with [[uncheckedVariance]] annotation. Let's prove that it's safe.
+ * [[ContravariantOrder]] extends [[Order]] with [[scala.annotation.unchecked.uncheckedVariance]] annotation. Let's prove that it's safe.
  * 
  * If `Bar <: Foo`, then due to contravariance we can cast:
  * {{{
@@ -64,8 +64,8 @@ import scala.annotation.unchecked.uncheckedVariance
  * }}}
  * 
  * This leads to the following requirements:
- * <tr>1. Methods of [[Order]] that receives arguments of type `E`, must also be able to receive subtypes of `E`.</tr>
- * <tr>2. Methods of [[Order]] that produces result of type `E`, must also be able to produce subtypes of `E`.</tr>
+ * <div>1. Methods of [[Order]] that receives arguments of type `E`, must also be able to receive subtypes of `E`.</div>
+ * <div>2. Methods of [[Order]] that produces result of type `E`, must also be able to produce subtypes of `E`.</div>
  * 
  * Item 1 is trivial, because it must be valid for all well behaved methods.
  * 

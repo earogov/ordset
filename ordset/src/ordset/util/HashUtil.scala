@@ -111,16 +111,16 @@ protected[ordset] object HashUtil {
 
   /**
    * Returns [[Hash]] instance such that: 
-   * <tr>- two objects `x` and `y` are equal iff they are equal according to `hash1` and `hash2`;</tr>
-   * <tr>- hash of object `x` is calculated as a mix of hashes returned by `hash1` and `hash2`.</tr>
+   * <div>- two objects `x` and `y` are equal iff they are equal according to `hash1` and `hash2`;</div>
+   * <div>- hash of object `x` is calculated as a mix of hashes returned by `hash1` and `hash2`.</div>
    */
   def composeHash[E1, E2, E](hash1: Hash[E1], hash2: Hash[E2], f1: E => E1, f2: E => E2): Hash[E] = 
     new ComposedHash(hash1, hash2, f1, f2)
 
   /**
    * Returns [[Hash]] instance such that: 
-   * <tr>- two objects `x` and `y` are equal iff they have the same class name;</tr>
-   * <tr>- hash of object `x` is calculated by its class name.</tr>
+   * <div>- two objects `x` and `y` are equal iff they have the same class name;</div>
+   * <div>- hash of object `x` is calculated by its class name.</div>
    */
   def classBasedHash[E]: Hash[E] = ClassBasedHash.asInstanceOf[Hash[E]]
 

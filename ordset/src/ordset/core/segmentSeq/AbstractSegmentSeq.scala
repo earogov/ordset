@@ -88,9 +88,9 @@ abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSe
 
   /**
    * Adds support of unlimited bounds to [[prependBelowBoundInternal]]:
-   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</tr>
-   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence;</tr>
-   * <tr>otherwise result is the same as for method [[prependBelowBoundInternal]].</tr>
+   * <div>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</div>
+   * <div>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence;</div>
+   * <div>otherwise result is the same as for method [[prependBelowBoundInternal]].</div>
    */
   protected def prependBelowExtendedInternal(
     bound: ExtendedBound[E],
@@ -120,9 +120,9 @@ abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSe
 
   /**
    * Adds support of unlimited bounds to [[appendAboveExtendedInternal]]:
-   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</tr>
-   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;</tr>
-   * <tr>otherwise result is the same as for method [[appendAboveExtendedInternal]].</tr>
+   * <div>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</div>
+   * <div>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;</div>
+   * <div>otherwise result is the same as for method [[appendAboveExtendedInternal]].</div>
    */
   protected def appendAboveExtendedInternal(
     bound: ExtendedBound[E],
@@ -138,7 +138,7 @@ abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSe
   /**
    * Implementation of [[SegmentSeqT.patchLazy]].
    *
-   * Current sequence is used as a base sequence of [[LazyTreapOrderedMap]].
+   * Current sequence is used as a base sequence of [[ordset.core.segmentSeq.map.LazyTreapOrderedMap]].
    * Note, this may cause immediate conversion of current sequence into treap based one.
    */
   def patchLazyDefaultInternal(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] =
@@ -148,9 +148,9 @@ abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSe
    * Implementation of [[SegmentSeqT.patchLazy]].
    *
    * Segments of `supplierSeq` that has [[None]] value are replaced with function `() => this`. Then new version of
-   * `supplierSeq` is used to create [[LazyTreapOrderedMap]]. The result sequence will have completely lazy initial
-   * state. So conversion of current sequence into treap based will take place on demand (but with some overhead
-   * compared to [[patchLazyBaseSeqInternal]]).
+   * `supplierSeq` is used to create [[ordset.core.segmentSeq.map.LazyTreapOrderedMap]]. The result sequence will have 
+   * completely lazy initial state. So conversion of current sequence into treap based will take place on demand 
+   * (but with some overhead compared to [[patchLazyDefaultInternal]]).
    */
   def patchLazyDelayedInternal(supplierSeq: SupplierSegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
     val baseSeq = consUniform(valueOps.unit)

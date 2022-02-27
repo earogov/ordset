@@ -9,7 +9,7 @@ import ordset.random.RngManager
 
 /**
  * Ordered map which maps each segment of sequence `originalSeq` with function `valueMapFunc`.
- * <tr></tr>
+ * <div></div>
  * 
  * Adjacent segments with the same values after mapping are merged.
  */ 

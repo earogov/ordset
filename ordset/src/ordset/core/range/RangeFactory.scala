@@ -78,7 +78,7 @@ object RangeFactory {
      * Returns range of elements between `lower` (including) and `upper` (including).
      * 
      * Preconditions:
-     * <tr>1. `lower ≤ upper`</tr>
+     * <div>1. `lower ≤ upper`</div>
      * 
      * @tparam E type of range elements.
      */
@@ -121,9 +121,9 @@ object RangeFactory {
      * Returns range of elements between `lower` (including) and `upper` (including).
      * 
      * Preconditions:
-     * <tr>1. `lower ≤ upper`</tr>
-     * <tr>2. `order.lowerBound ≤ lower`</tr>
-     * <tr>3. `order.lowerBound ≤ upper`</tr>
+     * <div>1. `lower ≤ upper`</div>
+     * <div>2. `order.lowerBound ≤ lower`</div>
+     * <div>3. `order.lowerBound ≤ upper`</div>
      * 
      * @tparam E type of range elements.
      */
@@ -166,9 +166,9 @@ object RangeFactory {
      * Returns range of elements between `lower` (including) and `upper` (including).
      * 
      * Preconditions:
-     * <tr>1. `lower ≤ upper`</tr>
-     * <tr>2. `lower ≤ order.upperBound`</tr>
-     * <tr>3. `upper ≤ order.upperBound`</tr>
+     * <div>1. `lower ≤ upper`</div>
+     * <div>2. `lower ≤ order.upperBound`</div>
+     * <div>3. `upper ≤ order.upperBound`</div>
      * 
      * @tparam E type of range elements.
      */
@@ -230,9 +230,9 @@ object RangeFactory {
      * Returns range of elements between `lower` (including) and `upper` (including).
      * 
      * Preconditions:
-     * <tr>1. `lower ≤ upper`</tr>
-     * <tr>2. `order.lowerBound ≤ lower ≤ order.upperBound`</tr>
-     * <tr>3. `order.lowerBound ≤ upper ≤ order.upperBound`</tr>
+     * <div>1. `lower ≤ upper`</div>
+     * <div>2. `order.lowerBound ≤ lower ≤ order.upperBound`</div>
+     * <div>3. `order.lowerBound ≤ upper ≤ order.upperBound`</div>
      * 
      * @tparam E type of range elements.
      */

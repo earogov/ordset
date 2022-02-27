@@ -45,12 +45,12 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    * Preconditions 1 and 2 must be checked by factory implementation. It must throw [[SegmentSeqException]] in case of
    * failure.
    *
-   * 3. Sequence of bounds must be ordered with respect to [[Domain.extendedOrd]]:
+   * 3. Sequence of bounds must be ordered with respect to [[ordset.core.domain.DomainOps.extendedOrd]]:
    *
    *   bound,,i-1,, `<` bound,,i,, for all i in [1, seq.size - 1]
    * 
    * 4. All bounds in sequence, except last one, must be greater than or equal to the lower bound of
-   *    [[DomainOps.domain]]  and less that its upper bound:
+   *    [[ordset.core.domain.DomainOps.domain]]  and less that its upper bound:
    *
    *   domain.lowerBound `≤` bound,,i,, `<` domain.upperBound for all i in [0, seq.size - 2]
    *
@@ -59,8 +59,8 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    *   value,,i-1,, != value,,i,, for all i in [1, seq.size - 1]
    *
    * Factory implementations should delegate control of preconditions 3, 4, 5 to input `seq` iterable
-   * (see [[ValidatingIterable]]). This allows client to omit checks, if it's known, that sequence of bounds
-   * and values is valid (e.g. when it was supplied by another segment sequence).
+   * (see [[ordset.core.segmentSeq.validation.ValidatingIterable]]). This allows client to omit checks, if it's known, 
+   * that sequence of bounds and values is valid (e.g. when it was supplied by another segment sequence).
    * 
    * If validation is failed, then [[SegmentSeqException]] is thrown.
    *
@@ -80,7 +80,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   ): SSeq
   
   /**
-   * Same as [[unsafeBuildAsc]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuildAsc]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildAsc]] preconditions.
    */
@@ -138,7 +138,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
     )
 
   /**
-   * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildSingleBounded]] preconditions.
    */

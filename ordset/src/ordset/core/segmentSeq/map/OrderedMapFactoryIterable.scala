@@ -13,13 +13,13 @@ object OrderedMapFactoryIterable {
    * 
    * Iterable provides default validation for ordered maps:
    *
-   * <tr>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:</tr>
-   * <tr>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</tr>
-   * <tr>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.</tr>
+   * <div>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:</div>
+   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</div>
+   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.</div>
    * 
-   * <tr>2. Sequence of bounds must be monotonically increasing according to domain order.</tr>
+   * <div>2. Sequence of bounds must be monotonically increasing according to domain order.</div>
    * 
-   * <tr>3. Values associated with adjacent bounds must be different according to `valueOps` order.</tr>
+   * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.</div>
    */
   def default[E, D[X] <: Domain[X], V](
     iterable: Iterable[BoundValue[E, V]]
@@ -41,13 +41,13 @@ object OrderedMapFactoryIterable {
    * 
    * Iterable provides default validation for ordered maps:
    *
-   * <tr>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:</tr>
-   * <tr>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</tr>
-   * <tr>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.</tr>
+   * <div>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:</div>
+   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</div>
+   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.</div>
    * 
-   * <tr>2. Sequence of bounds must be monotonically increasing according to domain order.</tr>
+   * <div>2. Sequence of bounds must be monotonically increasing according to domain order.</div>
    * 
-   * <tr>3. Values associated with adjacent bounds must be different according to `valueOps` order.</tr>
+   * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.</div>
    */
   final class DefaultImpl[E, D[X] <: Domain[X], V](
     private val iterable: Iterable[BoundValue[E, V]],
@@ -71,11 +71,11 @@ object OrderedMapFactoryIterable {
   /**
    * Validation predicate for single tuple (upper bound, value) such that:
    *  
-   * <tr>
+   * <div>
    *   1. Returns `true` for given bound `b` iff satisfied at least one of the conditions according to domain order:
-   * </tr>
-   * <tr>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</tr>
-   * <tr>1.b. `b` `==` [[ExtendedBound.AboveAll]].</tr>
+   * </div>
+   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</div>
+   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]].</div>
    */
   final class DomainBoundsValidation[E, D[X] <: Domain[X], V](
     private val domainOps: DomainOps[E, D]
@@ -108,7 +108,7 @@ object OrderedMapFactoryIterable {
   /**
    * Validation predicate for pair of tuples (`prev` = (upper bound, value), `next` = (upper bound, value)) such that:
    *
-   * <tr>1. Returns `true` iff (`prev._1` `<` `next._1`) according to domain order.</tr>
+   * <div>1. Returns `true` iff (`prev._1` `<` `next._1`) according to domain order.</div>
    */
   final class AdjacentBoundsValidation[E, D[X] <: Domain[X], V](
     private val domainOps: DomainOps[E, D]
@@ -131,7 +131,7 @@ object OrderedMapFactoryIterable {
   /**
    * Validation predicate for pair of tuples (`prev` = (upper bound, value), `next` = (upper bound, value)) such that:
    *  
-   * <tr><1. Returns `true iff (`prev._2` `!=` `next._2`) according to `valueEq` typeclass.</tr>
+   * <div><1. Returns `true iff (`prev._2` `!=` `next._2`) according to `valueEq` typeclass.</div>
    */
   final class AdjacentValuesValidation[E, V](
     private val valueOps: ValueOps[V]

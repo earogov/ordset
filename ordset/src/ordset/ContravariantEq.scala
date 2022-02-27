@@ -4,7 +4,7 @@ import scala.annotation.unchecked.uncheckedVariance
 
 /**
  * Contravariant version of [[Eq]] typeclass (see [[ContravariantOrder]] for details on contravariance and 
- * [[uncheckedVariance]] annotation).
+ * [[scala.annotation.unchecked.uncheckedVariance]] annotation).
  */
 trait ContravariantEq[-E] extends Eq[E @uncheckedVariance] {
   

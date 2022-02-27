@@ -10,16 +10,16 @@ import ordset.random.RngManager
 
 /**
  * Ordered map which maps each segment of sequence `originalSeq` with function `segmentMapFunc`.
- * <tr></tr>
+ * <div></div>
  * 
  * Unlike [[MappedOrderedMap]] sequence doesn't try to merge adjacent segments after mapping.
  * So it can be used only if precondition is provided.
- * <tr></tr>
+ * <div></div>
  * 
  * Precondition:
- * <tr>
+ * <div>
  *   1. Adjacent segments after mapping must have different values (with respect to `valueOps.valueHash`).
- * </tr>
+ * </div>
  */ 
 protected[ordset] class NonMergingMappedOrderedMap[E, D[X] <: Domain[X], U, V, S] protected (
   override final val originalSeq: OrderedMapT[E, D, U, S],

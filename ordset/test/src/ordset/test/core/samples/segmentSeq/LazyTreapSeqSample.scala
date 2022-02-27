@@ -23,8 +23,8 @@ abstract class LazyTreapSeqSample[E, D[X] <: Domain[X], V](
 
   /**
    * Implementation of [[ValueOps]] for [[ZValue]] for tests:
-   * <tr>- all lazy control values are considered equals and have same hash code;</tr>
-   * <tr>- all other control values are compared according to `valueOps` of sequence.</tr>
+   * <div>- all lazy control values are considered equals and have same hash code;</div>
+   * <div>- all other control values are compared according to `valueOps` of sequence.</div>
    */
   lazy val testZvalueOps: ValueOps[ZValue[E, D, V]] = TestZValueOps.get(sequence.getZippedSeq.valueOps)
 

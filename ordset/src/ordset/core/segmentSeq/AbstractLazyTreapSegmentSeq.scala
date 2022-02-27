@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicReference
  * <b>3. Zipped sequence</b>
  *
  * Zipped sequence merges base and control sequences. Value of zipped segment is a tuple:
- * <tr>(value of base segment, control value)</tr>
+ * <div>(value of base segment, control value)</div>
  * {{{
  *
  *
@@ -78,17 +78,17 @@ import java.util.concurrent.atomic.AtomicReference
  * <h3>Output lazy sequence</h3>
  *
  * External api of the class is represented by lazy segments that wrap zipped segments. The basic rule is following:
- * <tr><u>only stable segments are exposed outside.</u></tr>
- * <tr></tr>
+ * <div><u>only stable segments are exposed outside.</u></div>
+ * <div></div>
  * Lazy and strict unstable segments are transformed into stable one on demand. In that case:
- * <tr>- new versions of base, control and zipped sequences are created such that required segment become stable;</tr>
- * <tr>- new versions of sequences are cached (with synchronization);</tr>
- * <tr>- stable segment is created and returned.</tr>
+ * <div>- new versions of base, control and zipped sequences are created such that required segment become stable;</div>
+ * <div>- new versions of sequences are cached (with synchronization);</div>
+ * <div>- stable segment is created and returned.</div>
  *
  * <h3>Stability condition</h3>
  *
  * Strict segment is stable iff it has no adjacent segments such that:
- * <tr>1. Segment is lazy.</tr>
+ * <div>1. Segment is lazy.</div>
  * {{{
  *
  *                ?        u
@@ -96,7 +96,7 @@ import java.util.concurrent.atomic.AtomicReference
  *             /              \
  *    lazy adjacent       segment is unstable
  * }}}
- * <tr>2. Segment is unstable, has the same value as current segment and has adjacent lazy segment.</tr>
+ * <div>2. Segment is unstable, has the same value as current segment and has adjacent lazy segment.</div>
  * {{{
  *               ?         u         u
  *          X--------](--------](---------
@@ -220,8 +220,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
 
   /**
    * Reference to zipped sequence which joins `baseSeq` and `controlSeq`. 
-   * <tr>`baseSeq` - is a cache with already computed values.</tr>
-   * <tr>`controlSeq` - contains lazy values, that hadn't been computed yet.</tr>
+   * <div>`baseSeq` - is a cache with already computed values.</div>
+   * <div>`controlSeq` - contains lazy values, that hadn't been computed yet.</div>
    * 
    * <h3>Note</h3>
    *
@@ -232,8 +232,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * due to covariance by S
    *
    * where
-   * <tr>S1 == [[TreapSegmentBase]]</tr>
-   * <tr>S2 == [[UniformSingleSegment]]</tr>
+   * <div>S1 == [[TreapSegmentBase]]</div>
+   * <div>S2 == [[UniformSingleSegment]]</div>
    */
   protected val zippedSeqRef: AtomicReference[ZSegmentSeq[E, D, V]]
 
@@ -247,19 +247,19 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
   protected def consLazy(zippedSeq: ZSegmentSeq[E, D, V]): LazySegmentSeq[E, D, V]
 
   /**
-   * <tr>1. If segment of input `ztruncation` is stable then returns it.</tr>
-   * <tr>2. Otherwise:</tr>
-   * <tr>
+   * <div>1. If segment of input `ztruncation` is stable then returns it.</div>
+   * <div>2. Otherwise:</div>
+   * <div>
    *   2.1. Applies [[provideStableSegment]] to input truncation to build new zipped sequence Z with stable segment
    *   at bound `ztruncation.bound`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2.2. Saves new sequence Z into `zippedSeqRef`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2.3. Returns segment of new sequence Z at bound `ztruncation.bound`.
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    */
   protected final def cacheStable(ztruncation: ZTruncation[E, D, V]): Stable.ZSegment[E, D, V] = {
     import scala.language.unsafeNulls
@@ -283,19 +283,19 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
   }
   
   /**
-   * <tr>1. If segment of input `ztruncation` is strict then returns it.</tr>
-   * <tr>2. Otherwise:</tr>
-   * <tr>
+   * <div>1. If segment of input `ztruncation` is strict then returns it.</div>
+   * <div>2. Otherwise:</div>
+   * <div>
    *   2.1. Applies [[provideStrictSeq]] to input segment and receives new zipped sequence Z with strict segments
    *   between bounds of `ztruncation.segment`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2.2. Saves new sequence Z into `zippedSeqRef`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2.3. Returns segment of new sequence Z at bound `ztruncation.bound`.
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    */
   protected final def cacheStrict(ztruncation: ZTruncation[E, D, V]): Strict.ZSegment[E, D, V] = {
     import scala.language.unsafeNulls
@@ -320,13 +320,13 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
   }
 
   /**
-   * <tr>
+   * <div>
    *   1. Takes current state of zipped sequence inside `zippedSeqRef`, computes all lazy values in it and builds 
    *      new totally strict zipped sequence.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2. Saves new sequence into `zippedSeqRef`.
-   * </tr>
+   * </div>
    */
   protected final def cacheStrictTotal(): Unit =
     // If zipped sequence is already totally strict, then do nothing.
@@ -345,20 +345,20 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * segment.
    *
    * <h3>Algorithm</h3>
-   * <tr>
+   * <div>
    *   Let's denote as Z - zipped sequence at current step.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   1. If segment of input `ztruncation` is already stable then return this segment else go to step 2
    *   with Z = `ztruncation.segment.sequence`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2. Apply [[provideStrictSeq]] to input segment to compute lazy value (if required) and get zipped sequence Z,,1,,
    *   that contains only strict segments between bounds of input segment. These segments however may be both stable
    *   and unstable. If segment of Z,,1,, at bound `ztruncation.bound` is stable then return this segment otherwise
    *   go to step 3 with Z = Z,,1,,.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   3. Get segment of sequence Z at bound `ztruncation.bound` and try to move to the previous segment:
    *   <p>
    *     3.1. If lazy segment was found then apply [[provideStrictSeq]] to it and receive sequence Z,,2,,.
@@ -368,8 +368,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    *   <p>
    *     3.2. Otherwise go step 4 with current sequence Z.
    *   </p>
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   4. Get segment of sequence Z at bound `ztruncation.bound` and try to move to the next segment:
    *   <p>
    *     4.1. If lazy segment was found then apply [[provideStrictSeq]] to it and receive sequence Z,,3,,.
@@ -380,7 +380,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    *     4.2. Otherwise assertion error must be thrown: the only possibility that segment at bound `ztruncation.bound`
    *     is steel unstable is that it has lazy next segment, but we haven't found it and got contradiction.
    *   </p>
-   * </tr>
+   * </div>
    * {{{
    *   Example of iteration over steps 3 and 4:
    *
@@ -471,13 +471,13 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * <h3>Algorithm</h3>
    *
    * If input `segment` is lazy then:
-   * <tr>- compute lazy value (new base sequence for `segment`);</tr>
-   * <tr>- patch existing base sequence with new one (see [[patchBaseSeq]]);</tr>
-   * <tr>- patch control sequence to indicate that `segment` is not lazy anymore (see [[patchControlSeq]]);</tr>
-   * <tr>- build new zipped sequence with new base and control sequences and return it.</tr>
-   * <tr></tr>
+   * <div>- compute lazy value (new base sequence for `segment`);</div>
+   * <div>- patch existing base sequence with new one (see [[patchBaseSeq]]);</div>
+   * <div>- patch control sequence to indicate that `segment` is not lazy anymore (see [[patchControlSeq]]);</div>
+   * <div>- build new zipped sequence with new base and control sequences and return it.</div>
+   * <div></div>
    * If input `segment` is not lazy then return sequence of this segment.
-   * <tr></tr>
+   * <div></div>
    */
   protected final def provideStrictSeq(zsegment: ZSegment[E, D, V]): ZSegmentSeq[E, D, V] =
     zsegment.value._2 match {
@@ -798,20 +798,20 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
 
   /**
    * Converts `other` sequence into zipped one for subsequent transformation operation (prepend/append):
-   * <tr>
+   * <div>
    *   - If `other` is [[AbstractLazyTreapSegmentSeq]] then extracts its zipped sequence.
    *   Subsequent transformation operation will merge treaps of base sequences and treaps of
    *   control sequences keeping all lazy parts of both sequences non-computed.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - If `other` is [[TreapSegmentSeq]] then converts it into totally stable zipped sequence.
    *   Subsequent transformation operation will immediately merge treaps of base sequences.
    *   It's rather cheap operation and there is no point to make it lazy to delay execution.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - Otherwise builds totally lazy zipped sequence. So subsequent transformation operation will not
    *   convert `other` into treap sequence immediately. Conversion will be delayed until it's really necessary.
-   * </tr>
+   * </div>
    */
   protected final def makeZippedSeqForTransformation(other: SegmentSeq[E, D, V]): ZSegmentSeq[E, D, V] =
     other match {
@@ -1131,10 +1131,10 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
     abstract sealed class PatchBoundInfo(
       /**
        * If class represents left side info:
-       * <tr>contains `patchLowerBound` (see p.1) with corresponding segment of old control sequence.</tr>
+       * <div>contains `patchLowerBound` (see p.1) with corresponding segment of old control sequence.</div>
        *
        * If class represents right side info:
-       * <tr>contains `patchUpperBound` (see p.1) with corresponding segment of old control sequence.</tr>
+       * <div>contains `patchUpperBound` (see p.1) with corresponding segment of old control sequence.</div>
        */
       val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
       /**
@@ -1149,8 +1149,8 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
 
     /**
      * [[PatchBoundInfo]] for case when bound is non-shifted (p.1):
-     * <tr>`patchLowerBound` == `zsegment.lower` - for left side info;</tr>
-     * <tr>`patchUpperBound` == `zsegment.upper` - for right side info.</tr>
+     * <div>`patchLowerBound` == `zsegment.lower` - for left side info;</div>
+     * <div>`patchUpperBound` == `zsegment.upper` - for right side info.</div>
      */
     case class NonShiftedPatchBoundInfo(
       override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
@@ -1164,16 +1164,16 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
 
     /**
      * [[PatchBoundInfo]] for case when bound is shifted (p.1):
-     * <tr>`patchLowerBound` != `zsegment.lower` - for left side info;</tr>
-     * <tr>`patchUpperBound` != `zsegment.upper` - for right side info.</tr>
+     * <div>`patchLowerBound` != `zsegment.lower` - for left side info;</div>
+     * <div>`patchUpperBound` != `zsegment.upper` - for right side info.</div>
      */
     case class ShiftedPatchBoundInfo(
       override val patchBoundTruncation: SegmentTruncation[E, D, ControlValue[E, D, V]],
       override val zsegmentBoundIsStable: Boolean,
       override val zsegmentBoundIsIsolated: Boolean,
       /**
-       * <tr>`leftPatchSequence` - if class represents left side info;</tr>
-       * <tr>`rightPatchSequence` - if class represents right side info;</tr>
+       * <div>`leftPatchSequence` - if class represents left side info;</div>
+       * <div>`rightPatchSequence` - if class represents right side info;</div>
        * (see p.5.1 and 5.2)
        */
       patchBoundSequence: TreapSegmentSeq[E, D, ControlValue[E, D, V]]
@@ -1397,11 +1397,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * Builds control sequence from a new sequence `baseSeq` that was computed for a given `zsegment`.
    *
    * `stableLowerBound` and `stableUpperBound` input arguments define bound conditions:
-   * <tr>
+   * <div>
    *   - if indicator is `true` then corresponding bound will be present after all subsequent computations of
    *   lazy values in sequence.
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    * Let's denote:
    * {{{
    *               zsegment
@@ -1414,11 +1414,11 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    *      /                       \
    *   stableLowerBound == false   stableUpperBound == false
    * }}}
-   * <tr></tr>
+   * <div></div>
    *
    * Segments of `baseSeq` are mapped to the segments of output control sequence. Output segment may get either
    * `stable` or `unstable` control value (see stability condition in class description [[AbstractLazyTreapSegmentSeq]]).
-   * <tr></tr>
+   * <div></div>
    *
    * 1. If some bound is marked as "unstable" (for example `stableLowerBound` == false) then corresponding bound segment
    * of new control sequence must be unstable.
@@ -1433,7 +1433,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * }}}
    *
    * 2. If some bound is marked as "stable" then bound segment MAY be stable depending on other adjacent segment.
-   * <tr></tr>
+   * <div></div>
    * 2.1.
    * {{{
    *             zsegment
@@ -1447,7 +1447,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    * Note, output segments are created according to input new base sequence. As for any sequence all base segments
    * have different values => stability condition (see [[AbstractLazyTreapSegmentSeq]]) for left segment is always
    * satisfied.
-   * <tr></tr>
+   * <div></div>
    * 2.2.
    * {{{
    *             zsegment
@@ -1457,7 +1457,7 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
    *   ---------)[------](-------
    *     stable   stable
    * }}}
-   * <tr></tr>
+   * <div></div>
    * 2.3.
    * {{{
    *             zsegment
@@ -1748,7 +1748,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
    *    ...
    *  }
    * }}}
-   * It fill always fail because segment doesn't have [[Tag]] trait in runtime.
+   * It fill always fail because segment doesn't have [[ordset.util.types.Tag]] trait in runtime.
    * We create only typelevel wrapper to mark stable segments (see [[Stable.tagged]]).
    *
    * Pattern match to original types instead:
@@ -1812,7 +1812,7 @@ object AbstractLazyTreapSegmentSeq { outer =>
    *    ...
    *  }
    * }}}
-   * It fill always fail because segment doesn't have [[Tag]] trait in runtime.
+   * It will always fail because segment doesn't have [[ordset.util.types.Tag]] trait in runtime.
    * We create only typelevel wrapper to mark strict segments (see [[Strict.tagged]]).
    *
    * Pattern match to original types instead:
@@ -1865,8 +1865,8 @@ object AbstractLazyTreapSegmentSeq { outer =>
   /**
    * Base trait for output segments of [[AbstractLazyTreapSegmentSeq]].
    *
-   * Wraps [[ZSegment]] - segment with internal representation of lazy sequence and
-   * provides api to interact with lazy sequence.
+   * Wraps [[ordset.core.segmentSeq.internal.lazySeq.ZSegment]] - segment with internal representation of lazy sequence
+   * and provides api to interact with lazy sequence.
    */
   sealed trait LazySegmentBase[E, D[X] <: Domain[X], V] 
     extends MappedSegmentLikeT[E, D, ZValue[E, D, V], V, ZSegmentBase[E, D, V], LazySegmentBase[E, D, V]] {
@@ -1942,19 +1942,19 @@ object AbstractLazyTreapSegmentSeq { outer =>
      * 2. Types of current segment and `zsegment` inside `this.zsegmentRef` are related: if `zsegment` is initial,
      * then `this` is also is initial, etc. Subtypes of `LazySegmentBase` can redefine type of `this.original
      * in the following way:
-     * <tr>
+     * <div>
      *  - subtype of `LazySegmentBase` declares constructor parameter for `zsegment` of some type
      *    `T <: Stable.ZSegment[E, D, V];
-     * </tr>  
-     * <tr>
+     * </div>  
+     * <div>
      *  - `this.zsegmentRef` is initialized with specified constructor parameter (we can't redefine type of
      *    `this.zsegmentRef` due to invariance of atomic reference on its type parameter, so type of `zsegment`
      *    is widened in this moment);
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *  - subtype of `LazySegmentBase` overrides `this.original` with type `T` and can safely cast output of
      *    `this.getZsegment` into type `T` to provide its implementation.
-     * </tr>
+     * </div>
      */
     override protected def original: Stable.ZSegment[E, D, V]
 

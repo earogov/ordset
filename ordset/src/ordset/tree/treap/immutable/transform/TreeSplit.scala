@@ -9,17 +9,17 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeFoldFunc, NodeStackConte
 
 /**
  * Split operation breaks initial treap into left and right subtrees at specified key.
- * <tr>
+ * <div>
  * [[TreeSplit.splitLeftFunc]] includes all nodes with key `≤` specified key into left subtree and
  * all others - into right.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * [[TreeSplit.splitRightFunc]] includes all nodes with key `<` specified key into left subtree and
  * all others - into right.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * Output is a pair of left and right subtrees. Both immutable and mutable output tuples are available.
- * </tr>
+ * </div>
  * {{{
  *
  *  priority
@@ -88,18 +88,18 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeFoldFunc, NodeStackConte
  * }}}
  *
  * ==Providing valid context==
- * <tr>
+ * <div>
  * At step 2 split function is folded during upward move, so it is applied only to upward nodes.
  * If at step 1 we stop at node `E` the split result will be incorrect: E -> H subtree will not be splitted
  * and node `H` will be on the right side. So it critical to descend at sufficient depth (<b>rule I</b>).
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * Another important rule - don't stop descending if current node has a child at the side of split border
  * (<b>rule II</b>). Otherwise this child may be lost (none of splitted subtrees will contain it).
- * </tr>
- * <tr>
- * [[NodeDownward.foldDefault]] may seem suitable but it fails in some cases.
- * </tr>
+ * </div>
+ * <div>
+ * [[ordset.tree.treap.immutable.traverse.NodeDownward.foldDefault]] may seem suitable but it fails in some cases.
+ * </div>
  * {{{
  *
  *       A   |
@@ -109,35 +109,37 @@ import ordset.tree.treap.immutable.{ImmutableTreap, NodeFoldFunc, NodeStackConte
  *       ↙   |    ↘
  *     C    key    D
  * }}}
- * <tr>
+ * <div>
  * Assume that at some moment of downward move `B` is a current node and its key is equal to the specified `key`.
- * Then [[NodeDownward.foldDefault]] will stop at this node (due to [[Navigation.defaultFunc]] stop condition).
+ * Then [[ordset.tree.treap.immutable.traverse.NodeDownward.foldDefault]] will stop at this node (due to 
+ * [[ordset.tree.treap.immutable.traverse.NodeDownward.Navigation.defaultFunc]] stop condition).
  * The result context will contain `B` as a current node and all its upward nodes in stack.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * Now suppose we want to apply [[TreeSplit.splitRightFunc]] so that `B` became a part of right subtree.
  * The output subtrees should be: A -> C (left) and B -> D (right).
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * But subtree of node `B` (B -> C) will not be splitted because of split function will not visit node `C`.
  * And we will get wrong answer: A -> B -> C (left) and D (right).
- * </tr>
- * <tr>
- * To fix this case we should do the following:
- * </tr>
- * <tr>
+ * </div>
+ * <div>
+ * To fix this issue we should do the following:
+ * </div>
+ * <div>
  * - for [[TreeSplit.splitRightFunc]] function move from `B` to the left node `C` and continue descending
- * just as ordinary [[NodeDownward.defaultFunc]];
- * </tr>
- * <tr>
+ * just as ordinary [[ordset.tree.treap.immutable.traverse.NodeDownward.defaultFunc]];
+ * </div>
+ * <div>
  * - for [[TreeSplit.splitLeftFunc]] function move from `B` to the right node `D` and continue descending.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * Note that subsequent descending from `C` or `D` is required due to the rule II.
- * </tr>
- * <tr>
- * Such logic is implemented in  [[NodeDownward.foldForLeftSplit]] and [[NodeDownward.foldForRightSplit]] functions.
- * </tr>
+ * </div>
+ * <div>
+ * Such logic is implemented in  [[ordset.tree.treap.immutable.traverse.NodeDownward.foldForLeftSplit]] 
+ * and [[ordset.tree.treap.immutable.traverse.NodeDownward.foldForRightSplit]] functions.
+ * </div>
  */
 object TreeSplit {
 

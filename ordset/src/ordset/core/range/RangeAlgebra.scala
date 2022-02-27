@@ -12,8 +12,8 @@ trait RangeAlgebra[E] {
 
   /**
    * Returns `true`, if:
-   * <tr>- range 'r' is empty;</tr>
-   * <tr>- range `r` is non-empty and `r.lower ≤ r.upper` according to given `order`.</tr>
+   * <div>- range 'r' is empty;</div>
+   * <div>- range `r` is non-empty and `r.lower ≤ r.upper` according to given `order`.</div>
    */
   def isValid(r: Range[E])(implicit order: Order[E]): Boolean =
     r match {
@@ -31,7 +31,7 @@ trait RangeAlgebra[E] {
    * Returns `true` if range `r` contains element `e`.
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    */
   def contains(r: Range[E], e: E)(implicit order: Order[E]): Boolean = 
     r match {
@@ -43,7 +43,7 @@ trait RangeAlgebra[E] {
    * Returns `true` if non-empty range `r` contains element `e`.
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    */
   def containsNE(r: Range.NonEmpty[E], e: E)(implicit order: Order[E]): Boolean = 
     order.lteqv(r.lower, e) && order.gteqv(r.upper, e)
@@ -72,7 +72,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    */
   def restrictNE(r: Range.NonEmpty[E], e: E)(implicit order: Order[E]): E =
     if order.lteqv(e, r.lower) then r.lower
@@ -92,7 +92,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -120,7 +120,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -156,7 +156,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -184,7 +184,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Range `r` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Range `r` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -219,7 +219,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -246,7 +246,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -291,7 +291,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */
@@ -321,7 +321,7 @@ trait RangeAlgebra[E] {
    * }}}
    * 
    * Preconditions:
-   * <tr>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</tr>
+   * <div>1. Ranges `x` and `y` must be valid according to given `order` (see [[isValid]]).</div>
    * 
    * @tparam R type of range.
    */

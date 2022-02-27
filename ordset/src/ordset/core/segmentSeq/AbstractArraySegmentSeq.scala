@@ -22,7 +22,7 @@ import scala.collection.immutable.ArraySeq
  * For such cases implementation based on [[UniformSegmentSeq]] should be used.
  *
  * Preconditions:
- * <tr>`bounds` array must be non-empty.</tr>
+ * <div>`bounds` array must be non-empty.</div>
  */
 abstract class AbstractArraySegmentSeq[E, D[X] <: Domain[X], V] extends AbstractIndexedSegmentSeq[E, D, V] {
 

@@ -111,40 +111,40 @@ abstract class AbstractUniformSegmentSeq[E, D[X] <: Domain[X],  V]
 
   /**
    * Creates segment sequence:
-   * <tr>(minBound, U(bound)) -> `firstValue`</tr>
-   * <tr>(L(bound), maxBound) -> `this.value`</tr>
-   * <tr>where</tr>
-   * <tr>minBound - minimal bound of domain;</tr>
-   * <tr>maxBound - maximal bound of domain;</tr>
-   * <tr>
+   * <div>(minBound, U(bound)) -> `firstValue`</div>
+   * <div>(L(bound), maxBound) -> `this.value`</div>
+   * <div>where</div>
+   * <div>minBound - minimal bound of domain;</div>
+   * <div>maxBound - maximal bound of domain;</div>
+   * <div>
    *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise
    *   (see [[Bound.provideLower]]).
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    * If `firstValue` and `this.value` are equals returns current uniform sequence (bound in result sequence is dropped).
    */
   protected def consPrepended(bound: Bound[E], firstValue: V): SegmentSeq[E, D, V]
 
   /**
    * Creates segment sequence:
-   * <tr>(minBound, U(bound)) -> `this.value`</tr>
-   * <tr>(L(bound), maxBound) -> `lastValue`</tr>
-   * <tr>where</tr>
-   * <tr>minBound - minimal bound of domain;</tr>
-   * <tr>maxBound - maximal bound of domain;</tr>
-   * <tr>
+   * <div>(minBound, U(bound)) -> `this.value`</div>
+   * <div>(L(bound), maxBound) -> `lastValue`</div>
+   * <div>where</div>
+   * <div>minBound - minimal bound of domain;</div>
+   * <div>maxBound - maximal bound of domain;</div>
+   * <div>
    *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise
    *   (see [[Bound.provideLower]]).
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    * If `this.value` and `lastValue` are equals returns current uniform sequence (bound in result sequence is dropped).
    */
   protected def consAppended(bound: Bound[E], lastValue: V): SegmentSeq[E, D, V]

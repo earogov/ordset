@@ -41,18 +41,18 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    *
    * Preconditions:
    *
-   * 1. Sequence of bounds must be ordered with respect to [[DomainOps.boundOrd]]:
+   * 1. Sequence of bounds must be ordered with respect to [[ordset.core.domain.DomainOps.boundOrd]]:
    *
    *   bound,,i-1,, `<` bound,,i,, for all i in [1, bounds.size - 1]
    * 
-   * 2. All bounds in sequence must be greater than or equal to the lower bound of [[DomainOps.domain]] 
-   *    and less that its upper bound:
+   * 2. All bounds in sequence must be greater than or equal to the lower bound of 
+   *    [[ordset.core.domain.DomainOps.domain]] and less that its upper bound:
    *
    *   domain.lowerBound `≤` bound,,i,, `<` domain.upperBound for all i in [0, bounds.size - 1]
    *
    * Factory implementations should delegate control of preconditions to input `bounds` iterable
-   * (see [[ValidatingIterable]]). This allows client to omit checks, if it's known, that sequence of bounds
-   * is valid (e.g. when it was supplied by another segment sequence).
+   * (see [[ordset.core.segmentSeq.validation.ValidatingIterable]]). This allows client to omit checks, if it's known, 
+   * that sequence of bounds is valid (e.g. when it was supplied by another segment sequence).
    * 
    * If validation is failed, then [[SegmentSeqException]] is thrown.
    *
@@ -73,7 +73,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
   ): SSeq
 
   /**
-   * Same as [[unsafeBuildAsc]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuildAsc]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildAsc]] preconditions.
    */
@@ -121,7 +121,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
     unsafeBuildAsc(OrderedSetFactoryIterable.single(bound)(domainOps), complementary)
 
   /**
-   * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    */
   def tryBuildSingleBounded(
     bound: Bound.Upper[E],
@@ -208,7 +208,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
 object OrderedSetFactory {
 
   /**
-   * Creates [[OrderedSetFactory]] from specified [[OrderedMapFactory]].
+   * Creates [[OrderedSetFactory]] from specified [[ordset.core.segmentSeq.map.OrderedMapFactory]].
    */
   def fromMapFactory[E, D[X] <: Domain[X], SSeq <: OrderedSet[E, D]](
     mapFactory: OrderedMapFactory[E, D, Boolean, SSeq]
@@ -216,7 +216,7 @@ object OrderedSetFactory {
     new MapFactoryProxy(mapFactory)
 
   /**
-   * Wraps specified [[OrderedMapFactory]] to provide [[OrderedSetFactory]]. 
+   * Wraps specified [[ordset.core.segmentSeq.map.OrderedMapFactory]] to provide [[OrderedSetFactory]]. 
    * 
    * @note [[convertSet]] may be suboptimal. We can't determine the case when conversion isn't required, 
    *       because we can't pattern match to type `SSeq`. So method should be redefined in classes with

@@ -4,10 +4,10 @@ package ordset
  * Allows to get reversed instance for current one. Can be used for typeclasses like [[Bounded]], [[Order]], etc.
  *
  * Reversed type `R` may differ from original type `O` as long as condition is satisfied:
- * <tr>
+ * <div>
  *   - if `original` has type `O` and `original.reversed` has type `R`, 
  *     then type of `original.reversed.reversed` is `O`.
- * </tr>
+ * </div>
  * 
  * @tparam O original type
  * @tparam R reversed type

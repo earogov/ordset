@@ -10,14 +10,14 @@ import scala.{specialized => sp}
 
 /**
  * Bound defines subset of some ordered set of elements `E`.
- * <tr>[[Upper]] bound defines maximal element in subset (including or excluding);</tr>
- * <tr>[[Lower]] bound defines minimal element in subset (including or excluding).</tr>
- * <tr></tr>
+ * <div>[[Bound.Upper]] bound defines maximal element in subset (including or excluding);</div>
+ * <div>[[Bound.Lower]] bound defines minimal element in subset (including or excluding).</div>
+ * <div></div>
  *
  * Bound is described by:
- * <tr>- some element of ordered set;</tr>
- * <tr>- inclusion flag;</tr>
- * <tr>- bound type (upper or lower).</tr>
+ * <div>- some element of ordered set;</div>
+ * <div>- inclusion flag;</div>
+ * <div>- bound type (upper or lower).</div>
  *
  * {{{
  *  lower including    upper including
@@ -62,9 +62,9 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 
   /**
    * Let b1 is initial bound then b2 = b1.flip is such bound that:
-   * <tr>b2.value = b1.value</tr>
-   * <tr>b2.isIncluding = !b1.isIncluding</tr>
-   * <tr>b2.isUpper = !b1.isUpper</tr>
+   * <div>b2.value = b1.value</div>
+   * <div>b2.isIncluding = !b1.isIncluding</div>
+   * <div>b2.isUpper = !b1.isUpper</div>
    * {{{
    *            bound                 bound
    *             v                      v
@@ -77,10 +77,10 @@ sealed trait Bound[@sp(spNum) +E] extends ExtendedBound[E] {
 
   /**
    * Returns
-   * <tr> 0 - if bound is including;</tr>
-   * <tr> 1 - if bound is lower and excluding;</tr>
-   * <tr>-1 - if bound is upper and excluding.</tr>
-   * <tr></tr>
+   * <div> 0 - if bound is including;</div>
+   * <div> 1 - if bound is lower and excluding;</div>
+   * <div>-1 - if bound is upper and excluding.</div>
+   * <div></div>
    *
    * Offset defines bounds ordering when their values are equal.
    */
@@ -581,9 +581,9 @@ object Bound {
 
 /**
  * Extension of [[Bound]] with unlimited cases:
- * <tr>[[ExtendedBound.BelowAll]] - unlimited bound that is less then any other;</tr>
- * <tr>[[ExtendedBound.AboveAll]] - unlimited bound that is greater then any other.</tr>
- * <tr></tr>
+ * <div>[[ExtendedBound.BelowAll]] - unlimited bound that is less then any other;</div>
+ * <div>[[ExtendedBound.AboveAll]] - unlimited bound that is greater then any other.</div>
+ * <div></div>
  *
  * Unlimited cases don't have any value associated with them.
  *
@@ -633,17 +633,17 @@ sealed trait ExtendedBound[@sp(spNum) +E] {
 
   /**
    * Returns
-   * <tr>flipped bound (see [[Bound.flip]]) - if bound is limited returns;</tr>
-   * <tr>bound itself - if bound is unlimited.</tr>
+   * <div>flipped bound (see [[Bound.flip]]) - if bound is limited returns;</div>
+   * <div>bound itself - if bound is unlimited.</div>
    */
   def flipLimited: ExtendedBound[E]
   
   /**
    * Returns
-   * <tr> 0 - if bound is limited;</tr>
-   * <tr> 1 - if bound is [[ExtendedBound.AboveAll]];</tr>
-   * <tr>-1 - if bound is [[ExtendedBound.BelowAll]].</tr>
-   * <tr></tr>
+   * <div> 0 - if bound is limited;</div>
+   * <div> 1 - if bound is [[ExtendedBound.AboveAll]];</div>
+   * <div>-1 - if bound is [[ExtendedBound.BelowAll]].</div>
+   * <div></div>
    *
    * Offset defines bounds ordering.
    */

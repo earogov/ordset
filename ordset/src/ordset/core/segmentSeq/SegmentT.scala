@@ -76,10 +76,10 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  * <h3>
  * Each concrete class implementing segment must have ONE (and only one) of supertypes:
  * </h3>
- * <tr><b> - Initial  </b></tr>
- * <tr><b> - Terminal </b></tr>
- * <tr><b> - Inner    </b></tr>
- * <tr><b> - Single   </b></tr>
+ * <div><b> - Initial  </b></div>
+ * <div><b> - Terminal </b></div>
+ * <div><b> - Inner    </b></div>
+ * <div><b> - Single   </b></div>
  *
  * <h1>Segment Hierarchy</h1>
  *
@@ -100,31 +100,32 @@ import scala.collection.{AbstractIterable, AbstractIterator}
  *
  * General segment hierarchy include some auxiliary supertypes:
  *
- * <tr><b>Segment </b> - supertype for all segments.</tr>
+ * <div><b>Segment </b> - supertype for all segments.</div>
  *
- * <tr><b>First   </b> - first segment of sequence. Doesn't have previous segment. May be Single or Initial.</tr>
+ * <div><b>First   </b> - first segment of sequence. Doesn't have previous segment. May be Single or Initial.</div>
  *
- * <tr><b>Last    </b> - last segment of sequence. Doesn't have next segment. May be Single or Terminal.</tr>
+ * <div><b>Last    </b> - last segment of sequence. Doesn't have next segment. May be Single or Terminal.</div>
  *
- * <tr><b>WithPrev</b> - segment which has previous segment. May be Terminal or Inner.</tr>
+ * <div><b>WithPrev</b> - segment which has previous segment. May be Terminal or Inner.</div>
  *
- * <tr><b>WithNext</b> - segment which has next segment. May be Initial or Inner.</tr>
+ * <div><b>WithNext</b> - segment which has next segment. May be Initial or Inner.</div>
  *
  * <h1>Notes</h1>
  * 
  * 1. In all ordering relations of bounds (like bound1 `>` bound2 etc.) we assume:
- * <tr>- upper bound of last segment has maximal value (equivalent to plus infinity);   </tr>
- * <tr>- lower bound of first segment has minimal value (equivalent to minus infinity). </tr>
- * <tr>
- * These properties must be provided by implementations of [[DomainOps.segments.upperOrd]] and
- * [[DomainOps.segments.lowerOrd]].
- * </tr>
- * <tr></tr>
+ * <div>- upper bound of last segment has maximal value (equivalent to plus infinity);   </div>
+ * <div>- lower bound of first segment has minimal value (equivalent to minus infinity). </div>
+ * <div>
+ * These properties must be provided by implementation of [[SegmentT.domainOps]]
+ * (see [[ordset.core.domain.DomainOpsComponents.Segments.upperOrd]] and 
+ * [[ordset.core.domain.DomainOpsComponents.Segments.lowerOrd]])
+ * </div>
+ * <div></div>
  *
  * 2. Definition of segment (traits) has forward/backward symmetry: for example if we have `moveNext` there is
  * also `movePrev` method. But its implementation may be optimized to move forward, as it's assumed this is
  * the basic use case of segments.
- * <tr></tr>
+ * <div></div>
  * 
  * @tparam E type of elements on ordered domain
  * @tparam D type of ordered domain
@@ -261,9 +262,9 @@ object SegmentT {
 
   /**
    * The only segment in sequence (in case of empty or universal sequence) with properties:
-   * <tr>- doesn't have next segment;     </tr>
-   * <tr>- doesn't have previous segment. </tr>
-   * <tr>                                 </tr>
+   * <div>- doesn't have next segment;     </div>
+   * <div>- doesn't have previous segment. </div>
+   * <div>                                 </div>
    * @see [[SegmentT]]
    */
   trait Single[E, D[X] <: Domain[X], V, +S] extends SegmentT.First[E, D, V, S] with SegmentT.Last[E, D, V, S] {
@@ -328,9 +329,9 @@ object SegmentT {
 
   /**
    * Initial segment of sequence with properties:
-   * <tr>- doesn't have previous segment; </tr>
-   * <tr>- always has next segment.       </tr>
-   * <tr>                                 </tr>
+   * <div>- doesn't have previous segment; </div>
+   * <div>- always has next segment.       </div>
+   * <div>                                 </div>
    * @see [[SegmentT]]
    */
   trait Initial[E, D[X] <: Domain[X], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.First[E, D, V, S] {
@@ -398,9 +399,9 @@ object SegmentT {
 
   /**
    * Terminal segment of sequence with properties:
-   * <tr>- doesn't have next segment;   </tr>
-   * <tr>- always has previous segment. </tr>
-   * <tr>                               </tr>
+   * <div>- doesn't have next segment;   </div>
+   * <div>- always has previous segment. </div>
+   * <div>                               </div>
    * @see [[SegmentT]]
    */
   trait Terminal[E, D[X] <: Domain[X], V, +S] extends SegmentT.WithPrev[E, D, V, S] with SegmentT.Last[E, D, V, S] {
@@ -468,9 +469,9 @@ object SegmentT {
 
   /**
    * Segment with properties:
-   * <tr>- always has next segment;     </tr>
-   * <tr>- always has previous segment. </tr>
-   * <tr>                               </tr>
+   * <div>- always has next segment;     </div>
+   * <div>- always has previous segment. </div>
+   * <div>                               </div>
    * @see [[SegmentT]]
    */
   trait Inner[E, D[X] <: Domain[X], V, +S] extends SegmentT.WithNext[E, D, V, S] with SegmentT.WithPrev[E, D, V, S] {
@@ -543,9 +544,9 @@ object SegmentT {
    * Order of segments by their upper bounds.
    *
    * The order enforces condition:
-   * <tr>
+   * <div>
    *   - [[Segment.Last]] is maximal segment (i.e. upper bound of last segment is maximal in domain).
-   * </tr>
+   * </div>
    */
   trait UpperBoundOrder[E, D[X] <: Domain[X]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
 
@@ -567,9 +568,9 @@ object SegmentT {
    * Order of segments by their lower bounds.
    *
    * The order enforces condition:
-   * <tr>
+   * <div>
    *   - [[Segment.First]] is minimal segment (i.e. lower bound of first segment is minimal in domain).
-   * </tr>
+   * </div>
    */
   trait LowerBoundOrder[E, D[X] <: Domain[X]] extends Order[Segment[E, D, ?]] with Hash[Segment[E, D, ?]] {
 

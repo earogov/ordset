@@ -11,7 +11,7 @@ object NodeDownward {
 
   /**
    * Moves either to the left or right child (if possible) depending on the output of `navigationFunc`.
-   * Stops if receives [[BinaryTreeStep.None]] from `navigationFunc` of if required step is impossible.
+   * Stops if receives [[ordset.tree.core.BinaryTreeStep.None]] from `navigationFunc` of if required step is impossible.
    */
   def defaultFunc[K, V, C](
     navigationFunc: NodeNavigationFunc[K, V, C],
@@ -154,9 +154,9 @@ object NodeDownward {
 
     /**
      * Returns:
-     * <tr>[[BinaryTreeStep.Right]] if current node key `<` specified `key`</tr>
-     * <tr>[[BinaryTreeStep.Left]] if current node key `>` specified `key`</tr>
-     * <tr>[[BinaryTreeStep.None]] if current node key `=` specified `key`</tr>
+     * <div>[[ordset.tree.core.BinaryTreeStep.Right]] if current node key `<` specified `key`</div>
+     * <div>[[ordset.tree.core.BinaryTreeStep.Left]] if current node key `>` specified `key`</div>
+     * <div>[[ordset.tree.core.BinaryTreeStep.None]] if current node key `=` specified `key`</div>
      */
     def defaultFunc[K, KK >: K, V](
       key: KK
@@ -172,8 +172,8 @@ object NodeDownward {
 
     /**
      * Returns:
-     * <tr>[[BinaryTreeStep.Right]] if current node key `<` specified `key`</tr>
-     * <tr>[[BinaryTreeStep.Left]] if current node key `>=` specified `key`</tr>
+     * <div>[[ordset.tree.core.BinaryTreeStep.Right]] if current node key `<` specified `key`</div>
+     * <div>[[ordset.tree.core.BinaryTreeStep.Left]] if current node key `>=` specified `key`</div>
      */
     def rightSplitFunc[K, KK >: K, V](
       key: KK
@@ -187,8 +187,8 @@ object NodeDownward {
 
     /**
      * Returns:
-     * <tr>[[BinaryTreeStep.Right]] if current node key `<=` specified `key`</tr>
-     * <tr>[[BinaryTreeStep.Left]] if current node key `>` specified `key`</tr>
+     * <div>[[ordset.tree.core.BinaryTreeStep.Right]] if current node key `<=` specified `key`</div>
+     * <div>[[ordset.tree.core.BinaryTreeStep.Left]] if current node key `>` specified `key`</div>
      */
     def leftSplitFunc[K, KK >: K, V](
       key: KK

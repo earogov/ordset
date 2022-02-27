@@ -32,7 +32,7 @@ object SeqSupplier {
      * Returns factory for segment sequence of [[SeqSupplier]] with partially provided parameters.
      * 
      * Output factory has disabled validation of bounds and values, so the client must guarantee that preconditions
-     * of [[OrderedMapFactory]] are satisfied.
+     * of [[ordset.core.segmentSeq.map.OrderedMapFactory]] are satisfied.
      */ 
     def provideUncheckedFactory[E, D[X] <: Domain[X], V](
       implicit
@@ -76,7 +76,7 @@ object SeqSupplier {
   }
 
   /**
-   * [[ValueOps]] typeclass implementation for [[SeqSupplier]].
+   * [[ ordset.core.value.ValueOps]] typeclass implementation for [[SeqSupplier]].
    */ 
   object ValueOpsImpl {
 

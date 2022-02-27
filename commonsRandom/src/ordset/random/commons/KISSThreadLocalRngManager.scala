@@ -3,9 +3,9 @@ package ordset.random.commons
 import ordset.random.{RngManager, UnsafeUniformRng}
 
 /**
- * [[RngManager]] for [[https://en.wikipedia.org/wiki/KISS_(algorithm) KISS]] random number generator.
+ * [[ordset.random.RngManager]] for [[https://en.wikipedia.org/wiki/KISS_(algorithm) KISS]] random number generator.
  *
- * Provides for each thread its own [[RngManager]] instance.
+ * Provides for each thread its own [[ordset.random.RngManager]] instance.
  * So thread `A` can't affect on the random sequence that will receive thread `B`.
  *
  * Current implementation requires less requests to shared state to perform seed management

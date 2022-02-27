@@ -19,17 +19,17 @@ object TreapSegmentSeqBuilder {
    * Mutable builder of [[TreapSegmentSeq]].
    *
    * Usage:
-   * <tr>
+   * <div>
    *   1. Add tuples (segment upper bound, segment value) to internal buffer (see [[addBound]]).
    *      Bounds must follow in ascending order according to `domainOps.boundOrd`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   2. Set value of last segment (see [[setLastValue]]).
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   3. Build treap segment sequence (see [[buildSeq]]).
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    *
    * Implementation is <u>tread unsafe</u>.
    */

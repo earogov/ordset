@@ -40,19 +40,19 @@ object LazyTreapOrderedMap {
 
   /**
    * Builds lazy ordered map using two input maps:
-   * <tr>1. `baseMap` - ordered map with base values of type `V`;</tr>
-   * <tr>2. `supplierMap` - ordered map with optional lazy values (functions that returns another ordered maps).</tr>
-   * <tr></tr>
-   * <tr>
+   * <div>1. `baseMap` - ordered map with base values of type `V`;</div>
+   * <div>2. `supplierMap` - ordered map with optional lazy values (functions that returns another ordered maps).</div>
+   * <div></div>
+   * <div>
    *   If segment of `supplierMap` has [[None]] value then corresponding segments of output map have the same
    *   values as `baseMap`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   If segment of `supplierMap` has [[Some]] value with a function F: `() => orderedMapF`, then corresponding
    *   segments of output map are lazy. Function F will be computed only if lazy segment is requested.
    *   Values of lazy segments are completely defined by `orderedMapF` and corresponding values of `baseMap`
    *   are ignored.
-   * </tr>
+   * </div>
    * {{{
    *
    *         A             B              C

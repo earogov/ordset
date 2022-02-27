@@ -6,25 +6,25 @@ package ordset.random
  *
  * [[RngManager]] is intended to simplify distribution of random generators across application.
  * The general rules of usage are the follows:
- * <tr>
+ * <div>
  * - [[UnsafeUniformRng]] should never be passed between methods, especially if there any possibility that it
  * will be called from another thread in the result. This restriction may be relaxed for cases when
  * generators are passed between private methods of the same class.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * - Whenever other method requires random generator [[RngManager]] should be passed. Then receiving method
  * requests new random generator from manager. Instance of [[RngManager]] may be passed further if needed.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * Proper implementation of [[RngManager]] must provide next guarantee^*1^:
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * - all returned instances of [[UnsafeUniformRng]] must have new unique state no matter they were requested
  *   sequentially by one thread or concurrently.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  * *1 for some reasonably high amount of requests.
- * </tr>
+ * </div>
  */
 trait RngManager {
 

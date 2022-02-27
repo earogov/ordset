@@ -4,18 +4,18 @@ package ordset
  * Typeclass specifying discrete ordered set.
  * 
  * Implementations must enforce conditions:
- * <tr>
+ * <div>
  *   1.a If `x` has successor, then: `successor(x) > x` according to the current order.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   1.b Otherwise `∄` `y` included in set such that: `y > x`. 
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   2.a If `x` has predecessor, then: `predecessor(x) < x` according to the current order.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   2.b Otherwise `∄` `y` included in set such that: `y < x`. 
- * </tr>
+ * </div>
  * 
  * See also [[Discrete]] conditions.
  * 
@@ -27,20 +27,20 @@ package ordset
  * `A = {2, 3} U {5, 6}`
  * 
  * Then `successor` and `predecessor` operators must return:
- * <tr>- `predecessor(1) = null`</tr>   
- * <tr>- `successor(1) = null`  </tr>   
- * <tr>- `predecessor(2) = null`</tr> 
- * <tr>- `successor(2) = 3`     </tr> 
- * <tr>- `predecessor(3) = 2`   </tr> 
- * <tr>- `successor(3) = 5`     </tr> 
- * <tr>- `predecessor(4) = null`</tr>   
- * <tr>- `successor(4) = null`  </tr>   
- * <tr>- `predecessor(5) = 3`   </tr> 
- * <tr>- `successor(5) = 6`     </tr> 
- * <tr>- `predecessor(6) = 5`   </tr>
- * <tr>- `successor(6) = null`  </tr>
- * <tr>- `predecessor(7) = null`</tr>   
- * <tr>- `successor(7) = null`  </tr>   
+ * <div>- `predecessor(1) = null`</div>   
+ * <div>- `successor(1) = null`  </div>   
+ * <div>- `predecessor(2) = null`</div> 
+ * <div>- `successor(2) = 3`     </div> 
+ * <div>- `predecessor(3) = 2`   </div> 
+ * <div>- `successor(3) = 5`     </div> 
+ * <div>- `predecessor(4) = null`</div>   
+ * <div>- `successor(4) = null`  </div>   
+ * <div>- `predecessor(5) = 3`   </div> 
+ * <div>- `successor(5) = 6`     </div> 
+ * <div>- `predecessor(6) = 5`   </div>
+ * <div>- `successor(6) = null`  </div>
+ * <div>- `predecessor(7) = null`</div>   
+ * <div>- `successor(7) = null`  </div>   
  */ 
 trait DiscreteOrder[E] 
   extends Order[E] 
@@ -74,13 +74,13 @@ object DiscreteOrder {
    * See conditions of [[DiscreteOrder]].
    * 
    * <h3>Examples of infinite unbounded sets</h3>
-   * <tr>1. `{x ∈ Z}` - integer numbers.</tr>
+   * <div>1. `{x ∈ Z}` - integer numbers.</div>
    * 
    * <h3>Examples of infinite bounded sets [are not described by typeclass]</h3>
-   * <tr>
+   * <div>
    *   1. `{1/x | x ∈ N and x ≥ 1}` - sequence of rational fractions ... 1/3, 1/2, 1/1.
    *      Lower bound is 0, but there is infinite number of elements.
-   * </tr>
+   * </div>
    */
   trait InfiniteUnbounded[E]
     extends DiscreteOrder[E]
@@ -125,13 +125,13 @@ object DiscreteOrder {
 
     /**
      * Typeclass specifying discrete ordered set such that:
-     * <tr>
+     * <div>
      *   1. it has lower bound;
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   2. there is some element `x` included in set such that: 
      *      number of elements between lower bound and `x` is finite.
-     * </tr>
+     * </div>
      * 
      * See also conditions of [[DiscreteOrder]].
      * 
@@ -140,14 +140,14 @@ object DiscreteOrder {
      * This allows to provide general implementation of [[Finite.Below.hasPredecessor]].
      * 
      * <h3>Examples of finite from below bounded sets</h3>
-     * <tr>1. `{x ∈ N}` - natural numbers, lower bound is 0.</tr>
-     * <tr>2. `{x ∈ String}` - all strings with lexicographical order, lower bound is empty string.</tr>
+     * <div>1. `{x ∈ N}` - natural numbers, lower bound is 0.</div>
+     * <div>2. `{x ∈ String}` - all strings with lexicographical order, lower bound is empty string.</div>
      * 
      * <h3>Examples of infinite from below bounded sets [are not described by typeclass]</h3>
-     * <tr>
+     * <div>
      *   1. `{1/x | x ∈ N and x ≥ 1}` - sequence of rational fractions ... 1/3, 1/2, 1/1.
      *      Lower bound is 0, but there is infinite number of elements.
-     * </tr>
+     * </div>
      */
     trait Below[E, +L <: E] 
       extends DiscreteOrder[E] 
@@ -177,29 +177,29 @@ object DiscreteOrder {
 
     /**
      * Typeclass specifying discrete ordered set such that:
-     * <tr>
+     * <div>
      *   1. it has upper bound;
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   2. there is some element `x` included in set such that: 
      *      number of elements between `x` and upper bound is finite.
-     * </tr>
+     * </div>
      * 
-     * See also conditions of [[DiscreteOrder.]].
+     * See also conditions of [[DiscreteOrder]].
      * 
      * Due to condition 2 of current class greatest lower bound is always included in set 
      * (see [[BoundedOrder.Above.Including]]). 
      * This allows to provide general implementation of [[Finite.Above.hasSuccessor]].
      * 
      * <h3>Examples of finite from above bounded sets</h3>
-     * <tr>1. `{-x | x ∈ N}` - non-positive numbers, upper bound is 0.</tr>
-     * <tr>2. `{x ∈ String}` - all strings with reversed lexicographical order, upper bound is empty string.</tr>
+     * <div>1. `{-x | x ∈ N}` - non-positive numbers, upper bound is 0.</div>
+     * <div>2. `{x ∈ String}` - all strings with reversed lexicographical order, upper bound is empty string.</div>
      * 
      * <h3>Examples of infinite from above bounded sets [are not described by typeclass]</h3>
-     * <tr>
+     * <div>
      *   1. `{-1/x | x ∈ N and x ≥ 1}` - sequence of rational fractions -1/1, -1/2, -1/3 ...
      *      Upper bound is 0, but there is infinite number of elements.
-     * </tr>
+     * </div>
      */
     trait Above[E, +U <: E] 
       extends DiscreteOrder[E] 

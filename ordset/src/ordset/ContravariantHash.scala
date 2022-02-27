@@ -4,7 +4,7 @@ import scala.annotation.unchecked.uncheckedVariance
 
 /**
  * Contravariant version of [[Hash]] typeclass (see [[ContravariantOrder]] for details on contravariance and 
- * [[uncheckedVariance]] annotation).
+ * [[scala.annotation.unchecked.uncheckedVariance]] annotation).
  */
 trait ContravariantHash[-E] extends ContravariantEq[E] with Hash[E @uncheckedVariance] {
   

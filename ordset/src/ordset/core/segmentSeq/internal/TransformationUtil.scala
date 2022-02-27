@@ -17,18 +17,18 @@ protected[ordset] object TransformationUtil {
    *       A     |      B     |      C
    * X----------)[------------](-----------X  mapped sequence
    * }}}
-   * <tr></tr>
+   * <div></div>
    * 
    * Method returns slice of original sequence, i.e. tuple:
    * {{{
    *   (back.takeBelow, front.takeAbove)
    * }}}
-   * <tr></tr>
+   * <div></div>
    * 
    * Preconditions:
-   * <tr>
+   * <div>
    *   1. `back` must define lower bound of some composed segment and `front` - upper bound of the same segment.
-   * </tr>
+   * </div>
    */ 
   def sliceComposedSegment[E, D[X] <: Domain[X], V](
       back: Segment[E, D, V],

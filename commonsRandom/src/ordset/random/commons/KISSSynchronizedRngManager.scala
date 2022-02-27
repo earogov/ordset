@@ -3,7 +3,7 @@ package ordset.random.commons
 import ordset.random.{RngManager, UnsafeUniformRng}
 
 /**
- * [[RngManager]] for [[https://en.wikipedia.org/wiki/KISS_(algorithm) KISS]] random number generator.
+ * [[ordset.random.RngManager]] for [[https://en.wikipedia.org/wiki/KISS_(algorithm) KISS]] random number generator.
  *
  * Uses shared RNG with synchronized access for seed management.
  */

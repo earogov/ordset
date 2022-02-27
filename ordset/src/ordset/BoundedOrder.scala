@@ -4,7 +4,7 @@ package ordset
  * Typeclass specifying ordered set bounded from below and above.
  * 
  * Implementations must enforce conditions:
- * <tr>1. [[lowerBound]] `≤` [[upperBound]] according to the current order.</tr>
+ * <div>1. [[lowerBound]] `≤` [[upperBound]] according to the current order.</div>
  */ 
 trait BoundedOrder[E, +L <: E, +U <: E] 
   extends BoundedOrder.Below[E, L] 
@@ -15,10 +15,10 @@ trait BoundedOrder[E, +L <: E, +U <: E]
    * Returns `true`, if element is included in set specified by typeclass.
    * 
    * <p>More strictly:</p>
-   * <tr>- returns `true`, if [[lowerBound]] `<` x `<` [[upperBound]];</tr>
-   * <tr>- returns [[lowerBoundIncluded]], if x `=` [[lowerBound]];</tr>
-   * <tr>- returns [[upperBoundIncluded]], if x `=` [[upperBound]];</tr>
-   * <tr>- returns `false` otherwise.</tr>
+   * <div>- returns `true`, if [[lowerBound]] `<` x `<` [[upperBound]];</div>
+   * <div>- returns [[lowerBoundIncluded]], if x `=` [[lowerBound]];</div>
+   * <div>- returns [[upperBoundIncluded]], if x `=` [[upperBound]];</div>
+   * <div>- returns `false` otherwise.</div>
    */
   override def includes(x: E): Boolean = aboveLowerBound(x) && belowUpperBound(x)
 
@@ -50,9 +50,9 @@ object BoundedOrder {
      * Returns `true`, if element is included in set specified by typeclass.
      * 
      * <p>More strictly:</p>
-     * <tr>- returns `true`, if x `>` [[lowerBound]];</tr>
-     * <tr>- returns [[lowerBoundIncluded]], if x `=` [[lowerBound]];</tr>
-     * <tr>- returns `false` otherwise.</tr>
+     * <div>- returns `true`, if x `>` [[lowerBound]];</div>
+     * <div>- returns [[lowerBoundIncluded]], if x `=` [[lowerBound]];</div>
+     * <div>- returns `false` otherwise.</div>
      */
     def includes(x: E): Boolean = aboveLowerBound(x)
 
@@ -60,9 +60,9 @@ object BoundedOrder {
      * Returns `true`, if element is below lower bound of the set.
      * 
      * <p>More strictly:</p>
-     * <tr>- returns `true`, if x `<` [[lowerBound]];</tr>
-     * <tr>- returns [[lowerBoundExcluded]], if x `=` [[lowerBound]];</tr>
-     * <tr>- returns `false` otherwise.</tr>
+     * <div>- returns `true`, if x `<` [[lowerBound]];</div>
+     * <div>- returns [[lowerBoundExcluded]], if x `=` [[lowerBound]];</div>
+     * <div>- returns `false` otherwise.</div>
      */
     def belowLowerBound(x: E): Boolean = 
       if lowerBoundIncluded then lt(x, lowerBound)
@@ -72,9 +72,9 @@ object BoundedOrder {
      * Returns `true`, if element is above lower bound of the set.
      * 
      * <p>More strictly:</p>
-     * <tr>- returns `true`, if x `>` [[lowerBound]];</tr>
-     * <tr>- returns [[lowerBoundIncluded]], if x `=` [[lowerBound]];</tr>
-     * <tr>- returns `false` otherwise.</tr>
+     * <div>- returns `true`, if x `>` [[lowerBound]];</div>
+     * <div>- returns [[lowerBoundIncluded]], if x `=` [[lowerBound]];</div>
+     * <div>- returns `false` otherwise.</div>
      */
     def aboveLowerBound(x: E): Boolean =
       if lowerBoundIncluded then gteqv(x, lowerBound)
@@ -105,8 +105,8 @@ object BoundedOrder {
 
       /**
        * Returns:
-       * <tr>- [[lowerBound]], if x is below lower bound (see [[belowLowerBound]]);</tr>
-       * <tr>- x otherwise.</tr>
+       * <div>- [[lowerBound]], if x is below lower bound (see [[belowLowerBound]]);</div>
+       * <div>- x otherwise.</div>
        */ 
       def restrict(x: E): E = if belowLowerBound(x) then lowerBound else x
 
@@ -152,9 +152,9 @@ object BoundedOrder {
      * Returns `true`, if element is included in set specified by typeclass.
      * 
      * <p>More strictly:</p>
-     * <tr>- returns `true`, if x `<` [[upperBound]];</tr>
-     * <tr>- returns [[upperBoundIncluded]], if x `=` [[upperBound]];</tr>
-     * <tr>- returns `false` otherwise.</tr>
+     * <div>- returns `true`, if x `<` [[upperBound]];</div>
+     * <div>- returns [[upperBoundIncluded]], if x `=` [[upperBound]];</div>
+     * <div>- returns `false` otherwise.</div>
      */
     def includes(x: E): Boolean = belowUpperBound(x)
 
@@ -162,9 +162,9 @@ object BoundedOrder {
      * Returns `true`, if element is below upper bound of the set.
      * 
      * <p>More strictly:</p>
-     * <tr>- returns `true`, if x `<` [[upperBound]];</tr>
-     * <tr>- returns [[upperBoundIncluded]], if x `=` [[upperBound]];</tr>
-     * <tr>- returns `false` otherwise.</tr>
+     * <div>- returns `true`, if x `<` [[upperBound]];</div>
+     * <div>- returns [[upperBoundIncluded]], if x `=` [[upperBound]];</div>
+     * <div>- returns `false` otherwise.</div>
      */
     def belowUpperBound(x: E): Boolean =
       if upperBoundIncluded then lteqv(x, upperBound)
@@ -174,9 +174,9 @@ object BoundedOrder {
      * Returns `true`, if element is above upper bound of the set.
      * 
      * <p>More strictly:</p>
-     * <tr>- returns `true`, if x `>` [[upperBound]];</tr>
-     * <tr>- returns [[upperBoundExcluded]], if x `=` [[upperBound]];</tr>
-     * <tr>- returns `false` otherwise.</tr>
+     * <div>- returns `true`, if x `>` [[upperBound]];</div>
+     * <div>- returns [[upperBoundExcluded]], if x `=` [[upperBound]];</div>
+     * <div>- returns `false` otherwise.</div>
      */
     def aboveUpperBound(x: E): Boolean =
       if upperBoundIncluded then gt(x, upperBound)
@@ -207,8 +207,8 @@ object BoundedOrder {
 
       /**
        * Returns:
-       * <tr>- [[upperBound]], if x is above upper bound (see [[aboveUpperBound]]);</tr>
-       * <tr>- x otherwise.</tr>
+       * <div>- [[upperBound]], if x is above upper bound (see [[aboveUpperBound]]);</div>
+       * <div>- x otherwise.</div>
        */ 
       def restrict(x: E): E = if aboveUpperBound(x) then upperBound else x
 
@@ -257,9 +257,9 @@ object BoundedOrder {
 
     /**
      * Returns:
-     * <tr>- [[lowerBound]], if x is below lower bound (see [[belowLowerBound]]);</tr>
-     * <tr>- [[upperBound]], if x is above upper bound (see [[aboveUpperBound]]);</tr>
-     * <tr>- x otherwise.</tr>
+     * <div>- [[lowerBound]], if x is below lower bound (see [[belowLowerBound]]);</div>
+     * <div>- [[upperBound]], if x is above upper bound (see [[aboveUpperBound]]);</div>
+     * <div>- x otherwise.</div>
      */ 
     override def restrict(x: E): E = 
       if belowLowerBound(x) then lowerBound

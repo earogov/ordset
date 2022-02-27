@@ -13,10 +13,10 @@ object OrderedSetFactoryIterable {
    * 
    * Iterable provides default validation for ordered sets according to domain order:
    *
-   * <tr>1. For each bound `b` must be satisfied condition:</tr>
-   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
+   * <div>1. For each bound `b` must be satisfied condition:</div>
+   * <div>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<div>
    * 
-   * <tr>2. Sequence of bounds must be monotonically increasing.</tr>
+   * <div>2. Sequence of bounds must be monotonically increasing.</div>
    */
   def default[E, D[X] <: Domain[X]](
     iterable: Iterable[Bound.Upper[E]]
@@ -30,8 +30,8 @@ object OrderedSetFactoryIterable {
    * 
    * Iterable provides validation according to domain order:
    * 
-   * <tr>1. For each bound `b` must be satisfied condition:</tr>
-   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
+   * <div>1. For each bound `b` must be satisfied condition:</div>
+   * <div>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<div>
    */
   def single[E, D[X] <: Domain[X]](
     bound: Bound.Upper[E]
@@ -45,10 +45,10 @@ object OrderedSetFactoryIterable {
    * 
    * Iterable provides default validation for ordered sets according to domain order:
    *  
-   * <tr>1. For each bound `b` must be satisfied condition:</tr>
-   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
+   * <div>1. For each bound `b` must be satisfied condition:</div>
+   * <div>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<div>
    * 
-   * <tr>2. Sequence of bounds must be monotonically increasing.</tr>
+   * <div>2. Sequence of bounds must be monotonically increasing.</div>
    */
   final class DefaultImpl[E, D[X] <: Domain[X]](
     private val iterable: Iterable[Bound.Upper[E]],
@@ -64,8 +64,8 @@ object OrderedSetFactoryIterable {
    * 
    * Iterable provides validation according to domain order:
   *
-   * <tr>1. For each bound `b` must be satisfied condition:</tr>
-   * <tr>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<tr>
+   * <div>1. For each bound `b` must be satisfied condition:</div>
+   * <div>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).<div>
    */
   final class SingleImpl[E, D[X] <: Domain[X]](
     private val bound: Bound.Upper[E],
@@ -77,9 +77,9 @@ object OrderedSetFactoryIterable {
 
   /**
    * Validation predicate for single bound `b` such that:
-   * <tr>
+   * <div>
    *   1. returns `true` iff (`b` `≥` domain lower bound) and (`b` `<` domain upper bound) according to domain order.
-   * <tr>
+   * <div>
    */
   final class DomainBoundsValidation[E, D[X] <: Domain[X]](
     private val domainOps: DomainOps[E, D]
@@ -107,9 +107,9 @@ object OrderedSetFactoryIterable {
 
   /**
    * Validation predicate for pair of bounds (`prev`, `next`) such that:
-   * <tr>
+   * <div>
    *   1. returns `true` iff (`prev` `<` `next`) according to domain order.
-   * </tr>
+   * </div>
    */
   final class AdjacentBoundsValidation[E, D[X] <: Domain[X]](
     private val domainOps: DomainOps[E, D]

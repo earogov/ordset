@@ -735,22 +735,22 @@ object AbstractMappedSegmentSeq {
      * Applies patch operation to original sequence within current mapped segment.
      *
      * Returns sequence containing
-     * <tr>
+     * <div>
      *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   - segments {(max(lower, l,,i,,), min(upper, u,,i,,)) -> v,,i,,}
      *   of `other` sequence for which l,,i,, `≤` upper and u,,i,, `≥` lower
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper
-     * </tr>
-     * <tr>where</tr>
-     * <tr>lower - lower bound of current mapped segment;</tr>
-     * <tr>upper - upper bound of current mapped segment;</tr>
-     * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-     * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-     * <tr>v,,i,, - value of segment S,,i,,.</tr>
+     * </div>
+     * <div>where</div>
+     * <div>lower - lower bound of current mapped segment;</div>
+     * <div>upper - upper bound of current mapped segment;</div>
+     * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+     * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+     * <div>v,,i,, - value of segment S,,i,,.</div>
      *
      * {{{
      *   original sequence:

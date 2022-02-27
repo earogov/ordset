@@ -26,8 +26,8 @@ import scala.collection.Seq
  * For such cases implementation based on [[UniformSegmentSeq]] should be used.
  *
  * Preconditions:
- * <tr>`bounds` collection must be non-empty.                   </tr>
- * <tr>`bounds` collection should provide fast access by index. </tr>
+ * <div>`bounds` collection must be non-empty.                   </div>
+ * <div>`bounds` collection should provide fast access by index. </div>
  */
 abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V] 
   extends AbstractStrictSegmentSeq[E, D, V, IndexedSegmentBase[E, D, V]] {

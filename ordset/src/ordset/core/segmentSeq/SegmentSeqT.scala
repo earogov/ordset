@@ -16,43 +16,43 @@ import scala.specialized as sp
 
 /**
  * Segment sequence encodes ordered sets and maps of elements, such that^*1^:
- * <tr>                                                                                     </tr>
- * <tr>1. {(-2, -1), [1], (5, 10]} - set of integers                                        </tr>
- * <tr>                                                                                     </tr>
- * <tr>2. {(-2.0, 0.0), (0.0, 10.0]} - set of real numbers                                  </tr>
- * <tr>                                                                                     </tr>
- * <tr>3. {(2020-01-01, 2020-12-31], [2021-01-11, +inf)} - set of dates without upper bound </tr>
- * <tr>                                                                                     </tr>
- * <tr>4. {(-inf, 0) -> B, [10, 20] -> A} - map integer -> string                           </tr>
- * <tr>                                                                                     </tr>
- * <tr>5. {(-inf, +inf) -> Z} - universal or unbounded map                                  </tr>
- * <tr>                                                                                     </tr>
- * <tr>
+ * <div>                                                                                     </div>
+ * <div>1. {(-2, -1), [1], (5, 10]} - set of integers                                        </div>
+ * <div>                                                                                     </div>
+ * <div>2. {(-2.0, 0.0), (0.0, 10.0]} - set of real numbers                                  </div>
+ * <div>                                                                                     </div>
+ * <div>3. {(2020-01-01, 2020-12-31], [2021-01-11, +inf)} - set of dates without upper bound </div>
+ * <div>                                                                                     </div>
+ * <div>4. {(-inf, 0) -> B, [10, 20] -> A} - map integer -> string                           </div>
+ * <div>                                                                                     </div>
+ * <div>5. {(-inf, +inf) -> Z} - universal or unbounded map                                  </div>
+ * <div>                                                                                     </div>
+ * <div>
  *   *1 - Default interval notation is used for including/excluding bounds.
- * </tr>
- * <tr></tr>
+ * </div>
+ * <div></div>
  *
  * We can not explicitly enumerate all elements as for standard (unordered) sets and maps. Instead we describe ordered
  * map as a sequence of segments - intervals of elements of type `E` with some value `V`. Order for type `E` is defined
- * by [[DomainOps]].
- * <tr></tr>
+ * by [[ordset.core.domain.DomainOps]].
+ * <div></div>
  * 
- * Such objects as traditional empty maps (without any keys and values) and {{} -> Value} which maps empty set to some
- * value can not be represented by segment sequence. Generally it's defined as
- * <tr></tr>
+ * Such concepts as ordinary empty maps (without any keys and values) and {{} -> Value}, which maps empty set to some
+ * value, can not be represented by segment sequence. Generally it's defined as
+ * <div></div>
  * 
  * {(l,,i,,, u,,i,,) -> v,,i,,} for i ∈ [1, N]
- * <tr>where</tr>
- * <tr>l,,i,, - lower bound of segment i and l,,1,, is the minimal bound of domain;</tr>
- * <tr>u,,i,, - upper bound of segment i and u,,N,, is the maximal bound of domain;</tr>
- * <tr>v,,i,, - value of segment i;</tr>
- * <tr>N - number of segment in sequence.</tr>
- * <tr></tr>
+ * <div>where</div>
+ * <div>l,,i,, - lower bound of segment i and l,,1,, is the minimal bound of domain;</div>
+ * <div>u,,i,, - upper bound of segment i and u,,N,, is the maximal bound of domain;</div>
+ * <div>v,,i,, - value of segment i;</div>
+ * <div>N - number of segment in sequence.</div>
+ * <div></div>
  *  
  * All implementations of segment sequence must provide basic properties:
- * <tr>1. <u>segments cover universal set without gaps and overlapping</u>.                 </tr>
- * <tr>2. <u>adjacent segments have different values</u>.                                   </tr>
- * <tr>                                                                                     </tr>
+ * <div>1. <u>segments cover universal set without gaps and overlapping</u>.                 </div>
+ * <div>2. <u>adjacent segments have different values</u>.                                   </div>
+ * <div>                                                                                     </div>
  *
  * To define ordered set we assume `V` = `Boolean` and consider it as a 'inclusion in set' flag.
  * Then example 1 will the following:
@@ -83,21 +83,24 @@ import scala.specialized as sp
  *
  * Because of segments are follow without gaps and overlapping it's enough to keep either upper or lower bound.
  * Generally upper bounds are stored and lower bounds are computed (by upper bounds of previous segments).
- * <tr></tr>
+ * <div></div>
  *
  * <h1>Notes</h1>
  *
  * 1. In all ordering relations of bounds (like bound1 `>` bound2 etc.) we assume:
- * <tr>
+ * <div>
  *   - upper bound of last segment has maximal value in domain (for unbounded domain it's equivalent to plus infinity);   
- * </tr>
- * <tr>
- *   - lower bound of first segment has minimal value in domain (for unbounded domain it's equivalent to minus infinity). 
- * </tr>
- * <tr>
- * These properties must be provided by implementations of [[DomainOps.segments.upperOrd]] and [[DomainOps.segments.lowerOrd]].
- * </tr>
- * <tr></tr>
+ * </div>
+ * <div>
+ *   - lower bound of first segment has minimal value in domain (for unbounded domain it's equivalent to minus 
+ *     infinity). 
+ * </div>
+ * <div>
+ * These properties must be provided by implementation of [[SegmentSeqT.domainOps]]
+ * (see [[ordset.core.domain.DomainOpsComponents.Segments.upperOrd]] and 
+ * [[ordset.core.domain.DomainOpsComponents.Segments.lowerOrd]])
+ * </div>
+ * <div></div>
  * 
  * @tparam E type of elements on ordered domain
  * @tparam D type of ordered domain
@@ -210,16 +213,16 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing
-   * <tr>- segment ([[ExtendedBound.BelowAll]], upper) -> value</tr>
-   * <tr>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper</tr>
-   * <tr>where</tr>
-   * <tr>lower - lower bound of segment S at specified `bound`;</tr>
-   * <tr>upper - upper bound of segment S at specified `bound`;</tr>
-   * <tr>value - value of segment S at specified `bound`;</tr>
-   * <tr>S - segment of original sequence such that lower `≤` `bound` and upper `≥` `bound`;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * <div>- segment ([[ExtendedBound.BelowAll]], upper) -> value</div>
+   * <div>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper</div>
+   * <div>where</div>
+   * <div>lower - lower bound of segment S at specified `bound`;</div>
+   * <div>upper - upper bound of segment S at specified `bound`;</div>
+   * <div>value - value of segment S at specified `bound`;</div>
+   * <div>S - segment of original sequence such that lower `≤` `bound` and upper `≥` `bound`;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,.</div>
    *
    * <h3>Example 1</h3>
    * {{{
@@ -265,31 +268,31 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Adds support of unlimited bounds to [[takeAboveBound]]:
-   * <tr>
+   * <div>
    *   if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   if `bound` is [[ExtendedBound.AboveAll]] returns uniform sequence with the value of last segment
    *   of current sequence;
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   otherwise result is the same as for method [[takeAboveBound]].
-   * </tr>
+   * </div>
    */
   def takeAboveExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing
-   * <tr>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower</tr>
-   * <tr>- segment (lower, [[ExtendedBound.AboveAll]]) -> value</tr>
-   * <tr>where</tr>
-   * <tr>lower - lower bound of segment S at specified `bound`;</tr>
-   * <tr>upper - upper bound of segment S at specified `bound`;</tr>
-   * <tr>value - value of segment S at specified `bound`;</tr>
-   * <tr>S - segment of original sequence such that lower `≤` `bound` and upper `≥` `bound`;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * <div>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower</div>
+   * <div>- segment (lower, [[ExtendedBound.AboveAll]]) -> value</div>
+   * <div>where</div>
+   * <div>lower - lower bound of segment S at specified `bound`;</div>
+   * <div>upper - upper bound of segment S at specified `bound`;</div>
+   * <div>value - value of segment S at specified `bound`;</div>
+   * <div>S - segment of original sequence such that lower `≤` `bound` and upper `≥` `bound`;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,.</div>
    *
    * <h3>Example 1</h3>
    * {{{
@@ -335,16 +338,16 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Adds support of unlimited bounds to [[takeBelowBound]]:
-   * <tr>
+   * <div>
    *   if `bound` is [[ExtendedBound.BelowAll]] returns uniform sequence with the value of first segment
    *   of current sequence;
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   otherwise result is the same as for method [[takeBelowBound]].
-   * </tr>
+   * </div>
    */
   def takeBelowExtended(bound: ExtendedBound[E]): SegmentSeq[E, D, V]
 
@@ -392,17 +395,17 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Returns sequence containing:
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, min(u,,i,,, firstUpper)) -> v,,i,,} of `other` sequence for which l,,i,, `≤` firstUpper
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` firstUpper
-   * </tr>
-   * <tr>where</tr>
-   * <tr>firstUpper - upper bound of first segment of original sequence;</tr>
-   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
-   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence.</tr>
+   * </div>
+   * <div>where</div>
+   * <div>firstUpper - upper bound of first segment of original sequence;</div>
+   * <div>l,,i,, - lower bound of segment i in sequence;</div>
+   * <div>u,,i,, - upper bound of segment i in sequence;</div>
+   * <div>v,,i,, - value of segment i in sequence.</div>
    *
    * <h3>Example</h3>
    * {{{
@@ -435,24 +438,24 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Returns sequence containing:
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,} of `other` sequence for which l,,i,, `≤` U(`bound`)
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `≥` L(`bound`)
-   * </tr>
-   * <tr>where</tr>
-   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
-   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence;</tr>
-   * <tr>
+   * </div>
+   * <div>where</div>
+   * <div>l,,i,, - lower bound of segment i in sequence;</div>
+   * <div>u,,i,, - upper bound of segment i in sequence;</div>
+   * <div>v,,i,, - value of segment i in sequence;</div>
+   * <div>
    *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
    *   (see [[Bound.provideLower]]).
-   * </tr>
+   * </div>
    *
    * <h3>Example 1</h3>
    * {{{
@@ -514,25 +517,25 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Adds support of unlimited bounds to [[prependBelowBound]]:
-   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</tr>
-   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence;</tr>
-   * <tr>otherwise result is the same as for method [[prependBelowBound]].</tr>
+   * <div>if `bound` is [[ExtendedBound.BelowAll]] returns current sequence;</div>
+   * <div>if `bound` is [[ExtendedBound.AboveAll]] returns `other` sequence;</div>
+   * <div>otherwise result is the same as for method [[prependBelowBound]].</div>
    */
   def prependBelowExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Returns sequence containing:
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lastLower
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(max(l,,i,,, lastLower), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `≥` lastLower
-   * </tr>
-   * <tr>where</tr>
-   * <tr>lastLower - lower bound of last segment of original sequence;</tr>
-   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
-   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence.</tr>
+   * </div>
+   * <div>where</div>
+   * <div>lastLower - lower bound of last segment of original sequence;</div>
+   * <div>l,,i,, - lower bound of segment i in sequence;</div>
+   * <div>u,,i,, - upper bound of segment i in sequence;</div>
+   * <div>v,,i,, - value of segment i in sequence.</div>
    *
    * <h3>Example</h3>
    * {{{
@@ -566,24 +569,24 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Returns sequence containing:
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, min(u,,i,,, U(`bound`))) -> v,,i,,} of original sequence for which l,,i,, `≤` U(`bound`);
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(max(l,,i,,, L(`bound`)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `≥` L(`bound`);
-   * </tr>
-   * <tr>where</tr>
-   * <tr>l,,i,, - lower bound of segment i in sequence;</tr>
-   * <tr>u,,i,, - upper bound of segment i in sequence;</tr>
-   * <tr>v,,i,, - value of segment i in sequence;</tr>
-   * <tr>
+   * </div>
+   * <div>where</div>
+   * <div>l,,i,, - lower bound of segment i in sequence;</div>
+   * <div>u,,i,, - upper bound of segment i in sequence;</div>
+   * <div>v,,i,, - value of segment i in sequence;</div>
+   * <div>
    *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
    *   (see [[Bound.provideUpper]]);
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise 
    *   (see [[Bound.provideLower]]).
-   * </tr>
+   * </div>
    *
    * <h3>Example 1</h3>
    * {{{
@@ -645,27 +648,27 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
 
   /**
    * Adds support of unlimited bounds to [[appendAboveBound]]:
-   * <tr>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</tr>
-   * <tr>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;</tr>
-   * <tr>otherwise result is the same as for method [[appendAboveBound]].</tr>
+   * <div>if `bound` is [[ExtendedBound.BelowAll]] returns `other` sequence;</div>
+   * <div>if `bound` is [[ExtendedBound.AboveAll]] returns current sequence;</div>
+   * <div>otherwise result is the same as for method [[appendAboveBound]].</div>
    */
   def appendAboveExtended(bound: ExtendedBound[E], other: SegmentSeq[E, D, V]): SegmentSeq[E, D, V]
 
   /**
    * Builds lazy segment sequence using original sequence (current) and `supplierSeq`.
-   * <tr>
+   * <div>
    *   `supplierSeq` is a segment sequence with optional lazy values (functions that returns another segment sequences).
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   If segment of `supplierSeq` has [[None]] value then corresponding segments of output sequence have the same
    *   values as `baseSeq`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   If segment of `supplierSeq` has [[Some]] value with a function F: `() => segmentSeqF`, then corresponding
    *   segments of output sequence are lazy. Function F will be computed only if lazy segment is requested.
    *   Values of lazy segments are completely defined by `segmentSeqF` and corresponding values of original
    *   sequence are ignored.
-   * </tr>
+   * </div>
    * {{{
    *
    * original:
@@ -703,9 +706,9 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
-   * <tr>- seq1 for segment S1</tr>
-   * <tr>- seq2 for segment S2</tr>
-   * <tr>- seq3 for segment S3</tr>
+   * <div>- seq1 for segment S1</div>
+   * <div>- seq2 for segment S2</div>
+   * <div>- seq3 for segment S3</div>
    * {{{
    *
    * original:
@@ -778,9 +781,9 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
-   * <tr>- seq1 for value v1</tr>
-   * <tr>- seq2 for value v2</tr>
-   * <tr>- seq3 for value v3</tr>
+   * <div>- seq1 for value v1</div>
+   * <div>- seq2 for value v2</div>
+   * <div>- seq3 for value v3</div>
    * {{{
    *
    * original:
@@ -855,9 +858,9 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
-   * <tr>- value `A` for segment S1</tr>
-   * <tr>- value `A` for segment S2</tr>
-   * <tr>- value `C` for segment S3</tr>
+   * <div>- value `A` for segment S1</div>
+   * <div>- value `A` for segment S2</div>
+   * <div>- value `C` for segment S3</div>
    * {{{
    *
    * original:
@@ -894,9 +897,9 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * <h3>Example</h3>
    *
    * Assume `mapFunc` returns:
-   * <tr>- value `A` for input value `A`</tr>
-   * <tr>- value `A` for input value `B`</tr>
-   * <tr>- value `C` for input value `C`</tr>
+   * <div>- value `A` for input value `A`</div>
+   * <div>- value `A` for input value `B`</div>
+   * <div>- value `C` for input value `C`</div>
    * {{{
    *
    * original:
@@ -926,10 +929,10 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * w,,i,, = zipFunc(v,,j,,, u,,k,,)
    *
    * where
-   * <tr>w,,i,, - value of segment of output sequence;   </tr>
-   * <tr>v,,j,, - value of segment of original sequence; </tr>
-   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
-   * <tr></tr>
+   * <div>w,,i,, - value of segment of output sequence;   </div>
+   * <div>v,,j,, - value of segment of original sequence; </div>
+   * <div>u,,k,, - value of segment of `other` sequence.  </div>
+   * <div></div>
    *
    * Adjacent segments of output sequence with the same values are merged.
    *
@@ -1003,17 +1006,17 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * w,,i,, = zipFunc(v,,j,,, u,,k,,)
    *
    * where
-   * <tr>w,,i,, - value of segment of output sequence;   </tr>
-   * <tr>v,,j,, - value of segment of original sequence; </tr>
-   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
-   * <tr></tr>
+   * <div>w,,i,, - value of segment of output sequence;   </div>
+   * <div>v,,j,, - value of segment of original sequence; </div>
+   * <div>u,,k,, - value of segment of `other` sequence.  </div>
+   * <div></div>
    *
    * Adjacent segments of output sequence with the same values are merged.
-   * <tr></tr>
+   * <div></div>
    * 
    * Method is a simplified version of [[zipOptimized]] that doesn't require to specify invariant functions
    * using `false` predicate instead of them.
-   * <tr></tr>
+   * <div></div>
    * 
    * @see [[zipOptimized]]
    */
@@ -1035,13 +1038,14 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * w,,i,, = (v,,j,,, u,,k,,)
    *
    * where
-   * <tr>w,,i,, - value of segment of output sequence;   </tr>
-   * <tr>v,,j,, - value of segment of original sequence; </tr>
-   * <tr>u,,k,, - value of segment of `other` sequence.  </tr>
-   * <tr></tr>
+   * <div>w,,i,, - value of segment of output sequence;   </div>
+   * <div>v,,j,, - value of segment of original sequence; </div>
+   * <div>u,,k,, - value of segment of `other` sequence.  </div>
+   * <div></div>
    *
-   * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
-   * <tr></tr>
+   * Note that each segment of output sequence is considered to be included in set 
+   * (see [[ordset.core.value.ValueOps.valueIncl]]).
+   * <div></div>
    * 
    * @see [[zip]]
    */
@@ -1060,13 +1064,14 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * w,,i,, = (u,,j,,, v,,k,,)
    *
    * where
-   * <tr>w,,i,, - value of segment of output sequence;   </tr>
-   * <tr>u,,j,, - value of segment of `other` sequence;  </tr>
-   * <tr>v,,k,, - value of segment of original sequence. </tr>
-   * <tr></tr>
+   * <div>w,,i,, - value of segment of output sequence;   </div>
+   * <div>u,,j,, - value of segment of `other` sequence;  </div>
+   * <div>v,,k,, - value of segment of original sequence. </div>
+   * <div></div>
    *
-   * Note that each segment of output sequence is considered to be included in set (see [[ValueOps.valueIncl]]).
-   * <tr></tr>
+   * Note that each segment of output sequence is considered to be included in set 
+   * (see [[ordset.core.value.ValueOps.valueIncl]]).
+   * <div></div>
    * 
    * @see [[zip]]
    */

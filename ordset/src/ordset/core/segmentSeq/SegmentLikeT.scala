@@ -67,15 +67,15 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
   /**
    * Get extended lower bound of segment:
-   * <tr>- if segment is first, returns [[ExtendedBound.BelowAll]];</tr>
-   * <tr>- if segment has previous segment, returns its lower bound.</tr>
+   * <div>- if segment is first, returns [[ExtendedBound.BelowAll]];</div>
+   * <div>- if segment has previous segment, returns its lower bound.</div>
    */
   override def lower: ExtendedBound.Lower[E]
 
   /**
    * Get extended upper bound of segment:
-   * <tr>- if segment is last, returns [[ExtendedBound.AboveAll]];</tr>
-   * <tr>- if segment has next segment, returns its upper bound.</tr>
+   * <div>- if segment is last, returns [[ExtendedBound.AboveAll]];</div>
+   * <div>- if segment has next segment, returns its upper bound.</div>
    */
   override def upper: ExtendedBound.Upper[E]
 
@@ -226,7 +226,10 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
     private var current: SegmentT[E, D, V, S] with S | Null = _
 
-    override def hasNext: Boolean = current == null || !current.isLast
+    override def hasNext: Boolean = {
+      val c = current
+      c == null || !c.isLast
+    }
 
     override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S] | Null) match {
       case null =>
@@ -254,7 +257,10 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
     private var current: SegmentT[E, D, V, S] with S | Null = _
 
-    override def hasNext: Boolean = current == null || !current.isFirst
+    override def hasNext: Boolean = {
+      val c = current
+      c == null || !c.isFirst
+    }
 
     override def next(): SegmentT[E, D, V, S] with S = (current: SegmentT[E, D, V, S]) match {
       case null =>
@@ -278,14 +284,14 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
   // Transformation ----------------------------------------------------------- //
   /**
    * Returns sequence containing
-   * <tr>- segment ([[ExtendedBound.BelowAll]], upper) -> value</tr>
-   * <tr>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper</tr>
-   * <tr>where</tr>
-   * <tr>upper - upper bound of current segment;</tr>
-   * <tr>value - value of current segment;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * <div>- segment ([[ExtendedBound.BelowAll]], upper) -> value</div>
+   * <div>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `>` upper</div>
+   * <div>where</div>
+   * <div>upper - upper bound of current segment;</div>
+   * <div>value - value of current segment;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,.</div>
    *
    * <h3>Example</h3>
    * {{{
@@ -317,14 +323,14 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
   /**
    * Returns sequence containing
-   * <tr>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower</tr>
-   * <tr>- segment (lower, [[ExtendedBound.AboveAll]]) -> value</tr>
-   * <tr>where</tr>
-   * <tr>lower - lower bound of current segment;</tr>
-   * <tr>value - value of current segment;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * <div>- segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `<` lower</div>
+   * <div>- segment (lower, [[ExtendedBound.AboveAll]]) -> value</div>
+   * <div>where</div>
+   * <div>lower - lower bound of current segment;</div>
+   * <div>value - value of current segment;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,.</div>
    *
    * <h3>Example</h3>
    * {{{
@@ -391,18 +397,18 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
   /**
    * Returns sequence containing
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, min(u,,i,,, F(lower))) -> v,,i,,} of `other` sequence for which l,,i,, `<` lower
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which l,,i,, `≥` lower
-   * </tr>
-   * <tr>where</tr>
-   * <tr>lower - lower bound of current segment;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,;</tr>
-   * <tr>F - flip operator (see [[Bound.flip]])</tr>
+   * </div>
+   * <div>where</div>
+   * <div>lower - lower bound of current segment;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,;</div>
+   * <div>F - flip operator (see [[Bound.flip]])</div>
    *
    * <h3>Example</h3>
    * {{{
@@ -438,18 +444,18 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
   /**
    * Returns sequence containing
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} of original sequence for which u,,i,, `≤` upper
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(max(l,,i,,, F(upper)), u,,i,,) -> v,,i,,} of `other` sequence for which u,,i,, `>` upper
-   * </tr>
-   * <tr>where</tr>
-   * <tr>upper - upper bound of current segment;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,.</tr>
-   * <tr>F - flip operator (see [[Bound.flip]])</tr>
+   * </div>
+   * <div>where</div>
+   * <div>upper - upper bound of current segment;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,.</div>
+   * <div>F - flip operator (see [[Bound.flip]])</div>
    *
    * <h3>Example</h3>
    * {{{
@@ -485,24 +491,24 @@ trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends 
 
   /**
    * Returns sequence containing
-   * <tr>
+   * <div>
    *   - segments {(l,,i,,, u,,i,,) -> v,,i,,} 
    *   of original sequence for which u,,i,, `<` lower
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(max(lower, l,,i,,), min(upper, u,,i,,)) -> v,,i,,}
    *   of `other` sequence for which l,,i,, `≤` upper and u,,i,, `≥` lower
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   - segments {(l,,i,,, u,,i,,) -> v,,i,,}
    *   of original sequence for which l,,i,, `>` upper
-   * </tr>
-   * <tr>where</tr>
-   * <tr>lower - lower bound of current segment;</tr>
-   * <tr>upper - upper bound of current segment;</tr>
-   * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-   * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-   * <tr>v,,i,, - value of segment S,,i,,.</tr>
+   * </div>
+   * <div>where</div>
+   * <div>lower - lower bound of current segment;</div>
+   * <div>upper - upper bound of current segment;</div>
+   * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+   * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+   * <div>v,,i,, - value of segment S,,i,,.</div>
    *
    * <h3>Example</h3>
    * {{{

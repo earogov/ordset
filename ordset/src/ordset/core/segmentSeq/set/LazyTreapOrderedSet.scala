@@ -39,19 +39,19 @@ object LazyTreapOrderedSet {
 
   /**
    * Builds lazy ordered set using two input maps:
-   * <tr>1. `baseSet` - base ordered set;</tr>
-   * <tr>2. `supplierMap` - ordered map with optional lazy values (functions that returns another ordered sets).</tr>
-   * <tr></tr>
-   * <tr>
+   * <div>1. `baseSet` - base ordered set;</div>
+   * <div>2. `supplierMap` - ordered map with optional lazy values (functions that returns another ordered sets).</div>
+   * <div></div>
+   * <div>
    *   If segment of `supplierMap` has [[None]] value then corresponding segments of output set have the same
    *   values as `baseSet`.
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   If segment of `supplierMap` has [[Some]] value with a function F: `() => orderedSеtF`, then corresponding
    *   segments of output set are lazy. Function F will be computed only if lazy segment is requested.
    *   Values of lazy segments are completely defined by `orderedSetF` and corresponding values of `baseSet`
    *   are ignored.
-   * </tr>
+   * </div>
    * {{{
    *
    *      true           false           true

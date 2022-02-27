@@ -17,7 +17,7 @@ abstract class SimpleRangeFactory[+E1 <: E2, -E2] extends RangeFactory[E1, E2, S
    * Returns range of elements between `lower` (including) and `upper` (including).
    * 
    * Preconditions:
-   * <tr>1. `lower ≤ upper`</tr>
+   * <div>1. `lower ≤ upper`</div>
    * 
    * @tparam E type of range elements.
    */

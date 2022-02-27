@@ -46,4 +46,4 @@ Note, project restart may be required for the changes to take effect.
 
 ### Copyright and License
 
-All code is available under the Apache License Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+All code is available under the MIT license (http://opensource.org/licenses/mit-license.php).

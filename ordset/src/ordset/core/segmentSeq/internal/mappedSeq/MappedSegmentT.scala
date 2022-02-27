@@ -67,9 +67,9 @@ protected[ordset] object MappedSegmentT {
 
   /**
    * The only segment in sequence (in case of empty or universal sequence) with properties:
-   * <tr>- doesn't have next segment;     </tr>
-   * <tr>- doesn't have previous segment. </tr>
-   * <tr>                                 </tr>
+   * <div>- doesn't have next segment;     </div>
+   * <div>- doesn't have previous segment. </div>
+   * <div>                                 </div>
    * @see [[MappedSegmentLikeT]]
    */
   trait Single[E, D[X] <: Domain[X], U, V, S1, +S2]
@@ -83,9 +83,9 @@ protected[ordset] object MappedSegmentT {
 
   /**
    * Initial segment of sequence with properties:
-   * <tr>- doesn't have previous segment; </tr>
-   * <tr>- always has next segment.       </tr>
-   * <tr>                                 </tr>
+   * <div>- doesn't have previous segment; </div>
+   * <div>- always has next segment.       </div>
+   * <div>                                 </div>
    * @see [[MappedSegmentLikeT]]
    */
   trait Initial[E, D[X] <: Domain[X], U, V, S1, +S2]
@@ -99,9 +99,9 @@ protected[ordset] object MappedSegmentT {
 
   /**
    * Terminal segment of sequence with properties:
-   * <tr>- doesn't have next segment;   </tr>
-   * <tr>- always has previous segment. </tr>
-   * <tr>                               </tr>
+   * <div>- doesn't have next segment;   </div>
+   * <div>- always has previous segment. </div>
+   * <div>                               </div>
    * @see [[MappedSegmentLikeT]]
    */
   trait Terminal[E, D[X] <: Domain[X], U, V, S1, +S2]
@@ -115,9 +115,9 @@ protected[ordset] object MappedSegmentT {
 
   /**
    * Segment with properties:
-   * <tr>- always has next segment;     </tr>
-   * <tr>- always has previous segment. </tr>
-   * <tr>                               </tr>
+   * <div>- always has next segment;     </div>
+   * <div>- always has previous segment. </div>
+   * <div>                               </div>
    * @see [[MappedSegmentLikeT]]
    */
   trait Inner[E, D[X] <: Domain[X], U, V, S1, +S2]

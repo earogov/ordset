@@ -4,21 +4,21 @@ package ordset
  * Typeclass specifying sequence of elements of discrete ordered set. 
  *
  * Implementations must enforce conditions: 
- * <tr>
+ * <div>
  *   1.a If `x` has successor, then: `predecessor(successor(x)) = x`.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   1.b Otherwise `∄` `y` such that: `predecessor(y) = x`.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   2.a If `x` has predecessor, then: `successor(predecessor(x)) = x`.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   2.b Otherwise `∄` `y` such that: `successor(y) = x`.
- * </tr>
- * <tr>
+ * </div>
+ * <div>
  *   3. If `x` is not included in set, then it doesn't have successor and predecessor.
- * </tr>
+ * </div>
  */
 trait Discrete[E] extends Discrete.Succeeding[E] with Discrete.Preceding[E] with Reversible[Discrete[E], Discrete[E]] {
 
@@ -56,15 +56,15 @@ object Discrete {
 
     /**
      * Returns:
-     * <tr>[[Discrete.None]], if element has no successor;</tr>
-     * <tr>the successor of element otherwise.</tr>
+     * <div>[[Discrete.None]], if element has no successor;</div>
+     * <div>the successor of element otherwise.</div>
      */
     def successorOrNone(x: E): Discrete.Maybe[E]
 
     /**
      * Returns:
-     * <tr>[[Option.empty]], if element has no successor;</tr>
-     * <tr>the successor of element otherwise.</tr>
+     * <div>[[Option.empty]], if element has no successor;</div>
+     * <div>the successor of element otherwise.</div>
      */
     def successorOpt(x: E): Option[E] = successorOrNone(x) match {
       case Discrete.None => Option.empty
@@ -139,15 +139,15 @@ object Discrete {
 
     /**
      * Returns:
-     * <tr>[[Discrete.None]], if element has no predecessor;</tr>
-     * <tr>the predecessor of element otherwise.</tr>
+     * <div>[[Discrete.None]], if element has no predecessor;</div>
+     * <div>the predecessor of element otherwise.</div>
      */
     def predecessorOrNone(x: E): Discrete.Maybe[E]
 
     /**
      * Returns:
-     * <tr>[[Option.empty]], if element has no predecessor;</tr>
-     * <tr>the predecessor of element otherwise.</tr>
+     * <div>[[Option.empty]], if element has no predecessor;</div>
+     * <div>the predecessor of element otherwise.</div>
      */
     def predecessorOpt(x: E): Option[E] =  predecessorOrNone(x) match {
       case Discrete.None => Option.empty

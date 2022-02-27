@@ -8,7 +8,7 @@ import scala.collection.immutable.Queue
 /**
  * Simple string wrapper with predefined order and equality.
  *
- * Methods `equals`, `hashCode`, `compareTo` are always consistent with [[DefaultOrder]].
+ * Methods `equals`, `hashCode`, `compareTo` are always consistent with [[ordset.util.label.Label.DefaultOrder]].
  */
 trait Label extends Comparable[Label] {
 

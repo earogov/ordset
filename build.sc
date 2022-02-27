@@ -1,28 +1,46 @@
 import mill._
-import mill.define.Command
 import scalalib._
+import publish._
+import define.Command
 
-object ordset extends ScalaModule {
+import $ivy.`com.lihaoyi::mill-contrib-versionfile:`
+import mill.contrib.versionfile.VersionFileModule
 
-  def scalaVersion = "3.1.1"
+object versionFile extends VersionFileModule
+
+trait CoreModule extends ScalaModule with PublishModule {
+
+  override def scalaVersion = "3.1.1"
 
   override def scalacOptions = Seq(
-    "-language:implicitConversions",
-    "-language:higherKinds",
-    "-deprecation",
-    "-Yexplicit-nulls",
-    "-Wunused:nowarn"
+    "-encoding", "utf-8",                 // Specify character encoding used by source files.
+    "-deprecation",                       // Emit warning and location for usages of deprecated APIs.
+    "-language:implicitConversions",      // Allow definition of implicit functions called views.
+    "-language:higherKinds",              // Allow higher-kinded types.
+    "-Yexplicit-nulls",                   // Make reference types (anything that extends AnyRef) non-nullable.
+    "-Wunused:nowarn"                     // Warn if @nowarn annotation is unused (suppress no warning).
   )
 
-  override def ivyDeps = Agg(
-    ivy"org.typelevel::cats-core:2.7.0"
+  override def scalaDocOptions = Seq(
+    "-comment-syntax", "wiki"
   )
 
-  object test extends Tests {
+  override def publishVersion = versionFile.currentVersion().toString
+
+  override def pomSettings = PomSettings(
+    description = artifactName(),
+    organization = "io.github.earogov",
+    url = "https://github.com/earogov/ordset",
+    licenses = Seq(License.MIT),
+    versionControl = VersionControl.github("earogov", "ordset"),
+    developers = Seq(
+      Developer("earogov", "Eugene Rogov", "https://github.com/earogov")
+    )
+  )
+
+  trait TestModule extends Tests {
 
     override def testFramework = "org.scalatest.tools.Framework"
-
-    override def moduleDeps = Seq(commonsRandom)
 
     override def ivyDeps = Agg(
       ivy"org.scalatest::scalatest:3.2.11",
@@ -30,28 +48,34 @@ object ordset extends ScalaModule {
     )
 
     /**
-     * Run one test suite. For example:
+     * Run single test suite. For example:
      * {{{
-     *   mill ordset.test.testOne ordset.test.core.specs.segmentSeq.set.ArrayOrderedSetSpec
+     *   mill ordset.test.single ordset.test.core.specs.segmentSeq.set.ArrayOrderedSetSpec
      * }}}
      */
-    def testOne(args: String*): Command[Unit] = T.command {
+    def single(args: String*): Command[Unit] = T.command {
       super.runMain("org.scalatest.run", args: _*)
     }
   }
 }
 
-object commonsRandom extends ScalaModule {
+object ordset extends CoreModule {
 
-  def scalaVersion = "3.1.1"
+  override def artifactName = "ordset"
 
-  override def scalacOptions = Seq(
-    "-language:implicitConversions",
-    "-language:higherKinds",
-    "-deprecation",
-    "-Yexplicit-nulls",
-    "-Wunused:nowarn"
+  override def ivyDeps = Agg(
+    ivy"org.typelevel::cats-core:2.7.0"
   )
+
+  object test extends TestModule {
+
+    override def moduleDeps = Seq(commonsRandom)
+  }
+}
+
+object commonsRandom extends CoreModule {
+
+  override def artifactName = ordset.artifactName() + "-" + "commonsRandom"
 
   override def ivyDeps = Agg(
     ivy"org.apache.commons:commons-rng-simple:1.4",
@@ -60,13 +84,5 @@ object commonsRandom extends ScalaModule {
 
   override def moduleDeps = Seq(ordset)
 
-  object test extends Tests {
-
-    override def testFramework = "org.scalatest.tools.Framework"
-
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.2.11",
-      ivy"org.scalatestplus::junit-4-13:3.2.11.0"
-    )
-  }
+  object test extends TestModule
 }

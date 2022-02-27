@@ -20,27 +20,27 @@ object RandomUtil {
    *   outputSeq.reduce(_ + _) == `sum`
    * }}}
    * If `sum` `<=` 0 then returns [[Seq.empty]].
-   * <tr></tr>
+   * <div></div>
    *
    * Probability distribution of terms is specified by input function `p`:
-   * <tr>
+   * <div>
    *   1. Assuming that we have already generated terms that give T in total, calculate rest: R = `sum` - T.
    *   If R == 0 then stop.
- *   </tr>
-   * <tr>
+ *   </div>
+   * <div>
    *   2. Select candidate term randomly with uniform distribution in range [1, R].
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   3. Generate random double with uniform distribution in range [0, 1].
-   * </tr>
-   * <tr>
+   * </div>
+   * <div>
    *   4. Call function `p` with arguments (candidate term / R, random double).
    *   If result is `true` term is accepted and return to step 1, otherwise return to step 2.
-   * </tr>
-   * <tr></tr>
+   * </div>
+   * <div></div>
    * 
    * Note, infinite loop is possible if `p` always returns `false`.
-   * <tr></tr>
+   * <div></div>
    * 
    * Finally received sequence of terms is sorted randomly.
    */
@@ -77,9 +77,9 @@ object RandomUtil {
 
   /**
    * Functions that define probability distribution of some random quantity x that belongs to [0, 1] (double).
-   * <tr>First argument - some random value of quantity x.</tr>
-   * <tr>Second argument - random double that belong to [0, 1] which is used as a source of randomness.</tr>
-   * <tr>If function returns `true` then random value of quantity x should be accepted, otherwise - rejected.</tr>
+   * <div>First argument - some random value of quantity x.</div>
+   * <div>Second argument - random double that belong to [0, 1] which is used as a source of randomness.</div>
+   * <div>If function returns `true` then random value of quantity x should be accepted, otherwise - rejected.</div>
    */
   object Distribution {
 

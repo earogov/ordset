@@ -878,7 +878,7 @@ object AbstractZippedSegmentSeq {
       order.lteqv(backward, forward)
 
     /**
-     * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segments.upperOrd]]:
+     * [[OrderedZippedTuple]] with segments ordered by their upper bounds.
      */
     trait ByUpperBound[E, D[X] <: Domain[X], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
 
@@ -904,7 +904,7 @@ object AbstractZippedSegmentSeq {
        *
        * Preconditions:
        *
-       * 1. `backward` `≤` `forward` according to [[DomainOps.segments.upperOrd]] of `sequence`.
+       * 1. `backward` `≤` `forward` according to ordering by their upper bounds.
        *
        * @see preconditions of [[ZippedTuple]].
        */
@@ -935,7 +935,7 @@ object AbstractZippedSegmentSeq {
     }
 
     /**
-     * [[OrderedZippedTuple]] with segments ordered according to [[DomainOps.segments.lowerOrd]]:
+     * [[OrderedZippedTuple]] with segments ordered by their lower bounds.
      */
     trait ByLowerBound[E, D[X] <: Domain[X], U1, U2, V, S1, S2] extends OrderedZippedTuple[E, D, U1, U2, V, S1, S2]
 
@@ -961,7 +961,7 @@ object AbstractZippedSegmentSeq {
        *
        * Preconditions:
        *
-       * 1. `backward` `≤` `forward` according to [[DomainOps.segments.lowerOrd]] of `sequence`.
+       * 1. `backward` `≤` `forward` according to ordering by their lower bounds.
        *
        * @see preconditions of [[ZippedTuple]].
        */
@@ -1203,32 +1203,32 @@ object AbstractZippedSegmentSeq {
      * Applies patch operation to first original sequence within current zipped segment.
      *
      * Returns sequence containing
-     * <tr>
+     * <div>
      *   - segments {(l,,i,,, min(u,,i,,, U(lower))) -> v,,i,,}
      *   of first original sequence for which l,,i,, `<` lower
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   - segments {(max(lower, l,,i,,), min(upper, u,,i,,)) -> v,,i,,}
      *   of `other` sequence for which l,,i,, `≤` upper and u,,i,, `≥` lower
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   - segments {(max(l,,i,,, L(upper)), u,,i,,) -> v,,i,,}
      *   of first original sequence for which u,,i,, `>` upper
-     * </tr>
-     * <tr>where</tr>
-     * <tr>lower - lower bound of current zipped segment;</tr>
-     * <tr>upper - upper bound of current zipped segment;</tr>
-     * <tr>l,,i,, - lower bound of segment S,,i,,;</tr>
-     * <tr>u,,i,, - upper bound of segment S,,i,,;</tr>
-     * <tr>v,,i,, - value of segment S,,i,,.</tr>
-     * <tr>
+     * </div>
+     * <div>where</div>
+     * <div>lower - lower bound of current zipped segment;</div>
+     * <div>upper - upper bound of current zipped segment;</div>
+     * <div>l,,i,, - lower bound of segment S,,i,,;</div>
+     * <div>u,,i,, - upper bound of segment S,,i,,;</div>
+     * <div>v,,i,, - value of segment S,,i,,.</div>
+     * <div>
      *   U - upper bound operator, it acts as identity if bound is upper and flips bound otherwise
      *   (see [[Bound.provideUpper]]);
-     * </tr>
-     * <tr>
+     * </div>
+     * <div>
      *   L - lower bound operator, it acts as identity if bound is lower and flips bound otherwise
      *   (see [[Bound.provideLower]]).
-     * </tr>
+     * </div>
      *
      * {{{
      * first original sequence:
