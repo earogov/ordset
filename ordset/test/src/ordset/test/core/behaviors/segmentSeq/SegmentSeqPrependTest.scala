@@ -4,8 +4,8 @@ import ordset.core.domain.Domain
 import ordset.core.ExtendedBound
 import ordset.core.segmentSeq.*
 import ordset.core.interval.IntervalRelation
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.Label.*
 import ordset.test.core.behaviors.TestCaseBase
 
 trait SegmentSeqPrependTest[E, D[X] <: Domain[X], V] {

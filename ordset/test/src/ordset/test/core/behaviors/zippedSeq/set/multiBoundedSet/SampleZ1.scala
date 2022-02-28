@@ -5,8 +5,8 @@ import ordset.core.segmentSeq.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrde
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.Label.*
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.samples.segmentSeq.ZippedSeqSample
 
@@ -21,7 +21,7 @@ trait SampleZ1[D[X] <: Domain[X]]
 
   override lazy val firstSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("A1")),
+      labels = Set(label("A1")),
       bound = 15`[`,
       patch = UniformOrderedSet.defaultEmpty,
       expected =
@@ -32,7 +32,7 @@ trait SampleZ1[D[X] <: Domain[X]]
         Nil
     ),
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("A2")),
+      labels = Set(label("A2")),
       bound = 0`(`,
       patch = ArrayOrderedSet.unchecked(
         ArraySeq(0`](`, 15`](`),
@@ -48,7 +48,7 @@ trait SampleZ1[D[X] <: Domain[X]]
         Nil
     ),
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("A3")),
+      labels = Set(label("A3")),
       bound = 35`(`,
       patch = ArrayOrderedSet.unchecked(
         ArraySeq(35`](`, 45`](`),
@@ -66,7 +66,7 @@ trait SampleZ1[D[X] <: Domain[X]]
 
   override lazy val secondSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("B1")),
+      labels = Set(label("B1")),
       bound = 15`[`,
       patch = ArrayOrderedSet.unchecked(
         ArraySeq(17`)[`),
@@ -81,7 +81,7 @@ trait SampleZ1[D[X] <: Domain[X]]
         Nil
     ),
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("B2")),
+      labels = Set(label("B2")),
       bound = 0`(`,
       patch = UniformOrderedSet.defaultUniversal,
       expected =
@@ -92,7 +92,7 @@ trait SampleZ1[D[X] <: Domain[X]]
         Nil
     ),
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("B3")),
+      labels = Set(label("B3")),
       bound = 40`(`,
       patch = ArrayOrderedSet.unchecked(
         ArraySeq(30`)[`),

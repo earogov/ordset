@@ -5,8 +5,8 @@ import ordset.core.segmentSeq.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrde
 import ordset.core.syntax.BoundSyntax._
 import ordset.core.syntax.SetBuilderNotation._
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.Label.*
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.samples.segmentSeq.ZippedSeqSample
 
@@ -21,7 +21,7 @@ trait SampleZ1[D[X] <: Domain[X]]
 
   override lazy val firstSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("A1")),
+      labels = Set(label("A1")),
       bound = 15`[`,
       patch = ArrayOrderedSet.unchecked(
         ArraySeq(0`](`, 15`](`),
@@ -37,7 +37,7 @@ trait SampleZ1[D[X] <: Domain[X]]
 
   override lazy val secondSeqPatchCases: Seq[OriginalSeqPatchTest.TestCase[Int, D, Boolean]] = List(
     OriginalSeqPatchTest.TestCase(
-      labels = Set(Label("B1")),
+      labels = Set(label("B1")),
       bound = 15`[`,
       patch = ArrayOrderedSet.unchecked(
         ArraySeq(0`](`, 15`](`),

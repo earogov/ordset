@@ -2,7 +2,7 @@ package ordset.test.core.behaviors.lazyTreapSeq
 
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain
-import ordset.util.label.Label
+import ordset.test.Label
 import ordset.test.core.behaviors.{TestPackageBase, TestShowUtil}
 import ordset.core.ExtendedBound
 

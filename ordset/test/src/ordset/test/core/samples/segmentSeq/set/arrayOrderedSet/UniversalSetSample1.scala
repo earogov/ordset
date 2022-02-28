@@ -5,8 +5,8 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.segmentSeq.set.ArrayOrderedSet
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.core.SegmentSeqLabels
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.ArraySeqSample
 
@@ -20,7 +20,7 @@ class UniversalSetSample1[D[X] <: Domain[X]](
 ) extends ArraySeqSample[Int, D, Boolean]
   with ordset.test.core.behaviors.segmentSeq.set.universalSet.Sample1[D] {
 
-  override val labels: Set[Label] = super.labels + Labels.universalSet
+  override val labels: Set[Label] = super.labels + SegmentSeqLabels.universalSet
 
   override val sequence: ArraySegmentSeq[Int, D, Boolean] =
     ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary)

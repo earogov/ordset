@@ -9,8 +9,8 @@ import ordset.core.value.ValueOps
 import ordset.core.{Bound, ExtendedBound}
 import ordset.core.interval.{Interval, IntervalRelation}
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.Label.*
 import ordset.test.core.implementations.domain.BoundSelector
 
 abstract class SegmentSeqSample[E, D[X] <: Domain[X], V, +SSeq <: SegmentSeq[E, D, V]](
@@ -45,7 +45,7 @@ abstract class SegmentSeqSample[E, D[X] <: Domain[X], V, +SSeq <: SegmentSeq[E, 
   /**
    * Labels for string representation of [[SegmentSeqSample]] instance.
    */
-  def labels: Set[Label] = Set.empty + Labels.sample(sample)
+  def labels: Set[Label] = Set.empty + sampleLabel(sample)
 
   /**
    * Segment sequence under test.
@@ -80,5 +80,5 @@ abstract class SegmentSeqSample[E, D[X] <: Domain[X], V, +SSeq <: SegmentSeq[E, 
    */
   def reference: Seq[IntervalRelation[E, D, V]] = sequence.firstSegment.forwardLazyList.map(_.intervalRelation)
 
-  override def toString: String = Labels.caseShow.show(labels)
+  override def toString(): String = showCaseSet(labels)
 }

@@ -1,11 +1,10 @@
 package ordset.test.core.behaviors
 
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
 
 class TestPackageBase(
   val labels: Set[Label]
 ) {
 
-  override def toString: String = Labels.packageShow.show(labels)
+  override def toString: String = Label.showPackageSet(labels)
 }

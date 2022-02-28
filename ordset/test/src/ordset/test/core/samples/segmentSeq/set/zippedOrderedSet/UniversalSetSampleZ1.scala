@@ -6,8 +6,8 @@ import ordset.core.segmentSeq.set.{ArrayOrderedSet, TreapOrderedSet, UniformOrde
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.core.SegmentSeqLabels
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.ZippedSeqSample
@@ -23,7 +23,7 @@ class UniversalSetSampleZ1[D[X] <: Domain[X]](
 ) extends ZippedSeqSample[Int, D, Boolean, Boolean, Boolean]
     with ordset.test.core.behaviors.zippedSeq.set.universalSet.SampleZ1[D] {
   
-  override val labels: Set[Label] = super.labels + Labels.universalSet
+  override val labels: Set[Label] = super.labels + SegmentSeqLabels.universalSet
 
   val firstSeq: TreapOrderedSet[Int, D] = UniformOrderedSet.defaultUniversal
 

@@ -8,8 +8,8 @@ import ordset.core.syntax.SetBuilderNotation._
 import ordset.core.ExtendedBound
 import ordset.core.interval.IntervalRelation
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.Label.*
 import ordset.test.core.behaviors.lazyTreapSeq.{LazyTreapSeqCacheTest, LazyTreapSeqMultipleTakeTest}
 import ordset.test.core.behaviors.zippedSeq.OriginalSeqPatchTest
 import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
@@ -37,7 +37,7 @@ trait SampleLT1[D[X] <: Domain[X]]
 
   override lazy val lazyCacheCases: Iterable[LazyTreapSeqCacheTest.TestPackage[Int, D, Boolean]] = List(
     LazyTreapSeqCacheTest.TestPackage(
-      Set(Label("A")),
+      Set(label("A")),
       List(
         LazyTreapSeqCacheTest.SegmentTestCase(
           5`(`,
@@ -70,7 +70,7 @@ trait SampleLT1[D[X] <: Domain[X]]
       )
     ),
     LazyTreapSeqCacheTest.TestPackage(
-      Set(Label("B")),
+      Set(label("B")),
       List(
         LazyTreapSeqCacheTest.SegmentTestCase(
           12`(`,
@@ -92,7 +92,7 @@ trait SampleLT1[D[X] <: Domain[X]]
       )
     ),
     LazyTreapSeqCacheTest.TestPackage(
-      Set(Label("C")),
+      Set(label("C")),
       List(
         LazyTreapSeqCacheTest.ValueTestCase(
           1`(`,
@@ -128,7 +128,7 @@ trait SampleLT1[D[X] <: Domain[X]]
 
   override lazy val multipleTakeCases: Iterable[LazyTreapSeqMultipleTakeTest.TestPackage[Int, D, Boolean]] = List(
     LazyTreapSeqMultipleTakeTest.TestPackage(
-      Set(Label("A")),
+      Set(label("A")),
       List(
         LazyTreapSeqMultipleTakeTest.TakeAboveCommand(1`(`),
         LazyTreapSeqMultipleTakeTest.TakeAboveCommand(1`(`),
@@ -172,7 +172,7 @@ trait SampleLT1[D[X] <: Domain[X]]
       )
     ),
     LazyTreapSeqMultipleTakeTest.TestPackage(
-      Set(Label("B")),
+      Set(label("B")),
       // Check that there is no stack overflow.
       (-10000 to 0)
         .map { i => LazyTreapSeqMultipleTakeTest.TakeAboveCommand(i`[`) }

@@ -4,7 +4,7 @@ import ordset.core.segmentSeq.internal.lazySeq.*
 import ordset.core.ExtendedBound
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain
-import ordset.util.label.Label
+import ordset.test.Label
 import ordset.test.core.behaviors.{TestPackageBase, TestShowUtil}
 
 trait LazyTreapSeqCacheTest[E, D[X] <: Domain[X], V] {

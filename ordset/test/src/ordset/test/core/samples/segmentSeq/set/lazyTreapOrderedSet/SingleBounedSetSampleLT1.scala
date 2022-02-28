@@ -4,10 +4,11 @@ import ordset.core.ExtendedBound
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.segmentSeq.set.TreapOrderedSet
 import ordset.random.RngManager
-import ordset.util.label.Label
+import ordset.test.Label
+import ordset.test.Label.*
+import ordset.test.core.SegmentSeqLabels
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
-import ordset.test.core.Labels
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.implementations.segmentSeq.lazyTreap.LazyTreapSegmentSeq
 import ordset.test.core.samples.segmentSeq.LazyTreapSeqSample
@@ -25,7 +26,7 @@ class SingleBoundedSetSampleLT1[D[X] <: Domain[X]](
 ) extends LazyTreapSeqSample.Fixed[Int, D, Boolean](shuffled)
   with ordset.test.core.behaviors.lazyTreapSeq.set.singleBoundedSet.SampleLT1[D] {
 
-  override val labels: Set[Label] = super.labels + Labels.singleBoundedSeq
+  override val labels: Set[Label] = super.labels + SegmentSeqLabels.singleBoundedSeq
 
   // Protected section -------------------------------------------------------- //
 

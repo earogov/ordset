@@ -4,7 +4,7 @@ import ordset.core.Bound
 import ordset.core.segmentSeq.*
 import ordset.core.interval.IntervalRelation
 import ordset.core.domain.Domain
-import ordset.util.label.Label
+import ordset.test.Label
 import ordset.test.core.behaviors.TestCaseBase
 
 trait OriginalSeqPatchTest[E, D[X] <: Domain[X], U1, U2] {

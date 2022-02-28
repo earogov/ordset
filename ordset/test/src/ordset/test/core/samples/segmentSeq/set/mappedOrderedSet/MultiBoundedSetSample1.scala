@@ -5,8 +5,8 @@ import ordset.core.segmentSeq.MappedSegmentSeq
 import ordset.core.segmentSeq.set.{ArrayOrderedSet, MappedOrderedSet, OrderedSet}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.random.RngManager
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
+import ordset.test.core.SegmentSeqLabels
 import ordset.test.core.implementations.domain.BoundSelector
 import ordset.test.core.samples.segmentSeq.MappedSeqSample
 
@@ -21,7 +21,7 @@ class MultiBoundedSetSample1[D[X] <: Domain[X]](
 ) extends MappedSeqSample[Int, D, Boolean, Boolean]
   with ordset.test.core.behaviors.segmentSeq.set.multiBoundedSet.Sample1[D] {
 
-  override val labels: Set[Label] = super.labels + Labels.multiBoundedSeq
+  override val labels: Set[Label] = super.labels + SegmentSeqLabels.multiBoundedSeq
 
   override val originalSeq: OrderedSet[Int, D] =
     ArrayOrderedSet.unchecked(

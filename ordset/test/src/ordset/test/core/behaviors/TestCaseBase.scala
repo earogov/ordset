@@ -1,11 +1,10 @@
 package ordset.test.core.behaviors
 
-import ordset.util.label.Label
-import ordset.test.core.Labels
+import ordset.test.Label
 
 class TestCaseBase(
   val labels: Set[Label]
 ) {
 
-  override def toString: String = Labels.caseShow.show(labels)
+  override def toString: String = Label.showCaseSet(labels)
 }
