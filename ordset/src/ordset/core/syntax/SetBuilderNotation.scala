@@ -28,43 +28,45 @@ object SetBuilderNotation {
 
   object BoundBuilder {
 
-    def apply[E, D[X] <: Domain[X]](implicit domainOps: DomainOps[E, D]): BoundBuilder[E, D] =
+    def apply[@sp(spNum) E, D[X] <: Domain[X]](implicit domainOps: DomainOps[E, D]): BoundBuilder[E, D] =
       new DefaultImpl[E, D](domainOps)
 
-    class DefaultImpl[E, D[X] <: Domain[X]](override val domainOps: DomainOps[E, D]) extends BoundBuilder[E, D]
+    class DefaultImpl[@sp(spNum) E, D[X] <: Domain[X]](
+      override val domainOps: DomainOps[E, D]
+    ) extends BoundBuilder[E, D]
   }
 
   implicit def boundBuilderToUniversal[E, D[X] <: Domain[X]](builder: BoundBuilder[E, D]): Interval[E, D] =
     builder.domainOps.intervals.factory.universal
 
-  implicit class BoundsToInterval[@sp(spNum) E, D[X] <: Domain[X]](val lower: DomainBound.Lower[E, D]) {
+  implicit class BoundsToInterval[E, D[X] <: Domain[X]](val lower: DomainBound.Lower[E, D]) {
 
     def &(upper: DomainBound.Upper[E, D]): Interval[E, D] = 
       lower.domainOps.intervals.factory.betweenBounds(lower.bound, upper.bound)
   }
 
-  implicit def upperBoundToInterval[@sp(spNum) E, D[X] <: Domain[X]](
+  implicit def upperBoundToInterval[E, D[X] <: Domain[X]](
     upper: DomainBound.Upper[E, D]
   )(
     implicit domainOps: DomainOps[E, D]
   ): Interval[E, D] =
     upper.domainOps.intervals.factory.belowBound(upper.bound)
 
-  implicit def lowerBoundToInterval[@sp(spNum) E, D[X] <: Domain[X]](
+  implicit def lowerBoundToInterval[E, D[X] <: Domain[X]](
     lower: DomainBound.Lower[E, D]
   )(
     implicit domainOps: DomainOps[E, D]
   ): Interval[E, D] =
     lower.domainOps.intervals.factory.aboveBound(lower.bound)
 
-  implicit def setValidatingIterable[@sp(spNum) E, D[X] <: Domain[X]](
+  implicit def setValidatingIterable[E, D[X] <: Domain[X]](
     bounds: Iterable[Bound.Upper[E]]
   )(
     implicit domainOps: DomainOps[E, D]
   ): ValidatingIterable[Bound.Upper[E]] =
     OrderedSetFactoryIterable.default(bounds)(domainOps)
 
-  implicit def mapValidatingIterable[@sp(spNum) E, D[X] <: Domain[X], V](
+  implicit def mapValidatingIterable[E, D[X] <: Domain[X], V](
     boundValues: Iterable[BoundValue[E, V]]
   )(
     implicit 
@@ -75,7 +77,7 @@ object SetBuilderNotation {
 
   implicit class ValueToIntervalRelation[@sp(Boolean) +V](val value: V) {
 
-    def forAll[@sp(spNum) E, D[X] <: Domain[X]](interval: Interval[E, D]): IntervalRelation[E, D, V] =
+    def forAll[E, D[X] <: Domain[X]](interval: Interval[E, D]): IntervalRelation[E, D, V] =
       IntervalRelation(interval, value)
   }
 }

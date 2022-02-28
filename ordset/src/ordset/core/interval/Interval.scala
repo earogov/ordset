@@ -6,10 +6,9 @@ import ordset.core.domain.Domain
 import ordset.core.range.Range
 import ordset.{Hash, Show, util}
 
-import scala.Specializable.{AllNumeric => spNum}
 import scala.{specialized => sp}
 
-sealed trait Interval[@sp(spNum) E, D[X] <: Domain[X]] extends Range[ExtendedBound[E]] {
+sealed trait Interval[E, D[X] <: Domain[X]] extends Range[ExtendedBound[E]] {
 
   /** Domain of interval. */
   def domain: D[E]
@@ -122,7 +121,7 @@ object Interval {
       }
   }
 
-  sealed trait BoundedBelow[@sp(spNum) E, D[X] <: Domain[X]] extends NonEmpty[E, D] {
+  sealed trait BoundedBelow[E, D[X] <: Domain[X]] extends NonEmpty[E, D] {
 
     override def lower: Bound.Lower[E]
 
@@ -131,7 +130,7 @@ object Interval {
     override def hasLowerBound(bound: Bound.Lower[E]): Boolean = domain.boundOrd.eqv(lower, bound)
   }
 
-  sealed trait BoundedAbove[@sp(spNum) E, D[X] <: Domain[X]] extends NonEmpty[E, D] {
+  sealed trait BoundedAbove[E, D[X] <: Domain[X]] extends NonEmpty[E, D] {
 
     override def upper: Bound.Upper[E]
 
@@ -190,7 +189,7 @@ object Interval {
     override def toString: String = SetBuilderFormat.unboundedInterval
   }
 
-  final case class Greater[@sp(spNum) E, D[X] <: Domain[X]](
+  final case class Greater[E, D[X] <: Domain[X]](
     override val lower: Bound.Lower[E],
     override val domain: D[E]
   ) extends BoundedBelow[E, D] {
@@ -219,7 +218,7 @@ object Interval {
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
-  final case class Less[@sp(spNum) E, D[X] <: Domain[X]](
+  final case class Less[E, D[X] <: Domain[X]](
     override val upper: Bound.Upper[E],
     override val domain: D[E]
   ) extends BoundedAbove[E, D] {
@@ -248,7 +247,7 @@ object Interval {
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
-  final case class Between[@sp(spNum) E, D[X] <: Domain[X]](
+  final case class Between[E, D[X] <: Domain[X]](
     override val lower: Bound.Lower[E],
     override val upper: Bound.Upper[E],
     override val domain: D[E]
