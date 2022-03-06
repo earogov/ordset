@@ -8,21 +8,6 @@ import ordset.core.range.Range
 
 object DomainOpsComponents {
 
-  trait Domains[E, D[X] <: Domain[X]] {
-
-    implicit val hash: Hash[D[E]]
-  }
-
-  object Domains {
-
-    def default[E, D[X] <: Domain[X]]: Domains[E, D] = new DefaultImpl
-
-    class DefaultImpl[E, D[X] <: Domain[X]] extends Domains[E, D] {
-
-      override implicit val hash: Hash[D[E]] = Domain.defaultHash
-    }
-  }
-
   trait Intervals[E, D[X] <: Domain[X]] {
 
     implicit val hash: Hash[Interval[E, D]]
@@ -46,17 +31,15 @@ object DomainOpsComponents {
     object Unbounded {
 
       def default[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.Unbounded[E], 
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.Unbounded[E]
       ): Unbounded[E, D] =
-        new DefaultImpl(domain, domainHash)
+        new DefaultImpl(domain)
 
       class DefaultImpl[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.Unbounded[E],
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.Unbounded[E]
       ) extends Unbounded[E, D] {
 
-        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd)
 
         override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
 
@@ -74,17 +57,15 @@ object DomainOpsComponents {
     object BoundedBelow {
 
       def default[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.BoundedBelow[E], 
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.BoundedBelow[E]
       ): BoundedBelow[E, D] =
-        new DefaultImpl(domain, domainHash)
+        new DefaultImpl(domain)
 
       class DefaultImpl[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.BoundedBelow[E],
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.BoundedBelow[E]
       ) extends BoundedBelow[E, D] {
 
-        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd)
 
         override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
 
@@ -103,17 +84,15 @@ object DomainOpsComponents {
     object BoundedAbove {
 
       def default[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.BoundedAbove[E], 
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.BoundedAbove[E]
       ): BoundedAbove[E, D] =
-        new DefaultImpl(domain, domainHash)
+        new DefaultImpl(domain)
 
       class DefaultImpl[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.BoundedAbove[E],
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.BoundedAbove[E]
       ) extends BoundedAbove[E, D] {
 
-        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd)
 
         override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
 
@@ -132,17 +111,15 @@ object DomainOpsComponents {
     object Bounded {
 
       def default[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.Bounded[E], 
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.Bounded[E]
       ): Bounded[E, D] =
-        new DefaultImpl(domain, domainHash)
+        new DefaultImpl(domain)
 
       class DefaultImpl[E, D[X] <: Domain[X]](
-        domain: D[E] & Domain.Bounded[E],
-        domainHash: Hash[D[E]]
+        domain: D[E] & Domain.Bounded[E]
       ) extends Bounded[E, D] {
 
-        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd, domainHash)
+        override implicit val hash: Hash[Interval[E, D]] = Interval.defaultHash(domain.boundOrd)
 
         override implicit val alg: IntervalAlgebra[E, D] = IntervalAlgebra.defaultAlgebra(domain)
 

@@ -11,8 +11,6 @@ sealed trait Domain[E] extends DomainLike[E] {
 
 object Domain {
 
-  implicit def defaultHash[E, D[X] <: Domain[X]]: Hash[D[E]] = defaultHashInstance.asInstanceOf
-
   implicit def defaultShow[E, D[X] <: Domain[X]](implicit boundShow: Show[ExtendedBound[E]]): Show[D[E]] = 
     new DefaultShow(boundShow, Show.fromToString)
 
@@ -463,8 +461,4 @@ object Domain {
       builder.append(boundShow.show(d.upperBound))
     }
   }
-
-  // Private section ---------------------------------------------------------- //
-  private val defaultHashInstance: DefaultHash[Any, Domain] = 
-    new DefaultHash(ordset.util.HashUtil.classBasedHash)
 }

@@ -64,11 +64,9 @@ sealed trait Interval[E, D[X] <: Domain[X]] extends Range[ExtendedBound[E]] {
 object Interval {
 
   implicit def defaultHash[E, D[X] <: Domain[X]](
-    implicit 
-    boundHash: Hash[Bound[E]], 
-    domainHash: Hash[D[E]]
+    implicit boundHash: Hash[Bound[E]]
   ): DefaultHash[E, D] =
-    new DefaultHashImpl(boundHash, domainHash)
+    new DefaultHashImpl(boundHash)
 
   implicit def defaultShow[E, D[X] <: Domain[X]](
     implicit elementShow: Show[E]
@@ -282,23 +280,21 @@ object Interval {
 
     def boundHash: Hash[Bound[E]]
 
-    def domainHash: Hash[D[E]]
-
     override def hash(x: Interval[E, D]): Int = x match {
       case x: Empty[e, d] => 
-        product2Hash(domainHash.hash(x.domain), 0xA1F63D02)
+        0xA1F63D02
       case x: Unbounded[e, d] => 
-        product2Hash(domainHash.hash(x.domain), 0x13E0FF65)
+        0x13E0FF65
       case x: Greater[e, d] => 
-        product2Hash(boundHash.hash(x.lower), domainHash.hash(x.domain))
+        product1Hash(boundHash.hash(x.lower))
       case x: Less[e, d] => 
-        product2Hash(boundHash.hash(x.upper), domainHash.hash(x.domain))
+        product1Hash(boundHash.hash(x.upper))
       case x: Between[e, d] => 
-        product3Hash(boundHash.hash(x.lower), boundHash.hash(x.upper), domainHash.hash(x.domain))
+        product2Hash(boundHash.hash(x.lower), boundHash.hash(x.upper))
     }
 
     override def eqv(x: Interval[E, D], y: Interval[E, D]): Boolean =
-      if (domainHash.eqv(x.domain, y.domain)) x match {
+      x match {
         case x: Empty[e, d] => y match {
           case _: Empty[e, d] => true
           case _ => false
@@ -321,11 +317,9 @@ object Interval {
           case _ => false
         }
       }
-      else false
   }
 
   case class DefaultHashImpl[E, D[X] <: Domain[X]](
-    override val boundHash: Hash[Bound[E]], 
-    override val domainHash: Hash[D[E]]
+    override val boundHash: Hash[Bound[E]]
   ) extends DefaultHash[E, D]
 }

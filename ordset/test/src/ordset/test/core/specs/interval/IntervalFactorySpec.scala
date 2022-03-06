@@ -8,7 +8,6 @@ import ordset.core.interval.{Interval, IntervalFactory}
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.funspec.AnyFunSpec
-import ordset.core.domain.DomainOpsComponents.Domains
 
 @RunWith(classOf[JUnitRunner])
 class IntervalFactorySpec extends AnyFunSpec {

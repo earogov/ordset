@@ -32,6 +32,16 @@ trait BuilderValidationBehaviors {
 
       ValidationTest(continuousBounded.setTestCases).run
     }
+
+    it("should validate sequence of intervals on unbounded discrete domain") {
+
+      ValidationTest(discreteUnbounded.setTestCases).run
+    }
+
+    it("should validate sequence of intervals on bounded discrete domain") {
+
+      ValidationTest(discreteBounded.setTestCases).run
+    }
   }
 
   private object continuousUnbounded {
@@ -163,15 +173,41 @@ trait BuilderValidationBehaviors {
 
     type Dom[X] = Domain.ContinuousBounded[X]
 
-    implicit val domainOps: DomainOps[Double, Domain.ContinuousBounded] = 
+    implicit val domainOps: DomainOps[Double, Dom] = 
       DomainOps.BoundedOps.default(
         Domain.ContinuousBounded.default(double.tryNaturalOrderWithBounds(0d, false, 100d, true).get),
         doubleShow
       )
 
+    val otherDomainOps: DomainOps[Double, Dom] = 
+          DomainOps.BoundedOps.default(
+            Domain.ContinuousBounded.default(double.tryNaturalOrderWithBounds(-100d, true, 200d, true).get),
+            doubleShow
+          )
+
     val x: BoundBuilder[Double, Dom] = BoundBuilder(domainOps)
 
     val setTestCases = List[TestCase[Interval[Double, Dom]]](
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Double, Dom]](
+            otherDomainOps.intervals.factory.belowBound(x < -20),
+            x > 10
+          )
+        ),
+        "Invalid interval {-100.0 <= x < -20.0}: " +
+        "lower bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Double, Dom]](
+            x < 10,
+            otherDomainOps.intervals.factory.betweenBounds(x > 50, x < 150)
+          )
+        ),
+        "Invalid interval {50.0 < x < 150.0}: " +
+        "lower bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 1"
+      ),
       FailureCase(
         OrderedSetBuilderIterable.default(
           List[Interval[Double, Dom]](
@@ -248,7 +284,7 @@ trait BuilderValidationBehaviors {
       FailureCase(
         OrderedSetBuilderIterable.default(
           List[Interval[Double, Dom]](
-            x > -10,
+            x > -10d,
             x >= 50d
           )
         ),
@@ -259,7 +295,7 @@ trait BuilderValidationBehaviors {
         OrderedSetBuilderIterable.default(
           List[Interval[Double, Dom]](
             x <= 50d,
-            x < 200
+            x < 200d
           )
         ),
         "Invalid sequence of intervals {{0.0 < x <= 50.0}, {0.0 < x <= 100.0}}: " +
@@ -321,6 +357,329 @@ trait BuilderValidationBehaviors {
             x > -100d & x < 10d,
             x >= 15d & x < 20d,
             x >= 30d
+          )
+        )
+      )
+    )
+  }
+
+  private object discreteUnbounded {
+
+    type Dom[X] = Domain.DiscreteUnbounded[X]
+
+    implicit val domainOps: DomainOps[BigInt, Dom] = 
+      DomainOps.UnboundedOps.default(
+        Domain.DiscreteUnbounded.default(new bigInt.NaturalOrder), 
+        bigIntShow
+      )
+
+    val x: BoundBuilder[BigInt, Dom] = BoundBuilder(domainOps)
+
+    val setTestCases = List[TestCase[Interval[BigInt, Dom]]](
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            none(x)
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            none(x),
+            none(x)
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            none(x),
+            x > 0
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x < 0,
+            none(x)
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x,
+            x >= 0
+          )
+        ),
+        "Invalid sequence of intervals {{x}, {x >= 0}}: intervals must not overlap. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x <= 0,
+            x
+          )
+        ),
+        "Invalid sequence of intervals {{x <= 0}, {x}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x < -10,
+            x >= 10 & x < 20,
+            x > 0
+          )
+        ),
+        "Invalid sequence of intervals {{10 <= x < 20}, {x > 0}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 2"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x > 9 & x < 20,
+            x >= 10
+          )
+        ),
+        "Invalid sequence of intervals {{9 < x < 20}, {x >= 10}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x > -100 & x < -10,
+            x >= 10 & x < 20,
+            x > 10
+          )
+        ),
+        "Invalid sequence of intervals {{10 <= x < 20}, {x > 10}}: " +
+        "intervals must not overlap. Index = 2"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x > -100 & x < -10,
+            x >= 10 & x < 20,
+            x >= 20
+          )
+        ),
+        "Invalid sequence of intervals {{10 <= x < 20}, {x >= 20}}: " +
+        "intervals must follow each other with a gap (adjacent intervals should be merged). Index = 2"
+      ),
+      SuccessCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x
+          )
+        )
+      ),
+      SuccessCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[BigInt, Dom]](
+            x > -100 & x < -10,
+            x >= 10 & x < 20,
+            x > 20
+          )
+        )
+      )
+    )
+  }
+
+  private object discreteBounded {
+
+    type Dom[X] = Domain.DiscreteBounded[X]
+
+    implicit val domainOps: DomainOps[Int, Dom] = 
+      DomainOps.BoundedOps.default(
+        Domain.DiscreteBounded.default(int.tryNaturalOrderWithBounds(0, 100).get),
+        intShow
+      )
+
+    val otherDomainOps: DomainOps[Int, Dom] = 
+      DomainOps.BoundedOps.default(
+        Domain.DiscreteBounded.default(int.tryNaturalOrderWithBounds(-100, 200).get),
+        intShow
+      )
+
+    val x: BoundBuilder[Int, Dom] = BoundBuilder(domainOps)
+
+    val setTestCases = List[TestCase[Interval[Int, Dom]]](
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            otherDomainOps.intervals.factory.belowBound(x < -20),
+            x > 10
+          )
+        ),
+        "Invalid interval {-100 <= x < -20}: " +
+        "lower bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x < 10,
+            otherDomainOps.intervals.factory.betweenBounds(x > 50, x < 150)
+          )
+        ),
+        "Invalid interval {50 < x < 150}: " +
+        "lower bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            none(x)
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            none(x),
+            none(x)
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            none(x),
+            x > 50
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x < 50,
+            none(x)
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x < 0,
+            x >= 10
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 0"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x <= 10,
+            x >= 200
+          )
+        ),
+        "Invalid interval {}: interval must be non-empty. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x,
+            x >= 50
+          )
+        ),
+        "Invalid sequence of intervals {{0 <= x <= 100}, {50 <= x <= 100}}: " +
+        "intervals must not overlap. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x <= 50,
+            x
+          )
+        ),
+        "Invalid sequence of intervals {{0 <= x <= 50}, {0 <= x <= 100}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x > -10,
+            x >= 50
+          )
+        ),
+        "Invalid sequence of intervals {{0 <= x <= 100}, {50 <= x <= 100}}: " +
+        "intervals must not overlap. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x <= 50,
+            x < 200
+          )
+        ),
+        "Invalid sequence of intervals {{0 <= x <= 50}, {0 <= x <= 100}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x < 10,
+            x > 10 & x < 20,
+            x > 5
+          )
+        ),
+        "Invalid sequence of intervals {{10 < x < 20}, {5 < x <= 100}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 2"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x >= 10 & x < 20,
+            x > 9
+          )
+        ),
+        "Invalid sequence of intervals {{10 <= x < 20}, {9 < x <= 100}}: " +
+        "intervals must be sorted by lower bound in ascending order. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x > -10 & x <= 10,
+            x >= 10 & x < 20,
+            x > 30
+          )
+        ),
+        "Invalid sequence of intervals {{0 <= x <= 10}, {10 <= x < 20}}: " +
+        "intervals must not overlap. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x > -10 & x < 5,
+            x >= 10 & x < 20,
+            x >= 20
+          )
+        ),
+        "Invalid sequence of intervals {{10 <= x < 20}, {20 <= x <= 100}}: " +
+        "intervals must follow each other with a gap (adjacent intervals should be merged). Index = 2"
+      ),
+      SuccessCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x
+          )
+        )
+      ),
+      SuccessCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Int, Dom]](
+            x > -100 & x < 10,
+            x >= 15 & x < 20,
+            x >= 30
           )
         )
       )

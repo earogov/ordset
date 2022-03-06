@@ -5,8 +5,6 @@ import ordset.core.domain.DomainOpsComponents.*
 
 sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
 
-  def domains: Domains[E, D]
-
   def intervals: Intervals[E, D]
 
   def intervalRelations: IntervalRelations[E, D]
@@ -14,8 +12,6 @@ sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
   def segments: Segments[E, D]
 
   def showOps: ShowOps[E, D]
-
-  final def hasDomain(domain: D[E]): Boolean = domains.hash.eqv(this.domain, domain)
 }
 
 object DomainOps {
@@ -53,9 +49,7 @@ object DomainOps {
       elementShow: Show[E]
     ) extends UnboundedOps[E, D] {
 
-      override val domains: Domains[E, D] = Domains.default
-
-      override val intervals: Intervals.Unbounded[E, D] = Intervals.Unbounded.default(domain, domains.hash)
+      override val intervals: Intervals.Unbounded[E, D] = Intervals.Unbounded.default(domain)
 
       override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
 
@@ -86,9 +80,7 @@ object DomainOps {
       elementShow: Show[E]
     ) extends BoundedBelowOps[E, D] {
 
-      override val domains: Domains[E, D] = Domains.default
-
-      override val intervals: Intervals.BoundedBelow[E, D] = Intervals.BoundedBelow.default(domain, domains.hash)
+      override val intervals: Intervals.BoundedBelow[E, D] = Intervals.BoundedBelow.default(domain)
 
       override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
 
@@ -119,9 +111,7 @@ object DomainOps {
       elementShow: Show[E]
     ) extends BoundedAboveOps[E, D] {
 
-      override val domains: Domains[E, D] = Domains.default
-
-      override val intervals: Intervals.BoundedAbove[E, D] = Intervals.BoundedAbove.default(domain, domains.hash)
+      override val intervals: Intervals.BoundedAbove[E, D] = Intervals.BoundedAbove.default(domain)
 
       override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
 
@@ -152,9 +142,7 @@ object DomainOps {
       elementShow: Show[E]
     ) extends BoundedOps[E, D] {
 
-      override val domains: Domains[E, D] = Domains.default
-
-      override val intervals: Intervals.Bounded[E, D] = Intervals.Bounded.default(domain, domains.hash)
+      override val intervals: Intervals.Bounded[E, D] = Intervals.Bounded.default(domain)
 
       override val intervalRelations: IntervalRelations[E, D] = IntervalRelations.default(intervals.hash)
 
