@@ -15,6 +15,10 @@ import scala.util.control.NonFatal
 
 /**
  * Unified interface to build ordered sets from collection of upper bounds.
+ * 
+ * @tparam E type of elements on ordered domain
+ * @tparam D type of ordered domain
+ * @tparam SSeq type of output ordered set
  */
 trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] { 
   factory =>
@@ -63,7 +67,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    * @param rngManager generator of random sequences.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
-  def unsafeBuildAsc(
+  def unsafeBuild(
     bounds: ValidatingIterable[Bound.Upper[E]],
     complementary: Boolean
   )(
@@ -73,9 +77,9 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
   ): SSeq
 
   /**
-   * Same as [[unsafeBuildAsc]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuild]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
-   * Note [[unsafeBuildAsc]] preconditions.
+   * Note [[unsafeBuild]] preconditions.
    */
   final def tryBuildAsc(
     bounds: ValidatingIterable[Bound.Upper[E]],
@@ -85,7 +89,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): Try[SSeq] =
-    Try.apply(unsafeBuildAsc(bounds, complementary))
+    Try.apply(unsafeBuild(bounds, complementary))
 
   /**
    * Returns uniform ordered set with specified `value`.
@@ -97,7 +101,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): SSeq =
-    unsafeBuildAsc(ValidatingIterable.empty, value)
+    unsafeBuild(ValidatingIterable.empty, value)
 
   /**
    * Returns ordered set with single bound with value equals to `complementary` below it and !`complementary` above.
@@ -118,7 +122,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): SSeq =
-    unsafeBuildAsc(OrderedSetFactoryIterable.single(bound)(domainOps), complementary)
+    unsafeBuild(OrderedSetFactoryIterable.single(bound)(domainOps), complementary)
 
   /**
    * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
@@ -143,7 +147,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
   def convertSet(set: OrderedSet[E, D]): SSeq
 
   /**
-   * Get factory with provided parameters (see [[unsafeBuildAsc]] for parameters description).
+   * Get factory with provided parameters (see [[unsafeBuild]] for parameters description).
    */
   final def provided(
     implicit 
@@ -153,7 +157,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
     Partial(domainOps, rngManager)
 
   /**
-   * Factory with partially provided parameters (see [[unsafeBuildAsc]] for parameters description).
+   * Factory with partially provided parameters (see [[unsafeBuild]] for parameters description).
    */
   final case class Partial(
     domainOps: DomainOps[E, D],
@@ -161,17 +165,17 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
   ) {
 
     /**
-     * Same as [[OrderedSetFactory.unsafeBuildAsc]].
+     * Same as [[OrderedSetFactory.unsafeBuild]].
      */
     @throws[SegmentSeqException]("if preconditions are violated")
-    final def unsafeBuildAsc(bounds: ValidatingIterable[Bound.Upper[E]], complementary: Boolean): SSeq =
-      factory.unsafeBuildAsc(bounds, complementary)(domainOps, rngManager)
+    final def unsafeBuild(bounds: ValidatingIterable[Bound.Upper[E]], complementary: Boolean): SSeq =
+      factory.unsafeBuild(bounds, complementary)(domainOps, rngManager)
 
     /**
      * Same as [[OrderedSetFactory.tryBuildAsc]].
      */
     final def tryBuildAsc(bounds: ValidatingIterable[Bound.Upper[E]], complementary: Boolean): Try[SSeq] =
-      Try.apply(unsafeBuildAsc(bounds, complementary))
+      Try.apply(unsafeBuild(bounds, complementary))
 
 
     /**
@@ -195,7 +199,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
 
   // Protected section -------------------------------------------------------- //
   protected final def convertSetInternal(set: OrderedSet[E, D]): SSeq = {
-    unsafeBuildAsc(
+    unsafeBuild(
       ValidatingIterable.unchecked(set.upperBounds),
       set.firstSegment.value
     )(
@@ -227,7 +231,7 @@ object OrderedSetFactory {
   ) extends OrderedSetFactory[E, D, SSeq] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuildAsc(
+    def unsafeBuild(
       bounds: ValidatingIterable[Bound.Upper[E]],
       complementary: Boolean
     )(
@@ -249,7 +253,7 @@ object OrderedSetFactory {
         val lastItem = (ExtendedBound.AboveAll, BooleanUtil.inverseN(complementary, boundsValues.size))
         boundsValues.addOne(lastItem)
 
-        mapFactory.unsafeBuildAsc(
+        mapFactory.unsafeBuild(
           // Bounds have been already validated.
           // Values always alternate => no validation required.
           ValidatingIterable.unchecked(boundsValues)

@@ -39,7 +39,7 @@ object FlatmapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedSet.getFactory.unsafeBuildAsc(
+      TreapOrderedSet.getFactory.unsafeBuild(
         List(0`)[`, 10`)[`, 20`)[`, 30`)[`, 40`)[`),
         complementary = false
       )
@@ -51,7 +51,7 @@ object FlatmapExample {
     println(s"Apply flatMap to segment $segment1")
 
     val seq2 = segment1.flatMap { () =>
-      TreapOrderedSet.getFactory.unsafeBuildAsc(
+      TreapOrderedSet.getFactory.unsafeBuild(
         List(12`)`, 15`]`, 17`)`),
         complementary = false
       )
@@ -127,7 +127,7 @@ object FlatmapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, false),
           (10`)[`, true),
@@ -168,7 +168,7 @@ object FlatmapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, true),
           (10`)[`, false),
@@ -183,7 +183,7 @@ object FlatmapExample {
     println("- if segment value is `true`, then returns sequence:")
 
     val seq2 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (-10`)[`, "A"),
           (-5`)[`, "B"),
@@ -213,7 +213,7 @@ object FlatmapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (20`)[`, false),
           (AboveAll, true)
@@ -224,7 +224,7 @@ object FlatmapExample {
     println()
     println("Let's apply flatMap with function, that returns following sequence for each segment:")
     val seq2 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, "A"),
           (10`)[`, "B"),

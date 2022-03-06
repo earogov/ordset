@@ -41,7 +41,7 @@ object PatchLazyExample {
 
     println("Initial treap ordered map:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, "A"),
           (10`)[`, "B"),
@@ -56,7 +56,7 @@ object PatchLazyExample {
     println()
     println("Let's patch it with sequence:")
     val lazySeq = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (15`)[`, None),
           (35`](`, Some(() => buildPatchSeq())),
@@ -99,7 +99,7 @@ object PatchLazyExample {
 
     println("Initial mapped ordered map:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, "A"),
           (10`)[`, "B"),
@@ -115,7 +115,7 @@ object PatchLazyExample {
     println()
     println("Let's patch it with sequence:")
     val lazySeq = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (15`)[`, None),
           (35`](`, Some(() => buildPatchSeq())),
@@ -158,7 +158,7 @@ object PatchLazyExample {
 
     println("Initial lazy ordered map:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, "A"),
           (10`)[`, "B"),
@@ -174,7 +174,7 @@ object PatchLazyExample {
     println()
     println("Let's patch it with sequence:")
     val lazySeq = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (15`)[`, None),
           (35`](`, Some(() => buildPatchSeq())),
@@ -201,7 +201,7 @@ object PatchLazyExample {
 
   private def buildPatchSeq(): OrderedMap[Int, Domain.ContinuousUnbounded, String] = {
     val patchSeq = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (5`)[`, "X"),
           (25`](`, "Y"),

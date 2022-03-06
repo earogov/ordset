@@ -30,7 +30,7 @@ object DiscreteBoundedDomainExample {
     println("         10          80       AboveAll   ")
     println("                                         ")
     println("                 Pic.1                   ")
-    val map1 = TreapOrderedMap.getFactory[Int, Domain.DiscreteBounded, String].unsafeBuildAsc(
+    val map1 = TreapOrderedMap.getFactory[Int, Domain.DiscreteBounded, String].unsafeBuild(
       List(
         (10 `]`, "abc"),
         (80 `)`, "xyz"),

@@ -128,7 +128,7 @@ trait Sample1[D[X] <: Domain[X]]
         //            -10
         SegmentSeqPrependTest.TestCase(
           factoryTuple._1 + label("C"),
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-10 `](`, 10 `)[`, 10 `](`), complementary = true),
+          factoryTuple._2.unsafeBuild(ArraySeq(-10 `](`, 10 `)[`, 10 `](`), complementary = true),
           (true  forAll x <= -10) ::
           (false forAll x >  -10) ::
           Nil
@@ -144,7 +144,7 @@ trait Sample1[D[X] <: Domain[X]]
         //
         SegmentSeqPrependTest.TestCase(
           factoryTuple._1 + label("D"),
-          factoryTuple._2.unsafeBuildAsc(bounds, !complementary),
+          factoryTuple._2.unsafeBuild(bounds, !complementary),
           (false forAll x) ::
           Nil
         )
@@ -241,7 +241,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqPrependTest.TestCaseWithBound(
           factoryTuple._1 + label("C1"),
           5`]`,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-10`](`, 10`)[`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(-10`](`, 10`)[`), complementary = false),
           (false forAll x <= -10) ::
           (true  forAll x > -10 & x <= 5) ::
           (false forAll x > 5) ::
@@ -261,7 +261,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqPrependTest.TestCaseWithBound(
           factoryTuple._1 + label("D1"),
           0`]`,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(0`](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(0`](`), complementary = false),
           (false forAll x) ::
           Nil
         ),
@@ -281,7 +281,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqPrependTest.TestCaseWithBound(
           factoryTuple._1 + label("E1"),
           ExtendedBound.BelowAll,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(-5`](`), complementary = false),
           reference
         ),
         // current:
@@ -299,7 +299,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqPrependTest.TestCaseWithBound(
           factoryTuple._1 + label("E2"),
           ExtendedBound.AboveAll,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(-5`](`), complementary = false),
           (false forAll x <= -5) ::
           (true  forAll x >  -5) ::
           Nil
@@ -350,7 +350,7 @@ trait Sample1[D[X] <: Domain[X]]
         //                       0        10
         SegmentSeqAppendTest.TestCase(
           factoryTuple._1 + label("C"),
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-10 `](`, 10 `)[`, 10 `](`), complementary = true),
+          factoryTuple._2.unsafeBuild(ArraySeq(-10 `](`, 10 `)[`, 10 `](`), complementary = true),
           (true  forAll x <= 0) ::
           (false forAll x >  0  & x <  10) ::
           (true  forAll x >= 10 & x <= 10) ::
@@ -368,7 +368,7 @@ trait Sample1[D[X] <: Domain[X]]
         //
         SegmentSeqAppendTest.TestCase(
           factoryTuple._1 + label("D"),
-          factoryTuple._2.unsafeBuildAsc(bounds, !complementary),
+          factoryTuple._2.unsafeBuild(bounds, !complementary),
           (true  forAll x) ::
           Nil
         )
@@ -465,7 +465,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqAppendTest.TestCaseWithBound(
           factoryTuple._1 + label("C1"),
           5`]`,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-10`](`, 10`)[`), complementary = true),
+          factoryTuple._2.unsafeBuild(ArraySeq(-10`](`, 10`)[`), complementary = true),
           (true forAll x <= 0) ::
           (false forAll x > 0 & x < 10) ::
           (true forAll x >= 10) ::
@@ -485,7 +485,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqAppendTest.TestCaseWithBound(
           factoryTuple._1 + label("D1"),
           0`]`,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(0`](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(0`](`), complementary = false),
           (true forAll x) ::
           Nil
         ),
@@ -505,7 +505,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqAppendTest.TestCaseWithBound(
           factoryTuple._1 + label("E1"),
           ExtendedBound.BelowAll,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(-5`](`), complementary = false),
           (false forAll x <= -5) ::
           (true  forAll x >  -5) ::
           Nil
@@ -525,7 +525,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentSeqAppendTest.TestCaseWithBound(
           factoryTuple._1 + label("E2"),
           ExtendedBound.AboveAll,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-5`](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(-5`](`), complementary = false),
           reference
         )
       )
@@ -719,7 +719,7 @@ trait Sample1[D[X] <: Domain[X]]
         SegmentPatchTest.TestCase(
           factoryTuple._1 + label("B1"),
           0 `[`,
-          factoryTuple._2.unsafeBuildAsc(ArraySeq(-20 `)[`, -10 `](`, 0 `](`), complementary = false),
+          factoryTuple._2.unsafeBuild(ArraySeq(-20 `)[`, -10 `](`, 0 `](`), complementary = false),
           (false forAll x <  -20) ::
           (true  forAll x >= -20 & x <= -10) ::
           (false forAll x >  -10) ::

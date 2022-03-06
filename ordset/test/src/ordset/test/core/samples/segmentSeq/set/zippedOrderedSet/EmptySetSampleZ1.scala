@@ -25,12 +25,12 @@ class EmptySetSampleZ1[D[X] <: Domain[X]](
   
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.emptySet
 
-  override val firstSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
+  override val firstSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuild(
     ArraySeq(10`](`, 20`](`),
     complementary = false
   )
 
-  override val secondSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
+  override val secondSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuild(
     ArraySeq(25`](`),
     complementary = false
   )

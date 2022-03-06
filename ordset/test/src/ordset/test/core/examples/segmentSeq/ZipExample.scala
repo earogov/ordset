@@ -36,7 +36,7 @@ object ZipExample {
 
     println("First initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, "A"),
           (10`)[`, "B"),
@@ -48,7 +48,7 @@ object ZipExample {
     println()
     println("Second initial sequence:")
     val seq2 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (5`)[`, "1"),
           (AboveAll, "2")
@@ -69,7 +69,7 @@ object ZipExample {
     println()
     println("First initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, "A"),
           (10`)[`, "B"),
@@ -81,7 +81,7 @@ object ZipExample {
     println()
     println("Second initial sequence:")
     val seq2 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (5`)[`, "C"),
           (15`)[`, "B"),
@@ -102,7 +102,7 @@ object ZipExample {
 
     println("First initial sequence:")
     val seq1 = 
-      TreapOrderedSet.getFactory.unsafeBuildAsc(
+      TreapOrderedSet.getFactory.unsafeBuild(
         List(0`)`, 10`)`),
         complementary = true
       )
@@ -111,7 +111,7 @@ object ZipExample {
     println()
     println("Second initial sequence:")
     val seq2 = 
-      TreapOrderedSet.getFactory.unsafeBuildAsc(
+      TreapOrderedSet.getFactory.unsafeBuild(
         List(5`)[`, 15`)[`),
         complementary = true
       )

@@ -191,7 +191,7 @@ object LazyTreapSeqUtil {
         .toVector
 
       val boundValues = generateValues(splittedBounds, None, Vector.empty, rng)
-      seqFactory.unsafeBuildAsc(boundValues)
+      seqFactory.unsafeBuild(boundValues)
     }  
   }
 

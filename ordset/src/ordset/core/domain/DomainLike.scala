@@ -18,9 +18,9 @@ trait DomainLike[E] {
 
   def boundsRange: SimpleRange[ExtendedBound[E]]
 
-  def lowerBound: ExtendedBound[E] = extendedOrd.lowerBound
+  def lowerBound: ExtendedBound.Lower[E] = extendedOrd.lowerBound
 
-  def upperBound: ExtendedBound[E] = extendedOrd.upperBound
+  def upperBound: ExtendedBound.Upper[E] = extendedOrd.upperBound
 
   def isContinuous: Boolean
 
@@ -60,9 +60,9 @@ object DomainLike {
 
     override def boundsRange: SimpleRange[ExtendedBound[E]] = domain.boundsRange
 
-    override def lowerBound: ExtendedBound[E] = domain.lowerBound
+    override def lowerBound: ExtendedBound.Lower[E] = domain.lowerBound
 
-    override def upperBound: ExtendedBound[E] = domain.upperBound
+    override def upperBound: ExtendedBound.Upper[E] = domain.upperBound
 
     override def isContinuous: Boolean = domain.isContinuous
 

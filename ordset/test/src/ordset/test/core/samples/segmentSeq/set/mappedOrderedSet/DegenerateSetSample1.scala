@@ -25,7 +25,7 @@ class DegenerateSetSample1[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.degenerateSeq
 
   override val originalSeq: OrderedSet[Int, D] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, !complementary)
+    ArrayOrderedSet.getFactory.unsafeBuild(bounds, !complementary)
 
   // sequence:
   //

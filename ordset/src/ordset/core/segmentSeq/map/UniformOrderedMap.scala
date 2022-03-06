@@ -29,7 +29,7 @@ class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
     if (valueOps.eqv(firstValue, value))
       this
     else
-      mapFactory.unsafeBuildAsc(
+      mapFactory.unsafeBuild(
         ValidatingIterable.unchecked(
           List((bound.provideUpper, firstValue), (ExtendedBound.AboveAll, value))
         )
@@ -43,7 +43,7 @@ class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
     if (valueOps.eqv(value, lastValue))
       this
     else
-      mapFactory.unsafeBuildAsc(
+      mapFactory.unsafeBuild(
         ValidatingIterable.unchecked(
           List((bound.provideUpper, value), (ExtendedBound.AboveAll, lastValue))
         )

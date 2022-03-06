@@ -45,22 +45,22 @@ class MultiBoundedSetSampleLT2[D[X] <: Domain[X]](
   // X-----------------)[--------------------](--------------------)[------------------X
   //                   0                     10                    30
   override protected def initializeSequence: LazyTreapSegmentSeq[Int, D, Boolean] = {
-    val seq1 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+    val seq1 = TreapOrderedSet.getFactory.unsafeBuild(
       ArraySeq(-10 `)[`, -5 `](`, 5 `)[`),
       complementary = false
     )
 
-    val seq2 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+    val seq2 = TreapOrderedSet.getFactory.unsafeBuild(
       ArraySeq(0 `)[`, 10 `](`),
       complementary = true
     )
 
-    val seq3 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+    val seq3 = TreapOrderedSet.getFactory.unsafeBuild(
       ArraySeq(15 `)[`, 20 `](`, 25 `)[`, 35 `)[`),
       complementary = false
     )
 
-    val seq4 = TreapOrderedSet.getFactory.unsafeBuildAsc(
+    val seq4 = TreapOrderedSet.getFactory.unsafeBuild(
       ArraySeq(0 `)[`),
       complementary = true
     )

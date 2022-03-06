@@ -25,12 +25,12 @@ class MultiBoundedSetSampleZ1[D[X] <: Domain[X]](
   
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.multiBoundedSeq
 
-  override val firstSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
+  override val firstSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuild(
     ArraySeq(10`](`, 20`](`, 30`)[`),
     complementary = true
   )
 
-  override val secondSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuildAsc(
+  override val secondSeq: OrderedSet[Int, D] = TreapOrderedSet.getFactory.unsafeBuild(
     ArraySeq(5`)[`, 15`)[`, 25`](`, 35`](`),
     complementary = false
   )

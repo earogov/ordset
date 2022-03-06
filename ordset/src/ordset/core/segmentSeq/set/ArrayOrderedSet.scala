@@ -32,7 +32,7 @@ object ArrayOrderedSet {
     else NonuniformArrayOrderedSet.unsafeUnchecked(bounds, complementary)
 
   /**
-   * Returns ordered set factory.
+   * Returns ordered set factory (see [[OrderedSetFactory]]).
    */
   def getFactory[E, D[X] <: Domain[X]]: OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] =
     factoryInstance.asInstanceOf[OrderedSetFactory[E, D, ArrayOrderedSet[E, D]]]
@@ -43,7 +43,7 @@ object ArrayOrderedSet {
   private class Factory[E, D[X] <: Domain[X]] extends OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    override def unsafeBuildAsc(
+    override def unsafeBuild(
       bounds: ValidatingIterable[Bound.Upper[E]],
       complementary: Boolean
     )(

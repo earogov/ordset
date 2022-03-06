@@ -22,6 +22,12 @@ object ValidationException {
   def invalidBoundsSeq(prevStr: String, nextStr: String, index: Long, causeStr: String = ""): ValidationException = 
     withMessageAndCause(s"Invalid sequence of bounds {$prevStr, $nextStr}", index, causeStr)
 
+  def invalidInterval(intervalStr: String, index: Long, causeStr: String = ""): ValidationException = 
+    withMessageAndCause(s"Invalid interval $intervalStr", index, causeStr)
+
+  def invalidIntervalsSeq(prevStr: String, nextStr: String, index: Long, causeStr: String = ""): ValidationException = 
+    withMessageAndCause(s"Invalid sequence of intervals {$prevStr, $nextStr}", index, causeStr)
+
   def invalidValue(valueStr: String, index: Long, causeStr: String = ""): ValidationException = 
     withMessageAndCause(s"Invalid value $valueStr", index, causeStr)
 

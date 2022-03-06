@@ -68,7 +68,7 @@ object LazyTreapSegmentSeq {
     )
     val initZippedSeq: ZSegmentSeq[E, D, V] = ZippedOrderedMap.apply(
       TreapOrderedMap.getFactory.buildUniform(valueOps.unit),
-      TreapOrderedMap.getFactory.unsafeBuildAsc(initBoundValues),
+      TreapOrderedMap.getFactory.unsafeBuild(initBoundValues),
       Tuple2.apply,
       BooleanUtil.falsePredicate1,
       BooleanUtil.falsePredicate1
@@ -179,7 +179,7 @@ object LazyTreapSegmentSeq {
   ) extends OrderedMapFactory[E, D, V, LazyTreapSegmentSeq[E, D, V]] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuildAsc(
+    def unsafeBuild(
       seq: ValidatingIterable[BoundValue[E, V]]
     )(
       implicit 
@@ -187,7 +187,7 @@ object LazyTreapSegmentSeq {
       valueOps: ValueOps[V],
       rngManager: RngManager
     ): LazyTreapSegmentSeq[E, D, V] = {
-      val baseSeq = TreapOrderedMap.getFactory.unsafeBuildAsc(seq)
+      val baseSeq = TreapOrderedMap.getFactory.unsafeBuild(seq)
       val lazySeq = LazyTreapSeqUtil.makeRandomLazySeq(baseSeq)(boundSelector, rngManager)
       LazyTreapSeqUtil.shuffleLazySeq(lazySeq, baseSeq.extendedUpperBounds)(rngManager)
     }

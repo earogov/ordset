@@ -41,7 +41,7 @@ object TreapOrderedMap {
     }
   
   /**
-   * Returns ordered set factory.
+   * Returns ordered map factory (see [[OrderedMapFactory]]).
    */
   def getFactory[E, D[X] <: Domain[X], V]: OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] =
     factoryInstance.asInstanceOf[OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]]]
@@ -52,7 +52,7 @@ object TreapOrderedMap {
   private class Factory[E, D[X] <: Domain[X], V] extends OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuildAsc(
+    def unsafeBuild(
       seq: ValidatingIterable[BoundValue[E, V]]
     )(
       implicit 

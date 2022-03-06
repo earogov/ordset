@@ -6,14 +6,14 @@ import ordset.test.LazyClue
 import org.scalatest.Assertions._
 import ordset.core.segmentSeq.validation.ValidationException
 
-case class FactoryValidationTest[E](
-  val validationCases: Iterable[FactoryValidationTest.TestCase[E]]
+case class ValidationTest[E](
+  val validationCases: Iterable[ValidationTest.TestCase[E]]
 ) {
 
   def run: Unit = validationCases.foreach { _.run }
 }
 
-object FactoryValidationTest {
+object ValidationTest {
 
   sealed trait TestCase[E] {
 
@@ -38,7 +38,7 @@ object FactoryValidationTest {
       assertResult({}, debugInfo)(iterable.foldLeftValidated({})((_, _) => {}))
     }
 
-    override def toString(): String = s"FactoryValidationTest.SuccessCase(iterable = ${show.show(iterable)}"
+    override def toString(): String = s"ValidationTest.SuccessCase(iterable = ${show.show(iterable)}"
   }
 
   case class FailureCase[E](
@@ -54,7 +54,7 @@ object FactoryValidationTest {
       assertValidationFail(iterable.foldLeftValidated({})((_, _) => {}))
     }
 
-    override def toString(): String = s"FactoryValidationTest.FailureCase(iterable = ${show.show(iterable)}"
+    override def toString(): String = s"ValidationTest.FailureCase(iterable = ${show.show(iterable)}"
 
     protected def assertValidationFail(f: => Unit): Unit =
       try {

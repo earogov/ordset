@@ -42,7 +42,7 @@ class SingleBoundedSetSampleLT1[D[X] <: Domain[X]](
   //                  -10                    10
   override protected def initializeSequence: LazyTreapSegmentSeq[Int, D, Boolean] = {
     val seq1 = TreapOrderedSet.getFactory[Int, D].buildUniform(false)
-    val seq2 = TreapOrderedSet.getFactory[Int, D].unsafeBuildAsc(ArraySeq(0 `)[`), complementary = false)
+    val seq2 = TreapOrderedSet.getFactory[Int, D].unsafeBuild(ArraySeq(0 `)[`), complementary = false)
     val seq3 = TreapOrderedSet.getFactory[Int, D].buildUniform(true)
 
     LazyTreapSegmentSeq.totallyLazy(

@@ -36,7 +36,7 @@ object MapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, false),
           (10`)[`, true),
@@ -75,7 +75,7 @@ object MapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         List(
           (0`)[`, -20),
           (10`)[`, -5),

@@ -751,7 +751,7 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
     implicit valueOps: ValueOps[U]
   ): SegmentSeq[E, D, U] = {
     val lazySeq = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         ValidatingIterable.unchecked(
           firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s))))
         )
@@ -826,7 +826,7 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
     implicit valueOps: ValueOps[U]
   ): SegmentSeq[E, D, U] = {
     val lazySeq = 
-      TreapOrderedMap.getFactory.unsafeBuildAsc(
+      TreapOrderedMap.getFactory.unsafeBuild(
         ValidatingIterable.unchecked(
           firstSegment.forwardIterable.map(s => (s.upper, Some(() => mapFunc(s.value))))
         )

@@ -14,6 +14,8 @@ sealed trait DomainOps[E, D[X] <: Domain[X]] extends DomainLike.Proxy[E, D] {
   def segments: Segments[E, D]
 
   def showOps: ShowOps[E, D]
+
+  final def hasDomain(domain: D[E]): Boolean = domains.hash.eqv(this.domain, domain)
 }
 
 object DomainOps {

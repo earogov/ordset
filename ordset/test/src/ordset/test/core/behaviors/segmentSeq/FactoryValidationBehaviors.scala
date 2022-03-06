@@ -6,7 +6,7 @@ import ordset.core.value.ValueOps
 import ordset.core.domain.{DomainOps, Domain}
 import ordset.core.segmentSeq.set.OrderedSetFactoryIterable
 import ordset.core.segmentSeq.map.{OrderedMapFactoryIterable, BoundValue}
-import ordset.test.core.behaviors.segmentSeq.FactoryValidationTest.{TestCase, FailureCase, SuccessCase}
+import ordset.test.core.behaviors.segmentSeq.ValidationTest.{TestCase, FailureCase, SuccessCase}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
 import scala.language.postfixOps
@@ -31,22 +31,22 @@ trait FactoryValidationBehaviors {
 
     it("should validate sequence of bounds on unbounded continuous domain") {
 
-      FactoryValidationTest(continuousUnbounded.setTestCases).run
+      ValidationTest(continuousUnbounded.setTestCases).run
     }
 
     it("should validate sequence of bounds on bounded continuous domain") {
 
-      FactoryValidationTest(continuousBounded.setTestCases).run
+      ValidationTest(continuousBounded.setTestCases).run
     }
 
     it("should validate sequence of bounds on unbounded discrete domain") {
 
-      FactoryValidationTest(discreteUnbounded.setTestCases).run
+      ValidationTest(discreteUnbounded.setTestCases).run
     }
 
     it("should validate sequence of bounds on bounded discrete domain") {
 
-      FactoryValidationTest(discreteBounded.setTestCases).run
+      ValidationTest(discreteBounded.setTestCases).run
     }
   }
 
@@ -54,22 +54,22 @@ trait FactoryValidationBehaviors {
 
     it("should validate sequence of bounds on unbounded continuous domain") {
 
-      FactoryValidationTest(continuousUnbounded.mapTestCases).run
+      ValidationTest(continuousUnbounded.mapTestCases).run
     }
 
     it("should validate sequence of bounds on bounded continuous domain") {
 
-      FactoryValidationTest(continuousBounded.mapTestCases).run
+      ValidationTest(continuousBounded.mapTestCases).run
     }
 
     it("should validate sequence of bounds on unbounded discrete domain") {
 
-      FactoryValidationTest(discreteUnbounded.mapTestCases).run
+      ValidationTest(discreteUnbounded.mapTestCases).run
     }
 
     it("should validate sequence of bounds on bounded discrete domain") {
 
-      FactoryValidationTest(discreteBounded.mapTestCases).run
+      ValidationTest(discreteBounded.mapTestCases).run
     }
   }
 

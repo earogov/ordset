@@ -25,7 +25,7 @@ class LargeSetSample1[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.multiBoundedSeq
 
   override val sequence: TreapSegmentSeq[Int, D, Boolean] =
-    TreapOrderedSet.getFactory.unsafeBuildAsc(
+    TreapOrderedSet.getFactory.unsafeBuild(
       bounds, 
       complementary
     )(

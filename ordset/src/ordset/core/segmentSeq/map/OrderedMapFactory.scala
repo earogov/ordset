@@ -13,6 +13,11 @@ import scala.util.Try
 
 /**
  * Unified interface to build ordered maps from collection of upper bounds and values.
+ * 
+ * @tparam E type of elements on ordered domain
+ * @tparam D type of ordered domain
+ * @tparam V type of value assigned to interval of elements
+ * @tparam SSeq type of output ordered map
  */
 trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   factory =>
@@ -70,7 +75,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    * @param rngManager generator of random sequences.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
-  def unsafeBuildAsc(
+  def unsafeBuild(
     seq: ValidatingIterable[BoundValue[E, V]]
   )(
     implicit 
@@ -80,9 +85,9 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   ): SSeq
   
   /**
-   * Same as [[unsafeBuildAsc]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
+   * Same as [[unsafeBuild]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
-   * Note [[unsafeBuildAsc]] preconditions.
+   * Note [[unsafeBuild]] preconditions.
    */
   def tryBuildAsc(
     seq: ValidatingIterable[BoundValue[E, V]]
@@ -92,7 +97,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
     valueOps: ValueOps[V],
     rngManager: RngManager
   ): Try[SSeq] =
-    Try.apply(unsafeBuildAsc(seq))
+    Try.apply(unsafeBuild(seq))
 
   /**
    * Returns uniform ordered map with specified `value`.
@@ -105,7 +110,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
     valueOps: ValueOps[V],
     rngManager: RngManager
   ): SSeq =
-    unsafeBuildAsc(OrderedMapFactoryIterable.single(value))
+    unsafeBuild(OrderedMapFactoryIterable.single(value))
 
   /**
    * Returns ordered map with single bound with `value1` below it and `value2` above.
@@ -117,7 +122,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    *              bound
    * }}}
    * 
-   * Precondition 4 of [[unsafeBuildAsc]] must be provided. It is controlled by `valuesValidation` function
+   * Precondition 4 of [[unsafeBuild]] must be provided. It is controlled by `valuesValidation` function
    * which throws [[SegmentSeqException]] in case of failure
    */
   @throws[SegmentSeqException]("if preconditions are violated")
@@ -131,7 +136,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
     valueOps: ValueOps[V],
     rngManager: RngManager
   ): SSeq =
-    unsafeBuildAsc(
+    unsafeBuild(
       OrderedMapFactoryIterable.default(
         List((bound, value1), (ExtendedBound.AboveAll, value2))
       )
@@ -164,7 +169,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   def convertMap(map: OrderedMap[E, D, V]): SSeq
 
   /**
-   * Get factory with provided parameters (see [[unsafeBuildAsc]] for parameters description).
+   * Get factory with provided parameters (see [[unsafeBuild]] for parameters description).
    */
   final def provided(
     implicit 
@@ -176,7 +181,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
 
 
   /**
-   * Factory with partially provided parameters (see [[unsafeBuildAsc]] for parameters description).
+   * Factory with partially provided parameters (see [[unsafeBuild]] for parameters description).
    */
   final case class Partial(
     domainOps: DomainOps[E, D],
@@ -185,16 +190,16 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   ) {
 
     /**
-     * Same as [[OrderedMapFactory.unsafeBuildAsc]].
+     * Same as [[OrderedMapFactory.unsafeBuild]].
      */
     @throws[SegmentSeqException]("if preconditions are violated")
-    final def unsafeBuildAsc(seq: ValidatingIterable[BoundValue[E, V]]): SSeq =
-      factory.unsafeBuildAsc(seq)(domainOps, valueOps, rngManager)
+    final def unsafeBuild(seq: ValidatingIterable[BoundValue[E, V]]): SSeq =
+      factory.unsafeBuild(seq)(domainOps, valueOps, rngManager)
 
     /**
      * Same as [[OrderedMapFactory.tryBuildAsc]].
      */
-    final def tryBuildAsc(seq: ValidatingIterable[BoundValue[E, V]]): Try[SSeq] = Try.apply(unsafeBuildAsc(seq))
+    final def tryBuildAsc(seq: ValidatingIterable[BoundValue[E, V]]): Try[SSeq] = Try.apply(unsafeBuild(seq))
 
     /**
      * Same as [[OrderedMapFactory.buildUniform]].
@@ -217,7 +222,7 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
 
   // Protected section -------------------------------------------------------- //
   protected final def convertMapInternal(map: OrderedMap[E, D, V]): SSeq =
-    unsafeBuildAsc(
+    unsafeBuild(
       ValidatingIterable.unchecked(
         SegmentSeqUtil.getBoundValueIterableForSeq(map)
       )

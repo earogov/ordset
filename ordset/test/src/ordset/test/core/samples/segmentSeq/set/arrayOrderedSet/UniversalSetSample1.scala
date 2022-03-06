@@ -23,5 +23,5 @@ class UniversalSetSample1[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.universalSet
 
   override val sequence: ArraySegmentSeq[Int, D, Boolean] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary)
+    ArrayOrderedSet.getFactory.unsafeBuild(bounds, complementary)
 }

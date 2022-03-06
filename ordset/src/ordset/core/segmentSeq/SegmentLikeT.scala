@@ -18,7 +18,7 @@ import scala.specialized as sp
  *
  * @tparam E type of elements on ordered domain
  * @tparam D type of ordered domain
- * @tparam V type of new value assigned to interval of elements
+ * @tparam V type of value assigned to interval of elements
  * @tparam S type of range state
  */
 trait SegmentLikeT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] extends Range.NonEmpty[ExtendedBound[E]] {

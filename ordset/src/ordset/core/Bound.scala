@@ -746,7 +746,7 @@ object ExtendedBound {
   }
 
   sealed trait DefaultOrder[E] 
-    extends ordset.BoundedOrder.Including[ExtendedBound[E], ExtendedBound[E], ExtendedBound[E]] 
+    extends ordset.BoundedOrder.Including[ExtendedBound[E], ExtendedBound.Lower[E], ExtendedBound.Upper[E]] 
     with Hash[ExtendedBound[E]] {
 
     import ordset.givens.int.{intNaturalOrder => intOrd}

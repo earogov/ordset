@@ -28,7 +28,7 @@ class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
     if (valueOps.eqv(firstValue, value))
       this
     else
-      setFactory.unsafeBuildAsc(
+      setFactory.unsafeBuild(
         ValidatingIterable.unchecked(List(bound.provideUpper)),
         firstValue
       )(
@@ -40,7 +40,7 @@ class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
     if (valueOps.eqv(value, lastValue)) 
       this
     else
-      setFactory.unsafeBuildAsc(
+      setFactory.unsafeBuild(
         ValidatingIterable.unchecked( List(bound.provideUpper)),
         value
       )(

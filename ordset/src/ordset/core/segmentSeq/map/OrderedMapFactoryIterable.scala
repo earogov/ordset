@@ -13,13 +13,13 @@ object OrderedMapFactoryIterable {
    * 
    * Iterable provides default validation for ordered maps:
    *
-   * <div>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:</div>
-   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</div>
-   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.</div>
+   * <div>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:  </div>
+   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).                                </div>
+   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.                             </div>
    * 
-   * <div>2. Sequence of bounds must be monotonically increasing according to domain order.</div>
+   * <div>2. Sequence of bounds must be monotonically increasing according to domain order.                  </div>
    * 
-   * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.</div>
+   * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.         </div>
    */
   def default[E, D[X] <: Domain[X], V](
     iterable: Iterable[BoundValue[E, V]]
@@ -27,13 +27,13 @@ object OrderedMapFactoryIterable {
     implicit 
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
-  ): ValidatingIterable[BoundValue[E, V]] = 
+  ): DefaultImpl[E, D, V] = 
     new DefaultImpl(iterable, domainOps, valueOps)
 
   /**
    * Returns iterable with single tuple ([[ExtendedBound.AboveAll]], value) to construct ordered map.
    */
-  def single[E, D[X] <: Domain[X], V](value: V): ValidatingIterable[BoundValue[E, V]] =
+  def single[E, D[X] <: Domain[X], V](value: V): SingleImpl[E, D, V] =
     new SingleImpl(value)
 
   /**
@@ -41,13 +41,13 @@ object OrderedMapFactoryIterable {
    * 
    * Iterable provides default validation for ordered maps:
    *
-   * <div>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:</div>
-   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</div>
-   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.</div>
+   * <div>1. For each bound `b` must be satisfied at least one of the conditions according to domain order:  </div>
+   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).                                </div>
+   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]] - for last bound of iterable.                             </div>
    * 
-   * <div>2. Sequence of bounds must be monotonically increasing according to domain order.</div>
+   * <div>2. Sequence of bounds must be monotonically increasing according to domain order.                  </div>
    * 
-   * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.</div>
+   * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.         </div>
    */
   final class DefaultImpl[E, D[X] <: Domain[X], V](
     private val iterable: Iterable[BoundValue[E, V]],
@@ -69,13 +69,13 @@ object OrderedMapFactoryIterable {
   )
 
   /**
-   * Validation predicate for single tuple (upper bound, value) such that:
+   * Validation predicate for single tuple (upper bound, value). Returns `true`, iff:
    *  
    * <div>
-   *   1. Returns `true` for given bound `b` iff satisfied at least one of the conditions according to domain order:
+   *   1. For given bound `b` satisfied at least one of the conditions according to domain order:
    * </div>
-   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).</div>
-   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]].</div>
+   * <div>1.a. (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).  </div>
+   * <div>1.b. `b` `==` [[ExtendedBound.AboveAll]].                            </div>
    */
   final class DomainBoundsValidation[E, D[X] <: Domain[X], V](
     private val domainOps: DomainOps[E, D]
@@ -96,8 +96,8 @@ object OrderedMapFactoryIterable {
         val boundStr = showOps.extendedShow.show(bound)
         val causeStr = 
           if (domainOps.extendedOrd.eqv(bound, domainOps.upperBound)) {
-            s"bound must be less than upper bound of domain, " +
-            s"or use `ExtendedBound.AboveAll` to specify last value of segment sequence"
+            "bound must be less than upper bound of domain, " +
+            "or use `ExtendedBound.AboveAll` to specify last value of segment sequence"
           } else {
             s"out of domain bounds ${showOps.rangeShow.show(domainOps.boundsRange)}"
           }
@@ -106,9 +106,10 @@ object OrderedMapFactoryIterable {
   }
 
   /**
-   * Validation predicate for pair of tuples (`prev` = (upper bound, value), `next` = (upper bound, value)) such that:
+   * Validation predicate for pair of tuples (`prev` = (upper bound, value), `next` = (upper bound, value)). 
+   * Returns `true`, iff:
    *
-   * <div>1. Returns `true` iff (`prev._1` `<` `next._1`) according to domain order.</div>
+   * <div>1. (`prev._1` `<` `next._1`) according to domain order.</div>
    */
   final class AdjacentBoundsValidation[E, D[X] <: Domain[X], V](
     private val domainOps: DomainOps[E, D]
@@ -123,15 +124,16 @@ object OrderedMapFactoryIterable {
         val extendedShow = domainOps.showOps.extendedShow
         val prevStr = extendedShow.show(prev._1)
         val nextStr = extendedShow.show(next._1)
-        val causeStr = s"sequence must be monotonically increasing"
+        val causeStr = "sequence must be monotonically increasing"
         throw ValidationException.invalidBoundsSeq(prevStr, nextStr, index, causeStr)
       }
   }
 
   /**
-   * Validation predicate for pair of tuples (`prev` = (upper bound, value), `next` = (upper bound, value)) such that:
+   * Validation predicate for pair of tuples (`prev` = (upper bound, value), `next` = (upper bound, value)). 
+   * Returns `true` iff:
    *  
-   * <div><1. Returns `true iff (`prev._2` `!=` `next._2`) according to `valueEq` typeclass.</div>
+   * <div>1. (`prev._2` `!=` `next._2`) according to `valueEq` typeclass.</div>
    */
   final class AdjacentValuesValidation[E, V](
     private val valueOps: ValueOps[V]
@@ -145,7 +147,7 @@ object OrderedMapFactoryIterable {
       if !apply(prev, next) then {
         val prevStr = valueOps.show(prev._2)
         val nextStr = valueOps.show(next._2)
-        val causeStr = s"adjacent values must be non-equal"
+        val causeStr = "adjacent values must be non-equal"
         throw ValidationException.invalidValuesSeq(prevStr, nextStr, index, causeStr)
       }
   }

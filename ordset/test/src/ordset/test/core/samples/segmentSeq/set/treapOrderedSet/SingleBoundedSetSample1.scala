@@ -25,7 +25,7 @@ class SingleBoundedSetSample1[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.singleBoundedSeq
 
   override val sequence: TreapSegmentSeq[Int, D, Boolean] =
-    TreapOrderedSet.getFactory.unsafeBuildAsc(
+    TreapOrderedSet.getFactory.unsafeBuild(
       bounds, 
       complementary
     )(

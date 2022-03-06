@@ -366,7 +366,7 @@ object SegmentT {
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
       val lazySeq = 
-        TreapOrderedMap.getFactory.unsafeBuildAsc(
+        TreapOrderedMap.getFactory.unsafeBuild(
           ValidatingIterable.unchecked(
             List((upper, Some(mapFunc)), (ExtendedBound.AboveAll, None))
           )
@@ -436,7 +436,7 @@ object SegmentT {
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
       val lazySeq = 
-        TreapOrderedMap.getFactory.unsafeBuildAsc(
+        TreapOrderedMap.getFactory.unsafeBuild(
           ValidatingIterable.unchecked(
             List((lower.flipLower, None), (ExtendedBound.AboveAll, Some(mapFunc)))
           )
@@ -508,7 +508,7 @@ object SegmentT {
 
     override def flatMap(mapFunc: () => SegmentSeq[E, D, V]): SegmentSeq[E, D, V] = {
       val lazySeq = 
-        TreapOrderedMap.getFactory.unsafeBuildAsc(
+        TreapOrderedMap.getFactory.unsafeBuild(
           ValidatingIterable.unchecked(
             List((lower.flipLower, None), (upper, Some(mapFunc)), (ExtendedBound.AboveAll, None))
           )

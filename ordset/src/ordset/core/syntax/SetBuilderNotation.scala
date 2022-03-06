@@ -36,6 +36,9 @@ object SetBuilderNotation {
     ) extends BoundBuilder[E, D]
   }
 
+  def none[E, D[X] <: Domain[X]](x: BoundBuilder[E, D]): Interval.Empty[E, D] =
+    x.domainOps.intervals.factory.empty
+
   implicit def boundBuilderToUniversal[E, D[X] <: Domain[X]](builder: BoundBuilder[E, D]): Interval[E, D] =
     builder.domainOps.intervals.factory.universal
 

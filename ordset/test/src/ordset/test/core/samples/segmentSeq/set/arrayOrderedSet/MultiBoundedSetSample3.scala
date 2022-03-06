@@ -23,5 +23,5 @@ class MultiBoundedSetSample3[D[X] <: Domain[X]](
   override val labels: Set[Label] = super.labels + SegmentSeqLabels.multiBoundedSeq
 
   override val sequence: ArraySegmentSeq[Int, D, Boolean] =
-    ArrayOrderedSet.getFactory.unsafeBuildAsc(bounds, complementary)
+    ArrayOrderedSet.getFactory.unsafeBuild(bounds, complementary)
 }

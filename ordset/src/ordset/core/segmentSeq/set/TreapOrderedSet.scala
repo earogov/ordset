@@ -41,10 +41,20 @@ object TreapOrderedSet {
     }
 
   /**
-   * Returns ordered set factory.
+   * Returns ordered set factory (see [[OrderedSetFactory]]).
    */
   def getFactory[E, D[X] <: Domain[X]]: OrderedSetFactory[E, D, TreapOrderedSet[E, D]] =
     factoryInstance.asInstanceOf[OrderedSetFactory[E, D, TreapOrderedSet[E, D]]]
+
+  /**
+   * Returns ordered set builder (see [[OrderedSetBuilder]]).
+   */
+  def getBuilder[E, D[X] <: Domain[X]](
+    implicit 
+    domainOps: DomainOps[E, D], 
+    rngManager: RngManager
+  ): OrderedSetBuilder[E, D, TreapOrderedSet[E, D]] =
+    OrderedSetBuilder.default(getFactory)
 
   // Private section ---------------------------------------------------------- //
   private lazy val factoryInstance: Factory[Any, Domain] = new Factory()
@@ -52,7 +62,7 @@ object TreapOrderedSet {
   private class Factory[E, D[X] <: Domain[X]] extends OrderedSetFactory[E, D, TreapOrderedSet[E, D]] {
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    override def unsafeBuildAsc(
+    override def unsafeBuild(
       bounds: ValidatingIterable[Bound.Upper[E]],
       complementary: Boolean
     )(
