@@ -13,7 +13,7 @@ object OrderedSetFactoryIterable {
    * 
    * Iterable provides default validation for ordered sets according to domain order:
    *
-   * <div>1. For each bound `b` must be satisfied condition:                 </div>
+   * <div>1. For each bound `b` must be satisfied condition:      §§           </div>
    * <div>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).  </div>
    * 
    * <div>2. Sequence of bounds must be monotonically increasing.</div>

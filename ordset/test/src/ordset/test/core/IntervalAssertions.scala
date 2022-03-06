@@ -14,7 +14,7 @@ object IntervalAssertions {
   def assertSameIntervals[E, D[X] <: Domain[X]](
     expected: Interval[E, D],
     actual: Interval[E, D],
-    info: String = ""
+    info: => String = ""
   )(
     implicit domainOps: DomainOps[E, D]
   ): Unit = 
@@ -26,7 +26,7 @@ object IntervalAssertions {
   def assertSameIntervalRelations[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
     actual: IntervalRelation[E, D, V],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -40,7 +40,7 @@ object IntervalAssertions {
   def assertSameRelationSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[IntervalRelation[E, D, V]],
     actual: Iterable[IntervalRelation[E, D, V]],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],

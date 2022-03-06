@@ -11,7 +11,7 @@ object RangeAssertions {
   def assertSameRange[E, R <: Range[E]](
     expected: R,
     actual: R,
-    info: String = ""
+    info: => String = ""
   )(
     implicit 
     rangeHash: Hash[R],

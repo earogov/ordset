@@ -17,7 +17,7 @@ object SegmentSeqAssertions {
   def assertSameSegment[E, D[X] <: Domain[X], V](
     expected: Segment[E, D, V],
     actual: Segment[E, D, V],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -28,7 +28,7 @@ object SegmentSeqAssertions {
   def assertSameRelationAndSegment[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
     actual: Segment[E, D, V],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -39,7 +39,7 @@ object SegmentSeqAssertions {
   def assertSameRelation[E, D[X] <: Domain[X], V](
     expected: IntervalRelation[E, D, V],
     actual: IntervalRelation[E, D, V],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -53,7 +53,7 @@ object SegmentSeqAssertions {
   def assertSameSegmentSeq[E, D[X] <: Domain[X], V](
     expected: SegmentSeq[E, D, V],
     actual: SegmentSeq[E, D, V],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -68,7 +68,7 @@ object SegmentSeqAssertions {
   def assertSameRelationAndSegmentSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[IntervalRelation[E, D, V]],
     actual: SegmentSeq[E, D, V],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -83,7 +83,7 @@ object SegmentSeqAssertions {
   def assertSameBoundValueSeq[E, D[X] <: Domain[X], V](
     expected: Iterable[BoundValue[E, V]],
     actual: Iterable[BoundValue[E, V]],
-    info: String = ""
+    info: => String = ""
   )(
     implicit
     domainOps: DomainOps[E, D],

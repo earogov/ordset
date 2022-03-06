@@ -63,7 +63,7 @@ object ValidationTest {
         case e: ValidationException => 
           assertResult(error, debugInfo)(e.getMessage)
         case _ @ e => 
-          fail(s"Expected ${classOf[ValidationException].getName}, but got ${e.getClass.getName} $debugInfo")
+          fail(s"Expected ${classOf[ValidationException].getName}, but got ${e.getClass.getName}. $debugInfo")
       }
   }
 }

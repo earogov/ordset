@@ -4,6 +4,7 @@ import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.interval.Interval
+import ordset.util.NullableUtil
 import ordset.random.RngManager
 import scala.util.Try
 import ordset.core.segmentSeq.SegmentSeqException
@@ -167,7 +168,7 @@ object OrderedSetBuilder {
       // There is no need to validate output iterable of bounds. Current implementation guarantees, that:
       // - All bounds are greater than or equal to lower bound of domain and less than its upper bound.
       // - Sequence of bounds is monotonically increasing according to domain order.
-      (complementary.nn, ValidatingIterable.unchecked(buf.toList))
+      (NullableUtil.nnOrElse(complementary, false), ValidatingIterable.unchecked(buf.toList))
     }
   }
 }
