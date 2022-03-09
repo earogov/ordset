@@ -36,11 +36,11 @@ object SetBuilderTest {
     override implicit val show: ContravariantShow[Iterable[Interval[E, D]]]
   ) extends TestCase[E, D] {
 
-    private val builder = TreapOrderedSet.getBuilder(expected.domainOps, expected.rngManager)
+    private val builder = TreapOrderedSet.getBuilder.provided(expected.domainOps, expected.rngManager)
 
     override def run: Unit = {
       val actual = builder.unsafeBuild(intervals)
-      assertSameSegmentSeq(expected, actual, debugInfo)(builder.domainOps, builder.valueOps)
+      assertSameSegmentSeq(expected, actual, debugInfo)(expected.domainOps, expected.valueOps)
     }
 
     override def toString(): String = s"BuilderTest.SuccessCase(intervals = ${show.show(intervals)}"
@@ -55,7 +55,7 @@ object SetBuilderTest {
     implicit val rngManager: RngManager
   ) extends TestCase[E, D] {
 
-    private val builder = TreapOrderedSet.getBuilder(domainOps, rngManager)
+    private val builder = TreapOrderedSet.getBuilder.provided(domainOps, rngManager)
 
     override def run: Unit =
       try {

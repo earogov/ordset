@@ -37,8 +37,17 @@ object ArrayOrderedSet {
   def getFactory[E, D[X] <: Domain[X]]: OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] =
     factoryInstance.asInstanceOf[OrderedSetFactory[E, D, ArrayOrderedSet[E, D]]]
 
+  /**
+   * Returns ordered set builder (see [[OrderedSetBuilder]]).
+   */
+  def getBuilder[E, D[X] <: Domain[X]]: OrderedSetBuilder[E, D, ArrayOrderedSet[E, D]] =
+    builderInstance.asInstanceOf[OrderedSetBuilder[E, D, ArrayOrderedSet[E, D]]]
+
   // Private section ---------------------------------------------------------- //
   private lazy val factoryInstance: Factory[Any, Domain] = new Factory()
+
+  private lazy val builderInstance: OrderedSetBuilder[Any, Domain, ArrayOrderedSet[Any, Domain]] = 
+    OrderedSetBuilder.default(factoryInstance)
 
   private class Factory[E, D[X] <: Domain[X]] extends OrderedSetFactory[E, D, ArrayOrderedSet[E, D]] {
 

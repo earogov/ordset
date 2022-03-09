@@ -38,7 +38,7 @@ object SeqSupplier {
       implicit
       domainOps: DomainOps[E, D],
       rngManager: RngManager
-    ): OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]]#Partial =
+    ): OrderedMapFactory[E, D, SeqSupplier[E, D, V], SupplierSegmentSeq[E, D, V]]#Provided =
       getFactory.provided(domainOps, ValueOpsImpl.get, rngManager)
   }
 

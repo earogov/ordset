@@ -16,7 +16,7 @@ object SegmentSeqFactories {
     implicit
     domainOps: DomainOps[E, D],
     boundSelector: BoundSelector[E]
-  ): List[(Set[Label], OrderedSetFactory[E, D, OrderedSet[E, D]]#Partial)] =
+  ): List[(Set[Label], OrderedSetFactory[E, D, OrderedSet[E, D]]#Provided)] =
     List(
       List(
         (

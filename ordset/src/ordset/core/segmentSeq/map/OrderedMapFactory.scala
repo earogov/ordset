@@ -88,6 +88,11 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    * Same as [[unsafeBuild]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuild]] preconditions.
+   * 
+   * @param seq collection of tuples (upper bound, value).
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param valueOps value specific typeclasses: equality, set inclusion function, etc.
+   * @param rngManager generator of random sequences.
    */
   def tryBuildAsc(
     seq: ValidatingIterable[BoundValue[E, V]]
@@ -101,6 +106,11 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
 
   /**
    * Returns uniform ordered map with specified `value`.
+   * 
+   * @param value value of the single segment.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param valueOps value specific typeclasses: equality, set inclusion function, etc.
+   * @param rngManager generator of random sequences.
    */
   def buildUniform(
     value: V
@@ -124,6 +134,13 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    * 
    * Precondition 4 of [[unsafeBuild]] must be provided. It is controlled by `valuesValidation` function
    * which throws [[SegmentSeqException]] in case of failure
+   * 
+   * @param bound upper bound of the first segment.
+   * @param value1 value of the first segment.
+   * @param value2 value of the second segment.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param valueOps value specific typeclasses: equality, set inclusion function, etc.
+   * @param rngManager generator of random sequences.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
   def unsafeBuildSingleBounded(
@@ -146,6 +163,13 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
    * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuildSingleBounded]] preconditions.
+   * 
+   * @param bound upper bound of the first segment.
+   * @param value1 value of the first segment.
+   * @param value2 value of the second segment.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param valueOps value specific typeclasses: equality, set inclusion function, etc.
+   * @param rngManager generator of random sequences.
    */
   def tryBuildSingleBounded(
     bound: Bound.Upper[E],
@@ -161,6 +185,8 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
     
   /**
    * Converts specified `map` into ordered map of type `SSeq`.
+   * 
+   * @param map ordered map that should be converted.
    */
   // Note
   // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
@@ -169,21 +195,24 @@ trait OrderedMapFactory[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   def convertMap(map: OrderedMap[E, D, V]): SSeq
 
   /**
-   * Get factory with provided parameters (see [[unsafeBuild]] for parameters description).
+   * Get factory with supplied parameters.
+   * 
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param valueOps value specific typeclasses: equality, set inclusion function, etc.
+   * @param rngManager generator of random sequences.
    */
   final def provided(
     implicit 
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): Partial =
-    Partial(domainOps, valueOps, rngManager)
-
+  ): Provided =
+    Provided(domainOps, valueOps, rngManager)
 
   /**
-   * Factory with partially provided parameters (see [[unsafeBuild]] for parameters description).
+   * Factory with partially supplied parameters.
    */
-  final case class Partial(
+  final case class Provided(
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager

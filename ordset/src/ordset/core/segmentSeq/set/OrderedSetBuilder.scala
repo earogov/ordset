@@ -20,15 +20,7 @@ import scala.util.control.NonFatal
  * @tparam SSeq type of output ordered set
  */
 trait OrderedSetBuilder[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
-
-  /** Domain specific typeclasses: elements ordering, etc. */
-  def valueOps: ValueOps[Boolean]
-
-  /** Domain specific typeclasses: elements ordering, etc. */
-  def domainOps: DomainOps[E, D]
-
-  /** Generator of random sequences. */
-  def rngManager: RngManager
+  builder =>
   
   /**
    * Returns ordered set, that includes all elements in specified intervals.
@@ -61,44 +53,107 @@ trait OrderedSetBuilder[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    * Note, that precondition 1 guaranties, that all elements of intervals belongs to `domainOps.domain`.
    * 
    * If validation is failed, then [[SegmentSeqException]] is thrown.
+   * 
+   * @param intervals collection of intervals.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
-  def unsafeBuild(intervals: Iterable[Interval[E, D]]): SSeq
+  def unsafeBuild(
+    intervals: Iterable[Interval[E, D]]
+  )(
+    implicit
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): SSeq
 
   /**
    * Same as [[unsafeBuild]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuild]] preconditions.
+   * 
+   * @param intervals collection of intervals.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
-  def tryBuild(intervals: Iterable[Interval[E, D]]): Try[SSeq] = Try.apply { unsafeBuild(intervals) }
-}
-
-object OrderedSetBuilder {
-
-  def default[E, D[X] <: Domain[X], SSeq <: OrderedSet[E, D]](
-    factory: OrderedSetFactory[E, D, SSeq]
+  def tryBuild(
+    intervals: Iterable[Interval[E, D]]
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
+  ): Try[SSeq] = Try.apply { unsafeBuild(intervals) }
+
+  /**
+   * Get builder with supplied parameters.
+   * 
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
+   */
+  final def provided(
+    implicit 
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ): Provided =
+    Provided(domainOps, rngManager)
+
+  /**
+   * Builder with supplied parameters.
+   */
+  final case class Provided(
+    domainOps: DomainOps[E, D],
+    rngManager: RngManager
+  ) {
+
+    /**
+     * Same as [[OrderedSetBuilder.unsafeBuild]].
+     */
+    @throws[SegmentSeqException]("if preconditions are violated")
+    def unsafeBuild(intervals: Iterable[Interval[E, D]]): SSeq =
+      builder.unsafeBuild(intervals)(domainOps, rngManager)
+
+    /**
+     * Same as [[OrderedSetBuilder.tryBuild]].
+     */
+    final def tryBuild(intervals: Iterable[Interval[E, D]]): Try[SSeq] = 
+      Try.apply { unsafeBuild(intervals) }
+  }
+}
+
+object OrderedSetBuilder {
+
+  /**
+   * Returns ordered set builder based on specified factory (see [[OrderedSetFactory]]).
+   * 
+   * @param factory ordered set factory.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
+   */
+  def default[E, D[X] <: Domain[X], SSeq <: OrderedSet[E, D]](
+    factory: OrderedSetFactory[E, D, SSeq]
   ): DefaultImpl[E, D, SSeq] = 
-    new DefaultImpl(factory)(domainOps, rngManager)
+    new DefaultImpl(factory)
 
   class DefaultImpl[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]](
     val factory: OrderedSetFactory[E, D, SSeq]
-  )(
-    implicit
-    override val domainOps: DomainOps[E, D],
-    override val rngManager: RngManager
   ) extends OrderedSetBuilder[E, D, SSeq] {
 
-    final override val valueOps: ValueOps[Boolean] = ValueOps.booleanValueOps
+    final val valueOps: ValueOps[Boolean] = ValueOps.booleanValueOps
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuild(intervals: Iterable[Interval[E, D]]): SSeq =
+    def unsafeBuild(
+      intervals: Iterable[Interval[E, D]]
+    )(
+      implicit
+      domainOps: DomainOps[E, D],
+      rngManager: RngManager
+    ): SSeq =
       try {
-        val (complementary, bounds) = mapToBounds(OrderedSetBuilderIterable.default(intervals))
+        val (complementary, bounds) = 
+          mapToBounds(OrderedSetBuilderIterable.default(intervals))
+
         factory.unsafeBuild(bounds, complementary)(domainOps, rngManager)
+        
       } catch {
         case NonFatal(e) => throw SegmentSeqException.seqBuildFailed(e)
       }
@@ -106,6 +161,10 @@ object OrderedSetBuilder {
     @throws[ValidationException]("if validation is failed")
     private def mapToBounds(
       intervals: OrderedSetBuilderIterable.DefaultImpl[E, D]
+    )(
+      implicit
+      domainOps: DomainOps[E, D],
+      rngManager: RngManager
     ): (Boolean, ValidatingIterable[Bound.Upper[E]]) = {
 
       // Note, implementation relies on guaranties, that are provided by input `intervals` iterable 

@@ -62,7 +62,7 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    *
    * @param bounds collection of bounds.
    * @param complementary equals to value of the first segment (segment_0).
-   *                      If `true` segment is included in set and vise versa.
+   *                      If `true`, segment is included in set and vise versa.
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
@@ -80,6 +80,11 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    * Same as [[unsafeBuild]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
    *
    * Note [[unsafeBuild]] preconditions.
+   * 
+   * @param bounds collection of bounds.
+   * @param complementary equals to value of the first segment; if `true`, segment is included in set and vise versa.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
   final def tryBuildAsc(
     bounds: ValidatingIterable[Bound.Upper[E]],
@@ -93,6 +98,10 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
 
   /**
    * Returns uniform ordered set with specified `value`.
+   * 
+   * @param value value of the single segment.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
   def buildUniform(
     value: Boolean
@@ -112,6 +121,11 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    *                |
    *              bound
    * }}}
+   * 
+   * @param bound upper bound of the first segment.
+   * @param complementary equals to value of the first segment; if `true`, segment is included in set and vise versa.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
   @throws[SegmentSeqException]("if preconditions are violated")
   def unsafeBuildSingleBounded(
@@ -126,6 +140,11 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
 
   /**
    * Same as [[unsafeBuildSingleBounded]] but wraps the result with [[scala.util.Try]] catching non-fatal [[Throwable]].
+   * 
+   * @param bound upper bound of the first segment.
+   * @param complementary equals to value of the first segment; if `true`, segment is included in set and vise versa.
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
   def tryBuildSingleBounded(
     bound: Bound.Upper[E],
@@ -139,6 +158,8 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
 
   /**
    * Converts specified `set` into ordered set of type `SSeq`.
+   * 
+   * @param set ordered set that should be converted.
    */
   // Note
   // Generic implementation is possible here, but it will be suboptimal. We can't determine the case when conversion
@@ -147,19 +168,22 @@ trait OrderedSetFactory[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
   def convertSet(set: OrderedSet[E, D]): SSeq
 
   /**
-   * Get factory with provided parameters (see [[unsafeBuild]] for parameters description).
+   * Get factory with supplied parameters.
+   * 
+   * @param domainOps domain specific typeclasses: elements ordering, etc.
+   * @param rngManager generator of random sequences.
    */
   final def provided(
     implicit 
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): Partial =
-    Partial(domainOps, rngManager)
+  ): Provided =
+    Provided(domainOps, rngManager)
 
   /**
-   * Factory with partially provided parameters (see [[unsafeBuild]] for parameters description).
+   * Factory with supplied parameters.
    */
-  final case class Partial(
+  final case class Provided(
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ) {

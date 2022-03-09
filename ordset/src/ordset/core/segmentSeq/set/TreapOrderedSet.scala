@@ -49,15 +49,14 @@ object TreapOrderedSet {
   /**
    * Returns ordered set builder (see [[OrderedSetBuilder]]).
    */
-  def getBuilder[E, D[X] <: Domain[X]](
-    implicit 
-    domainOps: DomainOps[E, D], 
-    rngManager: RngManager
-  ): OrderedSetBuilder[E, D, TreapOrderedSet[E, D]] =
-    OrderedSetBuilder.default(getFactory)
+  def getBuilder[E, D[X] <: Domain[X]]: OrderedSetBuilder[E, D, TreapOrderedSet[E, D]] =
+    builderInstance.asInstanceOf[OrderedSetBuilder[E, D, TreapOrderedSet[E, D]]]
 
   // Private section ---------------------------------------------------------- //
   private lazy val factoryInstance: Factory[Any, Domain] = new Factory()
+
+  private lazy val builderInstance: OrderedSetBuilder[Any, Domain, TreapOrderedSet[Any, Domain]] = 
+    OrderedSetBuilder.default(factoryInstance)
 
   private class Factory[E, D[X] <: Domain[X]] extends OrderedSetFactory[E, D, TreapOrderedSet[E, D]] {
 
