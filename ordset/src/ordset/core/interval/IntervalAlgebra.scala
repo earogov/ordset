@@ -5,6 +5,11 @@ import ordset.core.domain.Domain
 
 trait IntervalAlgebra[E, D[X] <: Domain[X]] {
 
+  /** 
+   * Domain of ordered elements. 
+   */
+  def domain: D[E]
+
   /**
    * Returns subset of elements that belongs to both input intervals.
    *
@@ -58,7 +63,7 @@ object IntervalAlgebra {
     new DefaultAlgebra(domain, IntervalFactory.defaultFactory(domain))
 
   class DefaultAlgebra[E, D[X] <: Domain[X]](
-    val domain: D[E],
+    override val domain: D[E],
     val interval: IntervalFactory[E, D]
   ) extends IntervalAlgebra[E, D] {
 

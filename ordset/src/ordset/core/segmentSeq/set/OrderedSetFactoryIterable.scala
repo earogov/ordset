@@ -22,8 +22,8 @@ object OrderedSetFactoryIterable {
     iterable: Iterable[Bound.Upper[E]]
   )(
     implicit domainOps: DomainOps[E, D]
-  ): DefaultImpl[E, D] =
-    new DefaultImpl(iterable, domainOps)
+  ): Default[E, D] =
+    new Default(iterable, domainOps)
   
   /**
    * Returns iterable with single upper bound to construct ordered set.
@@ -37,8 +37,8 @@ object OrderedSetFactoryIterable {
     bound: Bound.Upper[E]
   )(
     implicit domainOps: DomainOps[E, D]
-  ): SingleImpl[E, D] =
-    new SingleImpl(bound, domainOps)
+  ): Single[E, D] =
+    new Single(bound, domainOps)
 
   /**
    * Iterable of upper bounds to construct ordered set.
@@ -50,7 +50,7 @@ object OrderedSetFactoryIterable {
    * 
    * <div>2. Sequence of bounds must be monotonically increasing.</div>
    */
-  final class DefaultImpl[E, D[X] <: Domain[X]](
+  final class Default[E, D[X] <: Domain[X]](
     private val iterable: Iterable[Bound.Upper[E]],
     private val domainOps: DomainOps[E, D]
   ) extends ValidatingIterable.ValidatingIterableArity1And2[Bound.Upper[E]](
@@ -67,7 +67,7 @@ object OrderedSetFactoryIterable {
    * <div>1. For each bound `b` must be satisfied condition:                 </div>
    * <div>   (`b` `≥` domain lower bound) and (`b` `<` domain upper bound).  </div>
    */
-  final class SingleImpl[E, D[X] <: Domain[X]](
+  final class Single[E, D[X] <: Domain[X]](
     private val bound: Bound.Upper[E],
     private val domainOps: DomainOps[E, D]
   ) extends ValidatingIterable.ValidatingIterableArity1[Bound.Upper[E]](

@@ -6,7 +6,7 @@ import ordset.{Hash, Show, util}
 
 import scala.{specialized => sp}
 
-case class IntervalRelation[E, D[X] <: Domain[X], @sp(Boolean) +V](
+final case class IntervalRelation[E, D[X] <: Domain[X], @sp(Boolean) +V](
     val interval: Interval[E, D], 
     val value: V
 ) {

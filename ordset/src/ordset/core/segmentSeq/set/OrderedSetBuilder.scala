@@ -40,17 +40,29 @@ trait OrderedSetBuilder[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    * 
    * Preconditions:
    *
-   * 1. All intervals must have domain equal to `domainOps.domain`.
+   * 1. All intervals must be non-empty.  
    *
-   * 2. Input intervals must be non-overlapping and ordered by their bounds:
+   * 2. Lower and upper bounds of each interval must be between domain bounds:
    * 
-   *   upper_bound,,i-1,, `<` lower_bound,,i,, for all i in [1, seq.size - 1]
+   *   domain.lower `≤` lowerBound,,i,, `≤` domain.upper for all i in [0, intervals.size - 1]
    * 
-   *   <div>where                                        </div>
-   *   <div>lower_bound,,i,, - lower bound of interval i;</div>
-   *   <div>lower_bound,,i,, - upper bound of interval i.</div>
+   *   domain.lower `≤` upperBound,,i,, `≤` domain.upper for all i in [0, intervals.size - 1]
    * 
-   * Note, that precondition 1 guaranties, that all elements of intervals belongs to `domainOps.domain`.
+   *   <div>where                                                                                              </div>
+   *   <div>lowerBound,,i,, - lower bound of interval i;                                                       </div>
+   *   <div>upperBound,,i,, - upper bound of interval i;                                                       </div>
+   *   <div>domain.lower    - lower bound of domain;                                                           </div>
+   *   <div>domain.upper    - upper bound of domain.                                                           </div>
+   *
+   * 3. Input intervals must be ordered by their bounds, they must not overlap and there must be a gap between
+   *    each pair:
+   * 
+   *   flip(upperBound,,i-1,,) `<` lowerBound,,i,, for all i in [1, intervals.size - 1]
+   * 
+   *   <div>where                                                                                              </div>
+   *   <div>lowerBound,,i,, - lower bound of interval i;                                                       </div>
+   *   <div>upperBound,,i,, - upper bound of interval i;                                                       </div>
+   *   <div>flip(b) - operator that flips a bound (see [[ExtendedBound.flipLimited]]).                         </div>
    * 
    * If validation is failed, then [[SegmentSeqException]] is thrown.
    * 
@@ -160,7 +172,7 @@ object OrderedSetBuilder {
 
     @throws[ValidationException]("if validation is failed")
     private def mapToBounds(
-      intervals: OrderedSetBuilderIterable.DefaultImpl[E, D]
+      intervals: OrderedSetBuilderIterable.Default[E, D]
     )(
       implicit
       domainOps: DomainOps[E, D],

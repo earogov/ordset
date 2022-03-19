@@ -56,41 +56,6 @@ trait BuilderValidationBehaviors {
       FailureCase(
         OrderedSetBuilderIterable.default(
           List[Interval[Double, Dom]](
-            none(x)
-          )
-        ),
-        "Invalid interval {}: interval must be non-empty. Index = 0"
-      ),
-      FailureCase(
-        OrderedSetBuilderIterable.default(
-          List[Interval[Double, Dom]](
-            none(x),
-            none(x)
-          )
-        ),
-        "Invalid interval {}: interval must be non-empty. Index = 0"
-      ),
-      FailureCase(
-        OrderedSetBuilderIterable.default(
-          List[Interval[Double, Dom]](
-            none(x),
-            x > 0d
-          )
-        ),
-        "Invalid interval {}: interval must be non-empty. Index = 0"
-      ),
-      FailureCase(
-        OrderedSetBuilderIterable.default(
-          List[Interval[Double, Dom]](
-            x < 0d,
-            none(x)
-          )
-        ),
-        "Invalid interval {}: interval must be non-empty. Index = 1"
-      ),
-      FailureCase(
-        OrderedSetBuilderIterable.default(
-          List[Interval[Double, Dom]](
             x,
             x >= 0d
           )
@@ -127,6 +92,16 @@ trait BuilderValidationBehaviors {
         ),
         "Invalid sequence of intervals {{10.0 <= x < 20.0}, {x >= 10.0}}: " +
         "intervals must be sorted by lower bound in ascending order. Index = 1"
+      ),
+      FailureCase(
+        OrderedSetBuilderIterable.default(
+          List[Interval[Double, Dom]](
+            x >= 5d,
+            x >= 10d
+          )
+        ),
+        "Invalid sequence of intervals {{x >= 5.0}, {x >= 10.0}}: " +
+        "intervals must not overlap. Index = 1"
       ),
       FailureCase(
         OrderedSetBuilderIterable.default(
@@ -206,7 +181,7 @@ trait BuilderValidationBehaviors {
           )
         ),
         "Invalid interval {50.0 < x < 150.0}: " +
-        "lower bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 1"
+        "upper bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 1"
       ),
       FailureCase(
         OrderedSetBuilderIterable.default(
@@ -529,7 +504,7 @@ trait BuilderValidationBehaviors {
           )
         ),
         "Invalid interval {50 < x < 150}: " +
-        "lower bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 1"
+        "upper bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 1"
       ),
       FailureCase(
         OrderedSetBuilderIterable.default(

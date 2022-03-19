@@ -27,14 +27,14 @@ object OrderedMapFactoryIterable {
     implicit 
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V]
-  ): DefaultImpl[E, D, V] = 
-    new DefaultImpl(iterable, domainOps, valueOps)
+  ): Default[E, D, V] = 
+    new Default(iterable, domainOps, valueOps)
 
   /**
    * Returns iterable with single tuple ([[ExtendedBound.AboveAll]], value) to construct ordered map.
    */
-  def single[E, D[X] <: Domain[X], V](value: V): SingleImpl[E, D, V] =
-    new SingleImpl(value)
+  def single[E, D[X] <: Domain[X], V](value: V): Single[E, D, V] =
+    new Single(value)
 
   /**
    * Iterable of tuples (upper bound, value) to construct ordered map.
@@ -49,7 +49,7 @@ object OrderedMapFactoryIterable {
    * 
    * <div>3. Values associated with adjacent bounds must be different according to `valueOps` order.         </div>
    */
-  final class DefaultImpl[E, D[X] <: Domain[X], V](
+  final class Default[E, D[X] <: Domain[X], V](
     private val iterable: Iterable[BoundValue[E, V]],
     private val domainOps: DomainOps[E, D],
     private val valueOps: ValueOps[V]
@@ -62,7 +62,7 @@ object OrderedMapFactoryIterable {
   /**
    * Iterable with single tuple ([[ExtendedBound.AboveAll]], value) to construct ordered map.
    */
-  final class SingleImpl[E, D[X] <: Domain[X], V](
+  final class Single[E, D[X] <: Domain[X], V](
     private val value: V
   ) extends ValidatingIterable.UncheckedIterable[BoundValue[E, V]](
     List((ExtendedBound.AboveAll, value))

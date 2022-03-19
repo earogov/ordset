@@ -10,7 +10,7 @@ import scala.{specialized => sp}
 
 sealed trait Interval[E, D[X] <: Domain[X]] extends Range[ExtendedBound[E]] {
 
-  /** Domain of interval. */
+  /** Domain of ordered elements. */
   def domain: D[E]
 
   /** @return `true` if interval is empty, i.e. contains no elements. */
@@ -56,6 +56,218 @@ sealed trait Interval[E, D[X] <: Domain[X]] extends Range[ExtendedBound[E]] {
       case b: Bound.Upper[E] => hasUpperBound(b)
       case ExtendedBound.AboveAll => !isBoundedAbove && !isEmpty
     }
+
+  /**
+   * Returns `true`, if conditions are satisfied:
+   * <div>
+   *   - `this` interval and `other` are non-empty.
+   * </div>
+   * <div>
+   *   - `this` interval follows before `other` without gap and overlapping,
+   *     i.e. there are no elements between intervals and no elements, that belong to both intervals.
+   * </div>  
+   * {{{
+   * 
+   *     1. this.isAdjacentPreceding(other) = true
+   * 
+   *         `this`      `other`
+   *     [----------)[------------]
+   * 
+   *     2. this.isAdjacentPreceding(other) = false
+   * 
+   *         `other`     `this`
+   *     [----------)[------------]
+   * 
+   *     3. this.isAdjacentPreceding(other) = false
+   *          
+   *       `this`        `other`
+   *     [--------]  (------------]
+   * 
+   *     4. this.isAdjacentPreceding(other) = false
+   * 
+   *          `this`          
+   *     [-------------]  `other`
+   *               (--------------]
+   * }}}
+   */
+  def isAdjacentPreceding(other: Interval[E, D]): Boolean
+
+  /**
+   * Same as [[isAdjacentPreceding]] with non-empty `other` interval.
+   */
+  def isAdjacentPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean
+
+  /**
+   * Returns `true`, if conditions are satisfied:
+   * <div>
+   *   - `this` interval and `other` are non-empty.
+   * </div>
+   * <div>
+   *   - intervals follow each other without gap and overlapping,
+   *     i.e. there are no elements between intervals and no elements, that belong to both intervals.
+   * </div> 
+   * {{{
+   * 
+   *     1. this.isAdjacent(other) = true
+   * 
+   *         `this`      `other`
+   *     [----------)[------------]
+   * 
+   *     2. this.isAdjacent(other) = true
+   * 
+   *         `other`     `this`
+   *     [----------)[------------]
+   * 
+   *     3. this.isAdjacent(other) = false
+   *          
+   *       `this`        `other`
+   *     [--------]  (------------]
+   * 
+   *     4. this.isAdjacent(other) = false
+   * 
+   *          `this`          
+   *     [-------------]  `other`
+   *               (--------------]
+   * }}}
+   */
+  def isAdjacent(other: Interval[E, D]): Boolean
+
+  /**
+   * Same as [[isAdjacent]] with non-empty `other` interval.
+   */
+  def isAdjacentNE(other: Interval.NonEmpty[E, D]): Boolean
+
+  /**
+   * Returns `true`, if conditions are satisfied:
+   * <div>
+   *   - `this` interval and `other` are non-empty.
+   * </div>
+   * <div>
+   *   - `this` interval follows before `other` with a gap, i.e. there are some elements between intervals.
+   * </div> 
+   * {{{
+   * 
+   *     1. this.isSeparatedPreceding(other) = true
+   *          
+   *       `this`        `other`
+   *     [--------]  (------------]
+   * 
+   *     2. this.isSeparatedPreceding(other) = false
+   * 
+   *         `this`      `other`
+   *     [----------)[------------]
+   * 
+   *     3. this.isSeparatedPreceding(other) = false
+   * 
+   *          `this`          
+   *     [-------------]  `other`
+   *               (--------------]
+   * 
+   *     4. this.isSeparatedPreceding(other) = false
+   * 
+   *        `other`       `this`
+   *     [----------)  [----------]
+   * }}}
+   */
+  def isSeparatedPreceding(other: Interval[E, D]): Boolean
+
+  /**
+   * Same as [[isSeparatedPreceding]] with non-empty `other` interval.
+   */
+  def isSeparatedPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean
+
+  /**
+   * Returns `true`, if conditions are satisfied:
+   * <div>
+   *   - `this` interval and `other` are non-empty.
+   * </div>
+   * <div>
+   *   - there is a gap between `this` and `other` intervals, i.e. there are some elements between them.
+   * </div> 
+   * {{{
+   * 
+   *     1. this.isSeparatedPreceding(other) = true
+   *          
+   *       `this`        `other`
+   *     [--------]  (------------]
+   * 
+   *     2. this.isSeparatedPreceding(other) = false
+   * 
+   *         `this`      `other`
+   *     [----------)[------------]
+   * 
+   *     3. this.isSeparatedPreceding(other) = false
+   * 
+   *          `this`          
+   *     [-------------]  `other`
+   *               (--------------]
+   * 
+   *     4. this.isSeparatedPreceding(other) = true
+   * 
+   *        `other`       `this`
+   *     [----------)  [----------]
+   * }}}
+   */
+  def isSeparated(other: Interval[E, D]): Boolean
+
+  /**
+   * Same as [[isSeparated]] with non-empty `other` interval.
+   */
+  def isSeparatedNE(other: Interval.NonEmpty[E, D]): Boolean
+
+  /**
+   * Returns `true`, if conditions are satisfied:
+   * <div>
+   *   - `this` interval and `other` are non-empty.
+   * </div>
+   * <div>
+   *   - there are some elements, that belongs to both `this` and `other` intervals.
+   * </div>
+   * {{{
+   * 
+   *     1. this.isOverlapping(other) = true
+   * 
+   *          `this`          
+   *     [-------------]  `other`
+   *               (--------------]
+   * 
+   *     2. this.isOverlapping(other) = true
+   * 
+   *                `this`          
+   *     [------------------------]  
+   *                `other`
+   *           (--------------]
+   * 
+   *     3. this.isOverlapping(other) = true
+   * 
+   *                `other`          
+   *     [------------------------]  
+   *                `this`
+   *           (--------------]
+   * 
+   *     4. this.isOverlapping(other) = true
+   * 
+   *          `other`          
+   *     [-------------]  `this`
+   *               (--------------]
+   * 
+   *     5. this.isOverlapping(other) = false
+   * 
+   *        `this`      `other`
+   *     [----------)[------------]
+   * 
+   *     6. this.isOverlapping(other) = false
+   * 
+   *        `this`       `other`
+   *     [----------)  [----------]
+   * }}}
+   */
+  def isOverlapping(other: Interval[E, D]): Boolean
+
+  /**
+   * Same as [[isOverlapping]] with non-empty `other` interval.
+   */
+  def isOverlappingNE(other: Interval.NonEmpty[E, D]): Boolean
 
   /** @return [[IntervalRelation]] for current interval and specified `value`. */
   def ->[@sp(Boolean) V](value: V): IntervalRelation[E, D, V] = IntervalRelation(this, value)
@@ -135,6 +347,24 @@ object Interval {
     override def isBoundedAbove: Boolean = true
 
     override def hasUpperBound(bound: Bound.Upper[E]): Boolean = domain.boundOrd.eqv(upper, bound)
+
+    override def isAdjacentPreceding(other: Interval[E, D]): Boolean =
+      other match {
+        case other: Interval.NonEmpty[E, D] => isAdjacentPrecedingNE(other)
+        case _ => false
+      }
+
+    override def isAdjacentPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean =
+      domain.extendedOrd.eqv(upper.flip, other.lower)
+
+    override def isSeparatedPreceding(other: Interval[E, D]): Boolean =
+      other match {
+        case other: Interval.NonEmpty[E, D] => isSeparatedPrecedingNE(other)
+        case _ => false
+      }
+
+    override def isSeparatedPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = 
+      domain.extendedOrd.lt(upper.flip, other.lower)
   }
 
   final case class Empty[E, D[X] <: Domain[X]](
@@ -154,6 +384,26 @@ object Interval {
     override def containsBound(bound: Bound[E]): Boolean = false
 
     override def containsExtended(bound: ExtendedBound[E]): Boolean = false
+
+    override def isAdjacentPreceding(other: Interval[E, D]): Boolean = false
+
+    override def isAdjacentPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isAdjacent(other: Interval[E, D]): Boolean = false
+
+    override def isAdjacentNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isSeparatedPreceding(other: Interval[E, D]): Boolean = false
+
+    override def isSeparatedPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isSeparated(other: Interval[E, D]): Boolean = false
+
+    override def isSeparatedNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isOverlapping(other: Interval[E, D]): Boolean = false
+
+    override def isOverlappingNE(other: Interval.NonEmpty[E, D]): Boolean = false
 
     override def toString: String = SetBuilderFormat.emptyInterval
   }
@@ -184,6 +434,26 @@ object Interval {
 
     override def restrictExtended(bound: ExtendedBound[E]): ExtendedBound[E] = bound
 
+    override def isAdjacentPreceding(other: Interval[E, D]): Boolean = false
+
+    override def isAdjacentPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isAdjacent(other: Interval[E, D]): Boolean = false
+
+    override def isAdjacentNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isSeparatedPreceding(other: Interval[E, D]): Boolean = false
+
+    override def isSeparatedPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isSeparated(other: Interval[E, D]): Boolean = false
+
+    override def isSeparatedNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isOverlapping(other: Interval[E, D]): Boolean = other.isNonEmpty
+
+    override def isOverlappingNE(other: Interval.NonEmpty[E, D]): Boolean = true
+
     override def toString: String = SetBuilderFormat.unboundedInterval
   }
 
@@ -212,6 +482,31 @@ object Interval {
     override def restrictBound(bound: Bound[E]): Bound[E] =
       if (domain.boundOrd.lt(bound, lower)) lower
       else bound
+
+    override def isAdjacentPreceding(other: Interval[E, D]): Boolean = false
+
+    override def isAdjacentPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isAdjacent(other: Interval[E, D]): Boolean = other.isAdjacentPreceding(this)
+
+    override def isAdjacentNE(other: Interval.NonEmpty[E, D]): Boolean = other.isAdjacentPrecedingNE(this)
+
+    override def isSeparatedPreceding(other: Interval[E, D]): Boolean = false
+
+    override def isSeparatedPrecedingNE(other: Interval.NonEmpty[E, D]): Boolean = false
+
+    override def isSeparated(other: Interval[E, D]): Boolean = other.isSeparatedPreceding(this)
+
+    override def isSeparatedNE(other: Interval.NonEmpty[E, D]): Boolean = other.isSeparatedPrecedingNE(this)
+
+    override def isOverlapping(other: Interval[E, D]): Boolean =
+      other match {
+        case other: Interval.NonEmpty[E, D] => isOverlappingNE(other)
+        case _ => false
+      }
+
+    override def isOverlappingNE(other: Interval.NonEmpty[E, D]): Boolean =
+      domain.extendedOrd.lteqv(lower, other.upper)
 
     override def toString: String = SetBuilderFormat.lowerBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
@@ -242,6 +537,23 @@ object Interval {
       if (domain.boundOrd.gt(bound, upper)) upper
       else bound
 
+    override def isAdjacent(other: Interval[E, D]): Boolean = isAdjacentPreceding(other)
+
+    override def isAdjacentNE(other: Interval.NonEmpty[E, D]): Boolean = isAdjacentPrecedingNE(other)
+
+    override def isSeparated(other: Interval[E, D]): Boolean = isSeparatedPreceding(other)
+
+    override def isSeparatedNE(other: Interval.NonEmpty[E, D]): Boolean = isSeparatedPrecedingNE(other)
+
+    override def isOverlapping(other: Interval[E, D]): Boolean =
+      other match {
+        case other: Interval.NonEmpty[E, D] => isOverlappingNE(other)
+        case _ => false
+      }
+
+    override def isOverlappingNE(other: Interval.NonEmpty[E, D]): Boolean =
+      domain.extendedOrd.lteqv(other.lower, upper)
+
     override def toString: String = SetBuilderFormat.upperBoundedInterval(this, SetBuilderFormat.toStringFunc[E])
   }
 
@@ -269,6 +581,29 @@ object Interval {
       if (boundOrd.lt(bound, lower)) lower
       else if (boundOrd.gt(bound, upper)) upper
       else bound
+    }
+
+    override def isAdjacent(other: Interval[E, D]): Boolean = 
+      isAdjacentPreceding(other) || other.isAdjacentPrecedingNE(this)
+
+    override def isAdjacentNE(other: Interval.NonEmpty[E, D]): Boolean =
+      isAdjacentPrecedingNE(other) || other.isAdjacentPrecedingNE(this)
+
+    override def isSeparated(other: Interval[E, D]): Boolean = 
+      isSeparatedPreceding(other) || other.isSeparatedPrecedingNE(this)
+
+    override def isSeparatedNE(other: Interval.NonEmpty[E, D]): Boolean = 
+      isSeparatedPrecedingNE(other) || other.isSeparatedPrecedingNE(this)
+
+    override def isOverlapping(other: Interval[E, D]): Boolean =
+      other match {
+        case other: Interval.NonEmpty[E, D] => isOverlappingNE(other)
+        case _ => false
+      }
+
+    override def isOverlappingNE(other: Interval.NonEmpty[E, D]): Boolean = {
+      val extendedOrd = domain.extendedOrd
+      extendedOrd.lteqv(other.lower, upper) && extendedOrd.lteqv(lower, other.upper)
     }
 
     override def toString: String = SetBuilderFormat.boundedInterval(this, SetBuilderFormat.toStringFunc[E])
