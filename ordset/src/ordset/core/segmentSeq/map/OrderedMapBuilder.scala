@@ -234,7 +234,7 @@ object OrderedMapBuilder {
         interval match {
           case interval: Interval.BoundedBelow[E, D] =>
             val upperBound = interval.lower.flipLower
-            if (ord.lt(lowerBound, upperBound)) {
+            if (ord.lteqv(lowerBound, upperBound)) {
               // Gaps between input interval relations are included in map with `defaultValue`.
               //
               //                 previous               current
@@ -251,7 +251,7 @@ object OrderedMapBuilder {
         interval match {
           case interval: Interval.BoundedAbove[E, D] =>
             val upperBound = interval.upper
-            if (ord.lt(lowerBound, upperBound)) {
+            if (ord.lteqv(lowerBound, upperBound)) {
               if (ord.lt(upperBound, domainOps.upperBound)) {
                 // For each input interval relation add tuple of its upper bound and value.
                 //

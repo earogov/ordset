@@ -101,6 +101,16 @@ trait SetBuilderBehaviors {
       ),
       SuccessCase(
         List(
+          x < 20d,
+          x > 20d
+        ),
+        factory.unsafeBuild(
+          List(20d`)[`, 20d`](`),
+          true
+        )
+      ),
+      SuccessCase(
+        List(
           x < 10d,
           x >= 20d & x < 30d,
           x >= 50d
@@ -193,6 +203,16 @@ trait SetBuilderBehaviors {
         factory.unsafeBuild(
           List(20d`)[`, 30d`)[`),
           false
+        )
+      ),
+      SuccessCase(
+        List(
+          x < 20d,
+          x > 20d
+        ),
+        factory.unsafeBuild(
+          List(20d`)[`, 20d`](`),
+          true
         )
       ),
       SuccessCase(
@@ -302,6 +322,16 @@ trait SetBuilderBehaviors {
       ),
       SuccessCase(
         List(
+          x < 20,
+          x > 20
+        ),
+        factory.unsafeBuild(
+          List(BigInt(20)`)[`, BigInt(20)`](`),
+          true
+        )
+      ),
+      SuccessCase(
+        List(
           x < 10,
           x >= 20 & x < 30,
           x >= 50
@@ -394,6 +424,16 @@ trait SetBuilderBehaviors {
         factory.unsafeBuild(
           List(20`)[`, 30`)[`),
           false
+        )
+      ),
+      SuccessCase(
+        List(
+          x < 20,
+          x > 20
+        ),
+        factory.unsafeBuild(
+          List(20`)[`, 20`](`),
+          true
         )
       ),
       SuccessCase(

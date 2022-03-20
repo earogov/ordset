@@ -194,7 +194,7 @@ object OrderedSetBuilder {
         interval match {
           case interval: Interval.BoundedBelow[E, D] =>
             val upperBound = interval.lower.flipLower
-            if (ord.lt(lowerBound, upperBound)) {
+            if (ord.lteqv(lowerBound, upperBound)) {
               // Add upper bound of segment, that represents gap between intervals included in set.
               //
               //                 previous               current
@@ -211,7 +211,7 @@ object OrderedSetBuilder {
         interval match {
           case interval: Interval.BoundedAbove[E, D] =>
             val upperBound = interval.upper
-            if (ord.lt(lowerBound, upperBound) && ord.lt(upperBound, domainOps.upperBound)) {
+            if (ord.lteqv(lowerBound, upperBound) && ord.lt(upperBound, domainOps.upperBound)) {
               // Add upper bound of segment, that represents interval included in set.
               //
               //                          current
