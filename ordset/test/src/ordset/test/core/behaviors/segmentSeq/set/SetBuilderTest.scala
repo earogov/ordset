@@ -1,4 +1,4 @@
-package ordset.test.core.behaviors.segmentSeq
+package ordset.test.core.behaviors.segmentSeq.set
 
 import ordset.ContravariantShow
 import ordset.random.RngManager

@@ -46,8 +46,17 @@ object TreapOrderedMap {
   def getFactory[E, D[X] <: Domain[X], V]: OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] =
     factoryInstance.asInstanceOf[OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]]]
 
+  /**
+   * Returns ordered map builder (see [[OrderedMapBuilder]]).
+   */
+  def getBuilder[E, D[X] <: Domain[X], V]: OrderedMapBuilder[E, D, V, TreapOrderedMap[E, D, V]] =
+    builderInstance.asInstanceOf[OrderedMapBuilder[E, D, V, TreapOrderedMap[E, D, V]]]
+
   // Private section ---------------------------------------------------------- //
   private lazy val factoryInstance: Factory[Any, Domain, Any] = new Factory()
+
+  private lazy val builderInstance: OrderedMapBuilder[Any, Domain, Any, TreapOrderedMap[Any, Domain, Any]] =
+    OrderedMapBuilder.default(factoryInstance)
 
   private class Factory[E, D[X] <: Domain[X], V] extends OrderedMapFactory[E, D, V, TreapOrderedMap[E, D, V]] {
 

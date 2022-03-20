@@ -1,14 +1,12 @@
 package ordset.test.core.behaviors.segmentSeq.set
 
 import ordset.core.domain.{Domain, DomainOps}
-import ordset.test.core.behaviors.segmentSeq.SetBuilderTest.*
+import ordset.test.core.behaviors.segmentSeq.set.SetBuilderTest.*
 import org.scalatest.funspec.AnyFunSpec
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
 import scala.language.postfixOps
-import ordset.test.core.behaviors.segmentSeq.SetBuilderTest
 import ordset.core.segmentSeq.set.{TreapOrderedSet, OrderedSetFactory, OrderedSet}
-import org.scalactic.Fail
 
 trait SetBuilderBehaviors {
   this: AnyFunSpec =>
@@ -143,7 +141,7 @@ trait SetBuilderBehaviors {
 
     val otherDomainOps: DomainOps[E, Dom] = 
       DomainOps.BoundedOps.default(
-        Domain.ContinuousBounded.default(double.tryNaturalOrderWithBounds(-100d, true, 100d, true).get),
+        Domain.ContinuousBounded.default(double.tryNaturalOrderWithBounds(-100d, true, 200d, true).get),
         doubleShow
       )
 
@@ -223,6 +221,22 @@ trait SetBuilderBehaviors {
         ),
         "Invalid interval {-10.0 < x < 10.0}: " +
         "lower bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 0"
+      ),
+      FailureCase(
+        List(
+          x,
+          y > 50 & y < 150
+        ),
+        "Invalid interval {50.0 < x < 150.0}: " +
+        "upper bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 1"
+      ),
+      FailureCase(
+        List(
+          x,
+          y > 120 & y < 150
+        ),
+        "Invalid interval {120.0 < x < 150.0}: " +
+        "lower bound of interval is out of domain bounds [x > 0.0, x <= 100.0]. Index = 1"
       )
     )
   }
@@ -328,7 +342,7 @@ trait SetBuilderBehaviors {
 
     val otherDomainOps: DomainOps[E, Dom] = 
       DomainOps.BoundedOps.default(
-        Domain.DiscreteBounded.default(int.tryNaturalOrderWithBounds(-100, 100).get),
+        Domain.DiscreteBounded.default(int.tryNaturalOrderWithBounds(-100, 200).get),
         intShow
       )
 
@@ -416,6 +430,22 @@ trait SetBuilderBehaviors {
         ),
         "Invalid interval {-10 < x < 10}: " +
         "lower bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 0"
+      ),
+      FailureCase(
+        List(
+          x,
+          y > 50 & y < 150
+        ),
+        "Invalid interval {50 < x < 150}: " +
+        "upper bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 1"
+      ),
+      FailureCase(
+        List(
+          x,
+          y > 120 & y < 150
+        ),
+        "Invalid interval {120 < x < 150}: " +
+        "lower bound of interval is out of domain bounds [x >= 0, x <= 100]. Index = 1"
       )
     )
   }

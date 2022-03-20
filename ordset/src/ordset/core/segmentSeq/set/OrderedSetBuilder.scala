@@ -24,11 +24,11 @@ trait OrderedSetBuilder[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
   
   /**
    * Returns ordered set, that includes all elements in specified intervals.
-   * 
    * {{{
+   * 
    *     input intervals:
    *
-   *               [--------]           [---------X
+   *     X         [--------]           [---------X
    * 
    *     output ordered set:
    * 
@@ -62,7 +62,7 @@ trait OrderedSetBuilder[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
    *   <div>where                                                                                              </div>
    *   <div>lowerBound,,i,, - lower bound of interval i;                                                       </div>
    *   <div>upperBound,,i,, - upper bound of interval i;                                                       </div>
-   *   <div>flip(b) - operator that flips a bound (see [[ExtendedBound.flipLimited]]).                         </div>
+   *   <div>flip(b)         - flip operator (see [[ExtendedBound.flipLimited]]).                               </div>
    * 
    * If validation is failed, then [[SegmentSeqException]] is thrown.
    * 
@@ -138,8 +138,6 @@ object OrderedSetBuilder {
    * Returns ordered set builder based on specified factory (see [[OrderedSetFactory]]).
    * 
    * @param factory ordered set factory.
-   * @param domainOps domain specific typeclasses: elements ordering, etc.
-   * @param rngManager generator of random sequences.
    */
   def default[E, D[X] <: Domain[X], SSeq <: OrderedSet[E, D]](
     factory: OrderedSetFactory[E, D, SSeq]
@@ -153,7 +151,7 @@ object OrderedSetBuilder {
     final val valueOps: ValueOps[Boolean] = ValueOps.booleanValueOps
 
     @throws[SegmentSeqException]("if preconditions are violated")
-    def unsafeBuild(
+    override def unsafeBuild(
       intervals: Iterable[Interval[E, D]]
     )(
       implicit
@@ -190,8 +188,7 @@ object OrderedSetBuilder {
 
       var lowerBound: ExtendedBound.Lower[E] = domainOps.lowerBound
       var complementary: Boolean | Null = null
-      var run = true
-      while (run && iter.hasNext) {
+      while (iter.hasNext) {
         val interval = iter.next()
         iter.validate()
         interval match {
@@ -214,8 +211,7 @@ object OrderedSetBuilder {
         interval match {
           case interval: Interval.BoundedAbove[E, D] =>
             val upperBound = interval.upper
-            run = ord.lt(upperBound, domainOps.upperBound)
-            if (ord.lt(lowerBound, upperBound)) {
+            if (ord.lt(lowerBound, upperBound) && ord.lt(upperBound, domainOps.upperBound)) {
               // Add upper bound of segment, that represents interval included in set.
               //
               //                          current
@@ -225,16 +221,12 @@ object OrderedSetBuilder {
               //  lower bound    `lowerBound`   `upperBound`
               //
               // If upper bound of interval equals to upper bound of domain, then skip it and stop iterating.
-              if (run) {
-                buf.addOne(upperBound)
-                lowerBound = interval.upper.flipUpper
-              }
-              if (complementary == null) complementary = !valueOps.unit
+              buf.addOne(upperBound)
+              lowerBound = upperBound.flipUpper
             }
-          case _ =>
-            if (complementary == null) complementary = !valueOps.unit
-            run = false
+          case _ => {}
         }
+        if (complementary == null) complementary = !valueOps.unit
       }
       // There is no need to validate output iterable of bounds. Current implementation guarantees, that:
       // - All bounds are greater than or equal to lower bound of domain and less than its upper bound.
