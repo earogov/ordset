@@ -145,7 +145,7 @@ trait MapBuilderBehaviors {
           "" forAll (x > 10d & x <= 20d)
         ),
         "Invalid interval relation {10.0 < x <= 20.0} -> : " +
-        "value equals to the default value  (such intervals should be dropped). Index = 1"
+        "value equals to the default value '' (such intervals should be dropped). Index = 1"
       ),
       FailureCase(
         "",
@@ -398,7 +398,7 @@ trait MapBuilderBehaviors {
           "" forAll (x > 10 & x <= 20)
         ),
         "Invalid interval relation {10 < x <= 20} -> : " +
-        "value equals to the default value  (such intervals should be dropped). Index = 1"
+        "value equals to the default value '' (such intervals should be dropped). Index = 1"
       ),
       FailureCase(
         "",

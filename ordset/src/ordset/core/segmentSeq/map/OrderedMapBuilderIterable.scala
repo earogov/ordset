@@ -154,7 +154,7 @@ object OrderedMapBuilderIterable {
         val relShow = domainOps.showOps.intervalRelationShow(valShow)
         val relStr = relShow.show(x)
         val defaultValStr = valShow.show(defaultValue)
-        val causeStr = s"value equals to the default value $defaultValStr (such intervals should be dropped)"
+        val causeStr = s"value equals to the default value '$defaultValStr' (such intervals should be dropped)"
         throw ValidationException.invalidIntervalRel(relStr, index, causeStr)
       }
   }
