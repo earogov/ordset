@@ -3,8 +3,8 @@ package ordset.test.core.examples.segmentSeq
 import ordset.core.*
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.segmentSeq.*
-import ordset.core.segmentSeq.map.{TreapOrderedMap, UniformOrderedMap}
-import ordset.core.segmentSeq.set.{TreapOrderedSet, UniformOrderedSet}
+import ordset.core.segmentSeq.map.{TreapOrderedMap, UniformOrderedMap, OrderedMap}
+import ordset.core.segmentSeq.set.{TreapOrderedSet, UniformOrderedSet, OrderedSet}
 import ordset.core.syntax.BoundSyntax.*
 import ordset.core.syntax.SetBuilderNotation.*
 import ordset.core.value.ValueOps
@@ -19,11 +19,15 @@ object MapExample {
   import ordset.givens.int.*
   import ordset.test.core.TestRngUtil.Givens.*
 
+  type Dom[X] = Domain.ContinuousUnbounded[X]
+
   private val sep = "-----------------"
 
   private implicit val intOps: ValueOps[Int] = ValueOps.intValueOps
   private implicit val booleanOps: ValueOps[Boolean] = ValueOps.booleanValueOps
-  private implicit val domainOps: DomainOps[Int, Domain.ContinuousUnbounded] = DomainOps.default
+  private implicit val domainOps: DomainOps[Int, Dom] = DomainOps.default
+
+  private val x: BoundBuilder[Int, Dom] = BoundBuilder.apply
 
   def main(args: Array[String]): Unit = {
     example1()
@@ -36,16 +40,13 @@ object MapExample {
 
     println("Initial sequence:")
     val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuild(
+      OrderedSet.tryBuild(
         List(
-          (0`)[`, false),
-          (10`)[`, true),
-          (20`)[`, false),
-          (30`)[`, true),
-          (40`)[`, false),
-          (AboveAll, true)
+          x >= 0 & x < 10,
+          x >= 20 & x < 30,
+          x >= 40
         )
-      )
+      ).get
     println(seq1)
 
     val bound1 = Bound.Upper.excluding(20)
@@ -74,17 +75,18 @@ object MapExample {
     println(s"$sep SegmentSeq.map example $sep")
 
     println("Initial sequence:")
-    val seq1 = 
-      TreapOrderedMap.getFactory.unsafeBuild(
+    val seq1  = 
+      OrderedMap.tryBuild(
+        0,
         List(
-          (0`)[`, -20),
-          (10`)[`, -5),
-          (20`)[`, 10),
-          (30`)[`, -7),
-          (40`)[`, 15),
-          (AboveAll, 20)
+          -20 forAll x < 0,
+           -5 forAll x >= 0 & x < 10,
+           10 forAll x >= 10 & x < 20,
+           -7 forAll x >= 20 & x < 30,
+           15 forAll x >= 30 & x < 40,
+           20 forAll x >= 40
         )
-      )
+      ).get
     println(seq1)
 
     println()

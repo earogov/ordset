@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
  * @tparam E type of elements on ordered domain
  * @tparam D type of ordered domain
  * @tparam V type of value assigned to range of elements
- * @tparam SSeq type of output ordered set
+ * @tparam SSeq type of output ordered map
  */
 trait OrderedMapBuilder[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
   builder =>
@@ -122,7 +122,8 @@ trait OrderedMapBuilder[E, D[X] <: Domain[X], V, +SSeq <: OrderedMap[E, D, V]] {
     domainOps: DomainOps[E, D],
     valueOps: ValueOps[V],
     rngManager: RngManager
-  ): Try[SSeq] = Try.apply { unsafeBuild(defaultValue, intervals) }
+  ): Try[SSeq] = 
+    Try.apply { unsafeBuild(defaultValue, intervals) }
 
   /**
    * Get builder with supplied parameters.

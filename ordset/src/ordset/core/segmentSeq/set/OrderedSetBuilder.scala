@@ -94,7 +94,8 @@ trait OrderedSetBuilder[E, D[X] <: Domain[X], +SSeq <: OrderedSet[E, D]] {
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
-  ): Try[SSeq] = Try.apply { unsafeBuild(intervals) }
+  ): Try[SSeq] = 
+    Try.apply { unsafeBuild(intervals) }
 
   /**
    * Get builder with supplied parameters.
