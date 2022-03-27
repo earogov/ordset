@@ -9,30 +9,6 @@ import scala.util.Try
 object OrderedMap {
   
   /**
-   * Builds ordered map or fails, if preconditions are not met (see [[OrderedMapBuilder.tryBuild]] for details).
-   * 
-   * @tparam E type of elements on ordered domain
-   * @tparam D type of ordered domain
-   * @tparam V type of value assigned to range of elements
-   * 
-   * @param defaultValue value assigned to elements that are not included in specified intervals.
-   * @param intervals collection of intervals.
-   * @param domainOps domain specific typeclasses: elements ordering, etc.
-   * @param valueOps value specific typeclasses: equality, set inclusion function, etc. 
-   * @param rngManager generator of random sequences.
-   */
-  def tryBuild[E, D[X] <: Domain[X], V](
-    defaultValue: V,
-    intervals: Iterable[IntervalRelation[E, D, V]]
-  )(
-    implicit
-    domainOps: DomainOps[E, D],
-    valueOps: ValueOps[V],
-    rngManager: RngManager
-  ): Try[StrictOrderedMap[E, D, V]] =
-    getBuilder.tryBuild(defaultValue, intervals)
-
-  /**
    * Returns ordered map factory (see [[OrderedMapFactory]]).
    * 
    * @tparam E type of elements on ordered domain
@@ -51,4 +27,55 @@ object OrderedMap {
    */
   def getBuilder[E, D[X] <: Domain[X], V]: OrderedMapBuilder[E, D, V, StrictOrderedMap[E, D, V]] =
     TreapOrderedMap.getBuilder
+
+  object Try {
+
+    /**
+     * Builds ordered map or fails, if preconditions are not met (see [[OrderedMapBuilder.tryBuild]] for details).
+     * 
+     * @tparam E type of elements on ordered domain
+     * @tparam D type of ordered domain
+     * @tparam V type of value assigned to range of elements
+     * 
+     * @param defaultValue value assigned to elements that are not included in specified intervals.
+     * @param intervals collection of intervals.
+     * @param domainOps domain specific typeclasses: elements ordering, etc.
+     * @param valueOps value specific typeclasses: equality, set inclusion function, etc. 
+     * @param rngManager generator of random sequences.
+     */
+    def apply[E, D[X] <: Domain[X], V](
+      defaultValue: V,
+      intervals: IntervalRelation[E, D, V]*
+    )(
+      implicit
+      domainOps: DomainOps[E, D],
+      valueOps: ValueOps[V],
+      rngManager: RngManager
+    ): Try[StrictOrderedMap[E, D, V]] =
+      getBuilder.tryBuild(defaultValue, intervals)
+
+    /**
+     * Builds ordered map or fails, if preconditions are not met (see [[OrderedMapBuilder.tryBuild]] for details).
+     * 
+     * @tparam E type of elements on ordered domain
+     * @tparam D type of ordered domain
+     * @tparam V type of value assigned to range of elements
+     * 
+     * @param defaultValue value assigned to elements that are not included in specified intervals.
+     * @param intervals collection of intervals.
+     * @param domainOps domain specific typeclasses: elements ordering, etc.
+     * @param valueOps value specific typeclasses: equality, set inclusion function, etc. 
+     * @param rngManager generator of random sequences.
+     */
+    def build[E, D[X] <: Domain[X], V](
+      defaultValue: V,
+      intervals: Iterable[IntervalRelation[E, D, V]]
+    )(
+      implicit
+      domainOps: DomainOps[E, D],
+      valueOps: ValueOps[V],
+      rngManager: RngManager
+    ): Try[StrictOrderedMap[E, D, V]] =
+      getBuilder.tryBuild(defaultValue, intervals)
+  }
 }

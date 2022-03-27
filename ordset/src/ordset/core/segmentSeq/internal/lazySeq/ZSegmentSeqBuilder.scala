@@ -520,7 +520,7 @@ protected[ordset] object ZSegmentSeqBuilder {
     if (ZSegmentSeqUtil.isTotallyStrict(zippedSeq)) zippedSeq
     else {
       val oldBaseSeq = zippedSeq.firstSeq
-      val newBaseSeq = zippedSeq.firstSegment.forwardIterable
+      val newBaseSeq = zippedSeq.segments
         .foldLeft(makeUniformBaseSeq: TreapSegmentSeq[E, D, V]) { (leftSeq, zsegment) =>
           val rightSeq = zsegment.value._2 match {
             case value: StrictValue[E, D, V] => oldBaseSeq

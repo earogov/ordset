@@ -18,6 +18,9 @@ class LazyTreapOrderedSet[E, D[X] <: Domain[X]] protected (
 ) extends AbstractLazyTreapSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D, LazySetSegmentBase[E, D]] {
 
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: Boolean =:= Boolean): OrderedSet[E, D] = defaultInverse
+
   // Protected section -------------------------------------------------------- //
   protected final override val zippedSeqRef: AtomicReference[ZSegmentSeq[E, D, Boolean]] = 
     new AtomicReference(initZippedSeq)

@@ -12,10 +12,8 @@ abstract class AbstractMappedValueSegmentSeq[E, D[X] <: Domain[X], U, V, S]
   // Inspection --------------------------------------------------------------- //
   val valueMapFunc: U => V
 
-  /** Mapping function for segment. */
   final override val segmentMapFunc: Segment[E, D, U] => V = s => valueMapFunc(s.value)
 
-  // Navigation --------------------------------------------------------------- //
   final override def getValueForBound(bound: Bound[E]): V =
     valueMapFunc(originalSeq.getValueForBound(bound))
 

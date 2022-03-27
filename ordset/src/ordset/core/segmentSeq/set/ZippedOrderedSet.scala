@@ -31,9 +31,13 @@ class ZippedOrderedSet[E, D[X] <: Domain[X], S1, S2] protected (
   // Transformation ----------------------------------------------------------- //
   override def strict: StrictOrderedSet[E, D] = defaultStrict
 
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: Boolean =:= Boolean): OrderedSet[E, D] = defaultInverse
+
   // Protected section -------------------------------------------------------- //
   @inline
-  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = 
+    UniformOrderedSet.default(value)
 
   @inline
   protected final override def cons(

@@ -18,6 +18,10 @@ class UniformOrderedSet[E, D[X] <: Domain[X]] protected (
 ) extends AbstractUniformSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D, UniformSingleSegment[E, D, Boolean]] {
 
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: Boolean =:= Boolean): OrderedSet[E, D] = 
+    UniformOrderedSet.apply(!value, setFactory)
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] =

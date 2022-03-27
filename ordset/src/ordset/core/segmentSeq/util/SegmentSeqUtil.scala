@@ -151,7 +151,7 @@ object SegmentSeqUtil {
   def getBoundValueIterableForSeq[E, D[X] <: Domain[X], V](
     seq: SegmentSeq[E, D, V]
   ): Iterable[BoundValue[E, V]] =
-    seq.firstSegment.forwardIterable.map(s => (s.upper, s.value))
+    seq.segments.map(s => (s.upper, s.value))
 
   /**
    * Returns tuple of segments of sequence `seq`:

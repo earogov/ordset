@@ -6,6 +6,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.segmentSeq.{AbstractUniformSegmentSeq, SegmentSeq}
 import ordset.core.segmentSeq.AbstractUniformSegmentSeq.UniformSingleSegment
 import ordset.core.segmentSeq.validation.ValidatingIterable
+import ordset.core.segmentSeq.set.OrderedSet
 import ordset.random.RngManager
 
 class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
@@ -18,6 +19,12 @@ class UniformOrderedMap[E, D[X] <: Domain[X], V] protected (
   final override val rngManager: RngManager
 ) extends AbstractUniformSegmentSeq[E, D, V]
   with OrderedMapCommons[E, D, V, UniformSingleSegment[E, D, V]] {
+
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
+    type F[T] = OrderedMapFactory[E, D, T, OrderedMap[E, D, T]]
+    UniformOrderedMap.apply(!value, ev.substituteCo[F](mapFactory))
+  }
 
   // Protected section -------------------------------------------------------- //
   @inline

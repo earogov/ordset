@@ -60,6 +60,19 @@ abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V]
   
   final override def includesElement(element: E): Boolean = super.includesElement(element)
 
+  final override def getValueForBound(bound: Bound[E]): V =
+    getSegmentValue(searchSegmentFromBegin(bound))
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V =
+    bound match {
+      case bound: Bound[E] => getValueForBound(bound)
+      case ExtendedBound.BelowAll => getFirstSegmentValue
+      case ExtendedBound.AboveAll => getLastSegmentValue
+    }
+
+  final override def getValueForElement(element: E): V = 
+    super.getValueForElement(element)
+
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = bounds
 
@@ -87,19 +100,6 @@ abstract class AbstractIndexedSegmentSeq[E, D[X] <: Domain[X],  V]
   
   final override def getSegmentForElement(element: E): IndexedSegment[E, D, V] =
     super.getSegmentForElement(element)
-
-  final override def getValueForBound(bound: Bound[E]): V =
-    getSegmentValue(searchSegmentFromBegin(bound))
-
-  final override def getValueForExtended(bound: ExtendedBound[E]): V =
-    bound match {
-      case bound: Bound[E] => getValueForBound(bound)
-      case ExtendedBound.BelowAll => getFirstSegmentValue
-      case ExtendedBound.AboveAll => getLastSegmentValue
-    }
-
-  final override def getValueForElement(element: E): V = 
-    super.getValueForElement(element)
   
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): IndexedSegmentSeq[E, D, V] = {

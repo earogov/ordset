@@ -57,6 +57,15 @@ abstract class AbstractZippedSegmentSeq[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
 
   final override def includesElement(element: E): Boolean = super.includesElement(element)
 
+  final override def getValueForBound(bound: Bound[E]): V =
+    operator(firstSeq.getValueForBound(bound), secondSeq.getValueForBound(bound))
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V =
+    operator(firstSeq.getValueForExtended(bound), secondSeq.getValueForExtended(bound))
+
+  final override def getValueForElement(element: E): V =
+    operator(firstSeq.getValueForElement(element), secondSeq.getValueForElement(element))
+
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
 
@@ -76,15 +85,6 @@ abstract class AbstractZippedSegmentSeq[E, D[X] <: Domain[X], U1, U2, V, S1, S2]
 
   final override def getSegmentForElement(element: E): ZippedSegment[E, D, U1, U2, V, S1, S2] =
     super.getSegmentForElement(element)
-
-  final override def getValueForBound(bound: Bound[E]): V =
-    operator(firstSeq.getValueForBound(bound), secondSeq.getValueForBound(bound))
-
-  final override def getValueForExtended(bound: ExtendedBound[E]): V =
-    operator(firstSeq.getValueForExtended(bound), secondSeq.getValueForExtended(bound))
-
-  final override def getValueForElement(element: E): V =
-    operator(firstSeq.getValueForElement(element), secondSeq.getValueForElement(element))
 
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): SegmentSeq[E, D, V] =

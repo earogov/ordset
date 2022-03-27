@@ -3,6 +3,8 @@ package ordset.core.segmentSeq
 import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.Domain
 import ordset.core.segmentSeq.map.LazyTreapOrderedMap
+import ordset.core.segmentSeq.set.OrderedSet
+import ordset.util.BooleanUtil
 
 /**
  * Base class for segment sequences.
@@ -162,5 +164,14 @@ abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSe
       supplierSeq.valueOps
     )
     LazyTreapOrderedMap.apply(baseSeq, newSupplierSeq)(domainOps, valueOps, rngManager)
+  }
+
+  // Protected section -------------------------------------------------------- //
+  /**
+   * Default implementation for [[inverse]] method.
+   */
+  protected def defaultInverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
+    type F[X] = X => Boolean
+    map(ev.substituteContra[F](BooleanUtil.inversionOperator1))
   }
 }

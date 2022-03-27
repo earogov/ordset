@@ -60,8 +60,8 @@ object SegmentSeqAssertions {
     valueOps: ValueOps[V]
   ): Unit =
     IntervalAssertions.assertSameRelationSeq(
-      expected.firstSegment.forwardIterable.map(_.intervalRelation),
-      actual.firstSegment.forwardIterable.map(_.intervalRelation),
+      expected.intervalRelations,
+      actual.intervalRelations,
       info
     )
 
@@ -76,7 +76,7 @@ object SegmentSeqAssertions {
   ): Unit =
     IntervalAssertions.assertSameRelationSeq(
       expected,
-      actual.firstSegment.forwardIterable.map(_.intervalRelation),
+      actual.intervalRelations,
       info
     )
 

@@ -20,12 +20,25 @@ abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
   
   // Inspection --------------------------------------------------------------- //
   /**
-   * Treap of segments upper bounds.
+   * Treap with upper bounds and values of segments. 
+   * It stores all segments except last one, cause it has no upper bound.
    */
   val root: ImmutableTreap.Node[Bound.Upper[E], V]
 
-  /** Value of last segment (without upper bound). */
+  /** 
+   * Value of the last segment (segment without upper bound). 
+   */
   val lastValue: V
+
+  /** 
+   * Value of the last segment (segment without upper bound). 
+   * 
+   * [[root]] and [[lastValue]] define underlying data structure. But it can be interpreted in different ways.
+   * For example, in case of ordered set each segment value, that is stored in treap, and also [[lastValue]] should
+   * be inverted, if `complementary` flag is `true`. Current method should return such `interpreted` value rather
+   * than `underlying`. So generally output of [[getLastValue]] may not be equal to [[lastValue]].
+   */
+  def getLastValue: V
 
   final override def isEmpty: Boolean = false
 
@@ -38,6 +51,19 @@ abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
   final override def includesExtended(bound: ExtendedBound[E]): Boolean = super.includesExtended(bound)
 
   final override def includesElement(element: E): Boolean = super.includesElement(element)
+
+  final override def getValueForBound(bound: Bound[E]): V =
+    getSegmentForBound(bound).value
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V =
+    bound match {
+      case bound: Bound[E] => getValueForBound(bound)
+      case ExtendedBound.BelowAll => firstSegment.value
+      case ExtendedBound.AboveAll => lastSegment.value
+    }
+
+  final override def getValueForElement(element: E): V = 
+    super.getValueForElement(element)
 
   // Navigation --------------------------------------------------------------- //
   final override def upperBounds: Iterable[Bound.Upper[E]] = super.upperBounds
@@ -123,19 +149,6 @@ abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
   
   final override def getSegmentForElement(element: E): TreapSegment[E, D, V] = 
     super.getSegmentForElement(element)
-
-  final override def getValueForBound(bound: Bound[E]): V =
-    getSegmentForBound(bound).value
-
-  final override def getValueForExtended(bound: ExtendedBound[E]): V =
-    bound match {
-      case bound: Bound[E] => getValueForBound(bound)
-      case ExtendedBound.BelowAll => firstSegment.value
-      case ExtendedBound.AboveAll => lastSegment.value
-    }
-
-  final override def getValueForElement(element: E): V = 
-    super.getValueForElement(element)
   
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): TreapSegmentSeq[E, D, V] = sliceAtBound(bound)._2
@@ -724,7 +737,7 @@ object AbstractTreapSegmentSeq {
     with TreapSegmentWithPrev[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
-    override def value: V = sequence.lastValue
+    override def value: V = sequence.getLastValue
 
     override lazy val lower: Bound.Lower[E] = node.key.flipUpper
 

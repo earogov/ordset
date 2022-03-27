@@ -26,6 +26,10 @@ class NonuniformArrayOrderedSet[E, D[X] <: Domain[X]] protected (
 
   validate()
 
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: Boolean =:= Boolean): OrderedSet[E, D] = 
+    NonuniformArrayOrderedSet.unsafeUnchecked(bounds, !complementary)
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def getSegmentValue(ind: Int): Boolean = isIndexIncluded(ind)

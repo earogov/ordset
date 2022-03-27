@@ -248,7 +248,7 @@ object SetBuilderFormat { format =>
     valueToStr: V => String = toStringFunc[V]
   ): String =
     segmentIterable(
-      segmentSeq.firstSegment.forwardIterable,
+      segmentSeq.segments,
       elementToStr,
       valueToStr
     )

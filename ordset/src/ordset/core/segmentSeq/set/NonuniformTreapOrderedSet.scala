@@ -27,20 +27,30 @@ class NonuniformTreapOrderedSet[E, D[X] <: Domain[X]] protected (
 ) extends AbstractTreapSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D, TreapSegmentBase[E, D, Boolean]]{
 
+  // Inspection --------------------------------------------------------------- //
+  @inline
+  final override def getLastValue: Boolean = 
+    complementary ^ lastValue
+
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: Boolean =:= Boolean): OrderedSet[E, D] = 
+    NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue, !complementary)
+
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def getValueForNode(node: ImmutableTreap.Node[Bound.Upper[E], Boolean]): Boolean =
     complementary ^ node.value
 
   @inline
-  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = UniformOrderedSet.default(value)
+  protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = 
+    UniformOrderedSet.default(complementary ^ value)
 
   @inline
   protected final override def consFromNode(
     node: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     value: Boolean
   ): NonuniformTreapOrderedSet[E, D] =
-    NonuniformTreapOrderedSet.uncheckedOptimized(node, value, false)
+    NonuniformTreapOrderedSet.uncheckedOptimized(node, value, complementary)
 }
 
 object NonuniformTreapOrderedSet {
@@ -100,6 +110,6 @@ object NonuniformTreapOrderedSet {
     if (stack.isEmpty) throw new AssertionError(s"Node with maximal key is not found in tree $root")
     // Last node in tree corresponds to penultimate segment => we need to invert its value to get value of last segment.
     val lastValue = !stack.last.tree.value
-    new NonuniformTreapOrderedSet(root, lastValue, complementary)
+    NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue, complementary)
   }
 }

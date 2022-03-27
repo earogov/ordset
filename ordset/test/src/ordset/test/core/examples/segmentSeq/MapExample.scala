@@ -39,14 +39,11 @@ object MapExample {
     println(s"$sep SegmentSeq.mapSegments example $sep")
 
     println("Initial sequence:")
-    val seq1 = 
-      OrderedSet.tryBuild(
-        List(
-          x >= 0 & x < 10,
-          x >= 20 & x < 30,
-          x >= 40
-        )
-      ).get
+    val seq1 = OrderedSet.Try(
+      x >= 0 & x < 10,
+      x >= 20 & x < 30,
+      x >= 40
+    ).get
     println(seq1)
 
     val bound1 = Bound.Upper.excluding(20)
@@ -75,18 +72,15 @@ object MapExample {
     println(s"$sep SegmentSeq.map example $sep")
 
     println("Initial sequence:")
-    val seq1  = 
-      OrderedMap.tryBuild(
-        0,
-        List(
-          -20 forAll x < 0,
-           -5 forAll x >= 0 & x < 10,
-           10 forAll x >= 10 & x < 20,
-           -7 forAll x >= 20 & x < 30,
-           15 forAll x >= 30 & x < 40,
-           20 forAll x >= 40
-        )
-      ).get
+    val seq1  = OrderedMap.Try(
+      0,
+      -20 forAll x < 0,
+      -5 forAll x >= 0 & x < 10,
+      10 forAll x >= 10 & x < 20,
+      -7 forAll x >= 20 & x < 30,
+      15 forAll x >= 30 & x < 40,
+      20 forAll x >= 40
+    ).get
     println(seq1)
 
     println()

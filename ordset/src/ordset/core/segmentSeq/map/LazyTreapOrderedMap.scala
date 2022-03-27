@@ -4,6 +4,7 @@ import ordset.core.Bound
 import ordset.core.segmentSeq.{AbstractLazyTreapSegmentSeq, LazySegmentBase, SegmentSeq}
 import ordset.core.segmentSeq.internal.lazySeq.*
 import ordset.core.segmentSeq.internal.lazySeq.ControlValue.*
+import ordset.core.segmentSeq.set.OrderedSet
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.random.RngManager
@@ -18,6 +19,9 @@ class LazyTreapOrderedMap[E, D[X] <: Domain[X], V] protected (
   final override val rngManager: RngManager
 ) extends AbstractLazyTreapSegmentSeq[E, D, V]
   with OrderedMapCommons[E, D, V, LazySegmentBase[E, D, V]] {
+
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = defaultInverse
 
   // Protected section -------------------------------------------------------- //
   protected final override val zippedSeqRef: AtomicReference[ZSegmentSeq[E, D, V]] = 

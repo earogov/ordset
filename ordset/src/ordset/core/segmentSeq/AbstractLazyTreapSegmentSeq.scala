@@ -130,6 +130,15 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
 
   final override def includesElement(element: E): Boolean = super.includesElement(element)
 
+  final override def getValueForBound(bound: Bound[E]): V =
+    cacheStrict(getZippedSeq.getSegmentForBound(bound).truncation(bound)).value._1
+
+  final override def getValueForExtended(bound: ExtendedBound[E]): V =
+    cacheStrict(getZippedSeq.getSegmentForExtended(bound).truncation(bound)).value._1
+
+  final override def getValueForElement(element: E): V =
+    super.getValueForElement(element)
+
   final override def toString: String = getZippedSeq.toString
 
   // Navigation --------------------------------------------------------------- //
@@ -155,15 +164,6 @@ abstract class AbstractLazyTreapSegmentSeq[E, D[X] <: Domain[X], V]
 
   final override def getSegmentForElement(element: E): LazySegment[E, D, V] =
     super.getSegmentForElement(element)
-
-  final override def getValueForBound(bound: Bound[E]): V =
-    cacheStrict(getZippedSeq.getSegmentForBound(bound).truncation(bound)).value._1
-
-  final override def getValueForExtended(bound: ExtendedBound[E]): V =
-    cacheStrict(getZippedSeq.getSegmentForExtended(bound).truncation(bound)).value._1
-
-  final override def getValueForElement(element: E): V =
-    super.getValueForElement(element)
 
   // Transformation ----------------------------------------------------------- //
   final override def takeAboveBound(bound: Bound[E]): LazySegmentSeq[E, D, V] =

@@ -6,6 +6,7 @@ import ordset.core.value.ValueOps
 import ordset.core.segmentSeq.{AbstractMappedSegmentSeq, Segment, SegmentSeq, SegmentT, SegmentTruncationT}
 import ordset.core.segmentSeq.{MappedSegment, MappedTruncation}
 import ordset.core.segmentSeq.map.{OrderedMapT, OrderedMapCommons, UniformOrderedMap, StrictOrderedMap}
+import ordset.core.segmentSeq.set.OrderedSet
 import ordset.random.RngManager
 
 /**
@@ -34,6 +35,9 @@ protected[ordset] class NonMergingMappedOrderedMap[E, D[X] <: Domain[X], U, V, S
 
   // Transformation ----------------------------------------------------------- //
   override def strict: StrictOrderedMap[E, D, V] = defaultStrict
+
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = defaultInverse
 
   // Protected section -------------------------------------------------------- //
   @inline

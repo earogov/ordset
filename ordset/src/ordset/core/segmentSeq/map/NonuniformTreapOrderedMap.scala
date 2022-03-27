@@ -3,8 +3,10 @@ package ordset.core.segmentSeq.map
 import ordset.core.Bound
 import ordset.core.segmentSeq.AbstractTreapSegmentSeq.TreapSegmentBase
 import ordset.core.segmentSeq.*
+import ordset.core.segmentSeq.set.NonuniformTreapOrderedSet
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
+import ordset.core.segmentSeq.set.OrderedSet
 import ordset.random.RngManager
 import ordset.tree.treap.immutable.ImmutableTreap
 import ordset.tree.treap.immutable.transform.BuildAsc
@@ -25,12 +27,24 @@ class NonuniformTreapOrderedMap[E, D[X] <: Domain[X], V] protected (
 ) extends AbstractTreapSegmentSeq[E, D, V]
   with OrderedMapCommons[E, D, V, TreapSegmentBase[E, D, V]] {
 
+  // Inspection --------------------------------------------------------------- //
+  @inline
+  final override def getLastValue: V = lastValue
+
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
+    type F[T] = ImmutableTreap.Node[Bound.Upper[E], T]
+    NonuniformTreapOrderedSet.uncheckedOptimized(ev.substituteCo[F](root), lastValue, true)
+  }
+
   // Protected section -------------------------------------------------------- //
   @inline
-  protected final override def getValueForNode(node: ImmutableTreap.Node[Bound.Upper[E], V]): V = node.value
+  protected final override def getValueForNode(node: ImmutableTreap.Node[Bound.Upper[E], V]): V = 
+    node.value
 
   @inline
-  protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = UniformOrderedMap.default(value)
+  protected final override def consUniform(value: V): UniformOrderedMap[E, D, V] = 
+    UniformOrderedMap.default(value)
 
   @inline
   protected final override def consFromNode(

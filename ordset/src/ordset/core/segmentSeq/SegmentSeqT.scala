@@ -6,6 +6,7 @@ import ordset.core.value.{InclusionPredicate, ValueOps}
 import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.segmentSeq.map.{LazyTreapOrderedMap, MappedOrderedMap, MappedValueOrderedMap}
 import ordset.core.segmentSeq.map.{TreapOrderedMap, UniformOrderedMap, ZippedOrderedMap}
+import ordset.core.segmentSeq.set.{OrderedSet, ZippedOrderedSet}
 import ordset.core.segmentSeq.validation.ValidatingIterable
 import ordset.core.segmentSeq.util.SegmentSeqUtil
 import ordset.random.RngManager
@@ -13,6 +14,7 @@ import ordset.util.BooleanUtil
 
 import scala.Specializable.AllNumeric as spNum
 import scala.specialized as sp
+import ordset.core.interval.IntervalRelation
 
 /**
  * Segment sequence encodes ordered sets and maps of elements, such that^*1^:
@@ -144,44 +146,6 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
   /** @return `true` if `element` is included in ordered set or map. */
   def includesElement(element: E): Boolean = includesBound(Bound.Upper.including(element))
 
-  override def toString: String =
-    SetBuilderFormat.segmentSeq(this, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
-  
-  // Navigation --------------------------------------------------------------- //
-  /**
-   * @return collection of all upper bounds.
-   */
-  def upperBounds: Iterable[Bound.Upper[E]] = 
-    SegmentSeqUtil.getUpperBoundsIterableFromSegment(firstSegment, including = true)
-
-  /**
-   * @return collection of extended upper bounds. It's always non-empty with last element equals to 
-   *         [[ExtendedBound.AboveAll]].
-   */
-  def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] = 
-    firstSegment.forwardIterable.map(_.upper)
-  
-  /** @return first segment of sequence. */
-  def firstSegment: SegmentT.First[E, D, V, S] with S
-
-  /** @return last segment of sequence. */
-  def lastSegment: SegmentT.Last[E, D, V, S] with S
-
-  /** @return segment that contains specified `bound`. */
-  def getSegmentForBound(bound: Bound[E]): SegmentT[E, D, V, S] with S
-
-  /** @return segment that contains specified `bound`. */
-  def getSegmentForExtended(bound: ExtendedBound[E]): SegmentT[E, D, V, S] with S =
-    bound match {
-      case b: Bound[E] => getSegmentForBound(b)
-      case ExtendedBound.BelowAll => firstSegment
-      case ExtendedBound.AboveAll => lastSegment
-    }
-
-  /** @return segment that contains specified `element`. */
-  def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = 
-    getSegmentForBound(Bound.Upper.including(element))
-
   /**
    * Returns value of segment that contains specified `bound`:
    * {{{
@@ -209,6 +173,56 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    */
   def getValueForElement(element: E): V =
     getValueForBound(Bound.Upper.including(element))
+
+  override def toString: String =
+    SetBuilderFormat.segmentSeq(this, SetBuilderFormat.toStringFunc[E], SetBuilderFormat.toStringFunc[V])
+  
+  // Navigation --------------------------------------------------------------- //
+  /**
+   * @return collection of all upper bounds.
+   */
+  def upperBounds: Iterable[Bound.Upper[E]] = 
+    SegmentSeqUtil.getUpperBoundsIterableFromSegment(firstSegment, including = true)
+
+  /**
+   * @return collection of extended upper bounds. It's always non-empty with last element equals to 
+   *         [[ExtendedBound.AboveAll]].
+   */
+  def extendedUpperBounds: Iterable[ExtendedBound.Upper[E]] =
+    firstSegment.forwardIterable.map(_.upper)
+
+  /**
+   * @return collection of all segments starting from the first.
+   */
+  def segments: Iterable[SegmentT[E, D, V, S] with S] = 
+    firstSegment.forwardIterable
+
+  /**
+   * @return collection of all interval relations starting from the first.
+   */
+  def intervalRelations: Iterable[IntervalRelation[E, D, V]] =
+    segments.map(_.intervalRelation)
+  
+  /** @return first segment of sequence. */
+  def firstSegment: SegmentT.First[E, D, V, S] with S
+
+  /** @return last segment of sequence. */
+  def lastSegment: SegmentT.Last[E, D, V, S] with S
+
+  /** @return segment that contains specified `bound`. */
+  def getSegmentForBound(bound: Bound[E]): SegmentT[E, D, V, S] with S
+
+  /** @return segment that contains specified `bound`. */
+  def getSegmentForExtended(bound: ExtendedBound[E]): SegmentT[E, D, V, S] with S =
+    bound match {
+      case b: Bound[E] => getSegmentForBound(b)
+      case ExtendedBound.BelowAll => firstSegment
+      case ExtendedBound.AboveAll => lastSegment
+    }
+
+  /** @return segment that contains specified `element`. */
+  def getSegmentForElement(element: E): SegmentT[E, D, V, S] with S = 
+    getSegmentForBound(Bound.Upper.including(element))
 
   // Transformation ----------------------------------------------------------- //
   /**
@@ -1105,6 +1119,91 @@ trait SegmentSeqT[@sp(spNum) E, D[X] <: Domain[X], @sp(Boolean) V, +S] {
    * strict, no conversion is performed.
    */
   def strict: StrictSegmentSeq[E, D, V]
+
+  // Set transformation ------------------------------------------------------- //
+  /**
+   * Returns union of ordered sets. 
+   *
+   * Output set includes all elements, that belongs to `this` set OR `other`.
+   * {{{
+   * 
+   * 
+   *         (-------]        (------)      - this set
+   * 
+   *      [----]         (-------------]    - other set
+   * 
+   *      [----------]   (-------------]    - this.union(other)
+   * }}}
+   * 
+   * Method definition provides following invariants:
+   * {{{
+   *   1. x.union(y) == y.union(x) for any x and y
+   * }}}
+   */
+  infix def union(other: OrderedSet[E, D])(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
+    type SS[T] = SegmentSeq[E, D, T]
+    ZippedOrderedSet.union(ev.substituteCo[SS](this), other)(domainOps, rngManager)
+  }
+
+  /**
+   * Alias for [[union]].
+   */
+  def |(other: OrderedSet[E, D])(implicit ev: V =:= Boolean): OrderedSet[E, D] = union(other)
+
+  /**
+   * Returns intersection of ordered sets. 
+   *
+   * Output set includes all elements, that belongs to both `this` set AND `other`.
+   * {{{
+   * 
+   * 
+   *         (-------]        (------)      - this set
+   * 
+   *      [----]         (-------------]    - other set
+   * 
+   *         (-]              (------)      - this.intersection(other)
+   * }}}
+   * 
+   * Method definition provides following invariants:
+   * {{{
+   *   1. x.intersection(y) == y.intersection(x) for any x and y
+   * }}}
+   */
+  infix def intersection(other: OrderedSet[E, D])(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
+    type SS[T] = SegmentSeq[E, D, T]
+    ZippedOrderedSet.intersection(ev.substituteCo[SS](this), other)(domainOps, rngManager)
+  }
+
+  /**
+   * Alias for [[intersection]].
+   */
+  def &(other: OrderedSet[E, D])(implicit ev: V =:= Boolean): OrderedSet[E, D] = intersection(other)
+
+  /**
+   * Returns inversion of ordered set.
+   * 
+   * Output set includes all elements of domain, that are not included in `this` set.
+   * {{{
+   * 
+   *      domain lower           domain upper
+   *         bound                  bound
+   *      /                             \
+   *     X   (------]        (------)    X    - this set
+   * 
+   *     X--]        (------]        [---X    - this.inverse
+   * }}}
+   * 
+   * Method definition provides following invariants:
+   * {{{
+   *   1. x.inverse.inverse == x for any x
+   * }}}
+   */
+  def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D]
+
+  /**
+   * Alias for [[inverse]].
+   */
+  def `unary_~`(implicit ev: V =:= Boolean): OrderedSet[E, D] = inverse
 }
 
 object SegmentSeqT {

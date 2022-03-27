@@ -4,6 +4,7 @@ import ordset.core.domain.{Domain, DomainOps}
 import ordset.core.value.ValueOps
 import ordset.core.segmentSeq.{AbstractZippedSegmentSeq, SegmentT, SegmentSeq, SegmentTruncationT, ZippedTruncation}
 import ordset.core.segmentSeq.AbstractZippedSegmentSeq.ZippedSegmentBase
+import ordset.core.segmentSeq.set.OrderedSet
 import ordset.random.RngManager
 
 class ZippedOrderedMap[E, D[X] <: Domain[X], U1, U2, V, S1, S2] protected (
@@ -32,6 +33,9 @@ class ZippedOrderedMap[E, D[X] <: Domain[X], U1, U2, V, S1, S2] protected (
 
   // Transformation ----------------------------------------------------------- //
   override def strict: StrictOrderedMap[E, D, V] = defaultStrict
+
+  // Set transformation ------------------------------------------------------- //
+  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = defaultInverse
 
   // Protected section -------------------------------------------------------- //
   @inline
