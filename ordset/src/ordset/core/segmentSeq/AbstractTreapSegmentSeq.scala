@@ -30,16 +30,6 @@ abstract class AbstractTreapSegmentSeq[E, D[X] <: Domain[X],  V]
    */
   val lastValue: V
 
-  /** 
-   * Value of the last segment (segment without upper bound). 
-   * 
-   * [[root]] and [[lastValue]] define underlying data structure. But it can be interpreted in different ways.
-   * For example, in case of ordered set each segment value, that is stored in treap, and also [[lastValue]] should
-   * be inverted, if `complementary` flag is `true`. Current method should return such `interpreted` value rather
-   * than `underlying`. So generally output of [[getLastValue]] may not be equal to [[lastValue]].
-   */
-  def getLastValue: V
-
   final override def isEmpty: Boolean = false
 
   final override def isUniversal: Boolean = false
@@ -737,7 +727,7 @@ object AbstractTreapSegmentSeq {
     with TreapSegmentWithPrev[E, D, V] {
 
     // Inspection --------------------------------------------------------------- //
-    override def value: V = sequence.getLastValue
+    override def value: V = sequence.lastValue
 
     override lazy val lower: Bound.Lower[E] = node.key.flipUpper
 

@@ -27,15 +27,10 @@ class NonuniformTreapOrderedMap[E, D[X] <: Domain[X], V] protected (
 ) extends AbstractTreapSegmentSeq[E, D, V]
   with OrderedMapCommons[E, D, V, TreapSegmentBase[E, D, V]] {
 
-  // Inspection --------------------------------------------------------------- //
-  @inline
-  final override def getLastValue: V = lastValue
-
   // Set transformation ------------------------------------------------------- //
-  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
-    type F[T] = ImmutableTreap.Node[Bound.Upper[E], T]
-    NonuniformTreapOrderedSet.uncheckedOptimized(ev.substituteCo[F](root), lastValue, true)
-  }
+  override def inverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = 
+    // TODO: Temporary solution, see Issue 10.
+    defaultInverse
 
   // Protected section -------------------------------------------------------- //
   @inline

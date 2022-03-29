@@ -11,7 +11,7 @@ object NodeDepthFirst {
 
   /**
    * Implements one step of depth first traverse.
-   * Precedence of left/right visited can be customized with `navigationFunc`.
+   * Precedence of left/right visits can be customized with `navigationFunc`.
    */
   def defaultFunc[K, V, C <: NodeVisitContext[K, V]](
     navigationFunc: NodeNavigationFunc[K, V, C],

@@ -4,6 +4,7 @@ import ordset.core.{Bound, ExtendedBound}
 import ordset.core.domain.Domain
 import ordset.core.segmentSeq.map.LazyTreapOrderedMap
 import ordset.core.segmentSeq.set.OrderedSet
+import ordset.core.segmentSeq.internal.mappedSeq.NonMergingMappedValueOrderedMap
 import ordset.util.BooleanUtil
 
 /**
@@ -172,6 +173,8 @@ abstract class AbstractSegmentSeq[E, D[X] <: Domain[X], V, +S] extends SegmentSe
    */
   protected def defaultInverse(implicit ev: V =:= Boolean): OrderedSet[E, D] = {
     type F[X] = X => Boolean
-    map(ev.substituteContra[F](BooleanUtil.inversionOperator1))
+    // Inversion operator preserves the property that all adjacent segments have different values.
+    // So we can use non-merging mapped segment sequence to perform some optimization.
+    NonMergingMappedValueOrderedMap(this, ev.substituteContra[F](BooleanUtil.inversionOperator1))
   }
 }

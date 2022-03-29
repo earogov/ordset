@@ -46,3 +46,12 @@ Method should convert lazy sequence into strict one with subtype `StrictSegmentS
 9. Further optimization of `strict` method of `AbstractLazyTreapSegmentSeq`.
 
 See docs for `ZSegmentSeqBuilder.strictZippedSeq`.
+
+10. Optimize `inverse` method for NonuniformTreapOrderedSet and NonuniformTreapOrderedMap.
+
+Current implementation of `inverse` method just creates mapped segment sequence. Method can be significantly optimized
+by integrating `complementary` flag into treap data structure. Each node should be able to store `complementary`
+flag and ordinary boolean value. If `complementary` is `true` for some node, then ordinary value of this node and values
+of all its children should be inverted. This will allow to get super fast `inverse` method, but will require rather 
+complex implementation of merge operation for treaps (for cases when we need to merge nodes with different 
+`complementary` flags).

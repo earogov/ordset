@@ -18,8 +18,7 @@ import ordset.tree.treap.immutable.traverse.NodeAside
 
 class NonuniformTreapOrderedSet[E, D[X] <: Domain[X]] protected (
   final override val root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
-  final override val lastValue: Boolean,
-  final val complementary: Boolean
+  final override val lastValue: Boolean
 )(
   implicit
   final override val domainOps: DomainOps[E, D],
@@ -27,30 +26,26 @@ class NonuniformTreapOrderedSet[E, D[X] <: Domain[X]] protected (
 ) extends AbstractTreapSegmentSeq[E, D, Boolean]
   with OrderedSetCommons[E, D, TreapSegmentBase[E, D, Boolean]]{
 
-  // Inspection --------------------------------------------------------------- //
-  @inline
-  final override def getLastValue: Boolean = 
-    complementary ^ lastValue
-
   // Set transformation ------------------------------------------------------- //
   override def inverse(implicit ev: Boolean =:= Boolean): OrderedSet[E, D] = 
-    NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue, !complementary)
+   // TODO: Temporary solution, see Issue 10.
+   defaultInverse
 
   // Protected section -------------------------------------------------------- //
   @inline
   protected final override def getValueForNode(node: ImmutableTreap.Node[Bound.Upper[E], Boolean]): Boolean =
-    complementary ^ node.value
+    node.value
 
   @inline
   protected final override def consUniform(value: Boolean): UniformOrderedSet[E, D] = 
-    UniformOrderedSet.default(complementary ^ value)
+    UniformOrderedSet.default(value)
 
   @inline
   protected final override def consFromNode(
     node: ImmutableTreap.Node[Bound.Upper[E], Boolean],
     value: Boolean
   ): NonuniformTreapOrderedSet[E, D] =
-    NonuniformTreapOrderedSet.uncheckedOptimized(node, value, complementary)
+    NonuniformTreapOrderedSet.uncheckedOptimized(node, value)
 }
 
 object NonuniformTreapOrderedSet {
@@ -64,20 +59,18 @@ object NonuniformTreapOrderedSet {
    *
    * @param root node of treap containing upper bounds and values.
    * @param lastValue value of last segment.
-   * @param complementary if `true`, values of all segments are inverted.
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
   def uncheckedOptimized[E, D[X] <: Domain[X]](
     root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
-    lastValue: Boolean,
-    complementary: Boolean
+    lastValue: Boolean
   )(
     implicit
     domainOps: DomainOps[E, D],
     rngManager: RngManager
   ): NonuniformTreapOrderedSet[E, D] =
-    new NonuniformTreapOrderedSet(root, lastValue, complementary)
+    new NonuniformTreapOrderedSet(root, lastValue)
 
   /**
    * Creates nonuniform ordered set from node of treap containing bounds and values.
@@ -85,13 +78,11 @@ object NonuniformTreapOrderedSet {
    * Validation of treap invariants (keys and priorities order) is not applied.
    *
    * @param root node of treap containing upper bounds and values.
-   * @param complementary if `true`, values of all segments are inverted.
    * @param domainOps domain specific typeclasses: elements ordering, etc.
    * @param rngManager generator of random sequences.
    */
   def unchecked[E, D[X] <: Domain[X]](
-    root: ImmutableTreap.Node[Bound.Upper[E], Boolean],
-    complementary: Boolean
+    root: ImmutableTreap.Node[Bound.Upper[E], Boolean]
   )(
     implicit
     domainOps: DomainOps[E, D],
@@ -110,6 +101,6 @@ object NonuniformTreapOrderedSet {
     if (stack.isEmpty) throw new AssertionError(s"Node with maximal key is not found in tree $root")
     // Last node in tree corresponds to penultimate segment => we need to invert its value to get value of last segment.
     val lastValue = !stack.last.tree.value
-    NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue, complementary)
+    NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue)
   }
 }

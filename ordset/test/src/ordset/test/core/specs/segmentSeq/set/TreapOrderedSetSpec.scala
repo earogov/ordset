@@ -41,6 +41,12 @@ class TreapOrderedSetSpec extends AnyFunSpec
         new MultiBoundedSetSample3[Dom](seed),
         new DegenerateSetSample1[Dom](seed)
       )
+    },
+    // Inverted sets
+    (20 to 20).flatMap { seed =>
+      List(
+        new MultiBoundedSetSample3_inv[Dom](seed),
+      )
     }
   ).flatten
 

@@ -46,14 +46,14 @@ object TreeStack {
    * Create eval function for [[Context]].
    */
   def function[K, V, Tree[KK, VV]]: EvalFunc[K, V, Tree] =
-    EvalFunc.asInstanceOf[EvalFunc[K, V, Tree]]
+    evalFuncInstance.asInstanceOf[EvalFunc[K, V, Tree]]
 
   /**
    * Create eval function for [[Context]].
    * @param tree any tree of appropriate type (is used to simplify type inference).
    */
   def functionFor[K, V, Tree[KK, VV]](tree: Tree[K, V]): EvalFunc[K, V, Tree] =
-    EvalFunc.asInstanceOf[EvalFunc[K, V, Tree]]
+    evalFuncInstance.asInstanceOf[EvalFunc[K, V, Tree]]
 
   /**
    * Implicit [[Show]] instance for [[Context]].
@@ -66,13 +66,15 @@ object TreeStack {
   /**
    * Implicit [[ContextOps]] instance for [[Context]].
    */
-  implicit def contextOps[K, V, Tree[KK, VV]]: ContextOps[K, V, Tree] =
-    ContextOps.asInstanceOf[ContextOps[K, V, Tree]]
+  implicit def contextOps[K, V, Tree[KK, VV]]: ContextOps[K, V, Tree] = 
+    contextOpsInstance.asInstanceOf[ContextOps[K, V, Tree]]
 
   // Private section ---------------------------------------------------------- //
-  private lazy val ContextOps: ContextOps[Any, Any, [KK, VV] =>> Any] = new ContextOps[Any, Any, [KK, VV] =>> Any] {}
+  private lazy val contextOpsInstance: ContextOps[Any, Any, [KK, VV] =>> Any] = 
+    new ContextOps[Any, Any, [KK, VV] =>> Any] {}
 
-  private lazy val EvalFunc: EvalFunc[Any, Any, [KK, VV] =>> Any] = makeEvalFunc(ContextOps)
+  private lazy val evalFuncInstance: EvalFunc[Any, Any, [KK, VV] =>> Any] = 
+    makeEvalFunc(contextOps)
 
   private def makeEvalFunc[K, V, Tree[KK, VV]](
     contextOps: ContextOps[K, V, Tree]

@@ -35,7 +35,12 @@ object TreapOrderedSet {
   ): TreapOrderedSet[E, D] = 
     root match {
       case root: ImmutableTreap.Node[Bound.Upper[E], Boolean] => 
-        NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue, complementary)
+        if (complementary) {
+          // TODO: Temporary solution, see Issue 10.
+          getFactory.convertSet(NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue))
+        } else {
+          NonuniformTreapOrderedSet.uncheckedOptimized(root, lastValue)
+        }
       case _ => 
         UniformOrderedSet.apply(complementary ^ lastValue, TreapOrderedSet.getFactory)
     }
@@ -89,7 +94,7 @@ object TreapOrderedSet {
         val root = BuildAsc.finalizeBuffer(buffer)
         root match {
           case r: ImmutableTreap.Node[Bound.Upper[E], Boolean] =>
-            NonuniformTreapOrderedSet.uncheckedOptimized(r, value, false)(domainOps, rngManager)
+            NonuniformTreapOrderedSet.uncheckedOptimized(r, value)(domainOps, rngManager)
           case _ =>
             UniformOrderedSet.apply(value, this)(domainOps, rngManager)
         }
