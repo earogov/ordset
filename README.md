@@ -63,7 +63,7 @@ b =
 ```
 
 Here boolean values indicates whether interval is included in set or not.
-Now we can transform and compose sets with each other with a plenty of operators, for example:
+Now we can transform and compose sets with each other using familiar operators, for example:
 
 ```scala
 val c = ~(a | b)
@@ -144,7 +144,8 @@ Received ordered set:
 }
 ```
 
-There a lot of other map operators such as zip, flatMap, patch, etc.
+There a lot of other map operators such as zip, flatMap, patch, etc. And of course we can get a value associated with
+any element or bound, iterate over intervals and and so forth.
 
 ### Installation
 
