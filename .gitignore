@@ -4,6 +4,7 @@
 .bloop/*
 .vscode/*
 .metals/*
+.env
 out/*
 lib/*
 null/*

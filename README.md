@@ -187,3 +187,17 @@ $ mill mill.bsp.BSP/install
 Syntax highlight will be also available in `build.sc` file (Mill build configuration).
 
 Note, project restart may be required for the changes to take effect.
+
+### Release
+
+Put into the project root directory `.env` file with credentials:
+
+```dtd
+GPG_PASSPHRASE=*******
+GPG_LOCALUSER=*******
+SONATYPE_CREDENTIALS=[sonatype_user]:[sonatype_password]
+```
+
+Run `release.sh` script. Script publishes artifacts into sonatype staging repository, so further manual actions are
+required.
+
