@@ -6,6 +6,32 @@ Links:
 - [project blog](https://ordset.blogspot.com/)
 - [usage examples](https://github.com/earogov/ordset/tree/master/ordset/test/src/ordset/test/core/examples/segmentSeq)
 
+### Getting Started
+
+Project is available for [Scala 3.1.1](https://www.scala-lang.org/download/3.1.1.html).
+
+Configure your build file (examples for `build.sbt` of SBT build tool):
+
+1. Make sure [sonatype repository](https://s01.oss.sonatype.org) is available:
+
+```scala
+resolvers += Resolver.sonatypeRepo("releases")
+```
+
+2. Add dependencies:
+
+```scala
+libraryDependencies += "io.github.earogov" %% "ordset" % "0.1.0"
+libraryDependencies += "io.github.earogov" %% "ordset-commonsRandom" % "0.1.0"
+```
+
+Modules:
+
+|          name          |                  description                  
+| ---------------------- | ----------------------------------------------
+| `ordset`               | Core module.
+| `ordset-commonsRandom` | Random generator based on [Apache Commons RNG](https://commons.apache.org/proper/commons-rng/). Generator is used internally by ordered sets and maps.
+
 ### Example
 
 Assume we have unbounded discrete domain of big integers:
@@ -146,58 +172,3 @@ Received ordered set:
 
 There a lot of other map operators such as zip, flatMap, patch, etc. And of course we can get a value associated with
 any element or bound, iterate over intervals and and so forth.
-
-### Installation
-
-1. [Install](https://com-lihaoyi.github.io/mill/#installation) Mill build tool.
-
-2. Clone project:
-
-```dtd
-$ cd /Users/{user}/{projects}
-$ git clone git://github.com/earogov/ordset
-```
-
-3. Run tests (main module):
-
-```dtd
-$ cd /Users/{user}/{projects}/ordset
-$ mill ordset.test
-```
-
-4.a [Optional] Use Visual Studio Code with [Metals](https://scalameta.org/metals/docs/editors/vscode/) plugin.
-
-4.b. [Optional] Configure IntelliJ IDEA project with BSP ([Build Server Protocol](https://build-server-protocol.github.io/)).
-
-- Open IntelliJ IDEA and choose File -> New -> Project from Existing Sources
-
-- Select project directory /Users/{user}/{projects}/ordset
-
-- Choose `Import project from external model` and select `BSP`. New project will be opened with `bsp` toolbar available 
-  on the right side.
-  
-- Configure BSP integration running script:
-
-```dtd
-$ cd /Users/{user}/{projects}/ordset
-$ mill mill.bsp.BSP/install  
-```
-
-- Now you can update IDEA modules definition with button `Reload All BSP Projects` on `bsp` toolbar.
-Syntax highlight will be also available in `build.sc` file (Mill build configuration).
-
-Note, project restart may be required for the changes to take effect.
-
-### Release
-
-Put into the project root directory `.env` file with credentials:
-
-```dtd
-GPG_PASSPHRASE=*******
-GPG_LOCALUSER=*******
-SONATYPE_CREDENTIALS=[sonatype_user]:[sonatype_password]
-```
-
-Run `release.sh` script. Script publishes artifacts into sonatype staging repository, so further manual actions are
-required.
-
