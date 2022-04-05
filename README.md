@@ -12,13 +12,7 @@ Project is available for [Scala 3.1.1](https://www.scala-lang.org/download/3.1.1
 
 Configure your build file (examples for `build.sbt` of SBT build tool):
 
-1. Make sure [sonatype repository](https://s01.oss.sonatype.org) is available:
-
-```scala
-resolvers += Resolver.sonatypeRepo("releases")
-```
-
-2. Add dependencies:
+1. Add dependencies:
 
 ```scala
 libraryDependencies += "io.github.earogov" %% "ordset" % "0.1.0"
@@ -32,14 +26,22 @@ Modules:
 | `ordset`               | Core module.
 | `ordset-commonsRandom` | Random generator based on [Apache Commons RNG](https://commons.apache.org/proper/commons-rng/). Generator is used internally by ordered sets and maps.
 
+2. If you need a snapshot version, add corresponding [sonatype repository](https://s01.oss.sonatype.org):
+
+```scala
+resolvers += Resolver.sonatypeRepo("snapshots")
+```
+
 ### Example
 
 Assume we have unbounded discrete domain of big integers:
 
 ```scala
+import ordset.givens.bigInt.*
+
 type Dom[X] = Domain.DiscreteUnbounded[X]
 
-implicit val domainOps: DomainOps[BigInt, Dom] = DomainOps.UnboundedOps.default[BigInt, Dom]
+implicit val domainOps: DomainOps[BigInt, Dom] = DomainOps.default
 
 val x: BoundBuilder[BigInt, Dom] = BoundBuilder[BigInt, Dom]
 ```
